@@ -1,0 +1,116 @@
+name: Ratchet & Clank (USA)
+sha1: 72fd1de379dafd8f243dceeb3be50980f3fd3cd5 
+
+options:
+  basename: SCUS_971.99
+  target_path: assets/boot_elf.elf
+  elf_path: SCUS_971.99
+  base_path: ../
+  platform: ps2
+  compiler: EEGCC
+
+  asm_path: code/_generated
+  src_path: code/
+  build_path: obj
+
+  find_file_boundaries: False
+  disasm_unknown: True
+  named_regs_for_c_funcs: False
+
+  # rodata config from sly1 decomp
+  pair_rodata_to_text: False  # Not having this crashes splat
+  #rodata_string_guesser_level: 0
+  #suggestion_rodata_section_start: True
+  #migrate_rodata_to_functions: True
+
+  # Might want this later
+  # It generates some include/ stuff
+  generate_asm_macros_files: False
+
+  # TODO: Re-enable these later
+  create_undefined_funcs_auto: False
+  create_undefined_syms_auto: False
+
+  # Not sure how to define sections properly
+  section_order: [".vutext", "core.text", "core.data", ".rodata", "core.bss", "core.lit", ".lit", ".bss", ".data", "lvl.vtbl", "lvl.camvtbl", "lvl.sndvtbl", ".text", "registers.io"]
+
+  # splat wiki has a section explaining something about .bss for PSX, might be relevant?
+  # https://github.com/ethteck/splat/wiki/Segments#bss
+
+  # Not handling overlays here at all yet. 
+
+  # Sly1 and KH1 decomps use this, I'm assuming we want to too.
+  subalign: 8
+
+segments:
+  - [0, databin, elf_header]
+
+  - name: main
+    type: code
+    start: 0x1000  # file offset
+    vram:  0x100080  # offset in ram
+    bss_size: 0xecd8  # We have multiple bss sections, not sure what to put here
+   
+    subsegments:
+      # .vutext
+      - [0x01000, data]
+
+      # core.text
+      - [0x13300, asm, game/misc_vutext] 
+
+      - [0x2e6a8, cpp, game/init]
+
+      - [0x2e868, asm, game/misc_vutext]
+      - [0x30400]
+
+      - [0x53180, rodata]
+
+      # Bunch of sections
+
+      # More sections...
+      # 
+      # KH1 and Sly1 decomps don't define multiple sections, they just put this 1 large "main" section
+      #   and add comments in the subsegments to mark the different sections. I don't understand
+      #   where they actually define the starts, ends and flags for sections.
+
+  # Not sure this section is defined correctly, but not having a .rodata section crashes splat
+  #   when splitting subsegments as c or cpp.
+  - name: rodata
+    type: rodata
+    start: 0x53180
+    vram: 0x152200
+
+    subsegments:
+        - [0x53180, rodata]
+        # - [0xe9b00]
+
+  # - name: lvl.vtbl
+  #   type: rodata
+  #   start: 0xe9b00
+  #   vram: 0x1e8b80
+  #
+  # - name: lvl.camvtbl
+  #   type: rodata
+  #   start: 0xe9b80
+  #   vram: 0x1e8c00
+  #
+  # - name: lvl.sndvtbl
+  #   type: rodata
+  #   start: 0xe9c00
+  #   vram: 0x1e8c80
+
+  - name: text
+    type: code
+    start: 0xe9c80
+    vram: 0x1e8d00
+    bss_size: 0x41b0
+
+    subsegments:
+      # .text
+      - [0xe9c80, asm, game/misc_text]
+
+      - [0xea5d8, cpp, game/boot]
+
+      - [0xeaa38, asm, game/misc_text]
+      - [0x13e2dc]
+

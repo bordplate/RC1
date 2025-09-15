@@ -1,0 +1,7 @@
+.venv/
+
+assets/
+disc/
+code/_generated/
+
+SCUS_971.99.ld
