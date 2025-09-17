@@ -20,7 +20,7 @@ OBJS = $(SRC_S:code/%.s=$(OBJ_DIR)/%.o) \
 
 PRODG_DIR = tools/cc
 
-COMMON_COMPILE_FLAGS = -G0
+COMMON_COMPILE_FLAGS = -G0 -O2
 
 all: $(TARGET)
 
@@ -44,7 +44,7 @@ $(OBJ_DIR)/%.o: code/%.s
 
 $(OBJ_DIR)/%.o: code/%.c
 	@mkdir -p $(dir $@)
-	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
+	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) -I$(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
 
 $(OBJ_DIR)/%.o: code/%.cpp
 	@mkdir -p $(dir $@)

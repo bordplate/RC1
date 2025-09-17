@@ -55,6 +55,8 @@ segments:
     vram: 0x112380
     subsegments:
     - [0x13300, asm, core_text1]  # core.text
+    - [0x16448, c, stubs]
+    - [0x16450, asm, core_text4]
     - [0x2e6a8, asm, sce/crt0] 
     - [0x2e868, asm, core_text2]
 
