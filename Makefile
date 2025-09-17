@@ -3,7 +3,7 @@ CROSS = mipsel-linux-gnu
 #CROSS = mips64r5900el-ps2-elf
 
 SRC_C   = $(shell find code -type f -name '*.c')
-SRC_S   = $(shell find code -type f -name '*.s' | grep -v _generated/nonmatchings)
+SRC_S   = $(shell find code -type f -name '*.s' | grep -v "_generated/matchings\|_generated/nonmatchings")
 SRC_CPP = $(shell find code -type f -name '*.cpp')
 
 INCLUDE = code/include
