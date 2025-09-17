@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import splat
+import splat.scripts.split as split
 
 ROOT = Path(__file__).parent.resolve()
 

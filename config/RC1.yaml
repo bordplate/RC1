@@ -11,31 +11,33 @@ options:
 
   asm_path: code/_generated
   src_path: code/
-  build_path: obj
+  data_path: build/data
+  build_path: build
+  o_as_suffix: True  # otherwise splat will try to link with e.g. .cpp.o
 
   find_file_boundaries: False
-  disasm_unknown: True
+  disasm_unknown: False
   named_regs_for_c_funcs: False
 
-  # rodata config from sly1 decomp
   pair_rodata_to_text: False  # Not having this crashes splat
-  #rodata_string_guesser_level: 0
-  #suggestion_rodata_section_start: True
-  #migrate_rodata_to_functions: True
+  rodata_string_guesser_level: 0
+
+  # We probably need this at some point:
+  # https://github.com/ethteck/splat/wiki/Configuration#gp_value
 
   # Might want this later
-  # It generates some include/ stuff
   generate_asm_macros_files: False
 
-  # TODO: Re-enable these later
-  create_undefined_funcs_auto: False
-  create_undefined_syms_auto: False
+  create_undefined_funcs_auto: True
+  undefined_funcs_auto_path: build/undefined_funcs_auto.txt
+  create_undefined_syms_auto: True
+  undefined_syms_auto_path: build/undefined_syms_auto.txt
+  symbol_addrs_path: config/symbols.txt
 
-  # Not sure how to define sections properly
-  section_order: [".vutext", "core.text", "core.data", ".rodata", "core.bss", "core.lit", ".lit", ".bss", ".data", "lvl.vtbl", "lvl.camvtbl", "lvl.sndvtbl", ".text", "registers.io"]
+  ld_legacy_generation: True
 
-  # splat wiki has a section explaining something about .bss for PSX, might be relevant?
-  # https://github.com/ethteck/splat/wiki/Segments#bss
+
+  check_consecutive_segment_types: False
 
   # Not handling overlays here at all yet. 
 
@@ -45,72 +47,84 @@ options:
 segments:
   - [0, databin, elf_header]
 
-  - name: main
+  - { start: 0x1000, type: data, name: vutext, linker_section: .vutext, vram: 0x100080 }
+
+  - name: core.text
     type: code
-    start: 0x1000  # file offset
-    vram:  0x100080  # offset in ram
-    bss_size: 0xecd8  # We have multiple bss sections, not sure what to put here
-   
+    start: 0x13300
+    vram: 0x112380
     subsegments:
-      # .vutext
-      - [0x01000, data]
+    - [0x13300, asm, core_text1]  # core.text
+    - [0x2e6a8, asm, sce/crt0] 
+    - [0x2e868, asm, core_text2]
 
-      # core.text
-      - [0x13300, asm, game/misc_vutext] 
+  - name: core.data
+    type: data
+    start: 0x30400
+    vram: 0x0012f480
 
-      - [0x2e6a8, cpp, game/init]
-
-      - [0x2e868, asm, game/misc_vutext]
-      - [0x30400]
-
-      - [0x53180, rodata]
-
-      # Bunch of sections
-
-      # More sections...
-      # 
-      # KH1 and Sly1 decomps don't define multiple sections, they just put this 1 large "main" section
-      #   and add comments in the subsegments to mark the different sections. I don't understand
-      #   where they actually define the starts, ends and flags for sections.
-
-  # Not sure this section is defined correctly, but not having a .rodata section crashes splat
-  #   when splitting subsegments as c or cpp.
-  - name: rodata
-    type: rodata
+  - name: core.rdata
+    type: rdata
     start: 0x53180
-    vram: 0x152200
+    vram: 0x00152200
 
-    subsegments:
-        - [0x53180, rodata]
-        # - [0xe9b00]
+  - name: core.bss
+    type: data
+    bss_size: 0xab20
+    pair_segment: core.text
+    start: 0x55080
+    vram: 0x00154100
 
-  # - name: lvl.vtbl
-  #   type: rodata
-  #   start: 0xe9b00
-  #   vram: 0x1e8b80
-  #
-  # - name: lvl.camvtbl
-  #   type: rodata
-  #   start: 0xe9b80
-  #   vram: 0x1e8c00
-  #
-  # - name: lvl.sndvtbl
-  #   type: rodata
-  #   start: 0xe9c00
-  #   vram: 0x1e8c80
+  - name: core.lit
+    type: lit4
+    start: 0x5fc00
+    vram: 0x0015ec80
+
+  - name: lit
+    type: lit4
+    start: 0x5fe80
+    vram: 0x0015ef00
+
+  - name: bss
+    type: data
+    pair_segment: text
+    start: 0x62200
+    vram: 0x00161280
+
+  - name: data
+    type: data
+    start: 0x66400
+    vram: 0x00165480
+
+  - name: lvl.vtbl
+    type: rodata
+    start: 0xe9b00
+    vram: 0x1e8b80
+
+  - name: lvl.camvtbl
+    type: rodata
+    start: 0xe9b80
+    vram: 0x1e8c00
+
+  - name: lvl.sndvtbl
+    type: rodata
+    start: 0xe9c00
+    vram: 0x1e8c80
 
   - name: text
     type: code
     start: 0xe9c80
     vram: 0x1e8d00
-    bss_size: 0x41b0
+    # bss_size: 0x41b0
 
     subsegments:
-      # .text
-      - [0xe9c80, asm, game/misc_text]
+    # .text
+    - [0xe9c80, asm, game/text1]
 
-      - [0xea5d8, cpp, game/boot]
+    - [0xea5d8, cpp, game/boot]
 
-      - [0xeaa38, asm, game/misc_text]
-      - [0x13e2dc]
+    - [0xeaa38, asm, game/text2]
 
+  - [0x13e2e0, databin, overlays]
+  - [0x1510EA, databin, section_headers]  # section headers
+  - [0x151a74]

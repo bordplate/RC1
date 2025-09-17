@@ -1,7 +1,10 @@
 .venv/
+ee-gcc2.95.2-SN-v2.73a.tar.gz
+tools/cc/
 
 assets/
 disc/
 code/_generated/
+build/
 
 SCUS_971.99.ld
