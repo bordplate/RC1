@@ -59,6 +59,8 @@ segments:
     - [0x16450, asm, core_text4]
     - [0x2e6a8, asm, sce/crt0] 
     - [0x2e868, asm, core_text2]
+    - [0x2e9a8, c, game/989snd]
+    - [0x30144, asm, core_text3]
 
   - name: core.data
     type: data
@@ -126,6 +128,7 @@ segments:
     - [0xea5d8, cpp, game/boot]
 
     - [0xeaa38, asm, game/text2]
+
 
   - [0x13e2e0, databin, overlays]
   - [0x1510EA, databin, section_headers]  # section headers
