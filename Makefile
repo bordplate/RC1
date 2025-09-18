@@ -6,7 +6,7 @@ SRC_C   = $(shell find code -type f -name '*.c')
 SRC_S   = $(shell find code -type f -name '*.s' | grep -v "_generated/matchings\|_generated/nonmatchings")
 SRC_CPP = $(shell find code -type f -name '*.cpp')
 
-INCLUDE = code/include
+INCLUDE = -Icode/include -Itools/cc/lib/gcc-lib/ee/2.95.2/include
 
 BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/code
@@ -20,7 +20,7 @@ OBJS = $(SRC_S:code/%.s=$(OBJ_DIR)/%.o) \
 
 PRODG_DIR = tools/cc
 
-COMMON_COMPILE_FLAGS = -G0 -O2
+COMMON_COMPILE_FLAGS = -G0 -O2 -Wa,-EL -Wa,-Icode/include
 
 all: $(TARGET)
 
@@ -40,13 +40,13 @@ $(TARGET): $(OBJS)
 
 $(OBJ_DIR)/%.o: code/%.s
 	@mkdir -p $(dir $@)
-	$(CROSS)-as -I$(INCLUDE) -EL -no-pad-sections -march=5900 -mabi=eabi $< -o $@
+	$(CROSS)-as $(INCLUDE) -EL -no-pad-sections -march=5900 -mabi=eabi $< -o $@
 
 $(OBJ_DIR)/%.o: code/%.c
 	@mkdir -p $(dir $@)
-	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) -I$(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
+	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
 
 $(OBJ_DIR)/%.o: code/%.cpp
 	@mkdir -p $(dir $@)
-	$(EEGCC) -c -x c++ $(COMMON_COMPILE_FLAGS) -I$(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
+	$(EEGCC) -v -c -x c++ $(COMMON_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
 
