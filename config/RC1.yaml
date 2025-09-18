@@ -16,7 +16,7 @@ options:
   o_as_suffix: True  # otherwise splat will try to link with e.g. .cpp.o
 
   find_file_boundaries: False
-  disasm_unknown: False
+  disasm_unknown: True
   named_regs_for_c_funcs: False
 
   pair_rodata_to_text: False  # Not having this crashes splat
@@ -59,8 +59,8 @@ segments:
     - [0x16450, asm, core_text4]
     - [0x2e6a8, asm, sce/crt0] 
     - [0x2e868, asm, core_text2]
-    - [0x2e9a8, c, game/989snd]
-    - [0x30144, asm, core_text3]
+    - [0x2e9a8, c, 989snd/ee/989snd]
+    - [0x30140, asm, core_text3]
 
   - name: core.data
     type: data
