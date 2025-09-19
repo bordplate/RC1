@@ -4,7 +4,7 @@ Unpack NTSC Ratchet & Clank (SCUS\_971.99) with [Wrench](https://github.com/chao
 The process described here is only tested on Linux. It should work fine through WSL.
 
 ## Setup
-You need Python >3.9 to run splat to configure the thing. Install the requirements:
+You need Python >3.9 to run [splat](https://github.com/ethteck/splat) to configure the thing. Install the requirements:
 ```sh
 # venv is optional, but recommended
 python3 -m venv .venv
@@ -58,3 +58,12 @@ Get these packages from AUR with your favorite AUR-thing like `yay`:
 wine32
 mipsel-linux-gnu-binutils
 ```
+
+## Decompiling
+Use [decomp.me] with the EE GCC 2.95.2 (SN BUILD v2.74) compiler to try to match your decomp with the original assembly for the relevant function. You can generate the necessary context with the following command:
+```sh
+python tools/m2ctx/m2ctx.py <file containing function you're decompiling>
+```
+This will generate a `ctx.c` file the current directory that you can use as context in decomp.me.  
+
+I'm not sure it's the exact same compiler Insomniac used for RC1, and I have done no research on it. It's the same compiler used for the Sly1 decomp, and Sly1 came out around the same time as RC1.
