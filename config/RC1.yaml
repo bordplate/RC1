@@ -58,7 +58,7 @@ segments:
     - [0x16448, c, stubs]
     - [0x16450, asm, core_text4]
     - [0x2e6a8, asm, sce/crt0] 
-    - [0x2e868, asm, core_text2]
+    - [0x2e878, cpp, game/boot]
     - [0x2e9a8, c, 989snd/ee/989snd]
     - [0x30140, asm, core_text3]
 
@@ -125,7 +125,7 @@ segments:
     # .text
     - [0xe9c80, asm, game/text1]
 
-    - [0xea5d8, cpp, game/boot]
+    - [0xea5d8, cpp, game/bmain]
 
     - [0xeaa38, asm, game/text2]
 

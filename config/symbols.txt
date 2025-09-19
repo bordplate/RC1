@@ -1,6 +1,7 @@
 _start = 0x12d728;
 
-main = 0x1e9658;
+__main = 0x011dcc8;
+main = 0x12d9d8;
 
 snd_StartSoundSystem = 0x12da28;
 snd_FlushSoundCommands = 0x12dc80;
@@ -52,3 +53,9 @@ snd_UnkFunction_0012f178 = 0x12f178;
 snd_GetDopplerPitchMod = 0x12f1a0;
 
 STUB_1154c8 = 0x1154c8;
+
+
+startLevel = 0x1e9658;
+ParseBin = 0x12d8f8;
+
+FlushCache = 0x118a80;
