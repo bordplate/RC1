@@ -9,11 +9,11 @@ extern "C" void startLevel();
 extern "C" StartLevelPtr ParseBin();
 
 int main(int argc, char **argv) {
-    StartLevelPtr pcVar1 = startLevel;  // assign first function
+    StartLevelPtr pcVar1 = startLevel;
 
     while (true) {
-        pcVar1();             // call current function
-        pcVar1 = ParseBin();  // assign next function
+        pcVar1();
+        pcVar1 = ParseBin();
         FlushCache(0);
         FlushCache(2);
     }
