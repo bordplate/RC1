@@ -55,7 +55,10 @@ snd_GetDopplerPitchMod = 0x12f1a0;
 STUB_1154c8 = 0x1154c8;
 
 
-startLevel = 0x1e9658;
-ParseBin = 0x12d8f8;
+startlevel__Fv = 0x1e9658;
+ParseBin__Fv = 0x12d8f8;
 
 FlushCache = 0x118a80;
+
+
+InitOnce = 0x201650;

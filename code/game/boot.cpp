@@ -1,15 +1,15 @@
 #include "common.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/boot", ParseBin);
+INCLUDE_ASM("code/_generated/nonmatchings/game/boot", ParseBin__Fv);
 
 typedef void (*StartLevelPtr)(void);
 
 extern "C" void FlushCache(int arg1);
-extern "C" void startLevel();
-extern "C" StartLevelPtr ParseBin();
+void startlevel();
+StartLevelPtr ParseBin();
 
 int main(int argc, char **argv) {
-    StartLevelPtr pcVar1 = startLevel;
+    StartLevelPtr pcVar1 = startlevel;
 
     while (true) {
         pcVar1();
