@@ -17,6 +17,7 @@ extern "C" void STUB_printf(const char* fmt, ...);
 
 /**
  * Doesn't at all match the original assembly.
+ * https://decomp.me/scratch/jF3YE
  */
 MobyInstance* SpawnMoby(int oClass) {
     s8 sState;
