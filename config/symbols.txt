@@ -52,13 +52,21 @@ snd_UnkFunction_0012f148 = 0x12f148;
 snd_UnkFunction_0012f178 = 0x12f178;
 snd_GetDopplerPitchMod = 0x12f1a0;
 
-STUB_1154c8 = 0x1154c8;
+STUB_printf = 0x1e93b0;
 
 
 startlevel__Fv = 0x1e9658;
 ParseBin__Fv = 0x12d8f8;
 
 FlushCache = 0x118a80;
-
+FastMemSet = 0x1f97e8;
 
 InitOnce = 0x201650;
+
+MobyInstanceEnd = 0x15ff1c;
+MobyInstancePermEnd = 0x15ff20;
+numSpawnableMobys = 0x15fefc;
+MobyVars = 0x15ff28;
+
+SpawnMoby__Fii = 0x20c4f8;
+InitMobyInstance__FP12MobyInstanceib = 0x20c5f0;

@@ -4,7 +4,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/boot", ParseBin__Fv);
 
 typedef void (*StartLevelPtr)(void);
 
-extern "C" void FlushCache(int arg1);
 void startlevel();
 StartLevelPtr ParseBin();
 
