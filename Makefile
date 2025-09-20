@@ -20,7 +20,7 @@ OBJS = $(SRC_S:code/%.s=$(OBJ_DIR)/%.o) \
 
 PRODG_DIR = tools/cc
 
-COMMON_COMPILE_FLAGS = -G0 -O2 -Wa,-EL -Wa,-Icode/include
+COMMON_COMPILE_FLAGS = -G8 -O2 -ffast-math -fno-exceptions -Wa,-EL -Wa,-Icode/include
 
 all: $(TARGET)
 
