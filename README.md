@@ -1,9 +1,9 @@
 # RC1 Decomp
-Unpack NTSC Ratchet & Clank (SCUS\_971.99) with [Wrench](https://github.com/chaoticgc/wrench). Move the contents of `rac_scus_971_99` from Wrench to the `assets/` folder.  
+Unpack NTSC Ratchet & Clank (SCUS\_971.99) with [Wrench](https://github.com/chaoticgd/wrench). Move the contents of `rac_scus_971_99` from Wrench to the `assets/` folder.  
 
 The process described here is only tested on Linux. It should work fine through WSL.
 
-When building, you should end up with a binary that matches the original game's boot binary byte for byte. There is consideration for the game's overlays here yet. 
+When building, you should end up with a binary that matches the original game's boot binary byte for byte. There is no consideration for the game's overlays here yet. 
 
 Most of this project is built using the [Sly1 decomp](https://github.com/TheOnlyZac/sly1) as reference. They also have a lot of documentation on the practical stuff around how to decomp functions.
 
