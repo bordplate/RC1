@@ -52,6 +52,10 @@ snd_UnkFunction_0012f148 = 0x12f148;
 snd_UnkFunction_0012f178 = 0x12f178;
 snd_GetDopplerPitchMod = 0x12f1a0;
 
+vsync_callback__Fi = 0x12f1c8;
+frm_vsync_cnt = 0x15ed48;
+frm_clock_time = 0x15ed40;
+
 STUB_printf = 0x1e93b0;
 
 
@@ -61,7 +65,19 @@ ParseBin__Fv = 0x12d8f8;
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
 
+InitMemSlots = 0x2015d8;
 InitOnce = 0x201650;
+
+CreatePart = 0x217a30;
+UpdateParts = 0x217b88;
+PartProc = 0x217c18;
+_part_load_tex = 0x21880c;
+
+TfragProc = 0x233fb0;
+ComputeTfragTextureUsage = 0x234bd8;
+BuildTfragTextureDma = 0x234d48;
+LightTfrags = 0x234f98;
+ResetTieLightingCache = 0x235640;
 
 MobyInstanceEnd = 0x15ff1c;
 MobyInstancePermEnd = 0x15ff20;

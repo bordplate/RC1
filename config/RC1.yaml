@@ -54,11 +54,13 @@ segments:
     start: 0x13300
     vram: 0x112380
     subsegments:
-    - [0x13300, asm]  # core.text
+    - [0x13300, asm, glibc]
+    - [0x196d0, asm, sce/lib]
     - [0x2e6a8, asm, sce/crt0] 
     - [0x2e878, cpp, game/boot]
     - [0x2e9a8, c, 989snd/ee/989snd]
-    - [0x30140, asm]
+    - [0x30148, cpp, game/permcb]
+    - [0x30188, asm]
 
   - name: core.data
     type: data
@@ -126,8 +128,14 @@ segments:
     - [0xea5d8, cpp, game/bmain]
 
     - [0xeaa38, asm]
+    - [0x102558, cpp, game/initonce]
+    - [0x1029a8, asm]
     - [0x10d478, cpp, game/mobyfunc]
     - [0x10d7a8, asm]
+    - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
+    - [0x119808, asm]
+    - [0x134f30, asm, game/tfragproc] # Insomniac handwrote this
+    - [0x136700, asm]
 
   - [0x13e2e0, databin, overlays]
   - [0x1510EA, databin, section_headers]  # section headers
