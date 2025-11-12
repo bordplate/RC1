@@ -1,10 +1,32 @@
-EEGCC = wine tools/cc/bin/ee-gcc.exe
+# Force use GNU tools
+FIND := /usr/bin/find
+
+ifeq ($(OS),Windows_NT)
+	OS_ID := Windows
+	PATH_SEP := \\
+	COPY := copy
+	DELETE := del
+	DELETEFLAGS := /s /q
+else
+	OS_ID := $(shell uname 2>/dev/null || echo Unknown)
+	PATH_SEP := /
+	COPY := cp
+	DELETE := rm
+	DELETEFLAGS := -rf
+
+	WINE := wine
+endif
+
+EEGCC = $(WINE) tools/cc/bin/ee-gcc.exe
 CROSS = mipsel-linux-gnu
 #CROSS = mips64r5900el-ps2-elf
 
-SRC_C   = $(shell find code -type f -name '*.c')
-SRC_S   = $(shell find code -type f -name '*.s' | grep -v "_generated/matchings\|_generated/nonmatchings")
-SRC_CPP = $(shell find code -type f -name '*.cpp')
+-include userconfig.mk
+
+# Collect sources
+SRC_C   = $(shell $(FIND) code -type f -name '*.c')
+SRC_S   = $(shell $(FIND) code -type f -name '*.s' | grep -v "_generated/matchings\|_generated/nonmatchings")
+SRC_CPP = $(shell $(FIND) code -type f -name '*.cpp')
 
 INCLUDE = -Icode/include -Itools/cc/lib/gcc-lib/ee/2.95.2/include
 

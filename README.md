@@ -33,8 +33,8 @@ Splat generates files based on the config in `config/RC1.yaml`. The generated co
 We need to use the original (or similar) compiler to the one that was used in the original compilation of the game. This is the SCE/ProDG EEGCC (EmotionEngine GCC).  
 
 These are the required packages:
-```
-wine32
+```sh
+wine32  # Not needed on Windows
 binutils-mips-linux-gnu
 make
 ```
@@ -67,8 +67,45 @@ wine32
 mipsel-linux-gnu-binutils
 ```
 
+### Windows
+You will need to bring in the `binutils-mips-linux-gnu` tools. You can do this with [MSYS2](https://www.msys2.org) by compiling
+the tools yourself. Open the MSYS2 MinGW64 terminal:
+```sh
+pacman -Syy
+pacman -S base-devel git make gcc mpfr-devel gmp-devel texinfo \
+  mingw-w64-x86_64-toolchain  # Just choose `all` for the mingw toolchain install
+git clone git://sourceware.org/git/binutils-gdb.git
+cd binutils-gdb
+mkdir build && cd build
+
+../configure \
+  --host=x86_64-w64-mingw32 \
+  --target=mips-linux-gnu \
+  --prefix=/mingw64/mips-linux-gnu \
+  --disable-nls \
+  --disable-gdb \
+  --disable-gdbserver \
+  --disable-sim \
+  --disable-gprofng \
+  --disable-werror
+
+make -j$(nproc)
+make install
+```
+
+Copy `userconfig.template.mk` to `userconfig.mk` and set this:
+```makefile
+export PATH := C:/msys64/mingw64/mips-linux-gnu/bin:$(PATH)
+CROSS = mips-linux-gnu
+```
+
+For the tooling to work properly on Windows for me, I had to install the Python `requirements.txt` with the `--user` flag:
+```sh
+python -m pip install -r requirements.txt --user
+```
+
 ## Decompiling
-Use [decomp.me] with the EE GCC 2.95.2 (SN BUILD v2.74) compiler to try to match your decomp with the original assembly for the relevant function. You can generate the necessary context with the following command:
+Use [decomp.me](https://decomp.me/) with the EE GCC 2.95.2 (SN BUILD v2.74) compiler to try to match your decomp with the original assembly for the relevant function. You can generate the necessary context with the following command:
 ```sh
 python tools/m2ctx/m2ctx.py <file containing function you're decompiling>
 ```
