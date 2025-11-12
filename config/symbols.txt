@@ -62,6 +62,8 @@ STUB_printf = 0x1e93b0;
 startlevel__Fv = 0x1e9658;
 ParseBin__Fv = 0x12d8f8;
 
+SetBackgroundColor__Fiii = 0x1fb280;
+
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
 
@@ -86,3 +88,5 @@ MobyVars = 0x15ff28;
 
 SpawnMoby__Fii = 0x20c4f8;
 InitMobyInstance__FP12MobyInstanceib = 0x20c5f0;
+
+D_152078 = 0x152078;
