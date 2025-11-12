@@ -129,7 +129,7 @@ segments:
 
     - [0xeaa38, asm]
     - [0xfc200, cpp, game/framebuf]
-    - [0xfc228, asm]
+    - [0xfc2e8, asm]
     - [0x102558, cpp, game/initonce]
     - [0x1029a8, asm]
     - [0x10d478, cpp, game/mobyfunc]

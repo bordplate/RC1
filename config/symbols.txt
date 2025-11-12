@@ -62,7 +62,10 @@ STUB_printf = 0x1e93b0;
 startlevel__Fv = 0x1e9658;
 ParseBin__Fv = 0x12d8f8;
 
+// game/framebuf.cpp
 SetBackgroundColor__Fiii = 0x1fb280;
+PutDispBuffer__Fv = 0x1fb2a8;
+PutDrawBufferLarge__Fv = 0x1fb2d0;
 
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
