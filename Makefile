@@ -49,6 +49,9 @@ all: $(TARGET)
 split:
 	python -m splat split config/RC1.yaml --disassemble-all
 
+iso:
+	$(WRENCHFOLDER)/wrenchbuild  pack assets $(WRENCHFOLDER)/overlay -a rac -o build/build.iso -h release --flusher-thread-hack
+
 clean:
 	rm -rf build
 	rm -rf code/_generated
