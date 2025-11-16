@@ -3,6 +3,7 @@ _start = 0x12d728;
 __main = 0x011dcc8;
 main = 0x12d9d8;
 
+// snd989
 snd_StartSoundSystem = 0x12da28;
 snd_FlushSoundCommands = 0x12dc80;
 snd_GotReturns = 0x12de70;
@@ -58,9 +59,11 @@ frm_clock_time = 0x15ed40;
 
 STUB_printf = 0x1e93b0;
 
-
+// game/bmain.cpp
 startlevel__Fv = 0x1e9658;
 ParseBin__Fv = 0x12d8f8;
+
+DAT_0015EE4C = 0x15EE4C;
 
 // game/framebuf.cpp
 SetBackgroundColor__Fiii = 0x1fb280;
