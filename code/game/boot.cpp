@@ -62,7 +62,7 @@ StartLevelPtr ParseBin() {
         chunk = (LevelLoad*)((u32)src + len);
     }
 
-#ifdef SKIP_ASM
+#ifndef SKIP_ASM
     asm("nop");
     asm("nop");
     asm("nop");
