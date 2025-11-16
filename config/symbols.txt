@@ -92,8 +92,10 @@ MobyInstanceEnd = 0x15ff1c;
 MobyInstancePermEnd = 0x15ff20;
 numSpawnableMobys = 0x15fefc;
 MobyVars = 0x15ff28;
+worldUpdateTime = 0x15f60c;
+s_tried_to_create_moby = 0x1e83c0;
 
-SpawnMoby__Fii = 0x20c4f8;
-InitMobyInstance__FP12MobyInstanceib = 0x20c5f0;
+CreateMoby__Fi = 0x20c4f8;
+InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
 
 D_152078 = 0x152078;
