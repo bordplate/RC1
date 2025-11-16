@@ -73,8 +73,9 @@ PutDrawBufferLarge__Fv = 0x1fb2d0;
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
 
-InitMemSlots = 0x2015d8;
-InitOnce = 0x201650;
+// game/initonce.cpp
+InitMemSlots__Fv = 0x2015d8;
+InitOnce__Fv = 0x201650;
 
 CreatePart = 0x217a30;
 UpdateParts = 0x217b88;
