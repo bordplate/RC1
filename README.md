@@ -1,11 +1,36 @@
-# RC1 Decomp
-Unpack NTSC Ratchet & Clank (SCUS\_971.99) with [Wrench](https://github.com/chaoticgd/wrench). Move the contents of `rac_scus_971_99` from Wrench to the `assets/` folder.  
+# Ratchet & Clank 1 decompilation
+**This project does not have active developers or maintainers.** It is provided as an initial project structure for someone wanting to pick up RC1 decompilation. The project is currently mostly empty, but builds a byte-for-byte matching binary. 
 
-When building, you should end up with a binary that matches the original game's boot binary byte for byte. There is no consideration for the game's overlays here yet. 
+A project aiming for matching decompilation of PS2 NTSC Ratchet & Clank (SCUS\_971.99). 
 
 Most of this project is built using the [Sly1 decomp](https://github.com/TheOnlyZac/sly1) as reference. They also have a lot of documentation on the practical stuff around how to decomp functions.
 
 ## Setup
+### Requirements
+* `Make` tools
+* `binutils-mips-linux-gnu` (see compiler installation section)
+* EE GCC compiler (see compiler installation section)
+* Python >3.9
+* Wine (on non-Windows systems to run the EE GCC compiler)
+* Cygwin/MSYS2 (on Windows)
+* [Wrench](https://github.com/chaoticgd/wrench)
+
+### Makefile
+Copy `userconfig.template.mk` to `userconfig.mk` and configure the following variables:
+```makefile
+# Full path or $PATH-relative to the prefix for the MIPS Linux GNU build tools
+CROSS = C:/msys64/mingw64/mips-linux-gnu/bin/mips-linux-gnu
+
+# Path to Wrench installation for building an ISO
+WRENCHFOLDER = C:\\Users\\bordplate\\Applications\\wrench_v0.5_windows
+```
+
+
+## Building
+Unpack NTSC Ratchet & Clank (SCUS\_971.99) with [Wrench](https://github.com/chaoticgd/wrench). Move the contents of `rac_scus_971_99` from Wrench to the `assets/` folder.  
+
+When building, you should end up with a binary that matches the original game's boot binary byte for byte. There is no consideration for the game's overlays here yet. 
+
 You need Python >3.9 to run [splat](https://github.com/ethteck/splat) to configure the thing. Install the requirements:
 ```sh
 # venv is optional, but recommended
@@ -21,6 +46,25 @@ make split  # runs `python -m splat split config/RC1.yaml --disassemble-all`
 # Compile
 make
 ```
+
+### Building an ISO
+You need to have `WRENCHBUILD` configured to a Wrench installation path in `userconfig.mk` to build an ISO. You need to instruct Wrench to use our newly built boot ELF instead of the original. In the unpacked `assets/` folder open `build.asset` and change the `ElfFile boot_elf` section to the following:
+```
+ElfFile boot_elf {
+    name: "scus_971.99"
+    src: "../build/boot_elf.elf"
+  }
+```
+
+To build the ISO run:
+```sh
+make iso
+```
+
+This builds an ISO to `build/build.iso`.
+
+> [!IMPORTANT]
+> Game ISOs built with Wrench currently result in glitchy model textures. This is expected and not a problem related to decompilation.
 
 ## Generated files
 Splat generates files based on the config in `config/RC1.yaml`. The generated code is taken from the original game and placed under `code/_generated/`.   
@@ -66,6 +110,8 @@ mipsel-linux-gnu-binutils
 ```
 
 ### Windows
+You need GNU tools available to run the Makefile. Use something like Cygwin or [MSYS2](https://www.msys2.org).
+
 You will need to bring in the `binutils-mips-linux-gnu` tools. You can do this with [MSYS2](https://www.msys2.org) by compiling
 the tools yourself. Open the MSYS2 MinGW64 terminal:
 ```sh
@@ -103,7 +149,7 @@ python -m pip install -r requirements.txt --user
 ```
 
 ## Decompiling
-Use [decomp.me](https://decomp.me/) with the EE GCC 2.95.2 (SN BUILD v2.74) compiler to try to match your decomp with the original assembly for the relevant function. You can generate the necessary context with the following command:
+Use [decomp.me](https://decomp.me/) with the EE GCC 2.95.2 (SN BUILD v2.73a) compiler to try to match your decomp with the original assembly for the relevant function. You can generate the necessary context with the following command:
 ```sh
 python tools/m2ctx/m2ctx.py <file containing function you're decompiling>
 ```
