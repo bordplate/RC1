@@ -1,5 +1,6 @@
 # Ratchet & Clank 1 decompilation
-**This project does not have active developers or maintainers.** It is provided as an initial project structure for someone wanting to pick up RC1 decompilation. The project is currently mostly empty, but builds a byte-for-byte matching binary. 
+> [!CAUTION]
+> **This project does not have active developers or maintainers.** It is provided as an initial project structure for someone wanting to pick up RC1 decompilation. The project is currently mostly empty, but builds a byte-for-byte matching binary. 
 
 A project aiming for matching decompilation of PS2 NTSC Ratchet & Clank (SCUS\_971.99). 
 
