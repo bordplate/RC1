@@ -90,6 +90,24 @@ DAT_0015EE4C = 0x15EE4C;
 SetBackgroundColor__Fiii = 0x1fb280;
 PutDispBuffer__Fv = 0x1fb2a8;
 PutDrawBufferLarge__Fv = 0x1fb2d0;
+SetupFS_AA_buffer__Fiiiiii = 0x1fa978;
+PutDrawBufferSmall__Fv = 0x1fb3d0;
+AA_BlurPass__Fv = 0x1fb680;
+
+// game/freeze.cpp
+mode_freezeInit = 0x1fbab8;
+DrawDialogText__Fv = 0x01fbc50;
+UpdateModeFreeze__Fv = 0x01fce28;
+
+// game/help.cpp
+Help_FindIndex = 0x001fdca0;
+msg_string__Fi = 0x01fdd10;
+GameMode = 0x15f604;
+Help = 0x01996fc;
+HelpMsgs = 0x015f6a0;
+s_Paradox_this_message_does_not = 0x199968;
+Help_Update = 0x01fde90;
+Help_DrawPrompt = 0x1fe898;
 
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
@@ -119,7 +137,6 @@ OcclUpdate = 0x18c334;
 InitViewContext__Fv = 0x1f2c60;
 UpdateViewContext__Fv = 0x1f2d98;
 SetPalMode__Fi = 0x1f34e8;
-SetupFS_AA_buffer__Fiiiiii = 0x1fa978;
 NTSCProgressive = 0x015ed80;
 ResetGsRegisters__Fv = 0x01f3868;
 ResetGsRegistersPr__Fv = 0x1f3958;
@@ -128,6 +145,8 @@ DoGifPaging__Fv = 0x1f4398;
 GetEffectTex__Fii = 0x1f44b8;
 VU1_syncChain__Fi = 0x2337b0;
 FadeToBlack__FiUi = 0x001f4a58;
+DrawTexturedQuad = 0x1f5450;
+DrawUIFrame = 0x1f5f18;
 
 
 TfragProc = 0x233fb0;
@@ -172,3 +191,41 @@ CreateMoby__Fi = 0x20c4f8;
 InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
 
 D_152078 = 0x152078;
+
+
+// fonts.cpp //
+FontPrintWindow = 0x1f7090;
+FontPrint = 0x1f62b0;
+FontPrintCenter = 0x01f6af0;
+FontPrintCenterLarge = 0x01f6c20;
+FontPrintCenterSmall = 0x01f6b88;
+FontPrintLarge = 0x01f6530;
+FontPrintSmall = 0x01f65b0;
+FontSetWindow = 0x01f7668;
+
+
+
+
+// fastfunc.s
+FastBSphereCheck = 0x1fa728;
+FastTweenColor = 0x1fa6e0;
+FastDiffRots__Fff = 0x001fa688;
+FastNormalizeAngle = 0x1fa610;
+FastSubRots__Fff = 0x001fa5c8;
+FastAddRots__Fff = 0x001fa580;
+FastArcTan__Fff = 0x001f9e90;
+FastArcSin__Ff = 0x001f9df8;
+FastSin__Ff = 0x001f9de0;
+FastCos = 0x01f9dc8;
+FastCountChars__FPvi = 0x01f9d98;
+FastVectorToPackedChars__FR4vec4 = 0x001f9d68;
+FastVectorFromPackedChars__FR4vec4i = 0x01f9d50;
+FastMemZero16__FPvi = 0x001f9810;
+FastDecTimer__FRs = 0x001f9770;
+FastSitAndSpin__Fi = 0x001f97c0;
+FastDecTimer__FRi = 0x001f9740;
+
+
+
+
+InputHandling = 0x217328;
