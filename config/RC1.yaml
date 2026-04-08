@@ -56,11 +56,11 @@ segments:
     subsegments:
     - [0x13300, asm, glibc]
     - [0x196d0, asm, sce/lib]
-    - [0x2e6a8, asm, sce/crt0] 
+    - [0x2e6a8, asm, sce/crt0]
     - [0x2e878, cpp, game/boot]
     - [0x2e9a8, c, 989snd/ee/989snd]
     - [0x30148, cpp, game/permcb]
-    - [0x30188, asm]
+    - [0x30188, cpp, game/wad]
 
   - name: core.data
     type: data
@@ -124,18 +124,44 @@ segments:
     subsegments:
     # .text
     - [0xe9c80, asm]
-
     - [0xea5d8, cpp, game/bmain]
-
     - [0xeaa38, asm]
-    - [0xfc200, cpp, game/framebuf]
-    - [0xfc2e8, asm]
+    - [0xecc10, cpp, game/camera]
+    - [0xed4b0, asm]
+    - [0xef5d0, asm, game/cmecpu]
+    - [0xf0948, asm, game/collproc]
+    - [0xf1b08, asm]
+    - [0xf3508, cpp, game/draw]
+    - [0xf7180, cpp, game/fonts] 
+    - [0xf8620, asm]
+    - [0xf8a18, asm, game/drawquad]
+    - [0xf9924, asm]
+    - [0xfa6c0, asm, game/fastfunc]
+    - [0xfb7e0, asm]
+    - [0xfb8f8, cpp, game/framebuf]
+    - [0xfca38, cpp, game/freeze]
+    - [0xfe660, asm]
+    - [0xfec20, cpp, game/help]
+    - [0xffc48, asm]
+    - [0xffdb8, cpp, game/hud]
+    - [0x101c00, asm]
+    - [0x1024a0, cpp, game/init]
     - [0x102558, cpp, game/initonce]
     - [0x1029a8, asm]
+    - [0x1029a8, cpp, game/lights]
+    - [0x1031f0, cpp, game/loaders]
+    - [0x105c70, asm]
+    - [0x109fb0, cpp, game/memcard]
+    - [0x10c340, asm, game/miscproc]
+    - [0x10c8d0, asm]
     - [0x10d478, cpp, game/mobyfunc]
-    - [0x10d7a8, asm]
+    - [0x10e7e8, asm, game/mobyproc]  # Insomniac handwrote this
+    - [0x113ba8, asm]
     - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
     - [0x119808, asm]
+    - [0x12cb20, asm, game/skyproc]
+    - [0x12d528, cpp, game/sound]
+    - [0x12ed90, asm]
     - [0x134f30, asm, game/tfragproc] # Insomniac handwrote this
     - [0x136700, asm]
 

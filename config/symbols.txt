@@ -1,4 +1,5 @@
 _start = 0x12d728;
+_exit = 0x12d8e8;
 
 __main = 0x011dcc8;
 main = 0x12d9d8;
@@ -54,6 +55,46 @@ snd_UnkFunction_0012f178 = 0x12f178;
 snd_GetDopplerPitchMod = 0x12f1a0;
 
 vsync_callback__Fi = 0x12f1c8;
+
+wad_GetSectors_FiiPv = 0x12f208;
+DrawRectOverlay_FiiiiUl = 0x01f52a0;
+
+// camera 
+Camera_ActivationCheckPriority = 0x01ec210;
+Camera_Exit__FP9UpdateCam = 0x1ec3d8;
+UpdateAllCameras__Fi = 0x1ec420;
+Camera_runSetupToNewCam__FP9UpdateCam = 0x1ebec8;
+Camera_handleCollWithHero__FiP9UpdateCam = 0x1ebe68;
+GameCamera = 0x187194;
+
+// mobyfunc
+DeleteMoby = 0x20c828;
+UpdateMobyGrids = 0x020dc20;
+Cam_InterpValues__FffPffff = 0x001ebd78;
+AttachManipulator = 0x0020cb10;
+DetachManipulator = 0x20cb88;
+ProcessMobyAnimData__Fv = 0x020d1a8;
+InitMobyClassDists__Fv = 0x020d1f0;
+StashMobyClassDists__Fv = 0x020d218;
+RestoreMobyClassDists__Fv = 0x0020d248;
+DrawMobysSetup__Fv = 0x20d278;
+DrawMobyList = 0x20d330;
+DrawMobysCleanUp = 0x020d3b0;
+DrawMobys = 0x020d460;
+CreateMoby__Fi = 0x20c4f8;
+InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
+
+// mobyproc
+MobyAnimProc = 0x211728;
+MobyProc = 0x00211808;
+
+
+
+ExecuteCamPostUpdFuncs = 0x01ebcf0;
+CamPostUpdRoutineCnt = 0x015ef8c;
+CamPostUpdRoutines = 0x01892b0;
+BackupCurrentCam = 0x01ebc90;
+
 frm_vsync_cnt = 0x15ed48;
 frm_clock_time = 0x15ed40;
 
@@ -69,18 +110,64 @@ DAT_0015EE4C = 0x15EE4C;
 SetBackgroundColor__Fiii = 0x1fb280;
 PutDispBuffer__Fv = 0x1fb2a8;
 PutDrawBufferLarge__Fv = 0x1fb2d0;
+SetupFS_AA_buffer__Fiiiiii = 0x1fa978;
+PutDrawBufferSmall__Fv = 0x1fb3d0;
+AA_BlurPass__Fv = 0x1fb680;
+
+// game/freeze.cpp
+mode_freezeInit = 0x1fbab8;
+DrawDialogText__Fv = 0x01fbc50;
+UpdateModeFreeze__Fv = 0x01fce28;
+
+// game/help.cpp
+Help_FindIndex = 0x001fdca0;
+msg_string__Fi = 0x01fdd10;
+GameMode = 0x15f604;
+Help = 0x01996fc;
+HelpMsgs = 0x015f6a0;
+s_Paradox_this_message_does_not = 0x199968;
+Help_Update = 0x01fde90;
+Help_DrawPrompt = 0x1fe898;
 
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
+FastMemCopy = 0x1f98d0;
 
 // game/initonce.cpp
 InitMemSlots__Fv = 0x2015d8;
 InitOnce__Fv = 0x201650;
+MemSlots = 0x001940c4;
 
 CreatePart = 0x217a30;
 UpdateParts = 0x217b88;
 PartProc = 0x217c18;
 _part_load_tex = 0x21880c;
+
+ParseOcclGrid = 0x1f2690;
+BuildOcclVisibility__Fv = 0x1f2820;
+GetOcclGridFromPair__Fiiiiiif = 0x1f2768;
+OcclInvalidGrid = 0x15f64c;
+OcclMode = 0x015f648;
+ResetDrawGlobals = 0x01f37e8;
+OcclOct = 0x015f644;
+Camera = 0x187080;
+UpdateOcclusion__Fv = 0x1f2c10;
+OcclUpdate = 0x18c334;
+InitViewContext__Fv = 0x1f2c60;
+UpdateViewContext__Fv = 0x1f2d98;
+SetPalMode__Fi = 0x1f34e8;
+NTSCProgressive = 0x015ed80;
+ResetGsRegisters__Fv = 0x01f3868;
+ResetGsRegistersPr__Fv = 0x1f3958;
+SetupGifPaging__Fi = 0x1f4280;
+DoGifPaging__Fv = 0x1f4398;
+GetEffectTex__Fii = 0x1f44b8;
+VU1_syncChain__Fi = 0x2337b0;
+FadeToBlack__FiUi = 0x001f4a58;
+DrawTexturedQuad = 0x1f5450;
+DrawUIFrame = 0x1f5f18;
+UpdateFog__Fi = 0x1f2588;
+
 
 TfragProc = 0x233fb0;
 ComputeTfragTextureUsage = 0x234bd8;
@@ -95,7 +182,155 @@ MobyVars = 0x15ff28;
 worldUpdateTime = 0x15f60c;
 s_tried_to_create_moby = 0x1e83c0;
 
-CreateMoby__Fi = 0x20c4f8;
-InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
+DmaMobyTextures = 0x20cdf0;
+PatchMobyGifs = 0x20cef8;
+MobyClassRectify = 0x001b6500;
+MobyClasses = 0x1b3200;
+MobyGsLocStash = 0x01b5d80;
+
+memcard_TestChecksum = 0x20ad38;
+memcard_PrepData = 0x20ad78;
+memcard_MakeWholeSave = 0x20abb0;
+memcard_GetName = 0x209030;
+
+memcard_RestoreGame = 0x209298;
+memcard_Update = 0x2093d8;
+memcard_RestoreData__FPcT0iP7mc_data = 0x20af20;
+memcard_Init = 0x20ac58;
+memcard_GetDataSize = 0x20ac88;
+memcard_Checksum = 0x20acc0;
+memcard_RestoreInfo__FPcii = 0x20ae60;
+memcard_Save__Fii = 0x20b178;
+
+mc_gamedata = 0x1a04c0;
+mc_leveldata = 0x1a07c0;
 
 D_152078 = 0x152078;
+
+// fonts.cpp //
+FontPrintWindow = 0x1f7090;
+FontPrint = 0x1f62b0;
+FontPrintCenter = 0x01f6af0;
+FontPrintCenterLarge = 0x01f6c20;
+FontPrintCenterSmall = 0x01f6b88;
+FontPrintLarge = 0x01f6530;
+FontPrintSmall = 0x01f65b0;
+FontSetWindow = 0x01f7668;
+
+// fastfunc.s
+FastBSphereCheck = 0x1fa728;
+FastTweenColor = 0x1fa6e0;
+FastDiffRots__Fff = 0x001fa688;
+FastNormalizeAngle = 0x1fa610;
+FastSubRots__Fff = 0x001fa5c8;
+FastAddRots__Fff = 0x001fa580;
+FastArcTan__Fff = 0x001f9e90;
+FastArcSin__Ff = 0x001f9df8;
+FastSin__Ff = 0x001f9de0;
+FastCos = 0x01f9dc8;
+FastCountChars__FPvi = 0x01f9d98;
+FastVectorToPackedChars__FR4vec4 = 0x001f9d68;
+FastVectorFromPackedChars__FR4vec4i = 0x01f9d50;
+FastMemZero16__FPvi = 0x001f9810;
+FastDecTimer__FRs = 0x001f9770;
+FastSitAndSpin__Fi = 0x001f97c0;
+FastDecTimer__FRi = 0x001f9740;
+
+// collproc
+_lookup_grid_pointer = 0x0441e88;
+CollLine_Fix = 0x1efa68;
+CollOutput = 0x00194100;
+MobyGrids = 0x01b76e0;
+
+// drawquad
+ScisAndRender = 0x001f83a4;
+writeGSHeader = 0x1f8364;
+writeSetupBlock = 0x1f82e4;
+FastDrawQuadReal = 0x1f7d30;
+FastIntersectVert = 0x1f7a98;
+
+// input
+InputHandling = 0x217328;
+
+// hud.cpp
+Hud_GetIconIndex__Fi = 0x001fee38;
+LinkHudBank__FiPc = 0x01fefc0;
+Hud_SendResidentBank__FiPcb = 0x1ff128;
+Hud_sendTexture__FPciiiii = 0x0200b10;
+Hud_HeapReset__Fv = 0x1ff260;
+Hud = 0x0019a3f4;
+Hud_HeapAlloc__FUiPcT1i = 0x01ff288;
+GetIconFrame__Fii = 0x1ff960;
+GetFrameTex__Fi = 0x01ffa10;
+
+// init 
+LoadIRXModule = 0x0201520; 
+
+// lights
+RefreshPointLight = 0x201f58;
+CreatePointLight = 0x201ba8;
+DetachPointLight__Fi = 0x00201f88;
+UpdateAllPointLights = 0x00201a28;
+
+// loaders.cpp
+LoadHudBanks__Fv = 0x0202a98;
+ParseParticleTexs = 0x2026c8;
+LoadCompressedHudBank__FiPc = 0x0202d10;
+SetUpVisGifViewer__FPiiiiii = 0x202fd0;
+ViewerGsRegs = 0x19e540;
+ChromeGsRegs = 0x019e6c0;
+GlassGsRegs = 0x019e6d8;
+ParseSpaceSceneChunk__Fi = 0x02049f0;
+
+// miscproc
+DmaToSpr = 0x0020b3c0;
+DmaToSprSync = 0x020b3e0;
+InitDma = 0x0020b418;
+FastDecompress = 0x0020b618;
+
+// skyproc
+SkySpriteProc = 0x22bba0;
+_ssp_load_tex = 0x022bec4;
+SkyBsphereCheck = 0x022c4c8;
+
+// sound
+sound_StopAllSounds__Fv = 0x0022dcd0;
+
+Transition_UpdateMovieCamera__Fv = 0x0022de10;
+
+// movie/vibuf.cpp
+viBufModifyPts__FP5ViBufP9TimeStamp = 0x023c6b8;
+setD4_CHCR__FUi = 0x23bb40;
+getFIFOindex__FP5ViBufPv = 0x023baf8;
+viBufDelete__FP5ViBuf = 0x0023c5b8;
+
+// movie/audiodec.cpp
+audioDecBeginPut__FP9_AudioDecPPUcPiT1T2 = 0x23ad58;
+audioDecEndPut__FP9_AudioDeci = 0x23ae28;
+sendToSPU__FP9_AudioDecPUcii = 0x23af18;
+audioDecReset__FP9_AudioDec = 0x023ad10;
+
+// movie/videodec.cpp
+cpy2area__FPUciT0iT0iT0i = 0x23b810;
+videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi = 0x23cac8;
+videoDecDelete__FP8VideoDec = 0x023cc38;
+
+// movie/readbuf.cpp
+readBufBeginPut__FP7ReadBufPPUc = 0x0023b960;
+readBufEndGet__FP7ReadBufi = 0x023ba20;
+
+// movie/vobuf.cpp
+voBufDecCount__FP5VoBuf = 0x023d340;
+voBufGetData__FP5VoBuf = 0x23d288;
+
+// tfragfunc.cpp
+SetTfragDists__Fv = 0x233068;
+
+// vuchain.cpp
+VU1_addDataRef__FPvi = 0x233830;
+VU0_loadMicroProgram__FPl = 0x02334d8;
+VU1_addGSregister__FUiUlb = 0x0233980;
+DMAC_VIF1_Enable__Fv = 0x0233d00;
+DMAC_VIF1_Disable__Fv = 0x0233d90;
+VU1_gsRegsNormal__Fv = 0x00233bc8;
+VU1_texFlush__Fv = 0x233c28;
