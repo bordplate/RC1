@@ -159,6 +159,9 @@ segments:
     - [0x113ba8, asm]
     - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
     - [0x119808, asm]
+    - [0x12cb20, asm, game/skyproc]
+    - [0x12d528, cpp, game/sound]
+    - [0x12ed90, asm]
     - [0x134f30, asm, game/tfragproc] # Insomniac handwrote this
     - [0x136700, asm]
 

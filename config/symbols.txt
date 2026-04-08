@@ -88,10 +88,6 @@ InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
 MobyAnimProc = 0x211728;
 MobyProc = 0x00211808;
 
-// vuchain.cpp
-VU1_addDataRef__FPvi = 0x233830;
-VU0_loadMicroProgram__FPl = 0x02334d8;
-VU1_addGSregister__FUiUlb = 0x0233980;
 
 
 ExecuteCamPostUpdFuncs = 0x01ebcf0;
@@ -291,3 +287,50 @@ DmaToSpr = 0x0020b3c0;
 DmaToSprSync = 0x020b3e0;
 InitDma = 0x0020b418;
 FastDecompress = 0x0020b618;
+
+// skyproc
+SkySpriteProc = 0x22bba0;
+_ssp_load_tex = 0x022bec4;
+SkyBsphereCheck = 0x022c4c8;
+
+// sound
+sound_StopAllSounds__Fv = 0x0022dcd0;
+
+Transition_UpdateMovieCamera__Fv = 0x0022de10;
+
+// movie/vibuf.cpp
+viBufModifyPts__FP5ViBufP9TimeStamp = 0x023c6b8;
+setD4_CHCR__FUi = 0x23bb40;
+getFIFOindex__FP5ViBufPv = 0x023baf8;
+viBufDelete__FP5ViBuf = 0x0023c5b8;
+
+// movie/audiodec.cpp
+audioDecBeginPut__FP9_AudioDecPPUcPiT1T2 = 0x23ad58;
+audioDecEndPut__FP9_AudioDeci = 0x23ae28;
+sendToSPU__FP9_AudioDecPUcii = 0x23af18;
+audioDecReset__FP9_AudioDec = 0x023ad10;
+
+// movie/videodec.cpp
+cpy2area__FPUciT0iT0iT0i = 0x23b810;
+videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi = 0x23cac8;
+videoDecDelete__FP8VideoDec = 0x023cc38;
+
+// movie/readbuf.cpp
+readBufBeginPut__FP7ReadBufPPUc = 0x0023b960;
+readBufEndGet__FP7ReadBufi = 0x023ba20;
+
+// movie/vobuf.cpp
+voBufDecCount__FP5VoBuf = 0x023d340;
+voBufGetData__FP5VoBuf = 0x23d288;
+
+// tfragfunc.cpp
+SetTfragDists__Fv = 0x233068;
+
+// vuchain.cpp
+VU1_addDataRef__FPvi = 0x233830;
+VU0_loadMicroProgram__FPl = 0x02334d8;
+VU1_addGSregister__FUiUlb = 0x0233980;
+DMAC_VIF1_Enable__Fv = 0x0233d00;
+DMAC_VIF1_Disable__Fv = 0x0233d90;
+VU1_gsRegsNormal__Fv = 0x00233bc8;
+VU1_texFlush__Fv = 0x233c28;
