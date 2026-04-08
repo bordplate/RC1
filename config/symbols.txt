@@ -1,4 +1,5 @@
 _start = 0x12d728;
+_exit = 0x12d8e8;
 
 __main = 0x011dcc8;
 main = 0x12d9d8;
@@ -54,6 +55,26 @@ snd_UnkFunction_0012f178 = 0x12f178;
 snd_GetDopplerPitchMod = 0x12f1a0;
 
 vsync_callback__Fi = 0x12f1c8;
+
+wad_GetSectors_FiiPv = 0x12f208;
+DrawRectOverlay_FiiiiUl = 0x01f52a0;
+
+Camera_ActivationCheckPriority = 0x01ec210;
+Camera_Exit__FP9UpdateCam = 0x1ec3d8;
+UpdateAllCameras__Fi = 0x1ec420;
+Camera_runSetupToNewCam__FP9UpdateCam = 0x1ebec8;
+Camera_handleCollWithHero__FiP9UpdateCam = 0x1ebe68;
+GameCamera = 0x187194;
+
+DeleteMoby = 0x20c828;
+UpdateMobyGrids = 0x020dc20;
+Cam_InterpValues__FffPffff = 0x001ebd78;
+
+ExecuteCamPostUpdFuncs = 0x01ebcf0;
+CamPostUpdRoutineCnt = 0x015ef8c;
+CamPostUpdRoutines = 0x01892b0;
+BackupCurrentCam = 0x01ebc90;
+
 frm_vsync_cnt = 0x15ed48;
 frm_clock_time = 0x15ed40;
 
@@ -72,6 +93,8 @@ PutDrawBufferLarge__Fv = 0x1fb2d0;
 
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
+FastMemCopy = 0x1f98d0;
+FastDrawQuadReal = 0x1f7d30;
 
 // game/initonce.cpp
 InitMemSlots__Fv = 0x2015d8;
@@ -81,6 +104,31 @@ CreatePart = 0x217a30;
 UpdateParts = 0x217b88;
 PartProc = 0x217c18;
 _part_load_tex = 0x21880c;
+
+ParseOcclGrid = 0x1f2690;
+ParseParticleTexs = 0x2026c8;
+BuildOcclVisibility__Fv = 0x1f2820;
+GetOcclGridFromPair__Fiiiiiif = 0x1f2768;
+OcclInvalidGrid = 0x15f64c;
+OcclMode = 0x015f648;
+ResetDrawGlobals = 0x01f37e8;
+OcclOct = 0x015f644;
+Camera = 0x187080;
+UpdateOcclusion__Fv = 0x1f2c10;
+OcclUpdate = 0x18c334;
+InitViewContext__Fv = 0x1f2c60;
+UpdateViewContext__Fv = 0x1f2d98;
+SetPalMode__Fi = 0x1f34e8;
+SetupFS_AA_buffer__Fiiiiii = 0x1fa978;
+NTSCProgressive = 0x015ed80;
+ResetGsRegisters__Fv = 0x01f3868;
+ResetGsRegistersPr__Fv = 0x1f3958;
+SetupGifPaging__Fi = 0x1f4280;
+DoGifPaging__Fv = 0x1f4398;
+GetEffectTex__Fii = 0x1f44b8;
+VU1_syncChain__Fi = 0x2337b0;
+FadeToBlack__FiUi = 0x001f4a58;
+
 
 TfragProc = 0x233fb0;
 ComputeTfragTextureUsage = 0x234bd8;
@@ -94,6 +142,31 @@ numSpawnableMobys = 0x15fefc;
 MobyVars = 0x15ff28;
 worldUpdateTime = 0x15f60c;
 s_tried_to_create_moby = 0x1e83c0;
+
+DmaMobyTextures = 0x20cdf0;
+PatchMobyGifs = 0x20cef8;
+MobyClassRectify = 0x001b6500;
+MobyClasses = 0x1b3200;
+MobyGsLocStash = 0x01b5d80;
+
+memcard_TestChecksum = 0x20ad38;
+memcard_PrepData = 0x20ad78;
+memcard_MakeWholeSave = 0x20abb0;
+memcard_GetName = 0x209030;
+
+memcard_RestoreGame = 0x209298;
+memcard_Update = 0x2093d8;
+memcard_RestoreData__FPcT0iP7mc_data = 0x20af20;
+memcard_Init = 0x20ac58;
+memcard_GetDataSize = 0x20ac88;
+memcard_Checksum = 0x20acc0;
+memcard_RestoreInfo__FPcii = 0x20ae60;
+memcard_Save__Fii = 0x20b178;
+
+
+
+mc_gamedata = 0x1a04c0;
+mc_leveldata = 0x1a07c0;
 
 CreateMoby__Fi = 0x20c4f8;
 InitMobyInstance__FP12MobyInstancei = 0x20c5f0;

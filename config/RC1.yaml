@@ -56,11 +56,11 @@ segments:
     subsegments:
     - [0x13300, asm, glibc]
     - [0x196d0, asm, sce/lib]
-    - [0x2e6a8, asm, sce/crt0] 
+    - [0x2e6a8, asm, sce/crt0]
     - [0x2e878, cpp, game/boot]
     - [0x2e9a8, c, 989snd/ee/989snd]
     - [0x30148, cpp, game/permcb]
-    - [0x30188, asm]
+    - [0x30188, cpp, game/wad]
 
   - name: core.data
     type: data
@@ -124,14 +124,18 @@ segments:
     subsegments:
     # .text
     - [0xe9c80, asm]
-
     - [0xea5d8, cpp, game/bmain]
-
     - [0xeaa38, asm]
+    - [0xecc10, cpp, game/camera]
+    - [0xed4b0, asm]
+    - [0xf3610, cpp, game/draw]
+    - [0xf7180, asm]
     - [0xfc200, cpp, game/framebuf]
     - [0xfc2e8, asm]
     - [0x102558, cpp, game/initonce]
     - [0x1029a8, asm]
+    - [0x109fb0, cpp, game/memcard]
+    - [0x10c340, asm]
     - [0x10d478, cpp, game/mobyfunc]
     - [0x10d7a8, asm]
     - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
