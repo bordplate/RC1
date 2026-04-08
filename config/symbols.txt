@@ -112,11 +112,11 @@ Help_DrawPrompt = 0x1fe898;
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
 FastMemCopy = 0x1f98d0;
-FastDrawQuadReal = 0x1f7d30;
 
 // game/initonce.cpp
 InitMemSlots__Fv = 0x2015d8;
 InitOnce__Fv = 0x201650;
+MemSlots = 0x001940c4;
 
 CreatePart = 0x217a30;
 UpdateParts = 0x217b88;
@@ -124,7 +124,6 @@ PartProc = 0x217c18;
 _part_load_tex = 0x21880c;
 
 ParseOcclGrid = 0x1f2690;
-ParseParticleTexs = 0x2026c8;
 BuildOcclVisibility__Fv = 0x1f2820;
 GetOcclGridFromPair__Fiiiiiif = 0x1f2768;
 OcclInvalidGrid = 0x15f64c;
@@ -147,6 +146,7 @@ VU1_syncChain__Fi = 0x2337b0;
 FadeToBlack__FiUi = 0x001f4a58;
 DrawTexturedQuad = 0x1f5450;
 DrawUIFrame = 0x1f5f18;
+UpdateFog__Fi = 0x1f2588;
 
 
 TfragProc = 0x233fb0;
@@ -225,7 +225,48 @@ FastDecTimer__FRs = 0x001f9770;
 FastSitAndSpin__Fi = 0x001f97c0;
 FastDecTimer__FRi = 0x001f9740;
 
+// collproc
+_lookup_grid_pointer = 0x0441e88;
+CollLine_Fix = 0x1efa68;
+CollOutput = 0x00194100;
+MobyGrids = 0x01b76e0;
 
+// drawquad
+ScisAndRender = 0x001f83a4;
+writeGSHeader = 0x1f8364;
+writeSetupBlock = 0x1f82e4;
+FastDrawQuadReal = 0x1f7d30;
+FastIntersectVert = 0x1f7a98;
 
-
+// input
 InputHandling = 0x217328;
+
+// hud.cpp
+Hud_GetIconIndex__Fi = 0x001fee38;
+LinkHudBank__FiPc = 0x01fefc0;
+Hud_SendResidentBank__FiPcb = 0x1ff128;
+Hud_sendTexture__FPciiiii = 0x0200b10;
+Hud_HeapReset__Fv = 0x1ff260;
+Hud = 0x0019a3f4;
+Hud_HeapAlloc__FUiPcT1i = 0x01ff288;
+GetIconFrame__Fii = 0x1ff960;
+GetFrameTex__Fi = 0x01ffa10;
+
+// init 
+LoadIRXModule = 0x0201520; 
+
+// lights
+RefreshPointLight = 0x201f58;
+CreatePointLight = 0x201ba8;
+DetachPointLight__Fi = 0x00201f88;
+UpdateAllPointLights = 0x00201a28;
+
+// loaders.cpp
+LoadHudBanks__Fv = 0x0202a98;
+ParseParticleTexs = 0x2026c8;
+LoadCompressedHudBank__FiPc = 0x0202d10;
+SetUpVisGifViewer__FPiiiiii = 0x202fd0;
+ViewerGsRegs = 0x19e540;
+ChromeGsRegs = 0x019e6c0;
+GlassGsRegs = 0x019e6d8;
+ParseSpaceSceneChunk__Fi = 0x02049f0;
