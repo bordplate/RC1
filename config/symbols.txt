@@ -59,6 +59,7 @@ vsync_callback__Fi = 0x12f1c8;
 wad_GetSectors_FiiPv = 0x12f208;
 DrawRectOverlay_FiiiiUl = 0x01f52a0;
 
+// camera 
 Camera_ActivationCheckPriority = 0x01ec210;
 Camera_Exit__FP9UpdateCam = 0x1ec3d8;
 UpdateAllCameras__Fi = 0x1ec420;
@@ -66,9 +67,32 @@ Camera_runSetupToNewCam__FP9UpdateCam = 0x1ebec8;
 Camera_handleCollWithHero__FiP9UpdateCam = 0x1ebe68;
 GameCamera = 0x187194;
 
+// mobyfunc
 DeleteMoby = 0x20c828;
 UpdateMobyGrids = 0x020dc20;
 Cam_InterpValues__FffPffff = 0x001ebd78;
+AttachManipulator = 0x0020cb10;
+DetachManipulator = 0x20cb88;
+ProcessMobyAnimData__Fv = 0x020d1a8;
+InitMobyClassDists__Fv = 0x020d1f0;
+StashMobyClassDists__Fv = 0x020d218;
+RestoreMobyClassDists__Fv = 0x0020d248;
+DrawMobysSetup__Fv = 0x20d278;
+DrawMobyList = 0x20d330;
+DrawMobysCleanUp = 0x020d3b0;
+DrawMobys = 0x020d460;
+CreateMoby__Fi = 0x20c4f8;
+InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
+
+// mobyproc
+MobyAnimProc = 0x211728;
+MobyProc = 0x00211808;
+
+// vuchain.cpp
+VU1_addDataRef__FPvi = 0x233830;
+VU0_loadMicroProgram__FPl = 0x02334d8;
+VU1_addGSregister__FUiUlb = 0x0233980;
+
 
 ExecuteCamPostUpdFuncs = 0x01ebcf0;
 CamPostUpdRoutineCnt = 0x015ef8c;
@@ -182,16 +206,10 @@ memcard_Checksum = 0x20acc0;
 memcard_RestoreInfo__FPcii = 0x20ae60;
 memcard_Save__Fii = 0x20b178;
 
-
-
 mc_gamedata = 0x1a04c0;
 mc_leveldata = 0x1a07c0;
 
-CreateMoby__Fi = 0x20c4f8;
-InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
-
 D_152078 = 0x152078;
-
 
 // fonts.cpp //
 FontPrintWindow = 0x1f7090;
@@ -202,9 +220,6 @@ FontPrintCenterSmall = 0x01f6b88;
 FontPrintLarge = 0x01f6530;
 FontPrintSmall = 0x01f65b0;
 FontSetWindow = 0x01f7668;
-
-
-
 
 // fastfunc.s
 FastBSphereCheck = 0x1fa728;
@@ -270,3 +285,9 @@ ViewerGsRegs = 0x19e540;
 ChromeGsRegs = 0x019e6c0;
 GlassGsRegs = 0x019e6d8;
 ParseSpaceSceneChunk__Fi = 0x02049f0;
+
+// miscproc
+DmaToSpr = 0x0020b3c0;
+DmaToSprSync = 0x020b3e0;
+InitDma = 0x0020b418;
+FastDecompress = 0x0020b618;

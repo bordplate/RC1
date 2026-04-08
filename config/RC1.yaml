@@ -152,9 +152,11 @@ segments:
     - [0x1031f0, cpp, game/loaders]
     - [0x105c70, asm]
     - [0x109fb0, cpp, game/memcard]
-    - [0x10c340, asm]
+    - [0x10c340, asm, game/miscproc]
+    - [0x10c8d0, asm]
     - [0x10d478, cpp, game/mobyfunc]
-    - [0x10d7a8, asm]
+    - [0x10e7e8, asm, game/mobyproc]  # Insomniac handwrote this
+    - [0x113ba8, asm]
     - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
     - [0x119808, asm]
     - [0x134f30, asm, game/tfragproc] # Insomniac handwrote this

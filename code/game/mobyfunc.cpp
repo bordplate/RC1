@@ -75,4 +75,59 @@ MobyInstance* CreateMoby(s32 oClass) {
 
 #endif
 
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", InitMobyInstance__FP12MobyInstancei);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DeleteMoby);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020C880);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020C940);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020C9D8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CAD8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", AttachManipulator);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DetachManipulator);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CC18);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CC60);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CCA8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CD48);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CDE8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DmaMobyTextures);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", PatchMobyGifs);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CFD0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D060);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", ProcessMobyAnimData__Fv);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", InitMobyClassDists__Fv);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", StashMobyClassDists__Fv);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", RestoreMobyClassDists__Fv);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobysSetup__Fv);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobyList);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobysCleanUp);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobys);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D4E0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D510);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D580);

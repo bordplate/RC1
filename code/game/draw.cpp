@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", UpdateFog__Fi);
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", ParseOcclGrid);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", GetOcclGridFromPair__Fiiiiiif);
@@ -62,7 +64,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DrawRectOverlay_FiiiiUl);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F5448);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F5450);
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DrawTexturedQuad);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F55D8);
 
@@ -72,7 +74,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F5AB0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F5F10);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F5F18);
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DrawUIFrame);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6060);
 
