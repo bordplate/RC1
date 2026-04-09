@@ -12,7 +12,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022C830);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022C8D0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022CA50);
+INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_update);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022D708);
 

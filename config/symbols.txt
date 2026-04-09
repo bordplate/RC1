@@ -168,12 +168,10 @@ DrawTexturedQuad = 0x1f5450;
 DrawUIFrame = 0x1f5f18;
 UpdateFog__Fi = 0x1f2588;
 
-
 TfragProc = 0x233fb0;
 ComputeTfragTextureUsage = 0x234bd8;
 BuildTfragTextureDma = 0x234d48;
 LightTfrags = 0x234f98;
-ResetTieLightingCache = 0x235640;
 
 MobyInstanceEnd = 0x15ff1c;
 MobyInstancePermEnd = 0x15ff20;
@@ -249,8 +247,7 @@ writeSetupBlock = 0x1f82e4;
 FastDrawQuadReal = 0x1f7d30;
 FastIntersectVert = 0x1f7a98;
 
-// input
-InputHandling = 0x217328;
+
 
 // hud.cpp
 Hud_GetIconIndex__Fi = 0x001fee38;
@@ -295,6 +292,7 @@ SkyBsphereCheck = 0x022c4c8;
 
 // sound
 sound_StopAllSounds__Fv = 0x0022dcd0;
+sound_update = 0x22ca50;
 
 Transition_UpdateMovieCamera__Fv = 0x0022de10;
 
@@ -325,6 +323,9 @@ voBufGetData__FP5VoBuf = 0x23d288;
 
 // tfragfunc.cpp
 SetTfragDists__Fv = 0x233068;
+PatchTfragGifs__Fv = 0x0233308;
+DrawTfrag = 0x2333a8;
+DmaTfragTextures__Fv = 0x02331c0;
 
 // vuchain.cpp
 VU1_addDataRef__FPvi = 0x233830;
@@ -333,4 +334,55 @@ VU1_addGSregister__FUiUlb = 0x0233980;
 DMAC_VIF1_Enable__Fv = 0x0233d00;
 DMAC_VIF1_Disable__Fv = 0x0233d90;
 VU1_gsRegsNormal__Fv = 0x00233bc8;
-VU1_texFlush__Fv = 0x233c28;
+VU1_texFlush__Fv = 0x233b68;
+VU1_sendChain__Fv = 0x02336a0;
+VU1_swapChain__Fv = 0x0233630;
+VU1_initChain__Fv = 0x02335d0;
+VU1_setScissor__Fiiii = 0x233a40;
+
+// bloaders
+LoadPifAsPSMT8H = 0x1e9168;
+LoadDebugFont = 0x1e9338;
+
+
+
+// music.cpp
+music_PreseekTrack__Fiii = 0x215b68;
+music_StartTrack__Fiii = 0x0215c40;
+music_StartTrackBody__Fiii = 0x215d18;
+music_Transition__Fiiii = 0x00215e00;
+music_Stop__Fv = 0x215ee8;
+music_Pause__Fi = 0x216050;
+music_Unpause__Fv = 0x0216088;
+music_UpdateStream__FR13music_Playing = 0x2160a8;
+music_Update__Fv = 0x216290;
+
+// stream.cpp
+Load = 0x00216828;
+
+
+// input
+InputHandling = 0x217328;
+
+// skyfunc
+SkyFunc_UNK_FUN_0022AC30 = 0x22ac30;
+SetupSkyGifPaging__Fv = 0x022b4c8;
+DoSkyGifPaging__Fv = 0x22b558;
+SkyLevelGeneric___maybe = 0x022ae70;
+SkyDrawShell__Fi = 0x22b690;
+SkyDrawShellTextured = 0x22b6e8;
+SkyDrawShellGouraud = 0x0022b928;
+
+// transition
+Transition_DrawSky__Fv = 0x1e9ab8;
+
+// tiefunc
+DmaTieTextures__Fv = 0x0235640;
+DrawTies_1 = 0x002358c8;
+DrawTies_2 = 0x235990;
+PatchTieGifs = 0x0235780;
+
+// tieproc 
+BuildTieTextureDma = 0x02370c0;
+TieProc = 0x235be8;
+LightTies = 0x0237370;
