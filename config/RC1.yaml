@@ -124,7 +124,9 @@ segments:
     subsegments:
     # .text
     - [0xe9c80, asm]
-    - [0xea5d8, cpp, game/bmain]
+    - [0xea0e8, cpp, game/bloaders]
+    - [0xea330, asm, game/stub]
+    - [0xea408, cpp, game/bmain]
     - [0xeaa38, asm]
     - [0xecc10, cpp, game/camera]
     - [0xed4b0, asm]
@@ -157,13 +159,23 @@ segments:
     - [0x10d478, cpp, game/mobyfunc]
     - [0x10e7e8, asm, game/mobyproc]  # Insomniac handwrote this
     - [0x113ba8, asm]
+    - [0x116310, cpp, game/music]
+    - [0x117668, cpp, game/stream]
+    - [0x117bc8, asm]
+    - [0x118048, cpp, game/pad]
     - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
-    - [0x119808, asm]
+    - [0x119808, cpp, game/partupd]
+    - [0x119c90, asm]
+    - [0x12bbb0, cpp, game/skyfunc]
     - [0x12cb20, asm, game/skyproc]
     - [0x12d528, cpp, game/sound]
     - [0x12ed90, asm]
+    - [0x133fe8, cpp, game/tfragfunc]
+    - [0x134458, cpp, game/vuchain]
     - [0x134f30, asm, game/tfragproc] # Insomniac handwrote this
-    - [0x136700, asm]
+    - [0x1365c0, cpp, game/tiefunc]
+    - [0x136b68, asm, game/tieproc]
+    - [0x1389f0, asm]
 
   - [0x13e2e0, databin, overlays]
   - [0x1510EA, databin, section_headers]  # section headers
