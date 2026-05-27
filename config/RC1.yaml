@@ -129,7 +129,7 @@ segments:
     - [0xea408, cpp, game/bmain]
     - [0xeaa38, cpp, game/transition]
     - [0xecc10, cpp, game/camera]
-    - [0xeebd0, cpp, game/effects]
+    - [0xeebd0, cpp, game/effects] # Probably the wrong name for this, but it's neither camera or cmecpu 
     - [0xef5d0, asm, game/cmecpu]
     - [0xf0948, asm, game/collproc]
     - [0xf1b08, cpp, game/draw]
@@ -153,7 +153,7 @@ segments:
     - [0x10c8d0, asm]
     - [0x10d478, cpp, game/mobyfunc]
     - [0x10e7e8, asm, game/mobyproc]  # Insomniac handwrote this
-    - [0x113ba8, asm]
+    - [0x113ba8, cpp, game/mobyutil]  # Not sure about this split, could be something towards the end of this file that isnt related to mobyutil
     - [0x116310, cpp, game/music]
     - [0x117668, cpp, game/stream]
     - [0x117bc8, asm]
@@ -171,6 +171,15 @@ segments:
     - [0x1365c0, cpp, game/tiefunc]
     - [0x136b68, asm, game/tieproc]
     - [0x1389f0, asm]
+    - [0x13b338, cpp, game/movie/movie]
+    - [0x13bb50, cpp, game/movie/audiodec]
+    - [0x13c190, cpp, game/movie/disp]
+    - [0x13c570, cpp, game/movie/read]
+    - [0x13c8c0, cpp, game/movie/readbuf]
+    - [0x13c9c8, cpp, game/movie/strfile]
+    - [0x13ca78, cpp, game/movie/vibuf]
+    - [0x13da48, cpp, game/movie/videodec]
+    - [0x13e110, cpp, game/movie/vobuf]
 
   - [0x13e2e0, databin, overlays]
   - [0x1510EA, databin, section_headers]  # section headers

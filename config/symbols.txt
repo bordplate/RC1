@@ -50,8 +50,8 @@ snd_InitMovieSound = 0x12f068;
 snd_ResetMovieSound = 0x12f0a8;
 snd_CloseMovieSound = 0x12f0e0;
 snd_StartMovieSound = 0x12f108;
-snd_UnkFunction_0012f148 = 0x12f148;
-snd_UnkFunction_0012f178 = 0x12f178;
+snd_UpdateMovieADPCM = 0x12f148;
+snd_GetMovieNAX = 0x12f178;
 snd_GetDopplerPitchMod = 0x12f1a0;
 
 vsync_callback__Fi = 0x12f1c8;
@@ -319,28 +319,95 @@ FUN_0022de10_rename = 0x0022de10;
 
 // movie/vibuf.cpp
 viBufModifyPts__FP5ViBufP9TimeStamp = 0x023c6b8;
-setD4_CHCR__FUi = 0x23bb40;
+setD3_CHCR__FUi = 0x23bb40;
+setD4_CHCR__FUi = 0x23bbb0;
 getFIFOindex__FP5ViBufPv = 0x023baf8;
 viBufDelete__FP5ViBuf = 0x0023c5b8;
+viBufCount__FP5ViBuf = 0x023c610;
+viBufPutTs__FP5ViBufP9TimeStamp = 0x023c810;
+viBufBeginPut__FP5ViBufPPUcPiT1T2 = 0x023be20;
+viBufGetTs__FP5ViBufP9TimeStamp = 0x23c920;
+viBufFlush__FP5ViBuf = 0x23c660;
+viBufRestartDMA__FP5ViBuf = 0x23c280;
+viBufStopDMA__FP5ViBuf = 0x023c170;
+viBufAddDMA__FP5ViBuf = 0x023bf70;
+viBufEndPut__FP5ViBufi = 0x023bf18;
+viBufReset__FP5ViBuf = 0x23bcc0;
+viBufCreate = 0x023bc48;
+scTag2 = 0x23bc20;
+
 
 // movie/audiodec.cpp
 audioDecBeginPut__FP9_AudioDecPPUcPiT1T2 = 0x23ad58;
 audioDecEndPut__FP9_AudioDeci = 0x23ae28;
 sendToSPU__FP9_AudioDecPUcii = 0x23af18;
 audioDecReset__FP9_AudioDec = 0x023ad10;
+sendADPCM__FP9_AudioDec = 0x023afc0;
+audioDecSend = 0x023aef0;
+audioDecStart = 0x23acb8;
+audioDecDelete__FP9_AudioDec = 0x0023ac90;
+audioDecCreate__FP9_AudioDecPUci14sceMpegStrType = 0x023abd0;
 
 // movie/videodec.cpp
-cpy2area__FPUciT0iT0iT0i = 0x23b810;
 videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi = 0x23cac8;
 videoDecDelete__FP8VideoDec = 0x023cc38;
+videoDecGetState = 0x023cc80;
+decBs0__FP8VideoDec = 0x23cec8;
+mpegError__FP7sceMpegP18sceMpegCbDataErrorPv = 0x23d080;
+mpegNodata__FP7sceMpegP13sceMpegCbDataPv = 0x023d0a8;
+videoDecMain__FPv = 0x023ce28;
+videoDecSetState__FP8VideoDecUi = 0x23cc88;
+videoDecInputCount__FP8VideoDec = 0x023cce0;
+videoDecIsFlushed__FP8VideoDec = 0x023cde0;
+videoDecEndPut__FP8VideoDec = 0x023cc10;
+videoDecFlush__FP8VideoDec = 0x23cd08;
+videoDecPutTs__FP8VideoDecllPUci = 0x23cc98;
+videoDecAbort__FP8VideoDec = 0x0023cc70;
+videoDecReset__FP8VideoDec = 0x23cc30;
+videoDecBeginPut__FP8VideoDecPPUcPiT1T2 = 0x023cbf0;
+videoDecSetStream__FP8VideoDeciiPFP7sceMpegP13sceMpegCbDataPv_iPv = 0x23cbd0;
 
 // movie/readbuf.cpp
-readBufBeginPut__FP7ReadBufPPUc = 0x0023b960;
+readBufBeginGet__FP7ReadBufPPUc = 0x23b9d8;
+readBufBeginPut__FP7ReadBufPPUc = 0x23b960;
+readBufEndPut__FP7ReadBufi = 0x23b990;
 readBufEndGet__FP7ReadBufi = 0x023ba20;
+readBufDelete__FP7ReadBuf = 0x023b958;
+readBufCreate__FP7ReadBuf = 0x23b940;
+
+// movie/read.cpp
+cpy2area__FPUciT0iT0iT0i = 0x23b810;
+pcmCallback__FP7sceMpegP16sceMpegCbDataStrPv = 0x023b728;
+videoCallback = 0x23b5f0;
+
 
 // movie/vobuf.cpp
 voBufDecCount__FP5VoBuf = 0x023d340;
 voBufGetData__FP5VoBuf = 0x23d288;
+voBufGetTag__FP5VoBuf = 0x023d2d8;
+voBufIsEmpty = 0x23d2c8;
+voBufIncCount__FP5VoBuf = 0x023d210;
+voBufIsFull__FP5VoBuf = 0x023d1f8;
+voBufReset__FP5VoBuf = 0x023d1e8;
+voBufDelete__FP5VoBuf = 0x23d1e0;
+voBufCreate__FP5VoBufP6VoDataP5VoTagi = 0x023d190;
+
+// movie/disp.cpp 
+handler_endimage = 0x23b540;
+setImageTag = 0x0023b210;
+endDisplay__Fv = 0x23b5e0;
+startDisplay__Fi = 0x023b590;
+vblankHandler = 0x0023b3d8;
+
+// movie/movie.cpp
+switchThread = 0x0023a770;
+proceedAudio__Fv = 0x23aba0;
+ErrMessage = 0x023ab78;
+termAll__Fv = 0x023aa68;
+initAll__Fiii = 0x023a7c0;
+isAudioOK = 0x23a790;
+readMpeg__FP8VideoDecP7ReadBufP7StrFile = 0x0023a460;
+movie__FiiPFUiUi_Pvii = 0x04ef658;
 
 // tfragfunc.cpp
 SetTfragDists__Fv = 0x233068;
