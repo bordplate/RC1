@@ -59,6 +59,8 @@ vsync_callback__Fi = 0x12f1c8;
 wad_GetSectors_FiiPv = 0x12f208;
 DrawRectOverlay_FiiiiUl = 0x01f52a0;
 
+DrawDebugProfiler = 0x001f39d0;
+
 // camera 
 Camera_ActivationCheckPriority = 0x01ec210;
 Camera_Exit__FP9UpdateCam = 0x1ec3d8;
@@ -247,6 +249,11 @@ FastMemZero16__FPvi = 0x001f9810;
 FastDecTimer__FRs = 0x001f9770;
 FastSitAndSpin__Fi = 0x001f97c0;
 FastDecTimer__FRi = 0x001f9740;
+FastVecLength = 0x1f9af0;
+FastVecDot = 0x1f9ab0;
+FastVecNormalize = 0x001f9bf8;
+FastVecSub = 0x01f9a28;
+FastVecCross = 0x01f9ad8;
 
 // collproc
 _lookup_grid_pointer = 0x0441e88;
