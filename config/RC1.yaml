@@ -123,11 +123,11 @@ segments:
 
     subsegments:
     # .text
-    - [0xe9c80, asm]
+    - [0xe9c80, cpp, game/actuator]
     - [0xea0e8, cpp, game/bloaders]
     - [0xea330, asm, game/stub]
     - [0xea408, cpp, game/bmain]
-    - [0xeaa38, asm]
+    - [0xeaa38, cpp, game/transition]
     - [0xecc10, cpp, game/camera]
     - [0xed4b0, asm]
     - [0xef5d0, asm, game/cmecpu]

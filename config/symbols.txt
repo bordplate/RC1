@@ -100,9 +100,23 @@ frm_clock_time = 0x15ed40;
 
 STUB_printf = 0x1e93b0;
 
+// game/actuator.cpp
+ActuatorWave = 0x00165480;
+actuator_CalcPower = 0x001e8d08;
+
+OcclVisibility = 0x00193fc0;
+
 // game/bmain.cpp
 startlevel__Fv = 0x1e9658;
 ParseBin__Fv = 0x12d8f8;
+
+// transition
+Transition_DefaultDraw__Fb = 0x001eb410;
+Transition_UpdateMovieCamera__Fv = 0x01eaf88;
+Transition_DrawSky__Fv = 0x1e9ab8;
+Transition_FUN_001eb0a8 = 0x1eb0a8;
+Transition_LoadWad = 0x01ea830;
+Transition_DoTransition__Fv = 0x001eb798;
 
 DAT_0015EE4C = 0x15EE4C;
 
@@ -294,7 +308,7 @@ SkyBsphereCheck = 0x022c4c8;
 sound_StopAllSounds__Fv = 0x0022dcd0;
 sound_update = 0x22ca50;
 
-Transition_UpdateMovieCamera__Fv = 0x0022de10;
+FUN_0022de10_rename = 0x0022de10;
 
 // movie/vibuf.cpp
 viBufModifyPts__FP5ViBufP9TimeStamp = 0x023c6b8;
@@ -373,8 +387,7 @@ SkyDrawShell__Fi = 0x22b690;
 SkyDrawShellTextured = 0x22b6e8;
 SkyDrawShellGouraud = 0x0022b928;
 
-// transition
-Transition_DrawSky__Fv = 0x1e9ab8;
+
 
 // tiefunc
 DmaTieTextures__Fv = 0x0235640;
