@@ -135,6 +135,35 @@ mode_freezeInit = 0x1fbab8;
 DrawDialogText__Fv = 0x01fbc50;
 UpdateModeFreeze__Fv = 0x01fce28;
 
+// game/map.cpp
+UNK_NoMapAvailable = 0x0205640;
+
+// game/pause.cpp
+PauseAllSounds = 0x00218d78;
+DrawMapScreen = 0x0021be60;
+SoundOptionsMenu = 0x0021cb30;
+LoadHandGadget = 0x00224368;
+DrawSoundMenu = 0x0021ce00;
+DrawQuitGameMenu = 0x0021e890;
+DrawItemsMenu = 0x21eb20;
+DrawGBsShipMenu__maybe = 0x21ef78;
+DrawMissionsMenu = 0x021f368;
+DrawMissionsMenu2 = 0x021f688;
+LoadingDataMenu = 0x2232d8;
+SavingDataMenu = 0x0222f88;
+SavingDataMenu2 = 0x02235b8;
+DrawCheckingMemoryCardDataMenu = 0x220348;
+DrawCheatsMenu = 0x221030;
+ObtainAllGoldWeaponsMenu = 0x0222948;
+DrawEndScreenMenuMaybe = 0x00222a98;
+
+
+// game/shrub something
+DrawShrubs = 0x00228b38;
+ShrubProc = 0x00228be8;
+DmaShrubTextures = 0x02288f0;
+BuildShrubTextureDma = 0x22a330;
+
 // game/help.cpp
 Help_FindIndex = 0x001fdca0;
 msg_string__Fi = 0x01fdd10;
@@ -300,6 +329,9 @@ ChromeGsRegs = 0x019e6c0;
 GlassGsRegs = 0x019e6d8;
 ParseSpaceSceneChunk__Fi = 0x02049f0;
 
+// space.cpp
+DoSpaceTransition = 0x231ff0;
+
 // miscproc
 DmaToSpr = 0x0020b3c0;
 DmaToSprSync = 0x020b3e0;
@@ -449,8 +481,12 @@ music_Update__Fv = 0x216290;
 Load = 0x00216828;
 
 
-// input
-InputHandling = 0x217328;
+// pad.cpp
+ProcessPadInput__FR3PADPUci = 0x217328;
+UpdatePad__FR3PAD = 0x2170c8;
+ClearPadInput__FR3PAD = 0x002172c0;
+UpdatePad__Fv = 0x00217a10;
+scePad2Read = 0x124bd8;
 
 // skyfunc
 SkyFunc_UNK_FUN_0022AC30 = 0x22ac30;

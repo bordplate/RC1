@@ -1,9 +1,9 @@
 #include "common.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pad", func_002170C8);
+INCLUDE_ASM("code/_generated/nonmatchings/game/pad", UpdatePad__FR3PAD);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pad", func_002172C0);
+INCLUDE_ASM("code/_generated/nonmatchings/game/pad", ClearPadInput__FR3PAD);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pad", InputHandling);
+INCLUDE_ASM("code/_generated/nonmatchings/game/pad", ProcessPadInput__FR3PADPUci);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pad", func_00217A10);
+INCLUDE_ASM("code/_generated/nonmatchings/game/pad", UpdatePad__Fv);
