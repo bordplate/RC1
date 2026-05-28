@@ -1,6 +1,10 @@
 #include "common.h"
 #include "types.h"
 
+INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FA860);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FA958);
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", SetupFS_AA_buffer__Fiiiiii);
 
 extern s64 D_152078 __attribute__((section(".data")));

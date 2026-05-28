@@ -50,14 +50,16 @@ snd_InitMovieSound = 0x12f068;
 snd_ResetMovieSound = 0x12f0a8;
 snd_CloseMovieSound = 0x12f0e0;
 snd_StartMovieSound = 0x12f108;
-snd_UnkFunction_0012f148 = 0x12f148;
-snd_UnkFunction_0012f178 = 0x12f178;
+snd_UpdateMovieADPCM = 0x12f148;
+snd_GetMovieNAX = 0x12f178;
 snd_GetDopplerPitchMod = 0x12f1a0;
 
 vsync_callback__Fi = 0x12f1c8;
 
 wad_GetSectors_FiiPv = 0x12f208;
 DrawRectOverlay_FiiiiUl = 0x01f52a0;
+
+DrawDebugProfiler = 0x001f39d0;
 
 // camera 
 Camera_ActivationCheckPriority = 0x01ec210;
@@ -100,9 +102,23 @@ frm_clock_time = 0x15ed40;
 
 STUB_printf = 0x1e93b0;
 
+// game/actuator.cpp
+ActuatorWave = 0x00165480;
+actuator_CalcPower = 0x001e8d08;
+
+OcclVisibility = 0x00193fc0;
+
 // game/bmain.cpp
 startlevel__Fv = 0x1e9658;
 ParseBin__Fv = 0x12d8f8;
+
+// transition
+Transition_DefaultDraw__Fb = 0x001eb410;
+Transition_UpdateMovieCamera__Fv = 0x01eaf88;
+Transition_DrawSky__Fv = 0x1e9ab8;
+Transition_FUN_001eb0a8 = 0x1eb0a8;
+Transition_LoadWad = 0x01ea830;
+Transition_DoTransition__Fv = 0x001eb798;
 
 DAT_0015EE4C = 0x15EE4C;
 
@@ -118,6 +134,35 @@ AA_BlurPass__Fv = 0x1fb680;
 mode_freezeInit = 0x1fbab8;
 DrawDialogText__Fv = 0x01fbc50;
 UpdateModeFreeze__Fv = 0x01fce28;
+
+// game/map.cpp
+UNK_NoMapAvailable = 0x0205640;
+
+// game/pause.cpp
+PauseAllSounds = 0x00218d78;
+DrawMapScreen = 0x0021be60;
+SoundOptionsMenu = 0x0021cb30;
+LoadHandGadget = 0x00224368;
+DrawSoundMenu = 0x0021ce00;
+DrawQuitGameMenu = 0x0021e890;
+DrawItemsMenu = 0x21eb20;
+DrawGBsShipMenu__maybe = 0x21ef78;
+DrawMissionsMenu = 0x021f368;
+DrawMissionsMenu2 = 0x021f688;
+LoadingDataMenu = 0x2232d8;
+SavingDataMenu = 0x0222f88;
+SavingDataMenu2 = 0x02235b8;
+DrawCheckingMemoryCardDataMenu = 0x220348;
+DrawCheatsMenu = 0x221030;
+ObtainAllGoldWeaponsMenu = 0x0222948;
+DrawEndScreenMenuMaybe = 0x00222a98;
+
+
+// game/shrub something
+DrawShrubs = 0x00228b38;
+ShrubProc = 0x00228be8;
+DmaShrubTextures = 0x02288f0;
+BuildShrubTextureDma = 0x22a330;
 
 // game/help.cpp
 Help_FindIndex = 0x001fdca0;
@@ -233,6 +278,11 @@ FastMemZero16__FPvi = 0x001f9810;
 FastDecTimer__FRs = 0x001f9770;
 FastSitAndSpin__Fi = 0x001f97c0;
 FastDecTimer__FRi = 0x001f9740;
+FastVecLength = 0x1f9af0;
+FastVecDot = 0x1f9ab0;
+FastVecNormalize = 0x001f9bf8;
+FastVecSub = 0x01f9a28;
+FastVecCross = 0x01f9ad8;
 
 // collproc
 _lookup_grid_pointer = 0x0441e88;
@@ -279,6 +329,9 @@ ChromeGsRegs = 0x019e6c0;
 GlassGsRegs = 0x019e6d8;
 ParseSpaceSceneChunk__Fi = 0x02049f0;
 
+// space.cpp
+DoSpaceTransition = 0x231ff0;
+
 // miscproc
 DmaToSpr = 0x0020b3c0;
 DmaToSprSync = 0x020b3e0;
@@ -294,32 +347,102 @@ SkyBsphereCheck = 0x022c4c8;
 sound_StopAllSounds__Fv = 0x0022dcd0;
 sound_update = 0x22ca50;
 
-Transition_UpdateMovieCamera__Fv = 0x0022de10;
+FUN_0022de10_rename = 0x0022de10;
+
+// stash
+Stash_SendData = 0x0232e40;
 
 // movie/vibuf.cpp
 viBufModifyPts__FP5ViBufP9TimeStamp = 0x023c6b8;
-setD4_CHCR__FUi = 0x23bb40;
+setD3_CHCR__FUi = 0x23bb40;
+setD4_CHCR__FUi = 0x23bbb0;
 getFIFOindex__FP5ViBufPv = 0x023baf8;
 viBufDelete__FP5ViBuf = 0x0023c5b8;
+viBufCount__FP5ViBuf = 0x023c610;
+viBufPutTs__FP5ViBufP9TimeStamp = 0x023c810;
+viBufBeginPut__FP5ViBufPPUcPiT1T2 = 0x023be20;
+viBufGetTs__FP5ViBufP9TimeStamp = 0x23c920;
+viBufFlush__FP5ViBuf = 0x23c660;
+viBufRestartDMA__FP5ViBuf = 0x23c280;
+viBufStopDMA__FP5ViBuf = 0x023c170;
+viBufAddDMA__FP5ViBuf = 0x023bf70;
+viBufEndPut__FP5ViBufi = 0x023bf18;
+viBufReset__FP5ViBuf = 0x23bcc0;
+viBufCreate = 0x023bc48;
+scTag2 = 0x23bc20;
+
 
 // movie/audiodec.cpp
 audioDecBeginPut__FP9_AudioDecPPUcPiT1T2 = 0x23ad58;
 audioDecEndPut__FP9_AudioDeci = 0x23ae28;
 sendToSPU__FP9_AudioDecPUcii = 0x23af18;
 audioDecReset__FP9_AudioDec = 0x023ad10;
+sendADPCM__FP9_AudioDec = 0x023afc0;
+audioDecSend = 0x023aef0;
+audioDecStart = 0x23acb8;
+audioDecDelete__FP9_AudioDec = 0x0023ac90;
+audioDecCreate__FP9_AudioDecPUci14sceMpegStrType = 0x023abd0;
 
 // movie/videodec.cpp
-cpy2area__FPUciT0iT0iT0i = 0x23b810;
 videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi = 0x23cac8;
 videoDecDelete__FP8VideoDec = 0x023cc38;
+videoDecGetState = 0x023cc80;
+decBs0__FP8VideoDec = 0x23cec8;
+mpegError__FP7sceMpegP18sceMpegCbDataErrorPv = 0x23d080;
+mpegNodata__FP7sceMpegP13sceMpegCbDataPv = 0x023d0a8;
+videoDecMain__FPv = 0x023ce28;
+videoDecSetState__FP8VideoDecUi = 0x23cc88;
+videoDecInputCount__FP8VideoDec = 0x023cce0;
+videoDecIsFlushed__FP8VideoDec = 0x023cde0;
+videoDecEndPut__FP8VideoDec = 0x023cc10;
+videoDecFlush__FP8VideoDec = 0x23cd08;
+videoDecPutTs__FP8VideoDecllPUci = 0x23cc98;
+videoDecAbort__FP8VideoDec = 0x0023cc70;
+videoDecReset__FP8VideoDec = 0x23cc30;
+videoDecBeginPut__FP8VideoDecPPUcPiT1T2 = 0x023cbf0;
+videoDecSetStream__FP8VideoDeciiPFP7sceMpegP13sceMpegCbDataPv_iPv = 0x23cbd0;
 
 // movie/readbuf.cpp
-readBufBeginPut__FP7ReadBufPPUc = 0x0023b960;
+readBufBeginGet__FP7ReadBufPPUc = 0x23b9d8;
+readBufBeginPut__FP7ReadBufPPUc = 0x23b960;
+readBufEndPut__FP7ReadBufi = 0x23b990;
 readBufEndGet__FP7ReadBufi = 0x023ba20;
+readBufDelete__FP7ReadBuf = 0x023b958;
+readBufCreate__FP7ReadBuf = 0x23b940;
+
+// movie/read.cpp
+cpy2area__FPUciT0iT0iT0i = 0x23b810;
+pcmCallback__FP7sceMpegP16sceMpegCbDataStrPv = 0x023b728;
+videoCallback = 0x23b5f0;
+
 
 // movie/vobuf.cpp
 voBufDecCount__FP5VoBuf = 0x023d340;
 voBufGetData__FP5VoBuf = 0x23d288;
+voBufGetTag__FP5VoBuf = 0x023d2d8;
+voBufIsEmpty = 0x23d2c8;
+voBufIncCount__FP5VoBuf = 0x023d210;
+voBufIsFull__FP5VoBuf = 0x023d1f8;
+voBufReset__FP5VoBuf = 0x023d1e8;
+voBufDelete__FP5VoBuf = 0x23d1e0;
+voBufCreate__FP5VoBufP6VoDataP5VoTagi = 0x023d190;
+
+// movie/disp.cpp 
+handler_endimage = 0x23b540;
+setImageTag = 0x0023b210;
+endDisplay__Fv = 0x23b5e0;
+startDisplay__Fi = 0x023b590;
+vblankHandler = 0x0023b3d8;
+
+// movie/movie.cpp
+switchThread = 0x0023a770;
+proceedAudio__Fv = 0x23aba0;
+ErrMessage = 0x023ab78;
+termAll__Fv = 0x023aa68;
+initAll__Fiii = 0x023a7c0;
+isAudioOK = 0x23a790;
+readMpeg__FP8VideoDecP7ReadBufP7StrFile = 0x0023a460;
+movie__FiiPFUiUi_Pvii = 0x04ef658;
 
 // tfragfunc.cpp
 SetTfragDists__Fv = 0x233068;
@@ -361,8 +484,12 @@ music_Update__Fv = 0x216290;
 Load = 0x00216828;
 
 
-// input
-InputHandling = 0x217328;
+// pad.cpp
+ProcessPadInput__FR3PADPUci = 0x217328;
+UpdatePad__FR3PAD = 0x2170c8;
+ClearPadInput__FR3PAD = 0x002172c0;
+UpdatePad__Fv = 0x00217a10;
+scePad2Read = 0x124bd8;
 
 // skyfunc
 SkyFunc_UNK_FUN_0022AC30 = 0x22ac30;
@@ -373,8 +500,7 @@ SkyDrawShell__Fi = 0x22b690;
 SkyDrawShellTextured = 0x22b6e8;
 SkyDrawShellGouraud = 0x0022b928;
 
-// transition
-Transition_DrawSky__Fv = 0x1e9ab8;
+
 
 // tiefunc
 DmaTieTextures__Fv = 0x0235640;

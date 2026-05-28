@@ -1,5 +1,31 @@
 #include "common.h"
 
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0B88);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0BC8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0BD0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0C48);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0CE0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F2068);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F2070);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F21A8);
+
+void func_001F21B0(void) {
+}
+
+void func_001F21B8(void) {
+}
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F21C0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F2260);
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", UpdateFog__Fi);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", ParseOcclGrid);
@@ -24,7 +50,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", ResetGsRegisters__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", ResetGsRegistersPr__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F39D0);
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DrawDebugProfiler);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F4248);
 
@@ -81,3 +107,61 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6060);
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F61E8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F61F8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6200);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6250);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6270);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6290);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrint);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrintLarge);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrintSmall);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6630);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6638);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6928);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F69D0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6A60);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrintCenter);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrintCenterSmall);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrintCenterLarge);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6CB8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6FD0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7070);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrintWindow);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7580);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F75F0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7660);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontSetWindow);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F76A0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7888);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7978);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F79A8);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7A30);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7A88);
