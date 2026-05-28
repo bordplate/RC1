@@ -349,6 +349,9 @@ sound_update = 0x22ca50;
 
 FUN_0022de10_rename = 0x0022de10;
 
+// stash
+Stash_SendData = 0x0232e40;
+
 // movie/vibuf.cpp
 viBufModifyPts__FP5ViBufP9TimeStamp = 0x023c6b8;
 setD3_CHCR__FUi = 0x23bb40;

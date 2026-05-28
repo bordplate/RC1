@@ -143,7 +143,7 @@ segments:
     - [0x102558, cpp, game/initonce]
     - [0x1029a8, cpp, game/lights]
     - [0x1031f0, cpp, game/loaders]
-    - [0x105c70, cpp, game/map]     # Lots of things that are referenced in draw_map_screen which is probably part of pause.cpp
+    - [0x105c70, cpp, game/map]     # Lots of things that are referenced in draw_map_screen which is part of pause.cpp
     - [0x1078f8, cpp, game/menu]    # Just a guess, could be slightly later
     - [0x109fb0, cpp, game/memcard]
     - [0x10c340, asm, game/miscproc]
@@ -156,17 +156,15 @@ segments:
     - [0x118048, cpp, game/pad]
     - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
     - [0x119808, cpp, game/partupd]
-    - [0x119c90, asm]
-    - [0x119cf8, cpp, game/pause] 
+    - [0x119c90, cpp, game/pause] 
     - [0x1286c0, asm, game/shadowproc]
     - [0x129870, cpp, game/shrubfunc]
     - [0x129b68, asm, game/shrubproc]
     - [0x12bbb0, cpp, game/skyfunc]
     - [0x12cb20, asm, game/skyproc]
     - [0x12d528, cpp, game/sound]
-    - [0x12ed90, asm]
-    - [0x132f70, cpp, game/space]
-    - [0x133720, asm] 
+    - [0x12ed90, cpp, game/space]
+    - [0x133c60, cpp, game/stash]
     - [0x133fe8, cpp, game/tfragfunc]
     - [0x134458, cpp, game/vuchain]
     - [0x134f30, asm, game/tfragproc] # Insomniac handwrote this
