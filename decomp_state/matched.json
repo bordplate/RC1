@@ -168,5 +168,15 @@
     "size": 8,
     "note": "Sets gp-relative global D_0015F49C (0x166C00-0x7764, core.bss) to 0: jr $ra; sw $zero,-0x7764(gp) in delay slot. Twin func_001F61E8 sets it to 1; the pair brackets FontPrintWindow calls in pause-menu draw code (window-text flag). 9 UNCONDITIONAL_CALL xrefs, no args. Replaced with 'extern \"C\" int D_0015F49C;' + 'extern \"C\" void func_001F61F8(void) { D_0015F49C = 0; }' at draw.cpp:108, plus D_0015F49C = 0x15f49c in config/symbols.txt (GP-relative recipe). Verified: draw.o symbol at .text+0x5670 size 8, single R_MIPS_GPREL16 reloc against D_0015F49C at +4, neighbours contiguous, draw .text length unchanged (0x6F10), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/draw.cpp:106:func_001F61E8": {
+    "name": "func_001F61E8",
+    "source": "code/game/draw.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw/func_001F61E8.s",
+    "vram": "0x001F61E8",
+    "file_offset": "0xF7168",
+    "size": 12,
+    "note": "Sets gp-relative global D_0015F49C to 1: addiu v0,0,1; jr $ra; sw v0,-0x7764(gp) in delay slot (EGC reuses v0 as stored temp in void setter). Set-half of the FontPrintWindow flag pair with func_001F61F8. Replaced with 'extern \"C\" int D_0015F49C; extern \"C\" void func_001F61E8(void) { D_0015F49C = 1; }' at draw.cpp:106 (declaration moved above first use). Verified: draw.o symbol at .text+0x5660 size 0xC, R_MIPS_GPREL16 against D_0015F49C at +8, contiguous with func_001F61F8 at 0x5670, draw .text length unchanged (0x6F10), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

@@ -103,9 +103,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DrawUIFrame);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6060);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F61E8);
-
 extern "C" int D_0015F49C;
+
+extern "C" void func_001F61E8(void) {
+    D_0015F49C = 1;
+}
 
 extern "C" void func_001F61F8(void) {
     D_0015F49C = 0;
