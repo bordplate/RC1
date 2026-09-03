@@ -36,7 +36,21 @@ Then full oracle: `make && cmp build/boot_elf.elf assets/boot_elf.elf`.
 
 - Tiny 2-instruction "functions" that are only stack tweaks without a `jr $ra`
   (e.g. several in `989snd`) look like split artifacts; verify against Ghidra
-  before decompiling them.
+  before decompiling them. e.g. `func_00208028`/`func_00208500` in menu.cpp
+  are mid-function fragments (`andi`/`sw` + nop, no entry/return).
+
+## Delay-slot scheduling vs volatile stores (learned 2026-09-03, voBufReset)
+
+- EGC 2.95.2 `-O2` moves an independent store into a `jr $ra` delay slot even
+  when the source writes both stores first. If the original shows two stores
+  in program order with a real `nop` after the branch, qualify BOTH stored
+  fields `volatile` (one volatile is not enough). See
+  `decomp_state/notes/vobuf_voBufReset.md`.
+- Quick experiment harness: compile standalone variants with
+  `env WINEPREFIX=tools/wineprefix WINEDEBUG=-all tools/wine/bin/wine
+  tools/cc/bin/ee-gcc.exe -S -x c++ -G8 -O2 -ffast-math -fno-exceptions
+  -Wa,-EL -Icode/include -Btools/cc/lib/gcc-lib/ee/2.95.2/` and compare the
+  emitted `.s`. The `-B.../2.95.2/` path is required or cpp cannot be found.
 - Makefile line 64 runs objcopy with identical in/out path
   (`build/boot_elf.elf`); verified harmless - the built file stays a full ELF
   and cmp passes byte-for-byte.

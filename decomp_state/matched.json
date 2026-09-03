@@ -18,5 +18,15 @@
     "size": 8,
     "note": "Returns 1 (jr $ra; addiu $v0,$0,1). Function-pointer table entry at 0x001a0018 (Ghidra DATA xref), sibling of func_00207A08. Replaced with extern \"C\" int func_00207A10(void) { return 1; }. Verified: menu.o symbol at .text+0x1098 size 8, object bytes 0800e00301000224 identical to original slice, no relocations in [0x1098,0x10a0), menu .text length unchanged (0x26b8), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/vobuf.cpp:16:voBufReset__FP5VoBuf": {
+    "name": "voBufReset__FP5VoBuf",
+    "source": "code/game/movie/vobuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/vobuf/voBufReset__FP5VoBuf.s",
+    "vram": "0x0023D1E8",
+    "file_offset": "0x13E168",
+    "size": 16,
+    "note": "Zeros VoBuf.count(0xC) then VoBuf.head(0x8). Original asm: sw $zero,0xC($a0); sw $zero,0x8($a0); jr $ra; nop. Key finding: EGC 2.95.2 -O2 reschedules two independent zero-stores (putting the second into the jr delay slot) unless both target fields are volatile-qualified. Declared struct VoBuf { void* data; void* tags; volatile u32 head; volatile u32 count; u32 capacity; } in vobuf.cpp and wrote self->count=0; self->head=0;. Verified: objdump of build/code/game/movie/vobuf.o shows voBufReset__FP5VoBuf at .text+0x58 size 0x10 with words ac80000c ac800008 03e00008 00000000 identical to original slice; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
