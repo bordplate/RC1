@@ -8,5 +8,15 @@
     "size": 8,
     "note": "Returns 1 (jr $ra; addiu $v0,$0,1). Function-pointer table entry at 0x001a0014. Replaced with extern \"C\" int func_00207A08(void) { return 1; }. Verified: object symbol at .text+0x1090 size 8, bytes identical to original slice, menu .text length unchanged (0x26b8), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/menu.cpp:97:func_00207A10": {
+    "name": "func_00207A10",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00207A10.s",
+    "vram": "0x00207A10",
+    "file_offset": "0x108990",
+    "size": 8,
+    "note": "Returns 1 (jr $ra; addiu $v0,$0,1). Function-pointer table entry at 0x001a0018 (Ghidra DATA xref), sibling of func_00207A08. Replaced with extern \"C\" int func_00207A10(void) { return 1; }. Verified: menu.o symbol at .text+0x1098 size 8, object bytes 0800e00301000224 identical to original slice, no relocations in [0x1098,0x10a0), menu .text length unchanged (0x26b8), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

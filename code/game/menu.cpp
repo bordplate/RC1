@@ -94,7 +94,9 @@ extern "C" int func_00207A08(void) {
     return 1;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207A10);
+extern "C" int func_00207A10(void) {
+    return 1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207A18);
 
