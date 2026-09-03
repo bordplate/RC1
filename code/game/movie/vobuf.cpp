@@ -1,10 +1,6 @@
 #include "common.h"
 #include "types.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufCreate__FP5VoBufP6VoDataP5VoTagi);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufDelete__FP5VoBuf);
-
 typedef struct VoBuf {
     void* data;
     void* tags;
@@ -12,6 +8,10 @@ typedef struct VoBuf {
     volatile u32 count;
     u32 capacity;
 } VoBuf;
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufCreate__FP5VoBufP6VoDataP5VoTagi);
+
+void voBufDelete(VoBuf* self) {}
 
 extern "C" void voBufReset__FP5VoBuf(VoBuf* self) {
     self->count = 0;
