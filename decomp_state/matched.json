@@ -68,5 +68,15 @@
     "size": 12,
     "note": "Returns VoBuf.count==0 (count at 0xC). Original asm: lw $v0,0xC($a0); jr $ra; sltiu $v0,$v0,1 (delay slot); nop. Ghidra FUN_0023d2c8: return *(int*)(p+0xc)==0. Sole caller is direct jal at vram 0x0023D2E4 inside the sibling pop fn at 0x0023D2D8 (no symbol resolution). Bare symbol name (no Itanium suffix) like the C-compiled siblings, so defined extern \"C\" int voBufIsEmpty(VoBuf* self) { return self->count == 0; }. volatile u32 count (from voBufReset struct) gives one load; EGC -O2 emits lw/jr/sltiu verbatim, no delay-slot reordering with a single mem op. Verified: vobuf.o symbol at .text+0x138 size 0xC, words 8c82000c 03e00008 2c420001 identical to original slice; zero relocations in vobuf.o; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/vobuf.cpp:35:voBufDecCount__FP5VoBuf": {
+    "name": "voBufDecCount__FP5VoBuf",
+    "source": "code/game/movie/vobuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/vobuf/voBufDecCount__FP5VoBuf.s",
+    "vram": "0x0023D340",
+    "file_offset": "0x13E2C0",
+    "size": 32,
+    "note": "if (count > 0) count--; on volatile signed int count at offset 0xC. Original asm: lw $v0,0xC($a0); blez $v0,end; nop; lw $v0,0xC($a0); addiu $v0,$v0,-1; sw $v0,0xC($a0); jr $ra; nop (8 words, 0x20 bytes). Ghidra FUN_0023d340: if (0 < *(int*)(p+0xc)) *(int*)(p+0xc) -= 1; sole caller UNCONDITIONAL_CALL from vram 0x0023b564 (video IRQ handler, return value ignored). KEY INSIGHT: original uses SIGNED blez for the >0 test, not unsigned beqz/bgtz. EGC -O2 emits beqz for `if (u32 x > 0)` but blez only when the field is signed. So changed struct field `volatile u32 count` to `volatile int count` (same 4-byte layout, offsets unchanged) and replaced INCLUDE_ASM with plain C++ free function void voBufDecCount(VoBuf* self) { if (self->count > 0) self->count--; } (old-GCC mangling yields voBufDecCount__FP5VoBuf, no extern \"C\"). Sign change is codegen-invisible to already-matched siblings: voBufIsEmpty (==0 -> sltiu x,1) and voBufIsFull (== -> xor+sltiu) are equality-only. Verified: standalone test compile byte-identical to original slice at file offset 0x13E2C0 (0c00828c 04004018 00000000 0c00828c ffff4224 0c0082ac 0800e003 00000000); vobuf.o symbol at .text+0x1B0 size 0x20 same words; no relocations in [0x1b0,0x1d0) (only pre-existing R_MIPS_26 at 0x8c/0xe0/0x104/0x154); full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

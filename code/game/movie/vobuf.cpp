@@ -5,7 +5,7 @@ typedef struct VoBuf {
     void* data;
     void* tags;
     volatile u32 head;
-    volatile u32 count;
+    volatile int count;
     u32 capacity;
 } VoBuf;
 
@@ -32,4 +32,8 @@ extern "C" int voBufIsEmpty(VoBuf* self) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufGetTag__FP5VoBuf);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufDecCount__FP5VoBuf);
+void voBufDecCount(VoBuf* self) {
+    if (self->count > 0) {
+        self->count--;
+    }
+}
