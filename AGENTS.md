@@ -133,6 +133,14 @@ until the compiled output has been compared mechanically.
 
 The compiler is correct, but compiler flags may not necessarily match what Insomniac used yet. Try to identify compiler flags when you encounter a larger function that otherwise won't match. Update this when you're confident compiler flags are correct.
 
+Observed EGC 2.95.2 scheduling habits (with the project flags): in small
+functions that end with independent stores plus a constant return, the stores
+are emitted in SOURCE statement order and the last one is pulled into the
+`jr $ra` delay slot, while a `addiu $v0,$0,N` for the return value is hoisted
+above the stores. Reordering assignments in the C source flips which store
+lands in the delay slot, so match the original store sequence by choosing the
+statement order accordingly (see decomp_state/notes/strfile_func_0023BA48.md).
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local
