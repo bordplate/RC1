@@ -189,7 +189,7 @@ For each selected function:
 1. Find its nonmatching `INCLUDE_ASM` placeholder.
 2. Read the corresponding generated assembly.
 3. Use headless Ghidra MCP for decompiler output, signature, xrefs, globals,
-   callers, callees, and nearby functions.
+   callers, callees, and nearby functions. Find out what the function does and give it a name accordingly.
 4. Read nearby source and relevant headers.
 5. Use `python3 tools/m2ctx/m2ctx.py <source-file>` when more context helps.
 6. Replace only the selected placeholder with compatible C/C++.
