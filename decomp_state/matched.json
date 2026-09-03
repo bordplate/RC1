@@ -1,4 +1,14 @@
 {
+  "code/game/menu.cpp:20:func_002069C0": {
+    "name": "func_002069C0",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_002069C0.s",
+    "vram": "0x002069C0",
+    "file_offset": "0x107940",
+    "size": 16,
+    "note": "Byte-flag predicate: return D_0013D39D != 0 (lbu of unsigned byte at core.data vram 0x0013D39D, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family sibling of matched func_002069A0/B0 and func_00206B88-BC8. Ghidra has no function/xrefs at 0x2069C0 (standalone, likely table/overlay referenced); semantics read directly from the generated asm. D_0013D39D has a dlabel in core.data.data.s:32576 (.byte 0x00) and is aliased in build/undefined_syms_auto.txt as 0x13D39D, same recipe as func_002069B0. Declared 'extern u8 D_0013D39D __attribute__((section(\".data\")))' in menu.cpp; standalone EGC -G8 -O2 test compile first confirmed shape (lui v1 / lbu v0,hi-lo pair with R_MIPS_HI16+LO16 relocs / jr ra / sltu v0,$0,v0) before editing. Verified: nm menu.o shows func_002069C0 plain T at .text+0x48 (between B0 at +0x38 and D0 at +0x58), no .NON_MATCHING alias; built ELF slice 0x107940..0x107950 == original (1400033c 9dd36290 0800e003 2b100200); full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 864->863.",
+    "matched_date": "2026-09-04"
+  },
   "code/game/menu.cpp:93:func_00207A08": {
     "name": "func_00207A08",
     "source": "code/game/menu.cpp",
