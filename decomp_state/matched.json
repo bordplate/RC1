@@ -148,5 +148,15 @@
     "size": 8,
     "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). Twin of func_0021A308: identical body. Standalone callback stub: Ghidra DATA xref from vram 0x001D1AAC points exactly at it - second entry of the same small pointer table (first: 0x001D1AA8 -> 0x21A308). Replaced with extern \"C\" int func_0021A310(void) { return 0; } at pause.cpp:31. EGC -G8 -O2 'return 0;' emits j $31; move $v0,$0 == original 0800e003 2d100000. Verified: object symbol at .text+0x1600 size 8, bytes identical to original slice, neighbours contiguous (func_0021A308 ends 0x1600, func_0021A318 starts 0x1608), pause .text length unchanged (0xEA30), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/pause.cpp:33:func_0021A318": {
+    "name": "func_0021A318",
+    "source": "code/game/pause.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause/func_0021A318.s",
+    "vram": "0x0021A318",
+    "file_offset": "0x11B298",
+    "size": 16,
+    "note": "Stores -1 at *(a0+0x44), returns 0 (addiu v1,-1; daddu v0,$0,0; jr $ra; sw v1,0x44(a0) in delay slot). Reset/cancel callback on the pause-menu state object; 33 Ghidra DATA xrefs from item descriptor tables (0x1CE878..0x1D4D18), definitely a function entry. Replaced with extern \"C\" int func_0021A318(int* p) { p[0x11] = -1; return 0; } at pause.cpp:33. EGC -G8 -O2 emits exactly li v1,-1; move v0,0; j ra; sw v1,68(a0); passing the value as a parameter instead reorders the store before the jr (wrong bytes). Verified: object symbol at .text+0x1608 size 0x10, bytes ffff03242d1000000800e003440083ac == original slice, neighbours contiguous, pause .text length unchanged (0xEA30), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

@@ -34,7 +34,10 @@ extern "C" int func_0021A310(void) {
     return 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021A318);
+extern "C" int func_0021A318(int* p) {
+    p[0x11] = -1;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021A328);
 
