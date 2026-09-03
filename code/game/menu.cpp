@@ -128,7 +128,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208508);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208770);
 
-void func_00208810(void) {
+extern "C" void func_00208810(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208818);

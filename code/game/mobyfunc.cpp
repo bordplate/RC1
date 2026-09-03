@@ -3,7 +3,7 @@
 #include "mobyfunc.h"
 
 #if !defined(SKIP_ASM) && !defined(ALLOW_NONMATCHING)
-INCLUDE_ASM("code/_generated/matchings/game/mobyfunc", CreateMoby__Fi);
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", CreateMoby__Fi);
 #endif
 
 #if defined(SKIP_ASM) || defined(ALLOW_NONMATCHING)

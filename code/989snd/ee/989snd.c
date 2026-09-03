@@ -120,8 +120,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StartMovieSound
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F140);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UnkFunction_0012f148);
+INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UpdateMovieADPCM);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UnkFunction_0012f178);
+INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GetMovieNAX);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GetDopplerPitchMod);

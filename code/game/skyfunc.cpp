@@ -1,5 +1,7 @@
 #include "common.h"
 
+asm(".globl Label_0022AE54\n");
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/skyfunc", SkyFunc_UNK_FUN_0022AC30);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/skyfunc", SkyLevelGeneric___maybe);

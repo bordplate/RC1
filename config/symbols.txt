@@ -285,7 +285,7 @@ FastVecSub = 0x01f9a28;
 FastVecCross = 0x01f9ad8;
 
 // collproc
-_lookup_grid_pointer = 0x0441e88;
+// _lookup_grid_pointer = 0x0441e88; // Outside the configured segments.
 CollLine_Fix = 0x1efa68;
 CollOutput = 0x00194100;
 MobyGrids = 0x01b76e0;
@@ -442,7 +442,7 @@ termAll__Fv = 0x023aa68;
 initAll__Fiii = 0x023a7c0;
 isAudioOK = 0x23a790;
 readMpeg__FP8VideoDecP7ReadBufP7StrFile = 0x0023a460;
-movie__FiiPFUiUi_Pvii = 0x04ef658;
+// movie__FiiPFUiUi_Pvii = 0x04ef658; // Outside the configured segments.
 
 // tfragfunc.cpp
 SetTfragDists__Fv = 0x233068;
@@ -493,6 +493,7 @@ scePad2Read = 0x124bd8;
 
 // skyfunc
 SkyFunc_UNK_FUN_0022AC30 = 0x22ac30;
+Label_0022AE54 = 0x0022ae54;
 SetupSkyGifPaging__Fv = 0x022b4c8;
 DoSkyGifPaging__Fv = 0x22b558;
 SkyLevelGeneric___maybe = 0x022ae70;

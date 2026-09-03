@@ -81,13 +81,4 @@ StartLevelPtr ParseBin() {
 
 #endif
 
-int main(int argc, char **argv) {
-    StartLevelPtr pcVar1 = startlevel;
-
-    while (true) {
-        pcVar1();
-        pcVar1 = ParseBin();
-        FlushCache(0);
-        FlushCache(2);
-    }
-}
+INCLUDE_ASM("code/_generated/nonmatchings/game/boot", main);

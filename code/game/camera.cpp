@@ -21,3 +21,19 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_ActivationCheckPr
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_Exit__FP9UpdateCam);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", UpdateAllCameras__Fi);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC530);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC710);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC7F0);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC868);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC8A0);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ECAF8);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ECCD8);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED2B0);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED360);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED470);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED7F0);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED940);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDA60);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDAA8);
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDC30);

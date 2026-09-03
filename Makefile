@@ -50,7 +50,7 @@ split:
 	python -m splat split config/RC1.yaml --disassemble-all
 
 iso:
-	$(WRENCHFOLDER)/wrenchbuild  pack assets $(WRENCHFOLDER)/overlay -a rac -o build/build.iso -h release --flusher-thread-hack
+	$(WRENCHFOLDER)/wrenchbuild pack assets $(WRENCHFOLDER)/underlay -a rac -o build/build.iso -h release --flusher-thread-hack
 
 clean:
 	rm -rf build
@@ -60,7 +60,7 @@ clean:
 $(TARGET): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CROSS)-strip $(OBJS) -N dummy-symbol-name
-	$(CROSS)-ld -EL -T $(BUILD_DIR)/undefined_funcs_auto.txt -T $(BUILD_DIR)/undefined_syms_auto.txt -T $(BASENAME).ld -Map build/$(BASENAME).ld $(OBJS) -o $@
+	$(CROSS)-ld -EL -m elf32lr5900 -T $(BUILD_DIR)/undefined_funcs_auto.txt -T $(BUILD_DIR)/undefined_syms_auto.txt -T $(BASENAME).ld -Map build/$(BASENAME).ld $(OBJS) -o $@
 	$(CROSS)-objcopy $(TARGET) build/boot_elf.elf -O binary
 
 $(OBJ_DIR)/%.o: code/%.s
@@ -74,4 +74,3 @@ $(OBJ_DIR)/%.o: code/%.c
 $(OBJ_DIR)/%.o: code/%.cpp
 	@mkdir -p $(dir $@)
 	$(EEGCC) -v -c -x c++ $(COMMON_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
-

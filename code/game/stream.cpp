@@ -29,3 +29,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216B68);
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216BC0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216C30);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216C48);
+INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217020);
+INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217038);
+INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217048);

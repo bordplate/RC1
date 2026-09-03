@@ -12,3 +12,20 @@ ctx.c
 
 userconfig*
 !*.template.mk
+
+# Local reverse-engineering and tool installations
+tools/wrench/
+tools/wrench-release/
+tools/mipsel-linux-gnu/
+tools/mips64r5900el-ps2-elf/
+tools/wine/
+tools/wineprefix/
+tools/ghidra/
+tools/ghidra-mcp/*
+!tools/ghidra-mcp/bridge_mcp_ghidra.py
+!tools/ghidra-mcp/StartGhidraMCP.java
+!tools/ghidra-mcp/run_headless.sh
+tools/ghidra-project/
+*.zip
+__pycache__/
+*.pyc

@@ -16,10 +16,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F2070);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F21A8);
 
-void func_001F21B0(void) {
+extern "C" void func_001F21B0(void) {
 }
-
-void func_001F21B8(void) {
+extern "C" void func_001F21B8(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F21C0);

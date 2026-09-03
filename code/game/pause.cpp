@@ -228,10 +228,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002242B8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", LoadHandGadget);
 
-void func_00224B60(void) {
+extern "C" void func_00224B60(void) {
 }
-
-void func_00224B68(void) {
+extern "C" void func_00224B68(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00224B70);
@@ -258,7 +257,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002256E8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00225A68);
 
-void func_00225AB8(void) {
+extern "C" void func_00225AB8(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00225AC0);

@@ -1,6 +1,6 @@
 #include "common.h"
 
-void func_00237A70(void) {
+extern "C" void func_00237A70(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/update", func_00237A78);
