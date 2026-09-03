@@ -28,5 +28,15 @@
     "size": 16,
     "note": "Zeros VoBuf.count(0xC) then VoBuf.head(0x8). Original asm: sw $zero,0xC($a0); sw $zero,0x8($a0); jr $ra; nop. Key finding: EGC 2.95.2 -O2 reschedules two independent zero-stores (putting the second into the jr delay slot) unless both target fields are volatile-qualified. Declared struct VoBuf { void* data; void* tags; volatile u32 head; volatile u32 count; u32 capacity; } in vobuf.cpp and wrote self->count=0; self->head=0;. Verified: objdump of build/code/game/movie/vobuf.o shows voBufReset__FP5VoBuf at .text+0x58 size 0x10 with words ac80000c ac800008 03e00008 00000000 identical to original slice; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/hud.cpp:33:func_001FF768": {
+    "name": "func_001FF768",
+    "source": "code/game/hud.cpp",
+    "asm": "code/_generated/nonmatchings/game/hud/func_001FF768.s",
+    "vram": "0x001FF768",
+    "file_offset": "0x1006E8",
+    "size": 24,
+    "note": "if (D_0015F8F8 != 0) D_0015F8F8--; on gp-relative int global at vram 0x15F8F8 (gp-0x7308). Original: lw/beqz/addiu(delay slot)/sw/jr ra/nop. First matched C function using gp-relative globals: required 'D_0015F8F8 = 0x15f8f8;' in config/symbols.txt (splat dlabels it in lit.lit4.s) and --defsym _gp=0x166c00 on the Makefile ld line (runtime $gp is set by crt0 to D_00166C00=0x166c00; without a user _gp the ps2 ld rejects R_MIPS_GPREL16 as truncated). EGC 'addu r,r,-1' in .s re-encodes to addiu in the object, so the decrement matches. Verified: hud.o symbol at .text+0x930 size 0x18; only relocs in range are two R_MIPS_GPREL16 D_0015F8F8 (+0,+0xC); linked bytes f88c828f 02004010 ffff4224 f88c82af 0800e003 00000000 identical to original slice; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

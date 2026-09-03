@@ -47,11 +47,38 @@ Then full oracle: `make && cmp build/boot_elf.elf assets/boot_elf.elf`.
   fields `volatile` (one volatile is not enough). See
   `decomp_state/notes/vobuf_voBufReset.md`.
 - Quick experiment harness: compile standalone variants with
-  `env WINEPREFIX=tools/wineprefix WINEDEBUG=-all tools/wine/bin/wine
-  tools/cc/bin/ee-gcc.exe -S -x c++ -G8 -O2 -ffast-math -fno-exceptions
-  -Wa,-EL -Icode/include -Btools/cc/lib/gcc-lib/ee/2.95.2/` and compare the
-  emitted `.s`. The `-B.../2.95.2/` path is required or cpp cannot be found.
+  `env WINEPREFIX=/home/bordplate/Projects/RC1/tools/wineprefix WINEDEBUG=-all
+  tools/wine/bin/wine tools/cc/bin/ee-gcc.exe -S -x c++ -G8 -O2 -ffast-math
+  -fno-exceptions -Wa,-EL -Icode/include -Btools/cc/lib/gcc-lib/ee/2.95.2/` and
+  compare the emitted `.s`. The `-B.../2.95.2/` path is required or cpp cannot
+  be found; WINEPREFIX must be an absolute path. Also `mipsel-linux-gnu-objdump`
+  IS available under `tools/mipsel-linux-gnu/bin/` for disassembling test objects.
 - Makefile line 64 runs objcopy with identical in/out path
   (`build/boot_elf.elf`); verified harmless - the built file stays a full ELF
   and cmp passes byte-for-byte.
 - Most targets live in `.cpp` files (830) vs `.c` (63).
+
+## GP register / globals (learned 2026-09-03, func_001FF768)
+
+- Runtime `$gp = 0x166C00`: crt0 (`code/_generated/sce/crt0.s`) does
+  `lui/addiu a0,%hi/%lo(D_00166C00); daddu $gp,$a0,$zero`. `D_00166C00` is an
+  auto splat dlabel inside `build/data/data.data.s` (the `data` segment, vram
+  0x165480). All gp-relative offsets in nonmatching asm blobs are relative to
+  this; Ghidra's gp-relative data resolution agrees (e.g. `-0x7308($gp)` ->
+  `DAT_0015f8f8`).
+- Link-time `_gp` must equal the same value for C code to emit matching
+  gp-relative access: ps2 ld otherwise computes its own `_gp` and rejects out
+  of range `R_MIPS_GPREL16` ("relocation truncated to fit"). Fix (committed):
+  Makefile link line carries `--defsym _gp=0x166c00`. `SCUS_971.99.ld` is
+  splat-regenerated on every `make split` and gitignored, so the Makefile is
+  the only persistent place for this.
+- To reference an existing global from C: add `NAME = 0xADDR;` to
+  `config/symbols.txt`; splat emits a `dlabel NAME` in the data blob covering
+  that vram (e.g. `D_0015F8F8` landed in `build/data/lit.lit4.s`). Declare it
+  as plain `extern int NAME;` in the `.cpp` — NO section attribute, or EGC
+  emits %hi/%lo instead of GPREL16 and instruction count changes.
+- Globals reachable gp-relative are those within ±0x8000 of 0x166C00:
+  roughly vram 0x15EC00..0x16E400 (core.bss tail, core.lit/lit, level bss +
+  start of level data). Out-of-range globals need the usual %hi/%lo form.
+- EGC emits `addu r,r,-1` in `.s` for int decrements; GAS re-encodes it as
+  `addiu` in the object, so `x--` matches original `addiu ...,-1` bytes.

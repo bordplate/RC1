@@ -30,7 +30,13 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF5E8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF6D8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF768);
+extern "C" int D_0015F8F8;
+
+extern "C" void func_001FF768(void) {
+    if (D_0015F8F8 != 0) {
+        D_0015F8F8--;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF780);
 
