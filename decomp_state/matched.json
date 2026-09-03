@@ -108,5 +108,15 @@
     "size": 8,
     "note": "StrFile delete hook: no-op returning success. Original asm: jr $ra; addiu $v0,$0,1 (delay slot) \u2014 same shape as videoDecDelete/audioDecDelete siblings. Ghidra FUN_0023ba58: return 1;. Sole xref: jal from termAll__Fv at vram 0x23AB38 (movie.cpp), passing the StrFile object; class name corroborated by readMpeg__FP8VideoDecP7ReadBufP7StrFile. Named in config/symbols.txt (strFileDelete__FP7StrFile = 0x0023ba58, new // movie/strfile.cpp block); old-GCC mangling means plain C++ free function 'int strFileDelete(StrFile* self) { return 1; }' compiles to exactly that symbol. Added local StrFile typedef (u8 _pad[8]) and #include types.h to strfile.cpp. Verified: nm strfile.o shows T strFileDelete__FP7StrFile at .text+0x10 between func_0023BA48 (+0x0) and func_0023BA60 (+0x18); object slice bytes 0800e003 01000224 identical to original slice at file offset 0x13C9D8; no relocations in [0x10,0x18); clean rebuild (make clean && make split && make -j2) and full cmp build/boot_elf.elf assets/boot_elf.elf pass; decomp_status count 883->882. Stale nonmatching func_0023BA58.s remains as orphan (gitignored, no longer emitted). Note: rename changed termAll__Fv.s so movie.o had to be rebuilt (Makefile lacks generated-asm deps); clean build verifies from-scratch correctness.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/videodec.cpp:19:videoDecReset__FP8VideoDec": {
+    "name": "videoDecReset",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecReset__FP8VideoDec.s",
+    "vram": "0x0023CC30",
+    "file_offset": "0x13DBB0",
+    "size": 8,
+    "note": "Sets VideoDec.state (u32 at offset 0xA8) to 0. Original asm: 'jr $ra; sw $zero,0xA8($a0)' - store in the return delay slot. Ghidra FUN_0023cc30: *(undefined4*)(param_1+0xa8)=0. Sole xref: UNCONDITIONAL_CALL at 0x23cb7c within videodec's own range (teardown/reset path). Replaced INCLUDE_ASM with pure C++ 'void videoDecReset(VideoDec* self) { self->state = 0; }' using the file-local VideoDec struct (u8 _pad[0xA8]; u32 state) added for videoDecGetState; old-GCC mangling yields exactly videoDecReset__FP8VideoDec (same pattern as strFileDelete), no extern \"C\". Standalone EEGCC test compile confirmed 'jr ra / sw zero,168(a0)' + correct symbol before editing. Verified: videodec.o nm shows T videoDecReset__FP8VideoDec at .text+0x168; objdump bytes 03e00008 ac8000a8 == original slice at file offset 0x13DBB0 (LE 0800e003 a80080ac); no relocations in [0x168,0x170); decomp_status count 882->881; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

@@ -16,7 +16,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecBeginPut
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecEndPut__FP8VideoDec);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecReset__FP8VideoDec);
+void videoDecReset(VideoDec* self) {
+    self->state = 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecDelete__FP8VideoDec);
 
