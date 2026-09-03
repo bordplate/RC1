@@ -131,19 +131,21 @@ cmp build/boot_elf.elf assets/boot_elf.elf
 Never enable `ALLOW_NONMATCHING` globally. Do not remove an assembly fallback
 until the compiled output has been compared mechanically.
 
+The compiler is correct, but compiler flags may not necessarily match what Insomniac used yet. Try to identify compiler flags when you encounter a larger function that otherwise won't match. Update this when you're confident compiler flags are correct.
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local
 OpenAI-compatible provider as the default model:
 
 - Provider ID: `qwen-local`
-- Base URL: `http://10.9.0.201:1234/v1`
-- Model ID: `qwen/qwen3.8-27b`
+- Base URL: `http://10.9.0.201:8080`
+- Model ID: `Qwen3.8-27B`
 - Context limit: `262144`
 - Configured output limit: `32768`
 
-The full model reference is `qwen-local/qwen/qwen3.8-27b`. The inference
-endpoint was verified to advertise `qwen/qwen3.8-27b` through `/v1/models`.
+The full model reference is `qwen-local/Qwen3.8-27B`. The inference endpoint
+advertises `Qwen3.8-27B` through `/models`.
 OpenCode reads configuration at startup, so restart it after configuration
 changes.
 
@@ -247,4 +249,5 @@ tools/run_autonomous_decomp_loop.sh --check-only
 If the script starts Ghidra itself, it cleans that process up when stopped. An
 already-running backend is reused and is not stopped by the script.
 
-Do not start the autonomous loop automatically during setup or verification.
+
+Update this document as you learn about the project, and new and better strategies to progress with decompilation. 
