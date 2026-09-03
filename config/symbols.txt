@@ -436,6 +436,9 @@ endDisplay__Fv = 0x23b5e0;
 startDisplay__Fi = 0x023b590;
 vblankHandler = 0x0023b3d8;
 
+// movie/strfile.cpp
+strFileDelete__FP7StrFile = 0x0023ba58;
+
 // movie/movie.cpp
 switchThread = 0x0023a770;
 proceedAudio__Fv = 0x23aba0;

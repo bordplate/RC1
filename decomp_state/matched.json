@@ -98,5 +98,15 @@
     "size": 8,
     "note": "Returns VideoDec.state (int at offset 0xA8). Original asm: jr $ra; lw $v0,0xA8($a0) (load in delay slot). Ghidra FUN_0023cc80: return *(undefined4*)(param_1+0xa8); sibling videoDecSetState__FP8VideoDecUi writes the same word and returns the old value, confirming an int state field. Callers are absolute jal from videodec's own range (0x23A690/0x23A6F8/0x23CE90/0x23D018). Added local struct VideoDec { u8 _pad[0xA8]; u32 state; } plus #include \"types.h\" in videodec.cpp (common.h does not define u8/u32) and wrote extern \"C\" int videoDecGetState(VideoDec* self) { return self->state; }. Standalone EGC test compile confirmed words before editing. Verified: videodec.o symbol at .text+0x1b8 size 0x8, little-endian bytes 0800e003 a800828c identical to original slice at file offset 0x13DC00; no relocations there; decomp_status count 884->883; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/strfile.cpp:5:func_0023BA58": {
+    "name": "strFileDelete__FP7StrFile",
+    "source": "code/game/movie/strfile.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/strfile/func_0023BA58.s",
+    "vram": "0x0023BA58",
+    "file_offset": "0x13C9D8",
+    "size": 8,
+    "note": "StrFile delete hook: no-op returning success. Original asm: jr $ra; addiu $v0,$0,1 (delay slot) \u2014 same shape as videoDecDelete/audioDecDelete siblings. Ghidra FUN_0023ba58: return 1;. Sole xref: jal from termAll__Fv at vram 0x23AB38 (movie.cpp), passing the StrFile object; class name corroborated by readMpeg__FP8VideoDecP7ReadBufP7StrFile. Named in config/symbols.txt (strFileDelete__FP7StrFile = 0x0023ba58, new // movie/strfile.cpp block); old-GCC mangling means plain C++ free function 'int strFileDelete(StrFile* self) { return 1; }' compiles to exactly that symbol. Added local StrFile typedef (u8 _pad[8]) and #include types.h to strfile.cpp. Verified: nm strfile.o shows T strFileDelete__FP7StrFile at .text+0x10 between func_0023BA48 (+0x0) and func_0023BA60 (+0x18); object slice bytes 0800e003 01000224 identical to original slice at file offset 0x13C9D8; no relocations in [0x10,0x18); clean rebuild (make clean && make split && make -j2) and full cmp build/boot_elf.elf assets/boot_elf.elf pass; decomp_status count 883->882. Stale nonmatching func_0023BA58.s remains as orphan (gitignored, no longer emitted). Note: rename changed termAll__Fv.s so movie.o had to be rebuilt (Makefile lacks generated-asm deps); clean build verifies from-scratch correctness.",
+    "matched_date": "2026-09-03"
   }
 }
