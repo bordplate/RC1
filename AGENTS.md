@@ -206,6 +206,8 @@ For an experimental candidate that needs a temporary assembly fallback, retain
 the project's existing `INCLUDE_ASM` path while iterating. Only remove it after
 the candidate object or function assembly has been compared mechanically.
 
+In C++ files, avoid creating `extern "C"` prefixed functions with manualled mangled names and instead create them as pure C++ functions and let the compiler mangle the names like it should.
+
 ## Commit Discipline
 
 Create one commit per successfully decompiled function. A function is not ready
