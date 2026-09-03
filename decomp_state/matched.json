@@ -248,5 +248,15 @@
     "size": 12,
     "note": "Byte-flag predicate: return D_0013D394 != 0 (lbu of unsigned byte at core.data vram 0x0013D394, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family sibling immediately before func_002069B0 (see decomp_state/notes/menu_func_002069A0.md). Global declared extern u8 D_0013D394 __attribute__((section(\".data\"))) in menu.cpp; dlabel in core.data.data.s, aliased in undefined_syms_auto.txt. Verified: nm -n menu.o shows func_002069A0 at .text+0x28 with next symbol B0 at .text+0x38 (size 0x10 incl. delay slot), no .NON_MATCHING alias; built ELF slice 0x107920..0x107930 == original (1400033c94d362900800e0032b100200); neighbours contiguous; menu .text total 0x26b8 unchanged; cmp build/boot_elf.elf assets/boot_elf.elf passes on first build.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/readbuf.cpp:3:readBufCreate__FP7ReadBuf": {
+    "name": "readBufCreate__FP7ReadBuf",
+    "source": "code/game/movie/readbuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/readbuf/readBufCreate__FP7ReadBuf.s",
+    "vram": "0x0023B940",
+    "file_offset": "0x13C8C0",
+    "size": 24,
+    "note": "Initializes a ReadBuf ring buffer: capacity(0x50008)=0x50000, count(0x50004)=0, putPos(0x50000)=0. Original asm: lui v0,0x5; addu a0,a0,v0; sw v0,8(a0); sw zero,4(a0); jr ra; sw zero,0(a0) [delay slot]. Key finding: EGC 2.95.2 -O2 puts one of the two zero-stores into the jr $ra delay slot regardless of most source orders; tested all 6 permutations with standalone -S experiments - source orders (cap,putPos,count), (count,putPos,cap) and (putPos,cap,count) all yield cap, cnt before jr + putPos in the delay slot (the only matching schedule); chose the first. Struct ReadBuf fields in readbuf.cpp changed from volatile u32 to plain u32: required for this match, safe because readBufDelete (only other matched function in file) touches no fields. Verified: objdump of build/code/game/movie/readbuf.o shows readBufCreate__FP7ReadBuf at .text+0x0 size 0x18 with words 3c020005 00822021 ac820008 ac800004 03e00008 ac800000 identical to original slice at file 0x13C8C0; readBufDelete still at .text+0x18; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

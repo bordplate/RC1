@@ -3,12 +3,16 @@
 
 typedef struct ReadBuf {
     u8 data[0x50000];
-    volatile u32 putPos;
-    volatile u32 count;
-    volatile u32 capacity;
+    u32 putPos;
+    u32 count;
+    u32 capacity;
 } ReadBuf;
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufCreate__FP7ReadBuf);
+void readBufCreate(ReadBuf* self) {
+    self->capacity = 0x50000;
+    self->putPos = 0;
+    self->count = 0;
+}
 
 void readBufDelete(ReadBuf* self) {}
 
