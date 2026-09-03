@@ -138,5 +138,15 @@
     "size": 8,
     "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). Standalone callback stub: data pointer table entry at vram 0x001D1AA8 (file 0x0D2A28) points exactly at it, adjacent entry is function start 0x2212B8; Ghidra has no function defined there. Replaced with extern \"C\" int func_0021A308(void) { return 0; } at pause.cpp:29. Verified: object symbol at .text+0x15F8 size 8, bytes identical to original slice, neighbours contiguous, pause .text length unchanged (0xEA30), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/pause.cpp:31:func_0021A310": {
+    "name": "func_0021A310",
+    "source": "code/game/pause.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause/func_0021A310.s",
+    "vram": "0x0021A310",
+    "file_offset": "0x11B290",
+    "size": 8,
+    "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). Twin of func_0021A308: identical body. Standalone callback stub: Ghidra DATA xref from vram 0x001D1AAC points exactly at it - second entry of the same small pointer table (first: 0x001D1AA8 -> 0x21A308). Replaced with extern \"C\" int func_0021A310(void) { return 0; } at pause.cpp:31. EGC -G8 -O2 'return 0;' emits j $31; move $v0,$0 == original 0800e003 2d100000. Verified: object symbol at .text+0x1600 size 8, bytes identical to original slice, neighbours contiguous (func_0021A308 ends 0x1600, func_0021A318 starts 0x1608), pause .text length unchanged (0xEA30), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
