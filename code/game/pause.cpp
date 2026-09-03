@@ -26,7 +26,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021A1B0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021A1E0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021A308);
+extern "C" int func_0021A308(void) {
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021A310);
 

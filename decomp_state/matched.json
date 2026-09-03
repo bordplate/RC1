@@ -128,5 +128,15 @@
     "size": 12,
     "note": "Sets VideoDec.state (u32 at offset 0xA8) to 1. Original asm: 'addiu $v0,$0,1; jr $ra; sw $v0,0xA8($a0)' - store of the return register in the return delay slot. Ghidra FUN_0023cc70: *(param_1+0xa8)=1. Sole xref: UNCONDITIONAL_CALL at 0x23a588 from readMpeg__FP8VideoDecP7ReadBufP7StrFile (movie), passing self. KEY EGC QUIRK found by standalone trial compiles: the int forms 'return (self->state=1);' and '{self->state=1; return 1;}' emit 4 instructions (li v1,1; li v0,1; jr $ra; sw v1) because the non-zero constant is duplicated for store and return; only the VOID form compiles to the original 3 words (EGC reuses $v0 as a free temp). Replaced INCLUDE_ASM with pure C++ 'void videoDecAbort(VideoDec* self) { self->state = 1; }' (no extern \"C\"; old-GCC mangling yields exactly videoDecAbort__FP8VideoDec, same pattern as videoDecReset/strFileDelete). Verified: videodec.o nm shows T videoDecAbort__FP8VideoDec at .text+0x1A8 size 0xC; objdump words 24020001 03e00008 ac8200a8 == original slice at file offset 0x13DBF0 (LE bytes 01000224 0800e003 a80082ac); decomp_status count 881->880; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/pause.cpp:29:func_0021A308": {
+    "name": "func_0021A308",
+    "source": "code/game/pause.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause/func_0021A308.s",
+    "vram": "0x0021A308",
+    "file_offset": "0x11B288",
+    "size": 8,
+    "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). Standalone callback stub: data pointer table entry at vram 0x001D1AA8 (file 0x0D2A28) points exactly at it, adjacent entry is function start 0x2212B8; Ghidra has no function defined there. Replaced with extern \"C\" int func_0021A308(void) { return 0; } at pause.cpp:29. Verified: object symbol at .text+0x15F8 size 8, bytes identical to original slice, neighbours contiguous, pause .text length unchanged (0xEA30), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

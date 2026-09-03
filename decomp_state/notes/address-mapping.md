@@ -58,6 +58,22 @@ Then full oracle: `make && cmp build/boot_elf.elf assets/boot_elf.elf`.
   and cmp passes byte-for-byte.
 - Most targets live in `.cpp` files (830) vs `.c` (63).
 
+## Stripped symbol table (learned 2026-09-03, func_0021A308)
+
+- `assets/boot_elf.elf` has **no symtab/dynsym at all** (`nm`, readelf: no
+  symbols). All `func_<addr>` names come from splat's flow-based splitting
+  (boundaries after `jr $ra` epilogues), and the few real names in
+  `config/symbols.txt` are the only authoritative name source. A small
+  candidate starting with a full `jr $ra; ...` prologue-free body is therefore
+  not proof of split-artifact status: check for data-pointer table entries
+  pointing exactly at it (e.g. 0x21A308 has one at vram 0x1D1AA8 / file
+  0x0D2A28, next to function start 0x2212B8) before dismissing it as a
+  mid-function fragment.
+- Splat/Ghidra vram-space GP is `0x166C00` (Makefile ld line: `--defsym
+  _gp=0x166c00`; crt0 loads D_00166C00 into $gp). Ghidra's unresolved
+  gp-relative labels are named `<type>Gp<offset-as-unsigned-hex>` (e.g.
+  `uGpffff95b4` = gp-0x6A4C = 0x1601B4), so real addresses = 0x166C00 + offset.
+
 ## GP register / globals (learned 2026-09-03, func_001FF768)
 
 - Runtime `$gp = 0x166C00`: crt0 (`code/_generated/sce/crt0.s`) does
