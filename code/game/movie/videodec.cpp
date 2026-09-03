@@ -22,7 +22,9 @@ void videoDecReset(VideoDec* self) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecDelete__FP8VideoDec);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecAbort__FP8VideoDec);
+void videoDecAbort(VideoDec* self) {
+    self->state = 1;
+}
 
 extern "C" int videoDecGetState(VideoDec* self) {
     return self->state;

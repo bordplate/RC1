@@ -118,5 +118,15 @@
     "size": 8,
     "note": "Sets VideoDec.state (u32 at offset 0xA8) to 0. Original asm: 'jr $ra; sw $zero,0xA8($a0)' - store in the return delay slot. Ghidra FUN_0023cc30: *(undefined4*)(param_1+0xa8)=0. Sole xref: UNCONDITIONAL_CALL at 0x23cb7c within videodec's own range (teardown/reset path). Replaced INCLUDE_ASM with pure C++ 'void videoDecReset(VideoDec* self) { self->state = 0; }' using the file-local VideoDec struct (u8 _pad[0xA8]; u32 state) added for videoDecGetState; old-GCC mangling yields exactly videoDecReset__FP8VideoDec (same pattern as strFileDelete), no extern \"C\". Standalone EEGCC test compile confirmed 'jr ra / sw zero,168(a0)' + correct symbol before editing. Verified: videodec.o nm shows T videoDecReset__FP8VideoDec at .text+0x168; objdump bytes 03e00008 ac8000a8 == original slice at file offset 0x13DBB0 (LE 0800e003 a80080ac); no relocations in [0x168,0x170); decomp_status count 882->881; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/videodec.cpp:25:videoDecAbort__FP8VideoDec": {
+    "name": "videoDecAbort__FP8VideoDec",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecAbort__FP8VideoDec.s",
+    "vram": "0x0023CC70",
+    "file_offset": "0x13DBF0",
+    "size": 12,
+    "note": "Sets VideoDec.state (u32 at offset 0xA8) to 1. Original asm: 'addiu $v0,$0,1; jr $ra; sw $v0,0xA8($a0)' - store of the return register in the return delay slot. Ghidra FUN_0023cc70: *(param_1+0xa8)=1. Sole xref: UNCONDITIONAL_CALL at 0x23a588 from readMpeg__FP8VideoDecP7ReadBufP7StrFile (movie), passing self. KEY EGC QUIRK found by standalone trial compiles: the int forms 'return (self->state=1);' and '{self->state=1; return 1;}' emit 4 instructions (li v1,1; li v0,1; jr $ra; sw v1) because the non-zero constant is duplicated for store and return; only the VOID form compiles to the original 3 words (EGC reuses $v0 as a free temp). Replaced INCLUDE_ASM with pure C++ 'void videoDecAbort(VideoDec* self) { self->state = 1; }' (no extern \"C\"; old-GCC mangling yields exactly videoDecAbort__FP8VideoDec, same pattern as videoDecReset/strFileDelete). Verified: videodec.o nm shows T videoDecAbort__FP8VideoDec at .text+0x1A8 size 0xC; objdump words 24020001 03e00008 ac8200a8 == original slice at file offset 0x13DBF0 (LE bytes 01000224 0800e003 a80082ac); decomp_status count 881->880; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
