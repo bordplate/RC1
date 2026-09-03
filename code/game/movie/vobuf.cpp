@@ -24,7 +24,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufIncCount__FP5V
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufGetData__FP5VoBuf);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufIsEmpty);
+extern "C" int voBufIsEmpty(VoBuf* self) {
+    return self->count == 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufGetTag__FP5VoBuf);
 

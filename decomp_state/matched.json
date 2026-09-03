@@ -29,6 +29,16 @@
     "note": "Zeros VoBuf.count(0xC) then VoBuf.head(0x8). Original asm: sw $zero,0xC($a0); sw $zero,0x8($a0); jr $ra; nop. Key finding: EGC 2.95.2 -O2 reschedules two independent zero-stores (putting the second into the jr delay slot) unless both target fields are volatile-qualified. Declared struct VoBuf { void* data; void* tags; volatile u32 head; volatile u32 count; u32 capacity; } in vobuf.cpp and wrote self->count=0; self->head=0;. Verified: objdump of build/code/game/movie/vobuf.o shows voBufReset__FP5VoBuf at .text+0x58 size 0x10 with words ac80000c ac800008 03e00008 00000000 identical to original slice; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
   },
+  "code/game/movie/vobuf.cpp:27:voBufIsEmpty": {
+    "name": "voBufIsEmpty",
+    "source": "code/game/movie/vobuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/vobuf/voBufIsEmpty.s",
+    "vram": "0x0023D2C8",
+    "file_offset": "0x13E248",
+    "size": 12,
+    "note": "Returns VoBuf.count==0 (count at 0xC). Original asm: lw $v0,0xC($a0); jr $ra; sltiu $v0,$v0,1 (delay slot); nop. Ghidra FUN_0023d2c8: return *(int*)(p+0xc)==0. Sole caller is direct jal at vram 0x0023D2E4 inside the sibling pop fn at 0x0023D2D8 (no symbol resolution). Bare symbol name (no Itanium suffix) like the C-compiled siblings, so defined extern \"C\" int voBufIsEmpty(VoBuf* self) { return self->count == 0; }. volatile u32 count (from voBufReset struct) gives one load; EGC -O2 emits lw/jr/sltiu verbatim, no delay-slot reordering with a single mem op. Verified: vobuf.o symbol at .text+0x138 size 0xC, words 8c82000c 03e00008 2c420001 identical to original slice; zero relocations in vobuf.o; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
+  },
   "code/game/hud.cpp:33:func_001FF768": {
     "name": "func_001FF768",
     "source": "code/game/hud.cpp",
