@@ -208,5 +208,15 @@
     "size": 8,
     "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). 'Return false' callback-stub family. No direct Ghidra data xref in the boot ELF (likely overlay/computed-pointer referenced), but layout proves standalone: preceding func_0021DDF8 ends with a full epilogue exactly at 0x21DF28 and following func_0021DF30 starts with a full body at 0x21DF30. Replaced with extern \"C\" int func_0021DF28(void) { return 0; } in pause.cpp. Verified: pause.o symbol at .text+0x5218 size 8, neighbour func_0021DF30 contiguous at 0x5220, full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/pause.cpp:176:func_002217F8": {
+    "name": "func_002217F8",
+    "source": "code/game/pause.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause/func_002217F8.s",
+    "vram": "0x002217F8",
+    "file_offset": "0x122778",
+    "size": 8,
+    "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). 'Return false' callback-stub family. Ghidra DATA xref from vram 0x001D2080 points exactly at it. Replaced with extern \"C\" int func_002217F8(void) { return 0; } in pause.cpp. Verified: pause.o symbol at .text+0x8AE8 size 8 (file 0x122778 - seg 0x119C90), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

@@ -179,7 +179,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002215F8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002216C0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002217F8);
+extern "C" int func_002217F8(void) {
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00221800);
 
