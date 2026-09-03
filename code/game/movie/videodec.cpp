@@ -1,4 +1,10 @@
 #include "common.h"
+#include "types.h"
+
+typedef struct VideoDec {
+    u8 _pad[0xA8];
+    u32 state;
+} VideoDec;
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi);
 
@@ -16,7 +22,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecDelete__
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecAbort__FP8VideoDec);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecGetState);
+extern "C" int videoDecGetState(VideoDec* self) {
+    return self->state;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecSetState__FP8VideoDecUi);
 

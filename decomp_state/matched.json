@@ -88,5 +88,15 @@
     "size": 8,
     "note": "Original body is just 'jr $ra; nop' (empty function), same pattern as voBufDelete. Ghidra FUN_0023b958 decompiles to 'return;'; sole caller UNCONDITIONAL_CALL at vram 0x0023AA88 inside movie read loop FUN_0023aa68 (readMpeg family). Defined local struct ReadBuf in readbuf.cpp: u8 data[0x50000] followed by trailing volatile u32 putPos(0x50000)/count(0x50004)/capacity(0x50008) - layout derived from sibling decompiles (create writes those three words; beginPut/endPut/beginGet/endGet implement a ring buffer over it). Old-GCC C++ mangling: free function 'void readBufDelete(ReadBuf* self) {}' mangles to exactly readBufDelete__FP7ReadBuf, no extern \"C\". Verified: objdump of build/code/game/movie/readbuf.o shows symbol at .text+0x18 size 8 with words 03e00008 00000000 identical to original slice (LE bytes 0800 e003 0000 0000) at file offset 0x13C8D8; zero relocations in object; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/videodec.cpp:25:videoDecGetState": {
+    "name": "videoDecGetState",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecGetState.s",
+    "vram": "0x0023CC80",
+    "file_offset": "0x13DC00",
+    "size": 8,
+    "note": "Returns VideoDec.state (int at offset 0xA8). Original asm: jr $ra; lw $v0,0xA8($a0) (load in delay slot). Ghidra FUN_0023cc80: return *(undefined4*)(param_1+0xa8); sibling videoDecSetState__FP8VideoDecUi writes the same word and returns the old value, confirming an int state field. Callers are absolute jal from videodec's own range (0x23A690/0x23A6F8/0x23CE90/0x23D018). Added local struct VideoDec { u8 _pad[0xA8]; u32 state; } plus #include \"types.h\" in videodec.cpp (common.h does not define u8/u32) and wrote extern \"C\" int videoDecGetState(VideoDec* self) { return self->state; }. Standalone EGC test compile confirmed words before editing. Verified: videodec.o symbol at .text+0x1b8 size 0x8, little-endian bytes 0800e003 a800828c identical to original slice at file offset 0x13DC00; no relocations there; decomp_status count 884->883; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
