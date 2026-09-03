@@ -39,6 +39,16 @@
     "note": "Returns VoBuf.count==0 (count at 0xC). Original asm: lw $v0,0xC($a0); jr $ra; sltiu $v0,$v0,1 (delay slot); nop. Ghidra FUN_0023d2c8: return *(int*)(p+0xc)==0. Sole caller is direct jal at vram 0x0023D2E4 inside the sibling pop fn at 0x0023D2D8 (no symbol resolution). Bare symbol name (no Itanium suffix) like the C-compiled siblings, so defined extern \"C\" int voBufIsEmpty(VoBuf* self) { return self->count == 0; }. volatile u32 count (from voBufReset struct) gives one load; EGC -O2 emits lw/jr/sltiu verbatim, no delay-slot reordering with a single mem op. Verified: vobuf.o symbol at .text+0x138 size 0xC, words 8c82000c 03e00008 2c420001 identical to original slice; zero relocations in vobuf.o; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
   },
+  "code/game/movie/vobuf.cpp:21:voBufIsFull__FP5VoBuf": {
+    "name": "voBufIsFull__FP5VoBuf",
+    "source": "code/game/movie/vobuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/vobuf/voBufIsFull__FP5VoBuf.s",
+    "vram": "0x0023D1F8",
+    "file_offset": "0x13E178",
+    "size": 20,
+    "note": "Returns VoBuf.count==capacity (count at 0xC, capacity at 0x10) via unsigned-idiom xor+sltiu. Original asm: lw $v1,0x10($a0); lw $v0,0xC($a0); xor $v0,$v0,$v1; jr $ra; sltiu $v0,$v0,1 (delay slot). Wrote extern \"C\" int voBufIsFull__FP5VoBuf(VoBuf* self) { return self->count == self->capacity; } using the existing volatile struct. EGC 2.95.2 -O2 emits exactly this sequence: capacity load first into $v1, volatile count load into $v0, xor, jr with sltiu scheduled into delay slot. A sibling function in vobuf.o (push, at .text+0x104) now has a symbol-relative jal to it that resolves to the original absolute address. Verified: vobuf.o symbol at .text+0x68 size 0x14, words 8c830010 8c82000c 00431026 03e00008 2c420001 identical to original slice; zero relocations in vobuf.o; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
+  },
   "code/game/hud.cpp:33:func_001FF768": {
     "name": "func_001FF768",
     "source": "code/game/hud.cpp",

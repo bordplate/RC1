@@ -18,7 +18,9 @@ extern "C" void voBufReset__FP5VoBuf(VoBuf* self) {
     self->head = 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufIsFull__FP5VoBuf);
+extern "C" int voBufIsFull__FP5VoBuf(VoBuf* self) {
+    return self->count == self->capacity;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufIncCount__FP5VoBuf);
 
