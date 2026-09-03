@@ -8,4 +8,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/disp", handler_endimage);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/disp", startDisplay__Fi);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/disp", endDisplay__Fv);
+void endDisplay(void) {
+    *(int*)0x1611E0 = 0;
+}
