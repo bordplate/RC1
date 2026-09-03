@@ -30,7 +30,11 @@ extern "C" int videoDecGetState(VideoDec* self) {
     return self->state;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecSetState__FP8VideoDecUi);
+u32 videoDecSetState(VideoDec* self, u32 state) {
+    u32 old = self->state;
+    self->state = state;
+    return old;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecPutTs__FP8VideoDecllPUci);
 

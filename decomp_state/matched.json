@@ -218,5 +218,15 @@
     "size": 8,
     "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). 'Return false' callback-stub family. Ghidra DATA xref from vram 0x001D2080 points exactly at it. Replaced with extern \"C\" int func_002217F8(void) { return 0; } in pause.cpp. Verified: pause.o symbol at .text+0x8AE8 size 8 (file 0x122778 - seg 0x119C90), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/videodec.cpp:33:videoDecSetState__FP8VideoDecUi": {
+    "name": "videoDecSetState__FP8VideoDecUi",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecSetState__FP8VideoDecUi.s",
+    "vram": "0x0023CC88",
+    "file_offset": "0x13DC08",
+    "size": 12,
+    "note": "Read-modify-write of VideoDec.state (offset 0xA8): u32 videoDecSetState(VideoDec* self,u32 state){u32 old=self->state; self->state=state; return old;} EGC 2.95.2 loads old directly into $v0, keeps new value in $a1, store lands in jr $ra delay slot -> exact 3-instruction original (8c8200a8 03e00008 ac8500a8). Verified: objdump -t shows symbol at .text+0x1C0 size 0xC; object bytes identical to original slice; no relocations in range; neighbours contiguous (getState ends 0x1C0, PutTs starts 0x1D0); cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status count 871->870.",
+    "matched_date": "2026-09-03"
   }
 }
