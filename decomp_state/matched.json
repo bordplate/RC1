@@ -287,5 +287,15 @@
     "size": 16,
     "note": "Byte-flag predicate: return D_0013D3A5 != 0 (lbu of unsigned byte at core.data vram 0x0013D3A5 via lui 0x14 + sign-extended offset -0x2C5B, sltu $v0,$zero,$v0 in jr $ra delay slot). Sibling of matched func_002069A0/B0 and func_00206B88; DATA xref from core.data vram 0x19FF14 (callback table, consecutive after the 0x206B88 entry at 0x19FF10). Global declared extern u8 D_0013D3A5 __attribute__((section(\".data\"))) in menu.cpp; no dlabel in generated core.data, symbol aliased in build/undefined_syms_auto.txt and survives make split. Verified: nm menu.o shows func_00206B98 at .text+0x220 plain T with no .NON_MATCHING alias; built ELF slice 0x107B18..0x107B28 == original (1400033ca5d362900800e0032b100200); make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 865->864.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/strfile.cpp:8:func_0023BA48": {
+    "name": "func_0023BA48",
+    "source": "code/game/movie/strfile.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/strfile/func_0023BA48.s",
+    "vram": "0x0023BA48",
+    "file_offset": "0x13C9C8",
+    "size": 16,
+    "note": "StrFile header setter: self->offset = arg0; self->frameCount = arg1; return 1. Original asm: addiu $v0,$0,1; sw a2,0(a0); jr ra; sw a1,4(a0) (delay slot). Sole caller initAll__Fiii (movie.cpp) at vram 0x23A9BC passes its first two int args and the resident StrFile instance (&DAT_0016120c[0xd9040]); result tested for error. Field evidence: +4 is the stream read position advanced in func_0023BA60; +0 is a counter consumed in readMpeg (names best-effort). Expanded StrFile typedef to {u32 frameCount, u32 offset}. Defined as extern \"C\" int func_0023BA48(StrFile*, int, int) (kept splat address name; no symbols.txt rename needed). Codegen pitfall: EGC emits the two stores in source order with the last one in the jr $ra delay slot and hoists addiu $v0 early \u2014 the reversed assignment order does NOT match. Verified: clean rebuild (make clean && make split && make -j2) + full cmp pass; strfile.o nm shows T func_0023BA48 at .text+0x0 with neighbours at +0x10/+0x18; object bytes 01000224 000086ac 0800e003 040085ac == original slice at file offset 0x13C9C8; no .rel.text entries in [0x0,0x10). See decomp_state/notes/strfile_func_0023BA48.md.",
+    "matched_date": "2026-09-04"
   }
 }

@@ -69,8 +69,8 @@ struct has at least that; expand when decompiling it.
 
 ## Remaining strfile.cpp targets
 
-- `func_0023BA48` (16 bytes): `v0=1; [a0]=a1; jr $ra; [a0+4]=a2` — stores two
-  u32s at StrFile offsets 0/4 and returns 1; likely an init/set pair setter.
+- `func_0023BA48` (16 bytes): MATCHED 2026-09-04 — stores two u32s at StrFile
+  offsets 0/4 and returns 1 (see strfile_func_0023BA48.md).
 - `func_0023BA60` (0x98 bytes): real workhorse — builds a 3-byte buffer
   (`sb $v0,0(sp); sb $0,1(sp); sb $0,2(sp)` after `addiu $v0,$0,0x64`), calls
   `func_00121450(*(u32*)(a0+4), a2>>11, a1, buf)`, and if `a3==0` advances
