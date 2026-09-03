@@ -158,5 +158,15 @@
     "size": 16,
     "note": "Stores -1 at *(a0+0x44), returns 0 (addiu v1,-1; daddu v0,$0,0; jr $ra; sw v1,0x44(a0) in delay slot). Reset/cancel callback on the pause-menu state object; 33 Ghidra DATA xrefs from item descriptor tables (0x1CE878..0x1D4D18), definitely a function entry. Replaced with extern \"C\" int func_0021A318(int* p) { p[0x11] = -1; return 0; } at pause.cpp:33. EGC -G8 -O2 emits exactly li v1,-1; move v0,0; j ra; sw v1,68(a0); passing the value as a parameter instead reorders the store before the jr (wrong bytes). Verified: object symbol at .text+0x1608 size 0x10, bytes ffff03242d1000000800e003440083ac == original slice, neighbours contiguous, pause .text length unchanged (0xEA30), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/draw.cpp:108:func_001F61F8": {
+    "name": "func_001F61F8",
+    "source": "code/game/draw.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw/func_001F61F8.s",
+    "vram": "0x001F61F8",
+    "file_offset": "0xF7178",
+    "size": 8,
+    "note": "Sets gp-relative global D_0015F49C (0x166C00-0x7764, core.bss) to 0: jr $ra; sw $zero,-0x7764(gp) in delay slot. Twin func_001F61E8 sets it to 1; the pair brackets FontPrintWindow calls in pause-menu draw code (window-text flag). 9 UNCONDITIONAL_CALL xrefs, no args. Replaced with 'extern \"C\" int D_0015F49C;' + 'extern \"C\" void func_001F61F8(void) { D_0015F49C = 0; }' at draw.cpp:108, plus D_0015F49C = 0x15f49c in config/symbols.txt (GP-relative recipe). Verified: draw.o symbol at .text+0x5670 size 8, single R_MIPS_GPREL16 reloc against D_0015F49C at +4, neighbours contiguous, draw .text length unchanged (0x6F10), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
