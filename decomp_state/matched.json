@@ -238,5 +238,15 @@
     "size": 12,
     "note": "Byte-flag predicate: return D_0013D395 != 0 (lbu of unsigned byte at core.data vram 0x0013D395, sltu $v0,$zero,$v0 in jr $ra delay slot). Part of the menu byte-flag getter family (func_002069A0/C0, func_00206B88-BC8 share the same shape). Global declared extern u8 D_0013D395 __attribute__((section(\".data\"))) in menu.cpp; defined via dlabel in core.data.data.s and aliased in undefined_syms_auto.txt. EGC 2.95.2 emits the exact original 4 words (incl. delay slot) with -G8 -O2 -ffast-math -fno-exceptions. Verified: readelf -s menu.o shows func_002069B0 at .text+0x38 size 0x10 with no .NON_MATCHING alias; built ELF slice 0x107930..0x107940 == original (1400033c95d362900800e0032b100200); neighbours contiguous (A0 at +0x28, C0 at +0x48); menu .text total 0x26b8 unchanged; cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/menu.cpp:8:func_002069A0": {
+    "name": "func_002069A0",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_002069A0.s",
+    "vram": "0x002069A0",
+    "file_offset": "0x107920",
+    "size": 12,
+    "note": "Byte-flag predicate: return D_0013D394 != 0 (lbu of unsigned byte at core.data vram 0x0013D394, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family sibling immediately before func_002069B0 (see decomp_state/notes/menu_func_002069A0.md). Global declared extern u8 D_0013D394 __attribute__((section(\".data\"))) in menu.cpp; dlabel in core.data.data.s, aliased in undefined_syms_auto.txt. Verified: nm -n menu.o shows func_002069A0 at .text+0x28 with next symbol B0 at .text+0x38 (size 0x10 incl. delay slot), no .NON_MATCHING alias; built ELF slice 0x107920..0x107930 == original (1400033c94d362900800e0032b100200); neighbours contiguous; menu .text total 0x26b8 unchanged; cmp build/boot_elf.elf assets/boot_elf.elf passes on first build.",
+    "matched_date": "2026-09-03"
   }
 }

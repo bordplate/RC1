@@ -3,7 +3,11 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00206978);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002069A0);
+extern u8 D_0013D394 __attribute__((section(".data")));
+
+extern "C" int func_002069A0(void) {
+    return D_0013D394 != 0;
+}
 
 extern u8 D_0013D395 __attribute__((section(".data")));
 
