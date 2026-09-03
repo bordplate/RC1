@@ -267,5 +267,15 @@
     "file_offset": "0x107B08",
     "size": 12,
     "note": "Byte-flag predicate: return D_0013D3A4 != 0 (lbu of unsigned byte at core.data vram 0x0013D3A4, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family sibling of func_002069A0/B0; callback-table xref via core.data 0x19FF10 (see decomp_state/notes/menu_func_00206B88.md, incl. the lui/offset sign-extension address pitfall). Global declared extern u8 D_0013D3A4 __attribute__((section(\".data\"))) in menu.cpp; no dlabel needed, symbol aliased in build/undefined_syms_auto.txt (auto-registered by splat from the nonmatching .s reference, survives make split). Verified: nm menu.o shows func_00206B88 at .text+0x210 plain T with no .NON_MATCHING alias; neighbours B78 at +0x200 and B98 at +0x220 contiguous; built ELF slice 0x107B08..0x107B18 == original (1400033ca4d362900800e0032b100200); make + cmp build/boot_elf.elf assets/boot_elf.elf passes."
+  },
+  "code/game/menu.cpp:34:func_00206B98": {
+    "name": "func_00206B98",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00206B98.s",
+    "vram": "0x00206B98",
+    "file_offset": "0x107B18",
+    "size": 16,
+    "note": "Byte-flag predicate: return D_0013D3A5 != 0 (lbu of unsigned byte at core.data vram 0x0013D3A5 via lui 0x14 + sign-extended offset -0x2C5B, sltu $v0,$zero,$v0 in jr $ra delay slot). Sibling of matched func_002069A0/B0 and func_00206B88; DATA xref from core.data vram 0x19FF14 (callback table, consecutive after the 0x206B88 entry at 0x19FF10). Global declared extern u8 D_0013D3A5 __attribute__((section(\".data\"))) in menu.cpp; no dlabel in generated core.data, symbol aliased in build/undefined_syms_auto.txt and survives make split. Verified: nm menu.o shows func_00206B98 at .text+0x220 plain T with no .NON_MATCHING alias; built ELF slice 0x107B18..0x107B28 == original (1400033ca5d362900800e0032b100200); make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 865->864.",
+    "matched_date": "2026-09-03"
   }
 }

@@ -75,8 +75,8 @@ identical to the original.
 
 ## Next candidates in this file (same pattern)
 
-- func_00206B98 / BA8 / BB8 / BC8 — D_0013D3A5/A6/A7/AD, all dlabelled and
-  already referenced; should be trivial one-liners like this one.
+- func_00206BA8 / BB8 / BC8 — D_0013D3A6/A7/AD (func_00206B98 done, see
+  menu_func_00206B98.md); should be trivial one-liners like this one.
 - func_00206B78 is NOT the same pattern: it does `lw $v0, -0x6E9C($gp); jr
   $ra; sltiu $v0,$v0,1` — a gp-relative load from `.lit` (D_0015FD64 =
   `.float 0`), i.e. it always returns 1. Needs a separate investigation of
