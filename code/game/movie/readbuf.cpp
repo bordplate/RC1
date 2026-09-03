@@ -1,8 +1,16 @@
 #include "common.h"
+#include "types.h"
+
+typedef struct ReadBuf {
+    u8 data[0x50000];
+    volatile u32 putPos;
+    volatile u32 count;
+    volatile u32 capacity;
+} ReadBuf;
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufCreate__FP7ReadBuf);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufDelete__FP7ReadBuf);
+void readBufDelete(ReadBuf* self) {}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufBeginPut__FP7ReadBufPPUc);
 

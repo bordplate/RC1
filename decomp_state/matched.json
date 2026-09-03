@@ -78,5 +78,15 @@
     "size": 32,
     "note": "if (count > 0) count--; on volatile signed int count at offset 0xC. Original asm: lw $v0,0xC($a0); blez $v0,end; nop; lw $v0,0xC($a0); addiu $v0,$v0,-1; sw $v0,0xC($a0); jr $ra; nop (8 words, 0x20 bytes). Ghidra FUN_0023d340: if (0 < *(int*)(p+0xc)) *(int*)(p+0xc) -= 1; sole caller UNCONDITIONAL_CALL from vram 0x0023b564 (video IRQ handler, return value ignored). KEY INSIGHT: original uses SIGNED blez for the >0 test, not unsigned beqz/bgtz. EGC -O2 emits beqz for `if (u32 x > 0)` but blez only when the field is signed. So changed struct field `volatile u32 count` to `volatile int count` (same 4-byte layout, offsets unchanged) and replaced INCLUDE_ASM with plain C++ free function void voBufDecCount(VoBuf* self) { if (self->count > 0) self->count--; } (old-GCC mangling yields voBufDecCount__FP5VoBuf, no extern \"C\"). Sign change is codegen-invisible to already-matched siblings: voBufIsEmpty (==0 -> sltiu x,1) and voBufIsFull (== -> xor+sltiu) are equality-only. Verified: standalone test compile byte-identical to original slice at file offset 0x13E2C0 (0c00828c 04004018 00000000 0c00828c ffff4224 0c0082ac 0800e003 00000000); vobuf.o symbol at .text+0x1B0 size 0x20 same words; no relocations in [0x1b0,0x1d0) (only pre-existing R_MIPS_26 at 0x8c/0xe0/0x104/0x154); full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/movie/readbuf.cpp:13:readBufDelete__FP7ReadBuf": {
+    "name": "readBufDelete__FP7ReadBuf",
+    "source": "code/game/movie/readbuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/readbuf/readBufDelete__FP7ReadBuf.s",
+    "vram": "0x0023B958",
+    "file_offset": "0x13C8D8",
+    "size": 8,
+    "note": "Original body is just 'jr $ra; nop' (empty function), same pattern as voBufDelete. Ghidra FUN_0023b958 decompiles to 'return;'; sole caller UNCONDITIONAL_CALL at vram 0x0023AA88 inside movie read loop FUN_0023aa68 (readMpeg family). Defined local struct ReadBuf in readbuf.cpp: u8 data[0x50000] followed by trailing volatile u32 putPos(0x50000)/count(0x50004)/capacity(0x50008) - layout derived from sibling decompiles (create writes those three words; beginPut/endPut/beginGet/endGet implement a ring buffer over it). Old-GCC C++ mangling: free function 'void readBufDelete(ReadBuf* self) {}' mangles to exactly readBufDelete__FP7ReadBuf, no extern \"C\". Verified: objdump of build/code/game/movie/readbuf.o shows symbol at .text+0x18 size 8 with words 03e00008 00000000 identical to original slice (LE bytes 0800 e003 0000 0000) at file offset 0x13C8D8; zero relocations in object; full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
