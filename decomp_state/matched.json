@@ -228,5 +228,15 @@
     "size": 12,
     "note": "Read-modify-write of VideoDec.state (offset 0xA8): u32 videoDecSetState(VideoDec* self,u32 state){u32 old=self->state; self->state=state; return old;} EGC 2.95.2 loads old directly into $v0, keeps new value in $a1, store lands in jr $ra delay slot -> exact 3-instruction original (8c8200a8 03e00008 ac8500a8). Verified: objdump -t shows symbol at .text+0x1C0 size 0xC; object bytes identical to original slice; no relocations in range; neighbours contiguous (getState ends 0x1C0, PutTs starts 0x1D0); cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status count 871->870.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/menu.cpp:7:func_002069B0": {
+    "name": "func_002069B0",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_002069B0.s",
+    "vram": "0x002069B0",
+    "file_offset": "0x107930",
+    "size": 12,
+    "note": "Byte-flag predicate: return D_0013D395 != 0 (lbu of unsigned byte at core.data vram 0x0013D395, sltu $v0,$zero,$v0 in jr $ra delay slot). Part of the menu byte-flag getter family (func_002069A0/C0, func_00206B88-BC8 share the same shape). Global declared extern u8 D_0013D395 __attribute__((section(\".data\"))) in menu.cpp; defined via dlabel in core.data.data.s and aliased in undefined_syms_auto.txt. EGC 2.95.2 emits the exact original 4 words (incl. delay slot) with -G8 -O2 -ffast-math -fno-exceptions. Verified: readelf -s menu.o shows func_002069B0 at .text+0x38 size 0x10 with no .NON_MATCHING alias; built ELF slice 0x107930..0x107940 == original (1400033c95d362900800e0032b100200); neighbours contiguous (A0 at +0x28, C0 at +0x48); menu .text total 0x26b8 unchanged; cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
