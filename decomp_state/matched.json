@@ -178,5 +178,15 @@
     "size": 12,
     "note": "Sets gp-relative global D_0015F49C to 1: addiu v0,0,1; jr $ra; sw v0,-0x7764(gp) in delay slot (EGC reuses v0 as stored temp in void setter). Set-half of the FontPrintWindow flag pair with func_001F61F8. Replaced with 'extern \"C\" int D_0015F49C; extern \"C\" void func_001F61E8(void) { D_0015F49C = 1; }' at draw.cpp:106 (declaration moved above first use). Verified: draw.o symbol at .text+0x5660 size 0xC, R_MIPS_GPREL16 against D_0015F49C at +8, contiguous with func_001F61F8 at 0x5670, draw .text length unchanged (0x6F10), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/pause.cpp:54:func_0021BD98": {
+    "name": "func_0021BD98",
+    "source": "code/game/pause.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause/func_0021BD98.s",
+    "vram": "0x0021BD98",
+    "file_offset": "0x11CD18",
+    "size": 8,
+    "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). Same 'return false' callback-stub family as func_0021A308/func_0021A310: Ghidra DATA xref from vram 0x001CF040 points exactly at it. Replaced with extern \"C\" int func_0021BD98(void) { return 0; } at pause.cpp:54. Verified: pause.o symbol at .text+0x3088 size 8 (file 0x11CD18 - seg 0x119C90), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }
