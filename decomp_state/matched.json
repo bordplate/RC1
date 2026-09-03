@@ -188,5 +188,15 @@
     "size": 8,
     "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). Same 'return false' callback-stub family as func_0021A308/func_0021A310: Ghidra DATA xref from vram 0x001CF040 points exactly at it. Replaced with extern \"C\" int func_0021BD98(void) { return 0; } at pause.cpp:54. Verified: pause.o symbol at .text+0x3088 size 8 (file 0x11CD18 - seg 0x119C90), full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-03"
+  },
+  "code/game/pause.cpp:84:func_0021D1F0": {
+    "name": "func_0021D1F0",
+    "source": "code/game/pause.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause/func_0021D1F0.s",
+    "vram": "0x0021D1F0",
+    "file_offset": "0x11E170",
+    "size": 8,
+    "note": "Returns 0 (jr $ra; daddu $v0,$zero,$0). 'Return false' callback-stub family (see pause_func_0021A308.md for identity/codegen analysis). Ghidra DATA xref from vram 0x001D0364 points exactly at it. Replaced with extern \"C\" int func_0021D1F0(void) { return 0; } in pause.cpp. Verified: pause.o symbol at .text+0x44E0 size 8, neighbour func_0021D1F8 contiguous at 0x44E8, full cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-03"
   }
 }

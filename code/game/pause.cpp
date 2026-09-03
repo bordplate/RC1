@@ -83,7 +83,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", DrawSoundMenu);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021D168);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021D1F0);
+extern "C" int func_0021D1F0(void) {
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021D1F8);
 
