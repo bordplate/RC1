@@ -317,5 +317,15 @@
     "size": 16,
     "note": "Leaf bool: returns _AudioDec.sentPos (int at offset 0x50) >= 0x1000. Original asm: lw v0,0x50(a0); slti v0,v0,0x1000; jr ra; xori v0,v0,1 (inversion in delay slot). Field zeroed by audioDecReset/audioDecCreate, incremented += 0x400 per block in sendADPCM; only caller isAudioOK (movie.cpp) forwards result to gate startDisplay+audioDecStart in readMpeg. Renamed to audioDecIsPageFull with new config/symbols.txt entry; defined struct _AudioDec {u8 _pad[0x50]; int sentPos;} in audiodec.cpp (signed int required for slti). Gotcha: Makefile has no .cpp->generated .s deps, so movie.o had to be touched/rebuilt after the rename. Verified: object words 8c820050 28421000 03e00008 38420001 == original slice at 0x13BE60; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; target count 861->860.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:32:func_00206B78": {
+    "name": "func_00206B78",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00206B78.s",
+    "vram": "0x00206B78",
+    "file_offset": "0x107AF8",
+    "size": 12,
+    "note": "Menu callback-table getter (entry [0] of vtable at vram 0x19FEF0/.data file 0xA0E70; siblings func_00206B88-BB8 read D_0013D3A4-A7). Original: lw $v0,-0x6E9C($gp); jr $ra; sltiu $v0,$v0,1 in delay slot = 'return D_0015FD64 < 1;' for unsigned int at vram 0x15FD64 (lit segment, dlabel in lit.lit4.s, _gp=0x166C00). Signed int candidate gave slti; unsigned int gives matching sltiu and EGC does not fold unsigned <1 to equality. Plain 'extern \"C\" unsigned int D_0015FD64;' binds via R_MIPS_GPREL34 (same recipe as D_0015F49C in draw.cpp). Ghidra has no function/xrefs at 0x206B78; callers are the DATA table only. Verified: menu.o objdump lw v0,0(gp)/jr ra/sltiu v0,v0,1 with U D_0015FD64; full make + cmp passes; decomp_status 860->859.",
+    "matched_date": "2026-09-04"
   }
 }
