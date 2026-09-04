@@ -1,7 +1,11 @@
 #include "common.h"
 #include "types.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00206978);
+extern "C" int func_00208818(int a, int b, int c, int d, int e, int f);
+
+extern "C" int func_00206978(int x, int y) {
+    return func_00208818(x, y, 0xD3, 0xDB, 0x129, 0xF9);
+}
 
 extern u8 D_0013D394 __attribute__((section(".data")));
 
