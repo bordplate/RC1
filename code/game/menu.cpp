@@ -258,7 +258,19 @@ extern "C" void func_00208980(void) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002089A8);
+struct MenuData_0013D290 {
+    char pad[0xDC];
+    int field_0xDC;
+    int field_0xE0;
+};
+
+extern "C" struct MenuData_0013D290 D_0013D290 __attribute__((section(".data")));
+
+extern "C" void func_002089A8(void) {
+    *(int*)0x15EEB0 = 4;
+    D_0013D290.field_0xDC = -1;
+    D_0013D290.field_0xE0 = -1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002089D0);
 

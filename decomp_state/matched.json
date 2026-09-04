@@ -707,5 +707,15 @@
     "size": 40,
     "note": "Menu callback: if ((*(int*)0x15EEB4 ^ 1) & 1) *(int*)0x15EEB0 = 3 (i.e. set 0x15EEB0=3 when bit 0 of 0x15EEB4 is CLEAR). Single DATA xref (fp-table entry 0x1A0440). xori 1; andi 1 bit-test idiom plus the constant-cast-on-both-sides access (menu_func_00208E68.md) reproduces all 10 instructions byte-for-byte, li v0,3 in the beqz delay slot. Verified: built slice 0x109900..0x109928 words 1600023C B4EE428C 01004238 01004230 03004010 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 822 -> 821.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:261:func_002089A8": {
+    "name": "func_002089A8",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_002089A8.s",
+    "vram": "0x002089A8",
+    "file_offset": "0x109928",
+    "size": 36,
+    "note": "Menu callback over global struct D_0013D290 (undefined sym, needs section(\".data\")): *(int*)0x15EEB0 = 4; S+0xDC = -1; S+0xE0 = -1. Single -1 value CSE'd into one addiu a0; 4 in v1; base v0 via lui/addiu; 0x15EEB0 store via constant cast (at base). The three stores follow the documented fixed permutation (stmt3; stmt1; jr; <ds stmt2>): source order (0x15EEB0, 0xDC, 0xE0) emits sw 0xE0; sw 0x15EEB0; jr; <ds sw 0xDC>. Verified: built slice 0x109928..0x10994C words 1400023C FFFF0424 90D24224 04000324 E00044AC 1600013C B0EE23AC 0800E003 DC0044AC byte-identical; full make + cmp passes; count 821 -> 820.",
+    "matched_date": "2026-09-04"
   }
 }
