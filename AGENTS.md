@@ -237,6 +237,8 @@ For each selected function:
 9. Iterate until the function matches or record a concrete blocker.
 10. Run the full build/parity check before treating progress as durable.
 
+The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, or even same behavior but with a different instruction. It must be a perfect match.
+
 Prefer small leaf functions and one function at a time. Preserve old compiler
 compatibility and existing project style. Do not rewrite unrelated code. If
 repeated attempts fail, record the concrete blocker and continue elsewhere.
