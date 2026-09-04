@@ -697,5 +697,15 @@
     "size": 36,
     "note": "Byte-identical clone of matched func_00208E68 (menu callback family): if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Same constant-cast-on-both-sides idiom; only the bnez target offset differs (same relative distance, object byte-identical). This completes the four-clone family (0x208E68/90/ED8/F00 all matched). Verified: built slice 0x109E80..0x109EA4 words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 823 -> 822. See decomp_state/notes/menu_func_00208E68.md.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:298:func_00208980": {
+    "name": "func_00208980",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00208980.s",
+    "vram": "0x00208980",
+    "file_offset": "0x109900",
+    "size": 40,
+    "note": "Menu callback: if ((*(int*)0x15EEB4 ^ 1) & 1) *(int*)0x15EEB0 = 3 (i.e. set 0x15EEB0=3 when bit 0 of 0x15EEB4 is CLEAR). Single DATA xref (fp-table entry 0x1A0440). xori 1; andi 1 bit-test idiom plus the constant-cast-on-both-sides access (menu_func_00208E68.md) reproduces all 10 instructions byte-for-byte, li v0,3 in the beqz delay slot. Verified: built slice 0x109900..0x109928 words 1600023C B4EE428C 01004238 01004230 03004010 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 822 -> 821.",
+    "matched_date": "2026-09-04"
   }
 }

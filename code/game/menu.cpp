@@ -252,7 +252,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002088A8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002088D0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208980);
+extern "C" void func_00208980(void) {
+    if ((*(int*)0x15EEB4 ^ 1) & 1) {
+        *(int*)0x15EEB0 = 3;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002089A8);
 
