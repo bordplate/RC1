@@ -181,6 +181,16 @@ emits `0x50, 0x3c, jr, <0x40>` (wrong). The `return 0;` still hoists
 `daddu $v0,$0,$0` above the stores (see
 decomp_state/notes/pause_func_002223D8.md).
 
+Observation observed 2026-09-04 (single-call wrappers): a zero-arg C function
+whose only statement is a call passing literal 0 (`callee(0);`) compiles to a
+0x10 frame with `sq/lq $ra` at 0(sp) and the argument load `daddu $4,$0,$0`
+(word 0x0000202D — objdump prints it as `move a0,zero`) hoisted into the `jal`
+delay slot; the epilogue is the standard `lq; jr; <ds addiu>`. The callee MUST
+be declared with a parameter (e.g. `int`) in the extern prototype — a `(void)`
+prototype suppresses the argument setup and the delay slot comes out as `nop`,
+breaking the match (see
+decomp_state/notes/stash_func_00232CE0.md for the matched function).
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local

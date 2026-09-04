@@ -607,5 +607,15 @@
     "size": 20,
     "note": "Pause-menu init callback: zeros three int fields (0x3c, 0x40, 0x50) of the menu state struct and returns 0. Body: move v0,zero / sw zero,60(a0) / sw zero,64(a0) / jr ra / sw zero,80(a0) (last store in delay slot). Role from the vtable at vram 0x001D2B18 = {0x2223F0 update, 0x222768 draw, 0x2223D8 init} inside the pause menu registry (0x001D29EC..0x001D2A04: count 0x25, then vtable ptrs B18/AC0/B18/B70/BD8; same block duplicated at 0x001D2A74). The update fn 0x2223F0 is a text-list state machine (string id in D_001D2AF4, string-list ptr at +0x34, timer +0x3c, counter +0x40, state +0x50, flag +0x54); draw 0x222768 renders the list with scroll offsets at +0x18..+0x24. Single DATA xref (the table slot), no jal. Codegen: EGC -G8 -O2 hoists the return-0 (daddu v0,$0,$0) above the three constant zero-stores and applies the fixed three-store permutation [stmt3, stmt1, jr, ds:stmt2] even with a REGISTER base (a0), not just a %hi/%lo global base: source order f40, f50, f3c reproduces the original 0x3c,0x40,jr,ds:0x50 (first try with natural order 0x3c,0x40,0x50 gave 0x50,0x3c,jr,ds:0x40). Verified: standalone test object words identical (2d100000 3c0080ac 400080ac 0800e003 500080ac in BE-comment form); nm build/code/game/pause.o shows func_002223D8 plain T at .text+0x96c8, no .NON_MATCHING alias; built ELF slice 0x123358..0x12336C == original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 832->831. NOTE: the 'nonmatching func_002223D8, 0xC' size in the .s is wrong (body is 5 words 0x14 + trailing nop = 0x18 in-file); trust glabel..endlabel contents.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/stash.cpp:3:func_00232CE0": {
+    "name": "func_00232CE0",
+    "source": "code/game/stash.cpp",
+    "asm": "code/_generated/nonmatchings/game/stash/func_00232CE0.s",
+    "vram": "0x00232CE0",
+    "file_offset": "0x133C60",
+    "size": 28,
+    "note": "Stash SIF/IOP streaming init: one-line wrapper func_0011AB20(0) (SCE-lib, code/_generated/sce/lib.s). 0x10 frame, sq/lq ra; EGC hoists the arg-0 load daddu $4,$0,$0 (word 0x0000202D, prints as 'move a0,zero') into the jal delay slot. Callee must be declared with an int param or the delay slot becomes nop. Callers: 0x1EB900 in Transition_DoTransition__Fv, 0x20197C in InitOnce__Fv. See decomp_state/notes/stash_func_00232CE0.md. Verified: image slice 0x133C60 (28 bytes) built==original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; count 831->830.",
+    "matched_date": "2026-09-04"
   }
 }
