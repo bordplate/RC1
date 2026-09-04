@@ -50,4 +50,7 @@ extern "C" void func_00208E68(void) {
 - Full `make` + `cmp build/boot_elf.elf assets/boot_elf.elf` passes.
 - decomp_status --count: 826 -> 825.
 
-The three clone siblings remain INCLUDE_ASM; the identical source applies.
+The three clone siblings (func_00208E90 / func_00208ED8 / func_00208F00)
+were matched the same day with the identical source — each is byte-identical
+in the object (only the bnez target differs, same relative distance), each
+slice verified and full parity passing. The four-clone family is complete.

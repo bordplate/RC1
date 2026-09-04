@@ -687,5 +687,15 @@
     "size": 36,
     "note": "Byte-identical clone of matched func_00208E68 (menu callback family): if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Same constant-cast-on-both-sides idiom; only the bnez target offset differs (same relative distance, object byte-identical). Verified: built slice 0x109E58..0x109E7C words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 824 -> 823. See decomp_state/notes/menu_func_00208E68.md.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:314:func_00208F00": {
+    "name": "func_00208F00",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00208F00.s",
+    "vram": "0x00208F00",
+    "file_offset": "0x109E80",
+    "size": 36,
+    "note": "Byte-identical clone of matched func_00208E68 (menu callback family): if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Same constant-cast-on-both-sides idiom; only the bnez target offset differs (same relative distance, object byte-identical). This completes the four-clone family (0x208E68/90/ED8/F00 all matched). Verified: built slice 0x109E80..0x109EA4 words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 823 -> 822. See decomp_state/notes/menu_func_00208E68.md.",
+    "matched_date": "2026-09-04"
   }
 }
