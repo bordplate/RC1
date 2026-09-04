@@ -7,7 +7,24 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDC90);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_FindIndex);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", msg_string__Fi);
+extern "C" int Help_FindIndex(int idx);
+
+struct HelpMsg {
+    char *text;
+    int id;
+    int f8;
+    int fC;
+};
+
+extern struct HelpMsg *HelpMsgs;
+extern char s_Paradox_this_message_does_not[];
+
+char *msg_string(int idx) {
+    int i = Help_FindIndex(idx);
+    if (i >= 0)
+        return HelpMsgs[i].text;
+    return s_Paradox_this_message_does_not;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDD50);
 

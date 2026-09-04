@@ -28,5 +28,10 @@
     "status": "blocked",
     "date": "2026-09-04",
     "note": "64-bit DMA tag writer *p=(u64)a|((u64)b>>4)|(u64)c;. Original keeps 64-bit dsrl shift + per-operand dsll32 zexts; EGC v2.73a folds to 32-bit srl/dsrl32 + single trailing zext at every -O level. No source form forces the 64-bit dsrl on a value EGC knows is <2^32. See decomp_state/notes/vibuf_scTag2.md."
+  },
+  "code/game/help.cpp:12:func_001FDD50": {
+    "status": "blocked",
+    "date": "2026-09-05",
+    "note": "NOT a function: 4-byte unreachable dead-code tail of msg_string__Fi (EGC 2.95.2 artifact). The instruction 'sh zero, 0x38(v0)' at 0x1FDD50 sits after msg_string's 'jr ra; addiu sp' epilogue; verified unreachable (no jal/j references anywhere in the binary, jumptable jtbl_001E7A20 entries checked, Ghidra has no function at this address). No C function can compile to a bare store + nop with no return, and the true C form of msg_string that regenerates it (an extra store before the return that EGC schedules dead after the jr) was not found: the matched early-return form of msg_string__Fi emits no dead bytes, and local-variable forms miscompile the body (bltz/move). Its INCLUDE_ASM is retained deliberately to supply the 8 bytes (sh + nop) so the full ELF stays byte-for-byte. Generalization: ~46 similar 4-byte 'functions' across the binary (addiu sp / sw / sh / lw / daddu + nop) are dead tails of the preceding function \u2014 see decomp_state/notes/help_msg_string__Fi.md."
   }
 }

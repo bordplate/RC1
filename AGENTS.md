@@ -211,9 +211,29 @@ LOAD in the condition (`if (D_0015EEB4 & 0x40) return;`) allocates the
 address base to $v1 (`lui v1; lw v0,off(v1)`), while the original reuses
 $v0 for base and value (`lui v0,0x16; lw v0,-4428(v0)`). Casting the load
 address too — `if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3;` —
-reproduces the original byte-for-byte, so this family needs constant-cast
-accesses on BOTH sides (see decomp_state/notes/menu_func_00208E68.md; the
-byte-identical clone family func_00208E68/90/ED8/F00 is fully matched).
+ reproduces the original byte-for-byte, so this family needs constant-cast
+ accesses on BOTH sides (see decomp_state/notes/menu_func_00208E68.md; the
+ byte-identical clone family func_00208E68/90/ED8/F00 is fully matched).
+
+Observation observed 2026-09-05 (EGC dead-code tails — ~46 "phantom functions"):
+the original binary contains ~46 unreachable 4-byte fragments that spimdis splits
+into their own 4-byte "functions" (named `func_XXXX` in the queue, e.g.
+func_001FDD50, func_001FDC90, and the four `sw v0,-0x3FE0(gp)` in vuchain). Each
+sits at an 8-aligned address right after a preceding function's `jr ra; <delay>`
+epilogue and contains one instruction + nop: a stack deallocate (`addiu sp,sp,N`,
+~28x), a store of the return value or an arg field (`sw/sh/lw/daddu/andi`), or
+bare nops. They are dead: nothing jumps to them (verified for 0x1FDD50 by
+raw-encoding search for jal/j targets and absolute words across core.text, .text
+and the overlays, plus the jumptable entries — and Ghidra has no function there).
+Mechanism (verified by compiling standalone candidates with the project EGC): with
+two stores before a `return`, EGC keeps the FIRST alive (before `jr ra`, often in
+the delay slot) and emits the SECOND after the `jr ra` — unreachable. Strategy:
+when matching the preceding function, look for the C form that makes EGC
+regenerate the tail bytes and drop the orphan INCLUDE_ASM in the same commit; if
+no form is found, keep the orphan INCLUDE_ASM (it supplies the 8 bytes and keeps
+parity) and block the orphan entry explaining it is a dead tail, not a function
+(see decomp_state/notes/help_msg_string__Fi.md — msg_string__Fi matched with its
+orphan func_001FDD50 retained).
 
 ## OpenCode Model And MCP Configuration
 

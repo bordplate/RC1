@@ -735,5 +735,14 @@
     "file_offset": "0x118990",
     "size": 32,
     "note": "Single-call wrapper: UpdatePad(D_0013C940) -> calls UpdatePad__FR3PAD (UpdatePad(PAD&), vram 0x2170C8) with the global pad instance; returns its result. Written as pure C++ overloaded free functions (struct PAD forward decl + extern PAD D_0013C940 + void UpdatePad(PAD&) prototype + void UpdatePad(void)); EGC old-cfront mangling yields UpdatePad__Fv / UpdatePad__FR3PAD exactly, no extern \"C\" hand-mangling. Argument must be the symbol (emits R_MIPS_HI16/LO16 -> lui 0x14; addiu -14016); a literal 0x13C940 miscompiles to lui 0x13; ori 0xC940. Incomplete-type extern needs no section(\".data\") (absolute HI16/LO16, not GPREL16). 0x10 frame sq/lq $ra 0(sp), %hi lui before sq, %lo in jal delay slot. Verified: object slice with relocs resolved == original, link map places symbol at 0x217a10, clean make+cmp byte-for-byte, count 819->818."
+  },
+  "code/game/help.cpp:10:msg_string__Fi": {
+    "name": "msg_string__Fi",
+    "source": "code/game/help.cpp",
+    "asm": "code/_generated/nonmatchings/game/help/msg_string__Fi.s",
+    "vram": "0x001FDD10",
+    "file_offset": "0xFEC90",
+    "size": 64,
+    "note": "Help text lookup: i = Help_FindIndex(idx) (extern \"C\"); if (i >= 0) return HelpMsgs[i].text; return s_Paradox_this_message_does_not; \u2014 'Paradox: This message does not exist' string at 0x199968. HelpMsgs (0x15F6A0, a pointer global in the .lit region) is an ARRAY OF 16-BYTE ENTRIES, not char**: the table load is sll v1, v1, 4 (x16) then lw v0, 0(v1) \u2014 entry {char *text; int id; + 8 more bytes}; entry+4 is the id compared in Help_FindIndex. Declared struct HelpMsg {char *text; int id; int f8; int fC;} (f8/fC inferred). Early-return C form (no local holding the result) is REQUIRED for the match: both branches write the result straight to v0 (no move in the epilogue), EGC emits bgezl v1 -> then path with the else (lui/addiu string addr) on fallthrough + b to the single shared epilogue (lq ra; jr ra; addiu sp, sp, 0x10). The 'char *s' local form miscompiles (bltz, result in v1, extra move v0,v1). The original has an unreachable EGC dead-code tail after the epilogue \u2014 'sh zero, 0x38(v0); nop' at 0x1FDD50 (verified no jal/j/jumptable refs; jump table jtbl_001E7A20 checked) \u2014 an EGC 2.95.2 artifact (see notes/help_msg_string__Fi.md); the candidate C does not regenerate it, so the orphan INCLUDE_ASM func_001FDD50 is RETAINED to supply those 8 bytes. Verified: function bytes 0x1FDD10..0x1FDD4F identical, full build byte-for-byte parity OK, count 818->817."
   }
 }
