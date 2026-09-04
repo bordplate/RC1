@@ -1,5 +1,7 @@
 #include "common.h"
 
+extern void snd_SendIOPCommandAndWait(int cmd, int count, void* data);
+
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StartSoundSystem);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_FlushSoundCommands);
@@ -114,7 +116,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_ResetMovieSound
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F0D0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_CloseMovieSound);
+void snd_CloseMovieSound(void) {
+    snd_SendIOPCommandAndWait(0x3C, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StartMovieSound);
 

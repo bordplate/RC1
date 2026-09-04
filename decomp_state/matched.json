@@ -357,5 +357,15 @@
     "size": 28,
     "note": "Music un-pause: sets the three channel-state halfwords of struct D_001516D0 (offsets 0x40, 0x5C, 0x78) to constant 4; sibling music_Pause__Fi writes 0x8000/0 to these + their +2 neighbors. Body is 3 independent constant halfword stores sharing one lui/addiu base ($v0=hi/lo D_001516D0, $v1=addiu $0,4) then jr ra with the last store in the delay slot. Original machine order: sh 0x5C; sh 0x40; jr ra; <delay> sh 0x78. EGC emits 3 constant stores in fixed permutation stmt3;stmt1;jr;<delay>stmt2, so source statement order must be field_0x40, field_0x78, field_0x5C to reproduce it (all six permutations fuzzed standalone; see decomp_state/notes/music_Unpause__Fv.md). Symbol note: this EGC v2.73a build uses old cfront mangling (method -> Unpause__3music, free fn -> music_Unpause__Fv__Fv), neither matches the binary's PS2-style name; declaring 'void Unpause() asm(\"music_Unpause__Fv\")' inside class music emits exactly that symbol while keeping true C++ method codegen (asm label accepted on in-class decl only). Verified: music.o objdump 'T music_Unpause__Fv' 7 words byte-identical to original; function is 0x1C bytes with next symbol at +8 (one nop pad); full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 857->856.",
     "matched_date": "2026-09-04"
+  },
+  "code/989snd/ee/989snd.c:117:snd_CloseMovieSound": {
+    "name": "snd_CloseMovieSound",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_CloseMovieSound.s",
+    "vram": "0x0012F0E0",
+    "file_offset": "0x30060",
+    "size": 36,
+    "note": "Close-movie-sound: calls snd_SendIOPCommandAndWait(0x3C, 0, 0) (SIF cmd 0x3C, no data). Body: addiu sp,-0x10 / li a0,0x3C / sq ra,0(sp) / move a1,zero / jal / <ds> move a2,zero / lq ra / jr ra / <ds> addiu sp,+0x10. Two codegen facts: (1) Splat comments mislabel the EE 'move' instruction (word 0x...82D-funct family, e.g. 0000282d) as 'daddu $r,$0,$0' - raw bytes are identical to EGC's zeroing output, so those asm words match directly; trust objdump of the ELF over the mnemonic. (2) Callee snd_SendIOPCommandAndWait (vram 0x12E548) takes three separate 32-bit args (cmd=a0, count=a1, data*=a2); Ghidra's 'undefined8 param_1' is a grouping artifact (prologue move s4,a0; move s0,a1). Prototype (int,int,void*) in 989snd.c reproduces bytes exactly; a (long,int,int) prototype would wrongly zero a3. Sole caller vram 0x23AC90 passes nothing and overwrites v0, so void(void) is safe. Verified: 989snd.o 'T snd_CloseMovieSound' body byte-identical to original slice 0x12F0E0..0x12F104; full make + cmp passes (md5 equal); decomp_status 856->855.",
+    "matched_date": "2026-09-04"
   }
 }
