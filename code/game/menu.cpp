@@ -147,7 +147,11 @@ extern "C" int func_00207700(void) {
     return D_0013D3D7 != 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207710);
+extern u8 D_0013D3D9 __attribute__((section(".data")));
+
+extern "C" int func_00207710(void) {
+    return D_0013D3D9 != 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207720);
 
