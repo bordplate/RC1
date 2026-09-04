@@ -726,5 +726,14 @@
     "file_offset": "0x1163A0",
     "size": 32,
     "note": "Single-call wrapper: snd_StreamSafeCdCallback(func_00216950). 0x10 frame (sq/lq $ra at 0(sp)); arg = address of func_00216950 loaded via lui a0,%hi / addiu a0,a0,%lo with the lo in the jal delay slot (same shape as matched ErrMessage, func_001F6250, stash_func_00232CE0). callee snd_StreamSafeCdCallback (989snd, vram 0x0012EF28) declared with a function-pointer param so the arg setup is emitted; func_00216950 (stream.cpp) forward-declared. void return."
+  },
+  "code/game/pad.cpp:9:UpdatePad__Fv": {
+    "name": "UpdatePad__Fv",
+    "source": "code/game/pad.cpp",
+    "asm": "code/_generated/nonmatchings/game/pad/UpdatePad__Fv.s",
+    "vram": "0x00217A10",
+    "file_offset": "0x118990",
+    "size": 32,
+    "note": "Single-call wrapper: UpdatePad(D_0013C940) -> calls UpdatePad__FR3PAD (UpdatePad(PAD&), vram 0x2170C8) with the global pad instance; returns its result. Written as pure C++ overloaded free functions (struct PAD forward decl + extern PAD D_0013C940 + void UpdatePad(PAD&) prototype + void UpdatePad(void)); EGC old-cfront mangling yields UpdatePad__Fv / UpdatePad__FR3PAD exactly, no extern \"C\" hand-mangling. Argument must be the symbol (emits R_MIPS_HI16/LO16 -> lui 0x14; addiu -14016); a literal 0x13C940 miscompiles to lui 0x13; ori 0xC940. Incomplete-type extern needs no section(\".data\") (absolute HI16/LO16, not GPREL16). 0x10 frame sq/lq $ra 0(sp), %hi lui before sq, %lo in jal delay slot. Verified: object slice with relocs resolved == original, link map places symbol at 0x217a10, clean make+cmp byte-for-byte, count 819->818."
   }
 }
