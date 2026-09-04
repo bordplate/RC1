@@ -27,6 +27,13 @@ build, diff, and parity oracle.
 - `code/_generated/` is produced by Splat from the original ELF.
 - `make` plus `cmp build/boot_elf.elf assets/boot_elf.elf` is the parity oracle.
 - Generated assembly is the function-level source of truth.
+
+Splat comment quirk (verified 2026-09-04): in generated `.s` files the third
+comment field `/* <fileoff> <vram> <hex> */` prints the raw on-disk bytes as a
+big-endian hex string, i.e. the little-endian instruction word reversed. A
+standard `jr $ra` (word 0x03E00008, stored LE as `08 00 E0 03`) shows up as
+`0800E003`. Read those fields back as LE (or just objdump the object / read
+raw ELF bytes) before diffing instruction words.
 - Compiler output and object/assembly diffs judge candidate quality.
 - `tools/decomp_status.py --complete` is the mechanical completion check.
 
