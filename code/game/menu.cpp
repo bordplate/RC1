@@ -289,7 +289,12 @@ extern "C" void func_00208E68(void) {
     *(int*)0x15EEB0 = 3;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208E90);
+extern "C" void func_00208E90(void) {
+    if (*(int*)0x15EEB4 & 0x40) {
+        return;
+    }
+    *(int*)0x15EEB0 = 3;
+}
 
 extern "C" int D_0013D2AC __attribute__((section(".data")));
 

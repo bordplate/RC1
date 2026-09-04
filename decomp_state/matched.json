@@ -667,5 +667,15 @@
     "size": 36,
     "note": "Menu callback: if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Single DATA xref (fp-table entry 0x1A047C). Clone family: func_00208E90/0x208ED8/0x208F00 are byte-identical. Codegen: the constant-cast idiom is required on BOTH load and store - a plain global load gives base register v1 (lui v1; lw v0,off(v1)) while the original reuses v0 (lui v0,0x16; lw v0,-4428(v0)); with both sides cast the whole 9-instruction body matches including li v0,3 in the bnez delay slot and at as store base (see menu_func_00208EB8.md for the store-side finding). Verified: built slice 0x109DE8..0x109E0C words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 826 -> 825.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:292:func_00208E90": {
+    "name": "func_00208E90",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00208E90.s",
+    "vram": "0x00208E90",
+    "file_offset": "0x109E10",
+    "size": 36,
+    "note": "Byte-identical clone of matched func_00208E68 (menu callback family): if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Same constant-cast-on-both-sides idiom; only the bnez target offset differs (same relative distance, so the object is byte-identical). Verified: built slice 0x109E10..0x109E34 words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 825 -> 824. See decomp_state/notes/menu_func_00208E68.md.",
+    "matched_date": "2026-09-04"
   }
 }
