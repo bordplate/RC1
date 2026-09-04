@@ -337,5 +337,15 @@
     "size": 20,
     "note": "Stream-state header clear: zeros word at D_0013C940+0x190 (0x13CAD0) and halfword at +0x18E (0x13CACE); sole caller is the jal at 0x1EA7C4 inside the still-assembly loader starting at 0x1E9B10. Replaced with a typed struct StreamState {u8 pad[0x18E]; u16 field_18e; u32 field_190;} extern at D_0013C940 (absolute symbol from the Splat .ld, same recipe as menu.cpp data externs) plus two constant assignments. Key codegen lessons: (1) raw pointer-offset stores make EGC materialize a second base+imm register (extra addiu) - struct fields at the exact offsets keep both stores direct; (2) for two independent constant stores sharing one %hi/%lo base, machine store order is the REVERSE of C statement order (first statement's store lands in the jr $ra delay slot), opposite of the strfile_func_0023BA48 case - see decomp_state/notes/stream_func_00217020.md for both attempt dumps. Verified: object objdump sequence == original; ELF slice 0x117FA0 (1400023c 40c94224 900140ac 0800e003 8e0140a4) built==original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/movie/movie.cpp:15:ErrMessage": {
+    "name": "ErrMessage",
+    "source": "code/game/movie/movie.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/movie/ErrMessage.s",
+    "vram": "0x0023AB78",
+    "file_offset": "0x13BAF8",
+    "size": 36,
+    "note": "Movie-playback error banner: prints the .lit string at D_001611F8 ('[ Error ] %s\\n') via the printf import thunk. Original: move a1,a0 / addiu sp,-0x10 / lui a0,%hi(D_001611F8) / sq ra,0(sp) / jal STUB_printf (thunk at vram 0x1E93B0, INCLUDE_ASM'd in code/_generated/game/stub.s - saves a1/a2/a3/t0-t3 + swc1 f12/14/16/18 then jr ra) / addiu a0,%lo in delay slot / lq ra / jr ra / addiu sp,+0x10. All three callers (0x23B6DC pts buffer overflow, 0x23BFB4 videoDecPut path, 0x23CF48 mpeg decode error) pass const data string addresses in a0, return value unused -> extern \"C\" void ErrMessage(const char* msg) { STUB_printf(D_001611F8, msg); } with plain 'extern char D_001611F8[];' (dlabel exists in code/_generated/build/data/lit.lit4.s; symbol resolves at link, section attribute not needed for a reference) and the same 'extern \"C\" void STUB_printf(const char*, ...);' declaration as mobyfunc.cpp. Standalone EGC -G8 -O2 test compile reproduced all 9 words with identical register allocation on the first attempt (relocs R_MIPS_26 STUB_printf + HI16/LO16 D_001611F8). Verified: movie.o has plain 'T ErrMessage' at .text+0x7C0, no .NON_MATCHING alias; built ELF slice vram 0x23AB78..0x23AB9C byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes (md5 equal); decomp_status 858->857.",
+    "matched_date": "2026-09-04"
   }
 }
