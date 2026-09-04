@@ -647,5 +647,15 @@
     "size": 32,
     "note": "One-line pause-menu callback: func_00225AC0(1); return 0. func_00225AC0 is the pause-screen sound slot allocator (fills the 5-slot table at DAT_001d60b8; param = active slot count). All 8 xrefs are DATA function-pointer table entries (0x1CF990..0x1D4B48). EGC emits the stash_func_00232CE0 wrapper shape (0x10 frame, sq/lq ra at 0(sp), literal-arg load addiu a0,0,1 word 0x01000424 in the jal delay slot; callee prototype must take a parameter) plus the return-0 daddu v0,0,0 hoisted between lq ra and jr ra (jr delay slot taken by addiu sp restore; cf. func_0021CAC8 where the same daddu lands in the jr delay slot with no frame). Verified: built 0x21CAE0..0x21CAFF words F0FFBD27 0000BF7F B096080C 01000424 0000BF7B 2D100000 0800E003 1000BD27 byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status --count 828 -> 827. See decomp_state/notes/pause_func_0021CAE0.md.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:289:func_00208EB8": {
+    "name": "func_00208EB8",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00208EB8.s",
+    "vram": "0x00208EB8",
+    "file_offset": "0x109E38",
+    "size": 32,
+    "note": "Menu callback: if (D_0013D2AC) *(int*)0x15EEB0 = 3. Single DATA xref (fp-table entry 0x1A0484). Key codegen finding: a plain 'extern int D_0015EEB0' ref would go GP-relative (address inside gp window), and even with section(\".data\") EGC schedules the store-address lui into the beqz delay slot (wrong order); the constant-cast store *(int*)0x15EEB0 = 3 puts li v0,3 in the beqz delay slot and lui at,0x16 after (byte-identical, matches the sibling family 0x208E68/E90/ED8/F00). D_0013D2AC needs the section(\".data\") attribute or the link fails with R_MIPS_GPREL16 truncation (out-of-window undefined sym). See decomp_state/notes/menu_func_00208EB8.md. Verified: built slice 0x109E38..0x109E58 words 1400023C ACD2438C 03006010 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 827 -> 826.",
+    "matched_date": "2026-09-04"
   }
 }

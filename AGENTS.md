@@ -191,6 +191,22 @@ prototype suppresses the argument setup and the delay slot comes out as `nop`,
 breaking the match (see
 decomp_state/notes/stash_func_00232CE0.md for the matched function).
 
+Observation observed 2026-09-04 (branch-delay-slot scheduling for constant
+stores): for `if (cond) GLOBAL = N;` where GLOBAL is a plain `int` declared
+with `__attribute__((section(".data")))`, EGC puts the STORE-ADDRESS `lui` in
+the branch delay slot (`beqz; <lui>; li; sw; jr; nop`). The original menu
+family (0x208E68/90/ED8/F00 and 0x208EB8) instead schedules `li $v0,N` into
+the delay slot and the `lui $at` after. Writing the store as a constant
+address cast — `*(int*)0xADDR = N;` — flips EGC to the original
+`<li>; lui; sw` order and matches byte-for-byte (also changes the base
+register to `$at`). Related: a plain `extern int` with no section attribute
+makes EGC emit GP-relative accesses for any address inside the gp window
+(gp=0x166C00, ±32K), and for out-of-window undefined syms the link fails with
+`relocation truncated to fit: R_MIPS_GPREL16` + "small-data section exceeds
+64KB" — declare such globals with `__attribute__((section(".data")))`.
+Precedent for the cast idiom: `endDisplay()` in code/game/movie/disp.cpp
+(see decomp_state/notes/menu_func_00208EB8.md for the matched function).
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local
@@ -255,6 +271,7 @@ For each selected function:
 8. Diff the candidate object/assembly against the original.
 9. Iterate until the function matches or record a concrete blocker.
 10. Run the full build/parity check before treating progress as durable.
+11. Send the status push notification (see Mobile Status Notification).
 
 The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, or even same behavior but with a different instruction. It must be a perfect match.
 
@@ -306,6 +323,33 @@ local tools, credentials, or unrelated existing changes. Use a concise commit
 message such as `decomp: match FunctionName`. If parity or the function-level
 diff fails, do not commit; record the concrete blocker and continue without
 claiming the function is matched.
+
+## Mobile Status Notification
+
+After each finished function attempt — matched, blocked, or bailed on — send
+exactly one push notification to the owner's phone from the repo root using
+`brrr.py` (stdlib only, works without the venv):
+
+```sh
+python3 brrr.py -t "RC1 decomp" -s "matched strfile_func_0023BA48" \
+  "57 nonmatching left, build parity OK"
+```
+
+Format rules — mobile pushes get truncated, keep the whole thing under ~200
+characters:
+
+- `--title`: always `RC1 decomp`.
+- `--subtitle`: the function name plus its outcome: `matched <name>`, or
+  `blocked <name>: <one-phrase reason>` (e.g. `blocked func_0023AEE0: EGC
+  3-store tail reorder`). If no function was finished, use a short
+  description of the session outcome instead.
+- message body: current project status — the nonmatching count from
+  `python3 tools/decomp_status.py --count` plus `build parity OK` or
+  `parity FAILED` from the final `cmp`.
+
+Do not paste diffs, decompiler output, or note contents into the notification.
+If `brrr.py` fails (network down, rotated token), note it in the attempt
+record and continue; the notification is not part of the completion oracle.
 
 ## Autonomous Loop
 
