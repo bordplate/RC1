@@ -397,5 +397,15 @@
     "size": 16,
     "note": "Byte-flag predicate: return D_0013D3B8 != 0 (lbu of unsigned byte at core.data vram 0x0013D3B8, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family member (func_002069A0..func_00207710); unlike earlier notes' guess these ARE called - via the function-pointer dispatch table at vram 0x0019FF10-0x001A001C (data.data.s:60626 '.word func_00207630'), which is why Ghidra shows only a DATA xref and no containing function. D_0013D3B8 is the last byte of dlabel block D_0013D3AD in core.data.data.s (no own label) but is aliased absolutely as 0x13D3B8 in build/undefined_syms_auto.txt, so 'extern u8 D_0013D3B8 __attribute__((section(\".data\")))' links the %hi/%lo relocs exactly like sibling D_0013D394 etc. Standalone EGC -G8 -O2 test compile confirmed shape before editing. Verified: objdump menu.o shows lui v1 / lbu v0(v1) / jr ra / sltu v0,zero,v0; built ELF slice file offset 0x1085B0..0x1085C0 == original (bytes 1400033c b8d36290 0800e003 2b100200); full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 853->852.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:96:func_00207640": {
+    "name": "func_00207640",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00207640.s",
+    "vram": "0x00207640",
+    "file_offset": "0x1085C0",
+    "size": 16,
+    "note": "Byte-flag predicate: return D_0013D3B9 != 0 (lbu of unsigned byte at core.data vram 0x0013D3B9, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family member; reached via the function-pointer dispatch table at vram 0x0019FF10-0x001A001C (data.data.s '.word func_00207640'), so Ghidra shows no containing function and only a DATA xref. D_0013D3B9 is aliased absolutely in build/undefined_syms_auto.txt, so 'extern u8 D_0013D3B9 __attribute__((section(\".data\")))' links the %hi/%lo relocs exactly like sibling D_0013D3B8. Note on reading Splat comments: the 3rd field is the raw on-disk bytes shown as a big-endian hex string (jr $ra word 0x03E00008 stored LE as 08 00 E0 03 prints '0800E003'), so always confirm against objdump/raw ELF bytes. Verified: objdump build/code/game/menu.o shows lui v1 / lbu v0(v1) / jr ra (0x03e00008) / sltu v0,zero,v0 with R_MIPS_HI16/LO16 on D_0013D3B9; raw original words at file 0x1085C0..0x1085CF are 3c030014 9062d3b9 03e00008 0002102b - identical to compiled output; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status count 852->851.",
+    "matched_date": "2026-09-04"
   }
 }
