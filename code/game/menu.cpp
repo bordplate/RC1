@@ -304,7 +304,12 @@ extern "C" void func_00208EB8(void) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208ED8);
+extern "C" void func_00208ED8(void) {
+    if (*(int*)0x15EEB4 & 0x40) {
+        return;
+    }
+    *(int*)0x15EEB0 = 3;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208F00);
 
