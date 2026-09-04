@@ -367,5 +367,15 @@
     "size": 36,
     "note": "Close-movie-sound: calls snd_SendIOPCommandAndWait(0x3C, 0, 0) (SIF cmd 0x3C, no data). Body: addiu sp,-0x10 / li a0,0x3C / sq ra,0(sp) / move a1,zero / jal / <ds> move a2,zero / lq ra / jr ra / <ds> addiu sp,+0x10. Two codegen facts: (1) Splat comments mislabel the EE 'move' instruction (word 0x...82D-funct family, e.g. 0000282d) as 'daddu $r,$0,$0' - raw bytes are identical to EGC's zeroing output, so those asm words match directly; trust objdump of the ELF over the mnemonic. (2) Callee snd_SendIOPCommandAndWait (vram 0x12E548) takes three separate 32-bit args (cmd=a0, count=a1, data*=a2); Ghidra's 'undefined8 param_1' is a grouping artifact (prologue move s4,a0; move s0,a1). Prototype (int,int,void*) in 989snd.c reproduces bytes exactly; a (long,int,int) prototype would wrongly zero a3. Sole caller vram 0x23AC90 passes nothing and overwrites v0, so void(void) is safe. Verified: 989snd.o 'T snd_CloseMovieSound' body byte-identical to original slice 0x12F0E0..0x12F104; full make + cmp passes (md5 equal); decomp_status 856->855.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/draw.cpp:118:func_001F6250": {
+    "name": "func_001F6250",
+    "source": "code/game/draw.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw/func_001F6250.s",
+    "vram": "0x001F6250",
+    "file_offset": "0xF71D0",
+    "size": 32,
+    "note": "Font-string width calculator for the D_001DF050 glyph table: pass-through wrapper func_001F6250(a0,a1) -> return func_001F6200(a0,a1,D_001DF050). func_001F6200 (vram 0x1F6200) walks a NUL-terminated u8 index array bounded by count and sums per-glyph widths read from the table (char at idx*4+base+3); callers use the result to center text (e.g. vram 0x1F69D0 subtracts it from an x pointer). Body: addiu sp,-0x10 / lui a2,%hi(D_001DF050) / sq ra,0(sp) / jal func_001F6200 / <ds> addiu a2,a2,%lo / lq ra / jr ra / <ds> addiu sp,+0x10 - EGC splits the constant-arg materialization across the call (hi before sq, lo in the jal delay slot), reproduced exactly by C 'return func_001F6200(p,n,D_001DF050);'. cfront gotcha: declaring D as 'int' and passing &D to an int param is rejected ('lacks a cast'); the callee's third param must be a pointer type, so prototype is (char*,int,char*) and the data is declared 'extern \"C\" char D_001DF050[];' (dlabel in build/data/data.data.s, address from undefined_syms_auto.txt). Siblings func_001F6270 (D_001DF3F0, FontPrintSmall table) and func_001F6290 (D_001DF790, used by FontPrintCenterLarge/func_001F6A60) are byte-identical shape with only the global differing - decompile with the same pattern. Verified: built 0x1F6250..0x1F626F words F0FFBD27 1E00063C 0000BF7F 80D8070C 50F0C624 0000BF7B 0800E003 1000BD27 byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-04"
   }
 }
