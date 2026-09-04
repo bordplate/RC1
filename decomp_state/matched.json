@@ -627,5 +627,15 @@
     "size": 32,
     "note": "Font-string width calculator for the D_001DF3F0 glyph table: pass-through wrapper func_001F6270(a0,a1) -> return func_001F6200(a0,a1,D_001DF3F0). Exact sibling of matched func_001F6250 (D_001DF050); only the global differs. Ghidra: FUN_001f6200(param_1,param_2,0x1df3f0); asm sets only $a3 since $a0/$a1 are forwarded in-register; all 8 call sites load both args before the jal and consume $v0, so the wrapper returns the callee's int. D_001DF3F0 = small-font glyph-width table, declared 'extern \"C\" char D_001DF3F0[];' (cfront gotcha: third callee param must be a pointer type; cf. func_001F6250 note). EGC emits the documented wrapper shape: addiu sp,-0x10 / lui a3,%hi / sq ra,0(sp) / jal func_001F6200 / <ds> addiu a3,a3,%lo / lq ra / jr ra / <ds> addiu sp,+0x10. Verified: built 0x1F6270..0x1F628F words F0FFBD27 1E00063C 0000BF7F 80D8070C F0F3C624 0000BF7B 0800E003 1000BD27 byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status --count 830 -> 829. See decomp_state/notes/draw_func_001F6270.md.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/draw.cpp:136:func_001F6290": {
+    "name": "func_001F6290",
+    "source": "code/game/draw.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw/func_001F6290.s",
+    "vram": "0x001F6290",
+    "file_offset": "0xF7210",
+    "size": 32,
+    "note": "Font-string width calculator for the D_001DF790 glyph table: pass-through wrapper func_001F6290(a0,a1) -> return func_001F6200(a0,a1,D_001DF790). Exact sibling of matched func_001F6250 (D_001DF050) and func_001F6270 (D_001DF3F0); only the global differs. Two call sites (0x1F6A94 in the FontPrintCenterLarge family, 0x1F6C54) both load a0/a1 before the jal and consume $v0 (width halved via sra for centering), so the wrapper returns the callee's int. D_001DF790 declared 'extern \"C\" char D_001DF790[];' (cfront gotcha: third callee param must be a pointer type; cf. func_001F6250 note). EGC emits the documented wrapper shape: addiu sp,-0x10 / lui a3,%hi / sq ra,0(sp) / jal func_001F6200 / <ds> addiu a3,a3,%lo / lq ra / jr ra / <ds> addiu sp,+0x10. Verified: built 0x1F6290..0x1F62AF words F0FFBD27 1E00063C 0000BF7F 80D8070C 90F7C624 0000BF7B 0800E003 1000BD27 byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status --count 829 -> 828. See decomp_state/notes/draw_func_001F6270.md.",
+    "matched_date": "2026-09-04"
   }
 }

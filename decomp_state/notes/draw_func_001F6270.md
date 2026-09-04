@@ -52,5 +52,6 @@ symbols; final ELF is stripped so the name does not affect the binary).
 - Full `make` + `cmp build/boot_elf.elf assets/boot_elf.elf` passes.
 - decomp_status --count: 830 -> 829.
 
-Sibling func_001F6290 (D_001DF790 table) remains INCLUDE_ASM; same pattern
-applies.
+Sibling func_001F6290 (D_001DF790 table) was matched the same day with the
+identical pattern (see its matched.json entry; slice 0xF7210..0xF722F
+byte-identical, full parity passes, count 829 -> 828).
