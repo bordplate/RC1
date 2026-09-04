@@ -567,5 +567,15 @@
     "size": 16,
     "note": "Byte-flag predicate: return D_0013D407 != 0 (lbu of unsigned byte at core.data vram 0x00207AF8, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family; reached via the function-pointer dispatch table at vram 0x0019FF10-0x001A001C (data.data.s '.word func_00207AF8'). D_0013D407 aliased absolutely in build/undefined_syms_auto.txt; 'extern u8 D_0013D407 __attribute__((section(\".data\")))' links the %hi/%lo relocs exactly like sibling D_0013D3B8/B9/BA/CB. Verified: objdump build/code/game/menu.o shows lui v1 / lbu v0(v1) / jr ra (0x03e00008) / sltu v0,zero,v0; raw original words at file 0x108A78.. are 3c030014 9062D407 03e00008 0002102b - identical to compiled output; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/movie/videodec.cpp:71:videoDecInputCount__FP8VideoDec": {
+    "name": "videoDecInputCount__FP8VideoDec",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecInputCount__FP8VideoDec.s",
+    "vram": "0x0023CCE0",
+    "file_offset": "0x13DC60",
+    "size": 28,
+    "note": "One-arg wrapper: return viBufCount(&self->vibuf); with the ViBuf embedded at VideoDec+0x48 (videoDecCreate@0x23CAC8 calls viBufCreate(self+0x48,...) and videoDecDelete calls viBufDelete(self+0x48); the 4-byte region at 0x23CC30 is actually the matched 2-word videoDecReset, not gap). Recovery of the VideoDec/ViBuf layout forced sizeof(ViBuf)=0x60 so state stays at 0xA8 (a 0x58-sized draft shifted state to 0xA0 and broke reset/get/set \u2014 caught by full cmp before commit). ViBuf fields 0x00..0x5C mapped from create/reset/BeginPut/Count/GetTs/PutTs/ModifyPts/StopDMA/RestartDMA (0x1C..0x3C = saved IPU/DMAC register context stored by StopDMA); full table in decomp_state/notes/videodec_videoDecInputCount__FP8VideoDec.md. C: free C++ fns 'int viBufCount(ViBuf*)' prototype + 'int videoDecInputCount(VideoDec*) { return viBufCount(&self->vibuf); }' \u2014 cfront mangling reproduces both exact labels, no extern \"C\". EGC emits the addiu a0,a0,0x48 in the jal delay slot (7-word body). Verified: build vs original objdump words 23CCE0..23CCFB identical (27bdfff0 7fbf0000 0c08f184 24840048 7bbf0000 03e00008 27bd0010); objdump -t videodec.o shows videoDecInputCount__FP8VideoDec at .text+0x218 size 0x1C; make split moved the .s to _generated/matchings/; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 835->834.",
+    "matched_date": "2026-09-04"
   }
 }
