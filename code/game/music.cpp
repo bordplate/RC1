@@ -3,7 +3,13 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/music", func_00215390);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/music", func_00215420);
+extern "C" int func_00216950(int param_1);
+
+extern "C" void snd_StreamSafeCdCallback(int (*callback)(int));
+
+extern "C" void func_00215420(void) {
+    snd_StreamSafeCdCallback(func_00216950);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/music", func_00215440);
 

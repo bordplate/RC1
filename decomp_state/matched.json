@@ -717,5 +717,14 @@
     "size": 36,
     "note": "Menu callback over global struct D_0013D290 (undefined sym, needs section(\".data\")): *(int*)0x15EEB0 = 4; S+0xDC = -1; S+0xE0 = -1. Single -1 value CSE'd into one addiu a0; 4 in v1; base v0 via lui/addiu; 0x15EEB0 store via constant cast (at base). The three stores follow the documented fixed permutation (stmt3; stmt1; jr; <ds stmt2>): source order (0x15EEB0, 0xDC, 0xE0) emits sw 0xE0; sw 0x15EEB0; jr; <ds sw 0xDC>. Verified: built slice 0x109928..0x10994C words 1400023C FFFF0424 90D24224 04000324 E00044AC 1600013C B0EE23AC 0800E003 DC0044AC byte-identical; full make + cmp passes; count 821 -> 820.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/music.cpp:6:func_00215420": {
+    "name": "func_00215420",
+    "source": "code/game/music.cpp",
+    "asm": "code/_generated/nonmatchings/game/music/func_00215420.s",
+    "vram": "0x00215420",
+    "file_offset": "0x1163A0",
+    "size": 32,
+    "note": "Single-call wrapper: snd_StreamSafeCdCallback(func_00216950). 0x10 frame (sq/lq $ra at 0(sp)); arg = address of func_00216950 loaded via lui a0,%hi / addiu a0,a0,%lo with the lo in the jal delay slot (same shape as matched ErrMessage, func_001F6250, stash_func_00232CE0). callee snd_StreamSafeCdCallback (989snd, vram 0x0012EF28) declared with a function-pointer param so the arg setup is emitted; func_00216950 (stream.cpp) forward-declared. void return."
   }
 }
