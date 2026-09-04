@@ -206,6 +206,14 @@ makes EGC emit GP-relative accesses for any address inside the gp window
 64KB" — declare such globals with `__attribute__((section(".data")))`.
 Precedent for the cast idiom: `endDisplay()` in code/game/movie/disp.cpp
 (see decomp_state/notes/menu_func_00208EB8.md for the matched function).
+Load-side extension (2026-09-04): in the same menu family, a plain global
+LOAD in the condition (`if (D_0015EEB4 & 0x40) return;`) allocates the
+address base to $v1 (`lui v1; lw v0,off(v1)`), while the original reuses
+$v0 for base and value (`lui v0,0x16; lw v0,-4428(v0)`). Casting the load
+address too — `if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3;` —
+reproduces the original byte-for-byte, so this family needs constant-cast
+accesses on BOTH sides (see decomp_state/notes/menu_func_00208E68.md;
+func_00208E90/ED8/F00 are byte-identical clones still to go).
 
 ## OpenCode Model And MCP Configuration
 

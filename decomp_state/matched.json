@@ -657,5 +657,15 @@
     "size": 32,
     "note": "Menu callback: if (D_0013D2AC) *(int*)0x15EEB0 = 3. Single DATA xref (fp-table entry 0x1A0484). Key codegen finding: a plain 'extern int D_0015EEB0' ref would go GP-relative (address inside gp window), and even with section(\".data\") EGC schedules the store-address lui into the beqz delay slot (wrong order); the constant-cast store *(int*)0x15EEB0 = 3 puts li v0,3 in the beqz delay slot and lui at,0x16 after (byte-identical, matches the sibling family 0x208E68/E90/ED8/F00). D_0013D2AC needs the section(\".data\") attribute or the link fails with R_MIPS_GPREL16 truncation (out-of-window undefined sym). See decomp_state/notes/menu_func_00208EB8.md. Verified: built slice 0x109E38..0x109E58 words 1400023C ACD2438C 03006010 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 827 -> 826.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:285:func_00208E68": {
+    "name": "func_00208E68",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00208E68.s",
+    "vram": "0x00208E68",
+    "file_offset": "0x109DE8",
+    "size": 36,
+    "note": "Menu callback: if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Single DATA xref (fp-table entry 0x1A047C). Clone family: func_00208E90/0x208ED8/0x208F00 are byte-identical. Codegen: the constant-cast idiom is required on BOTH load and store - a plain global load gives base register v1 (lui v1; lw v0,off(v1)) while the original reuses v0 (lui v0,0x16; lw v0,-4428(v0)); with both sides cast the whole 9-instruction body matches including li v0,3 in the bnez delay slot and at as store base (see menu_func_00208EB8.md for the store-side finding). Verified: built slice 0x109DE8..0x109E0C words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 826 -> 825.",
+    "matched_date": "2026-09-04"
   }
 }
