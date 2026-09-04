@@ -327,5 +327,15 @@
     "size": 12,
     "note": "Menu callback-table getter (entry [0] of vtable at vram 0x19FEF0/.data file 0xA0E70; siblings func_00206B88-BB8 read D_0013D3A4-A7). Original: lw $v0,-0x6E9C($gp); jr $ra; sltiu $v0,$v0,1 in delay slot = 'return D_0015FD64 < 1;' for unsigned int at vram 0x15FD64 (lit segment, dlabel in lit.lit4.s, _gp=0x166C00). Signed int candidate gave slti; unsigned int gives matching sltiu and EGC does not fold unsigned <1 to equality. Plain 'extern \"C\" unsigned int D_0015FD64;' binds via R_MIPS_GPREL34 (same recipe as D_0015F49C in draw.cpp). Ghidra has no function/xrefs at 0x206B78; callers are the DATA table only. Verified: menu.o objdump lw v0,0(gp)/jr ra/sltiu v0,v0,1 with U D_0015FD64; full make + cmp passes; decomp_status 860->859.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/stream.cpp:34:func_00217020": {
+    "name": "func_00217020",
+    "source": "code/game/stream.cpp",
+    "asm": "code/_generated/nonmatchings/game/stream/func_00217020.s",
+    "vram": "0x00217020",
+    "file_offset": "0x117FA0",
+    "size": 20,
+    "note": "Stream-state header clear: zeros word at D_0013C940+0x190 (0x13CAD0) and halfword at +0x18E (0x13CACE); sole caller is the jal at 0x1EA7C4 inside the still-assembly loader starting at 0x1E9B10. Replaced with a typed struct StreamState {u8 pad[0x18E]; u16 field_18e; u32 field_190;} extern at D_0013C940 (absolute symbol from the Splat .ld, same recipe as menu.cpp data externs) plus two constant assignments. Key codegen lessons: (1) raw pointer-offset stores make EGC materialize a second base+imm register (extra addiu) - struct fields at the exact offsets keep both stores direct; (2) for two independent constant stores sharing one %hi/%lo base, machine store order is the REVERSE of C statement order (first statement's store lands in the jr $ra delay slot), opposite of the strfile_func_0023BA48 case - see decomp_state/notes/stream_func_00217020.md for both attempt dumps. Verified: object objdump sequence == original; ELF slice 0x117FA0 (1400023c 40c94224 900140ac 0800e003 8e0140a4) built==original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-04"
   }
 }

@@ -147,6 +147,16 @@ above the stores. Reordering assignments in the C source flips which store
 lands in the delay slot, so match the original store sequence by choosing the
 statement order accordingly (see decomp_state/notes/strfile_func_0023BA48.md).
 
+Exception observed 2026-09-04: when both trailing stores are CONSTANT stores
+sharing one %hi/%lo-computed global base (e.g. zeroing two struct fields),
+EGC emitted them in REVERSE source order instead — the first statement's store
+landed in the delay slot and the second before `jr $ra` (both orders tested;
+see decomp_state/notes/stream_func_00217020.md). For such tails try both
+statement orders and let the object diff decide. Also: to keep both stores as
+direct `base+offset`, declare struct fields at the exact offsets; raw
+pointer arithmetic on an `u8[]` base makes EGC materialize a second
+`addiu` for the other offset (see same note).
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local

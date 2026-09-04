@@ -1,4 +1,5 @@
 #include "common.h"
+#include "types.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_002166E8);
 
@@ -31,6 +32,19 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216BC0);
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216C30);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216C48);
-INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217020);
+
+typedef struct {
+    u8 pad[0x18E];
+    u16 field_18e;
+    u32 field_190;
+} StreamState;
+
+extern StreamState D_0013C940 __attribute__((section(".data")));
+
+extern "C" void func_00217020(void) {
+    D_0013C940.field_18e = 0;
+    D_0013C940.field_190 = 0;
+}
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217038);
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217048);
