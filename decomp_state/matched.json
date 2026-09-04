@@ -547,5 +547,15 @@
     "size": 16,
     "note": "Byte-flag predicate: return D_0013D3FC != 0 (lbu of unsigned byte at core.data vram 0x00207AD8, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family; reached via the function-pointer dispatch table at vram 0x0019FF10-0x001A001C (data.data.s '.word func_00207AD8'). D_0013D3FC aliased absolutely in build/undefined_syms_auto.txt; 'extern u8 D_0013D3FC __attribute__((section(\".data\")))' links the %hi/%lo relocs exactly like sibling D_0013D3B8/B9/BA/CB. Verified: objdump build/code/game/menu.o shows lui v1 / lbu v0(v1) / jr ra (0x03e00008) / sltu v0,zero,v0; raw original words at file 0x108A58.. are 3c030014 9062D3FC 03e00008 0002102b - identical to compiled output; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:208:func_00207AE8": {
+    "name": "func_00207AE8",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00207AE8.s",
+    "vram": "0x00207ae8",
+    "file_offset": "0x108A68",
+    "size": 16,
+    "note": "Byte-flag predicate: return D_0013D3FD != 0 (lbu of unsigned byte at core.data vram 0x00207AE8, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family; reached via the function-pointer dispatch table at vram 0x0019FF10-0x001A001C (data.data.s '.word func_00207AE8'). D_0013D3FD aliased absolutely in build/undefined_syms_auto.txt; 'extern u8 D_0013D3FD __attribute__((section(\".data\")))' links the %hi/%lo relocs exactly like sibling D_0013D3B8/B9/BA/CB. Verified: objdump build/code/game/menu.o shows lui v1 / lbu v0(v1) / jr ra (0x03e00008) / sltu v0,zero,v0; raw original words at file 0x108A68.. are 3c030014 9062D3FD 03e00008 0002102b - identical to compiled output; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes.",
+    "matched_date": "2026-09-04"
   }
 }
