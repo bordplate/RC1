@@ -18,5 +18,15 @@
     "status": "blocked",
     "date": "2026-09-04",
     "note": "Menu callback over global struct D_0013D290: *(int*)0x15EEB0 = 3; S+0x1C = S+0xBC; S+0xF4 = 0 (one lw, two sw, plus the 0x15EEB0 cast store). Semantic C is known and trivial, but EGC 2.95.2 -G8 -O2 schedules the 9 instructions in a different order than the original under EVERY statement ordering and temp-variable form tried (6 variants: 3 pure orderings + 3 with an int temp holding the 0xBC load). EGC puts the value load li v1,3 BEFORE the base lui v0, defers the base lo addiu until AFTER the 0x15EEB0 store, and emits sw zero,0xF4 BEFORE lw a0,0xBC. The original interleaves: lui v0; addiu v1,3; addiu v0,lo; lui at; sw 0x15EEB0; lw a0,0xBC; sw zero,0xF4; jr; <ds sw a0,0x1C>. All three orderings differ by scheduler tiebreak, not by dependency, so no source permutation fixes it. Same class as the Hud_HeapReset__Fv register/schedule tiebreak. Blocked pending a compiler-flag change or a different source form that shifts EGC's tiebreaks (the original's base-lui-first + base-complete-before-cast-store + lw-before-sw-zero ordering)."
+  },
+  "code/game/movie/videodec.cpp:41:func_0023D0E0": {
+    "status": "blocked",
+    "date": "2026-09-04",
+    "note": "mpeg callback viBufStopDMA((ViBuf*)((u32)*(u32*)0x16120C+0xD9090));return 1;. EGC v2.73a post-reload reorder pass places the constant-address load at its last use (after the prologue sq ra) and adds conservative memory dep load->sq, pinning the load last; original schedules load FIRST with prologue split around the const pair. ~15 C formulations + flag variants all give the same wrong order. See decomp_state/notes/videodec_func_0023D0E0.md (twin func_0023D110 same blocker)."
+  },
+  "code/game/movie/vibuf.cpp:9:scTag2": {
+    "status": "blocked",
+    "date": "2026-09-04",
+    "note": "64-bit DMA tag writer *p=(u64)a|((u64)b>>4)|(u64)c;. Original keeps 64-bit dsrl shift + per-operand dsll32 zexts; EGC v2.73a folds to 32-bit srl/dsrl32 + single trailing zext at every -O level. No source form forces the 64-bit dsrl on a value EGC knows is <2^32. See decomp_state/notes/vibuf_scTag2.md."
   }
 }
