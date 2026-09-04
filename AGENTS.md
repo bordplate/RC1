@@ -157,6 +157,14 @@ direct `base+offset`, declare struct fields at the exact offsets; raw
 pointer arithmetic on an `u8[]` base makes EGC materialize a second
 `addiu` for the other offset (see same note).
 
+Extension observed 2026-09-04: with THREE independent constant stores sharing
+one %hi/%lo global base, EGC emits them in the fixed permutation
+`stmt3; stmt1; jr $ra; <delay slot: stmt2>` regardless of other context (all
+six statement permutations compiled standalone give this same mapping). So to
+reproduce an original tail `sh X; sh Y; jr $ra; <sh Z>`, write the statements
+in source order `Y, Z, X` (see decomp_state/notes/music_Unpause__Fv.md for the
+permutation table and the matched function).
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local
@@ -231,6 +239,25 @@ the project's existing `INCLUDE_ASM` path while iterating. Only remove it after
 the candidate object or function assembly has been compared mechanically.
 
 In C++ files, avoid creating `extern "C"` prefixed functions with manualled mangled names and instead create them as pure C++ functions and let the compiler mangle the names like it should.
+
+Mangling note (verified 2026-09-04): this EGC v2.73a build uses old cfront-style
+mangling. For parameterized methods the established recipe works — a free C++
+function named `className_method` taking the object pointer first mangles to the
+binary's `className_method__F...` name (e.g. `readBufCreate(ReadBuf*)` ->
+`readBufCreate__FP7ReadBuf`). For ZERO-argument methods (`...__Fv`) that recipe
+fails: a free function named exactly `music_Unpause__Fv` mangles to
+`music_Unpause__Fv__Fv`, and a real class method mangles cfront-style
+(`Unpause__3music`). To emit the exact binary name for such methods, declare a
+real class method with an asm label on the IN-CLASS declaration only (EGC's
+parser rejects `asm()` on the out-of-class definition):
+
+```cpp
+class music { public: void Unpause() asm("music_Unpause__Fv"); };
+void music::Unpause() { ... }
+```
+
+The codegen is then a true C++ instance method (`this` in `$a0`, unused unless
+referenced); the label does not affect register allocation.
 
 ## Commit Discipline
 

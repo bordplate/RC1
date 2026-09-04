@@ -1,1 +1,7 @@
-{}
+{
+  "code/game/hud.cpp:13:Hud_HeapReset__Fv": {
+    "status": "blocked",
+    "date": "2026-09-04",
+    "note": "HUD linear-heap reset: D_0019A3E8.field_0x10 = D_001940CC; D_0019A3E8.field_0x14 = D_001940CC + 0x64000 (D_001940CC is the pool base written once at 0x201640 during init; field_0x10/0x14 are the alloc head/end used by Hud_HeapAlloc). Candidate C reproduces the exact 10-instruction structure, ordering, offsets and delay slot (lui base-hi / lui const-hi / lw p / lui heap-hi / ori / addiu / addu p+const / sw [heap+0x10] / jr ra / <delay> sw [heap+0x14]), but EGC 2.95.2 v2.73a with project flags (-G8 -O2 -ffast-math -fno-exceptions) allocates the loaded pool value to $a0/$a1 (hi/value) where the original uses $a1/$a2 - a one-register tiebreak identical in class to readBufEndGet (see notes/readbuf_endGet_codegen.md). Tried without flipping it: C and C++ free functions, instance method (this unused, same allocation), const local temp, int/u32 temps, pointer decl + deref, casts, signed/unsigned constant. Likely needs the (still unknown) original compiler flag difference. Also learned: this EGC build mangles C++ methods cfront-style (HeapReset__3Hud), so the PS2-style binary name requires 'void HeapReset() asm(\"Hud_HeapReset__Fv\")' on the in-class declaration (works for symbols, does not affect allocation). Symbol trick + struct (pad[4]; u32 field_0x10; u32 field_0x14;) are ready to drop in once registers match."
+  }
+}
