@@ -382,6 +382,7 @@ sendToSPU__FP9_AudioDecPUcii = 0x23af18;
 audioDecReset__FP9_AudioDec = 0x023ad10;
 sendADPCM__FP9_AudioDec = 0x023afc0;
 audioDecSend = 0x023aef0;
+audioDecIsPageFull = 0x0023aee0;
 audioDecStart = 0x23acb8;
 audioDecDelete__FP9_AudioDec = 0x0023ac90;
 audioDecCreate__FP9_AudioDecPUci14sceMpegStrType = 0x023abd0;

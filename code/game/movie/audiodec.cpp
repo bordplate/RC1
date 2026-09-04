@@ -1,4 +1,10 @@
 #include "common.h"
+#include "types.h"
+
+typedef struct _AudioDec {
+    u8 _pad[0x50];
+    int sentPos;
+} _AudioDec;
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecCreate__FP9_AudioDecPUci14sceMpegStrType);
 
@@ -14,7 +20,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecBeginPut
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecEndPut__FP9_AudioDeci);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", func_0023AEE0);
+extern "C" int audioDecIsPageFull(_AudioDec* self) {
+    return self->sentPos >= 0x1000;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecSend);
 

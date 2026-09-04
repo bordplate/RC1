@@ -131,6 +131,12 @@ cmp build/boot_elf.elf assets/boot_elf.elf
 Never enable `ALLOW_NONMATCHING` globally. Do not remove an assembly fallback
 until the compiled output has been compared mechanically.
 
+The Makefile has no dependency from a C/C++ object to the generated `.s` files
+it `INCLUDE_ASM`s. If you rename a symbol that other included assembly
+references, also `touch` those source files before rebuilding, or stale objects
+survive and linking fails with an undefined reference to the old name (see
+decomp_state/notes/audiodec_func_0023AEE0.md).
+
 The compiler is correct, but compiler flags may not necessarily match what Insomniac used yet. Try to identify compiler flags when you encounter a larger function that otherwise won't match. Update this when you're confident compiler flags are correct.
 
 Observed EGC 2.95.2 scheduling habits (with the project flags): in small
