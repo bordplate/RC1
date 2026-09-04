@@ -1,4 +1,5 @@
 #include "common.h"
+#include "types.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00218D10);
 
@@ -216,7 +217,20 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002220F0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00222290);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002223D8);
+typedef struct {
+    u8 pad[0x3C];
+    u32 field_3c;
+    u32 field_40;
+    u8 pad_44[0xC];
+    u32 field_50;
+} PauseMenuState;
+
+extern "C" int func_002223D8(PauseMenuState* menu) {
+    menu->field_40 = 0;
+    menu->field_50 = 0;
+    menu->field_3c = 0;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_002223F0);
 

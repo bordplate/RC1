@@ -172,6 +172,15 @@ reproduce an original tail `sh X; sh Y; jr $ra; <sh Z>`, write the statements
 in source order `Y, Z, X` (see decomp_state/notes/music_Unpause__Fv.md for the
 permutation table and the matched function).
 
+Extension observed 2026-09-04 (register base): the same fixed permutation
+`stmt3; stmt1; jr $ra; <delay slot: stmt2>` applies to three independent
+constant stores sharing a REGISTER base (e.g. `sw zero,off(a0)`), not just a
+%hi/%lo global base. Source order `f40, f50, f3c` reproduces an original tail
+`sw 0x3c; sw 0x40; jr $ra; <sw 0x50>`; natural order `f3c, f40, f50` instead
+emits `0x50, 0x3c, jr, <0x40>` (wrong). The `return 0;` still hoists
+`daddu $v0,$0,$0` above the stores (see
+decomp_state/notes/pause_func_002223D8.md).
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local
