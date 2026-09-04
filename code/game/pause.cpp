@@ -79,7 +79,12 @@ extern "C" int func_0021CAC8(void) {
     return 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021CAE0);
+extern "C" void func_00225AC0(int param_1);
+
+extern "C" int func_0021CAE0(void) {
+    func_00225AC0(1);
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021CB00);
 
