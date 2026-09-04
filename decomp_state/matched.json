@@ -387,5 +387,15 @@
     "size": 32,
     "note": "Font-string width calculator for the D_001DF050 glyph table: pass-through wrapper func_001F6250(a0,a1) -> return func_001F6200(a0,a1,D_001DF050). func_001F6200 (vram 0x1F6200) walks a NUL-terminated u8 index array bounded by count and sums per-glyph widths read from the table (char at idx*4+base+3); callers use the result to center text (e.g. vram 0x1F69D0 subtracts it from an x pointer). Body: addiu sp,-0x10 / lui a2,%hi(D_001DF050) / sq ra,0(sp) / jal func_001F6200 / <ds> addiu a2,a2,%lo / lq ra / jr ra / <ds> addiu sp,+0x10 - EGC splits the constant-arg materialization across the call (hi before sq, lo in the jal delay slot), reproduced exactly by C 'return func_001F6200(p,n,D_001DF050);'. cfront gotcha: declaring D as 'int' and passing &D to an int param is rejected ('lacks a cast'); the callee's third param must be a pointer type, so prototype is (char*,int,char*) and the data is declared 'extern \"C\" char D_001DF050[];' (dlabel in build/data/data.data.s, address from undefined_syms_auto.txt). Siblings func_001F6270 (D_001DF3F0, FontPrintSmall table) and func_001F6290 (D_001DF790, used by FontPrintCenterLarge/func_001F6A60) are byte-identical shape with only the global differing - decompile with the same pattern. Verified: built 0x1F6250..0x1F626F words F0FFBD27 1E00063C 0000BF7F 80D8070C 50F0C624 0000BF7B 0800E003 1000BD27 byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/menu.cpp:90:func_00207630": {
+    "name": "func_00207630",
+    "source": "code/game/menu.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu/func_00207630.s",
+    "vram": "0x00207630",
+    "file_offset": "0x1085B0",
+    "size": 16,
+    "note": "Byte-flag predicate: return D_0013D3B8 != 0 (lbu of unsigned byte at core.data vram 0x0013D3B8, sltu $v0,$zero,$v0 in jr $ra delay slot). Menu byte-flag getter family member (func_002069A0..func_00207710); unlike earlier notes' guess these ARE called - via the function-pointer dispatch table at vram 0x0019FF10-0x001A001C (data.data.s:60626 '.word func_00207630'), which is why Ghidra shows only a DATA xref and no containing function. D_0013D3B8 is the last byte of dlabel block D_0013D3AD in core.data.data.s (no own label) but is aliased absolutely as 0x13D3B8 in build/undefined_syms_auto.txt, so 'extern u8 D_0013D3B8 __attribute__((section(\".data\")))' links the %hi/%lo relocs exactly like sibling D_0013D394 etc. Standalone EGC -G8 -O2 test compile confirmed shape before editing. Verified: objdump menu.o shows lui v1 / lbu v0(v1) / jr ra / sltu v0,zero,v0; built ELF slice file offset 0x1085B0..0x1085C0 == original (bytes 1400033c b8d36290 0800e003 2b100200); full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 853->852.",
+    "matched_date": "2026-09-04"
   }
 }
