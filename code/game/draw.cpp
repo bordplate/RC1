@@ -123,7 +123,11 @@ extern "C" int func_001F6250(char* param_1, int param_2) {
     return func_001F6200(param_1, param_2, D_001DF050);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6270);
+extern "C" char D_001DF3F0[];
+
+extern "C" int func_001F6270(char* param_1, int param_2) {
+    return func_001F6200(param_1, param_2, D_001DF3F0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6290);
 

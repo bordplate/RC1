@@ -617,5 +617,15 @@
     "size": 28,
     "note": "Stash SIF/IOP streaming init: one-line wrapper func_0011AB20(0) (SCE-lib, code/_generated/sce/lib.s). 0x10 frame, sq/lq ra; EGC hoists the arg-0 load daddu $4,$0,$0 (word 0x0000202D, prints as 'move a0,zero') into the jal delay slot. Callee must be declared with an int param or the delay slot becomes nop. Callers: 0x1EB900 in Transition_DoTransition__Fv, 0x20197C in InitOnce__Fv. See decomp_state/notes/stash_func_00232CE0.md. Verified: image slice 0x133C60 (28 bytes) built==original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; count 831->830.",
     "matched_date": "2026-09-04"
+  },
+  "code/game/draw.cpp:128:func_001F6270": {
+    "name": "func_001F6270",
+    "source": "code/game/draw.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw/func_001F6270.s",
+    "vram": "0x001F6270",
+    "file_offset": "0xF71F0",
+    "size": 32,
+    "note": "Font-string width calculator for the D_001DF3F0 glyph table: pass-through wrapper func_001F6270(a0,a1) -> return func_001F6200(a0,a1,D_001DF3F0). Exact sibling of matched func_001F6250 (D_001DF050); only the global differs. Ghidra: FUN_001f6200(param_1,param_2,0x1df3f0); asm sets only $a3 since $a0/$a1 are forwarded in-register; all 8 call sites load both args before the jal and consume $v0, so the wrapper returns the callee's int. D_001DF3F0 = small-font glyph-width table, declared 'extern \"C\" char D_001DF3F0[];' (cfront gotcha: third callee param must be a pointer type; cf. func_001F6250 note). EGC emits the documented wrapper shape: addiu sp,-0x10 / lui a3,%hi / sq ra,0(sp) / jal func_001F6200 / <ds> addiu a3,a3,%lo / lq ra / jr ra / <ds> addiu sp,+0x10. Verified: built 0x1F6270..0x1F628F words F0FFBD27 1E00063C 0000BF7F 80D8070C F0F3C624 0000BF7B 0800E003 1000BD27 byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status --count 830 -> 829. See decomp_state/notes/draw_func_001F6270.md.",
+    "matched_date": "2026-09-04"
   }
 }
