@@ -71,7 +71,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021CA60);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021CA98);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021CAC8);
+extern "C" int D_001A0318 __attribute__((section(".data")));
+
+extern "C" int func_0021CAC8(void) {
+    D_001A0318 = -1;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021CAE0);
 
