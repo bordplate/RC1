@@ -142,6 +142,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F140);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UpdateMovieADPCM);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GetMovieNAX);
+void snd_GetMovieNAX(void) {
+    snd_SendIOPCommandAndWait(0x5B, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GetDopplerPitchMod);
