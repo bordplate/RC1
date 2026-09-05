@@ -8,7 +8,12 @@ typedef struct _AudioDec {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecCreate__FP9_AudioDecPUci14sceMpegStrType);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecDelete__FP9_AudioDec);
+extern "C" void snd_CloseMovieSound(void);
+
+int audioDecDelete(_AudioDec* self) {
+    snd_CloseMovieSound();
+    return 1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", func_0023ACB0);
 
