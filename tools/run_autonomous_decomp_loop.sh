@@ -13,6 +13,8 @@ headless_pid=""
 headless_log=""
 keep_headless_log=0
 
+./brrr.py "Starting decomp loop" --title "RC1 decomp"
+
 cleanup() {
     if [[ -n "$headless_pid" ]]; then
         kill -- "-$headless_pid" 2>/dev/null || kill "$headless_pid" 2>/dev/null || true
