@@ -48,7 +48,11 @@ void snd_SetMasterVolume(int a, int b) {
     snd_SendIOPCommandNoWait(0x9, 0x8, buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetPlaybackMode);
+void snd_SetPlaybackMode(int a) {
+    int buf[1];
+    buf[0] = a;
+    snd_SendIOPCommandNoWait(0xB, 0x4, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012E270);
 
