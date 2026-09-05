@@ -982,5 +982,15 @@
     "size": 48,
     "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x2E, 0x4, buf, 0, 0) - resumes a VAG stream (IOP cmd 0x2E, 1-int payload = stream id). Arg-swapped twin of snd_PauseVAGStream (cmd 0x2D), identical codegen: 0x20 frame, buf @0(sp), ra @0x10(sp); li a1,4; sw a0; move a2,sp; sq; li a0,0x2E; move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:25:snd_UnloadBank": {
+    "name": "snd_UnloadBank",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_UnloadBank.s",
+    "vram": "0x0012E1D8",
+    "file_offset": "0x2F158",
+    "size": 48,
+    "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x6, 0x4, buf, 0, 0) - unloads a sound bank (IOP cmd 0x6, 1-int payload = bank id). Same 1-int-buffer shape as snd_PauseVAGStream/ContinueVAGStream (cmd 0x2D/0x2E) and snd_SetPlaybackMode (cmd 0xB); only the cmd constant differs. 0x20 frame, buf @0(sp), ra @0x10(sp); li a1,4; sw a0; move a2,sp; sq; li a0,0x6; move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }

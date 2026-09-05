@@ -35,7 +35,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012E198);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_ResolveBankXREFS);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UnloadBank);
+void snd_UnloadBank(int a) {
+    int buf[1];
+    buf[0] = a;
+    snd_SendIOPCommandNoWait(0x6, 0x4, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetMasterVolume);
 
