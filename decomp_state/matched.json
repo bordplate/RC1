@@ -972,5 +972,15 @@
     "size": 48,
     "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x2D, 0x4, buf, 0, 0) - pauses a VAG stream (IOP cmd 0x2D, 1-int payload = stream id). 0x20 frame, buf @0(sp), ra @0x10(sp). EGC reproduces the original's arg-setup/store interleaving exactly: li a1,4; sw a0,0(sp); move a2,sp; sq ra; li a0,0x2D; move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. Same family as snd_ContinueVAGStream/UnloadBank/SetPlaybackMode (cmd 0x2E/0x6/0xB, same shape) and snd_SetMasterVolume (2-int buf). 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:83:snd_ContinueVAGStream": {
+    "name": "snd_ContinueVAGStream",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_ContinueVAGStream.s",
+    "vram": "0x0012ECA0",
+    "file_offset": "0x2FC20",
+    "size": 48,
+    "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x2E, 0x4, buf, 0, 0) - resumes a VAG stream (IOP cmd 0x2E, 1-int payload = stream id). Arg-swapped twin of snd_PauseVAGStream (cmd 0x2D), identical codegen: 0x20 frame, buf @0(sp), ra @0x10(sp); li a1,4; sw a0; move a2,sp; sq; li a0,0x2E; move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }
