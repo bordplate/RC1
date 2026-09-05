@@ -784,5 +784,15 @@
     "size": 44,
     "note": "Two-call void wrapper: DetachPointLight(idx); CreatePointLight(idx); (rebuilds one dynamic point-light slot; caller UpdateAllPointLights 0x00201A28 discards the return). Mixed mangling: RefreshPointLight/CreatePointLight unmangled (C), DetachPointLight__Fi C++-mangled. extern \"C\" cannot wrap it (would C-link the DetachPointLight call); instead C++ decl + asm label on the PROTOTYPE 'void RefreshPointLight(int idx) asm(\"RefreshPointLight\");' then normal definition (EGC rejects asm() on the out-of-line definition: 'parse error before {'). EGC schedules the shared arg into $16 in call1's jal delay slot and back to $a0 in call2's, 0x20 frame (sq $16,0/sq $ra,0x10), bare jr $ra. C definition placed between the CreatePointLight and DetachPointLight INCLUDE_ASM lines preserves .text layout (lights.o +0x530, 4-byte align gap before +0x560). Verified: lights.o body 11 instr identical, relocs R_MIPS_26 DetachPointLight__Fi+CreatePointLight, nm 'T RefreshPointLight'; built slice 0x102ED8..+0x2C == original; full clean make+cmp passes; count 814->813. See notes/lights_RefreshPointLight.md.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/space.cpp:9:func_0022E188": {
+    "name": "func_0022E188",
+    "source": "code/game/space.cpp",
+    "asm": "code/_generated/nonmatchings/game/space/func_0022E188.s",
+    "vram": "0x0022E188",
+    "file_offset": "0x12F108",
+    "size": 28,
+    "note": "Space-transition setup: 0x15F600=param (space id; DoSpaceTransition tests <8 next to GameMode@0x15F604), D_0015F5B0=1 (flag read by Transition_DoTransition__Fv), 0x15F618=1 (pending flag; read by func_00230EE8, cleared by func_00230F60). VOID function: li v0,1 is just the store constant, all six callers (0x2222E8/0x2233C8/0x223790/0x223998/0x1FD53C/0x1FD5CC) ignore v0. int-returning forms are impossible: EGC reserves v0 for the return and splits the body constant into v1 (2x li, 8 instr); only void collapses to the original single hoisted li v0,1 (7 instr). Verified with a standalone EGC -G8 -O2 matrix of 8 int-returning forms (all identical 2-li shape). Cast stores give $at bases (constant-cast idiom); the gp-relative third store is a plain extern \"C\" int D_0015F5B0 (in gp window). Source order cast600; gp5B0; cast618 reproduces machine order cast600; cast618; jr; <gp5B0 in delay slot>; naive order puts the gp store second. Verified: space.o body 7 instr identical, GPREL16 D_0015F5B0=-0x7650; built slice 0x12F108..+0x1C == original (01000224 1600013c 00f624ac 1600013c 18f622ac 0800e003 b08982af); full make+cmp passes; count 813->812. See notes/space_func_0022E188.md.",
+    "matched_date": "2026-09-05"
   }
 }

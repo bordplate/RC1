@@ -247,6 +247,24 @@ function symbol when the callee sits at the object's section origin — it links
 to the identical address; judge such relocs by the link result, not the symbol
 name (see decomp_state/notes/boot_main.md for the matched main).
 
+Observation observed 2026-09-05 (constant-store register depends on return
+type): for a function that stores constants and RETURNS an int, EGC reserves
+v0 for the return value and materializes the body's constant stores into v1 —
+one `li v1,N` for the body plus a separate `li v0,N` for the return (no
+hoisting, 8-instruction shape for the 3-store func_0022E188 pattern). For a
+VOID function the same stores get `li v0,N` hoisted to the top of the body,
+which the stores reuse — the 7-instruction original shape. A standalone EGC
+-G8 -O2 matrix of 8 int-returning forms (inline literals, `int x = 1` at top
+or middle, chained `a = b = 1`, `return (b = (a = 1))`) all compiled to the
+same 2-`li` shape, so when an original has a single hoisted constant load used
+by stores AND left in v0 at `jr ra`, the function is almost certainly void and
+the v0 value is a leftover, not a return value — check callers for return-use
+before assuming `return N` (see decomp_state/notes/space_func_0022E188.md).
+Related scheduling for two constant-cast stores + one gp-symbol store: source
+order `castA; gpC; castB` reproduces machine order `castA; castB; jr;
+<gpC in delay slot>`; the naive `castA; castB; gpC` order puts the gp store
+second instead (same note).
+
 ## OpenCode Model And MCP Configuration
 
 The repository-local `.opencode/opencode.jsonc` selects the requested local
