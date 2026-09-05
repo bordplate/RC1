@@ -11,7 +11,15 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012DE60);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GotReturns);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_PrepareReturnBuffer);
+extern void* D_0015EC80;
+extern int D_0015EC84;
+
+void snd_PrepareReturnBuffer(int* buf, int index) {
+    D_0015EC84 = index;
+    D_0015EC80 = buf;
+    buf[index + 1] = 0;
+    *buf = 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012DF18);
 

@@ -35,6 +35,15 @@ standard `jr $ra` (word 0x03E00008, stored LE as `08 00 E0 03`) shows up as
 `0800E003`. Read those fields back as LE (or just objdump the object / read
 raw ELF bytes) before diffing instruction words.
 - Compiler output and object/assembly diffs judge candidate quality.
+
+Ghidra Gp-name pitfall (verified 2026-09-05): Ghidra names gp-relative data
+accesses as `iGp/PuGpffffXXXX` where `ffffXXXX = 0x100000000 - offset`, i.e.
+the value is `gp + (0xffffXXXX as signed)` — e.g. `puGpffff8080` is gp - 0x7F80
+= 0x15EC80, NOT 0x15EE80 (the `D_0015EE80` label in `.lit` is a different
+symbol 0x200 away). Always convert the offset to an absolute address (gp =
+0x166C00) before naming the extern. Declaring the wrong-but-valid label links
+cleanly and fails parity at exactly the GPREL16 displacement bytes (see
+decomp_state/notes/snd_PrepareReturnBuffer.md).
 - `tools/decomp_status.py --complete` is the mechanical completion check.
 
 ## Local Toolchain

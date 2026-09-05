@@ -814,5 +814,14 @@
     "size": 48,
     "note": "Stops one sound stream: 1-word stack payload {id}, sends IOP sound cmd 0x15 (4-byte payload) via snd_SendIOPCommandNoWait(0x15, 4, &data, 0, 0). Signature void snd_StopSound(int) confirmed from both call sites (0x2160FC music_UpdateStream, 0x22D4E4 sound_update: one int in a0, return ignored). Callee prologue (0x12E6E0) takes 5 args (cmd,count,data,x,y). Three source forms (scalar+&data / array+assign / array-init) compile byte-identical under local EGC 2.95.2 -G8 -O2; scalar form kept. Verified: built ELF slice 0x2F2E8..0x2F318 == assets slice (12 words); full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 811->810.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:14:snd_PrepareReturnBuffer": {
+    "name": "snd_PrepareReturnBuffer",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_PrepareReturnBuffer.s",
+    "vram": "0x0012DEF8",
+    "file_offset": "0x2EE78",
+    "size": 28,
+    "note": "Prepares IOP return buffer: D_0015EC84=index, D_0015EC80=buf (first two .core_lit words, direct sw disp(gp) via R_MIPS_GPREL16), then buf[index+1]=0; *buf=0 (second zero-store in jr $ra delay slot; independent sll for the index*4 base hoisted above the gp stores). Caller 0x12E74C: snd_PrepareReturnBuffer(0x133100, 1); snd_GotReturns polls D_0015EC80. PITFALL: Ghidra Gp name puGpffff8080 = gp-0x7F80 = 0x15EC80, NOT D_0015EE80 (that lit label is 0x200 away; wrong name broke parity at the two GPREL16 displacement bytes). See decomp_state/notes/snd_PrepareReturnBuffer.md"
   }
 }
