@@ -360,6 +360,18 @@ type `Y'" (bogus; e.g. "ViBuf is not a base type for VideoDec"). The correct
 on the built object before trusting a signature (see
 decomp_state/notes/videodec_videoDecBeginPut.md).
 
+Mangling note (verified 2026-09-05): a function-pointer type is encoded
+`PF` + <parameter types> + `_` + <return type in underscore form
+(`_v` void, `_i` int, `_l` long)>. So
+`PFP7sceMpegP13sceMpegCbDataPv_iPv` is a 5th outer `Pv` param FOLLOWING the
+callback token `PFP7sceMpegP13sceMpegCbDataPv_i` — the callback is
+`int (*)(sceMpeg*, sceMpegCbData*, void*)`, 3 params. Do not absorb the
+trailing `Pv` into the callback: the call sites (initAll__Fiii at
+0x23A8D0/F4) pass 5 args (a0-a4). The underscore forms only appear for the
+RETURN type inside the funccptr token (the `_` separator before it); outer
+param types keep their plain forms — another reason to nm-check every
+signature (see decomp_state/notes/videodec_videoDecSetStream.md).
+
 ## Commit Discipline
 
 Create one commit per successfully decompiled function. A function is not ready

@@ -38,11 +38,22 @@ int viBufCount(ViBuf* buf);
 
 int viBufBeginPut(ViBuf* buf, u8** data, int* size, u8** data2, int* size2);
 
+struct sceMpeg;
+struct sceMpegCbData;
+
+typedef int (*videoDecCallback)(struct sceMpeg*, struct sceMpegCbData*, void*);
+
+extern "C" int func_0012AEC8(VideoDec* self, int a, int b,
+    videoDecCallback cb, void* userdata);
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023CBC8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecSetStream__FP8VideoDeciiPFP7sceMpegP13sceMpegCbDataPv_iPv);
+int videoDecSetStream(VideoDec* self, int a, int b, videoDecCallback cb, void* userdata) {
+    func_0012AEC8(self, a, b, cb, userdata);
+    return 1;
+}
 
 int videoDecBeginPut(VideoDec* self, u8** data, int* size, u8** data2, int* size2) {
     return viBufBeginPut(&self->vibuf, data, size, data2, size2);

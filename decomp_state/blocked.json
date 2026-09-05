@@ -48,5 +48,10 @@
   "status": "blocked",
   "date": "2026-09-05",
   "note": "NOT a function: 4-byte unreachable dead-code tail of snd_StopAllStreams (addiu sp,sp,0x10 at 0x12EC00 / file 0x2FB80, right after the parent's jr ra; <addiu sp,sp,0x10> epilogue; parent frame is 0x10 so this is a dead duplicate deallocate). Local EGC 2.95.2 v2.73a never emits a dead addiu sp,sp,N (only dead stores; /tmp/opencode/tail_exp t1-t10). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/989snd_snd_StopAllStreams.md."
+ },
+ "code/game/movie/videodec.cpp:11:videoDecEndPut__FP8VideoDec": {
+  "status": "blocked",
+  "date": "2026-09-05",
+  "note": "Implicit a1 pass-through, not expressible in C++. videoDecEndPut (0x23CC10, 7 instr) does jal viBufEndPut; <addiu a0,a0,0x48> with NO a1 setup, but viBufEndPut__FP5ViBufi consumes a1 (daddu s2,a1,0; adds it to buf field_0x14 and the 64-bit field_0x48). BOTH callers set a1 immediately before the call: videoCallback 0x23B6F4 (daddu a1,s3,0) and videoDecFlush 0x23CDA4 (daddu a1,v0,0, v0=slti result) - the count rides in a1 across the videoDecEndPut boundary. The function semantically takes (self, count) but is mangled __FP8VideoDec (1 param). No C++ form compiles to the original: a 1-arg viBufEndPut decl mangles the call to viBufEndPut__FP5ViBuf (wrong symbol); a 2-arg call needs an li/load for a1 (extra instruction); default args also materialize. Original likely came from a declaration/definition mismatch; EGC 2.95.2 cannot regenerate it from well-formed C++. Blocked. See decomp_state/notes/videodec_videoDecEndPut.md"
  }
 }

@@ -862,5 +862,15 @@
     "size": 28,
     "note": "Passthrough wrapper: return viBufBeginPut(&self->vibuf, data, size, data2, size2). Mangled name decoded with 0-based Tn: (VideoDec*, u8**, int*, u8**, int*) - the 1-based guess both mangles wrong (T0T1) and trips a cfront 'not a base type' parser bug when passing u8** var args. a1-a4 forwarded untouched; only a0=self+0x48 in the jal delay slot; 0x10 frame sq/lq ra. viBufBeginPut still INCLUDE_ASM in vibuf.cpp, declared here to link. Verified: object 7/7 words, R_MIPS_26 -> viBufBeginPut__FP5ViBufPPUcPiT1T2 (0x23BE20), full make + cmp passes, count 806->805, decomp-verifier MATCH. See decomp_state/notes/videodec_videoDecBeginPut.md",
     "matched_date": "2026-09-05"
+  },
+  "code/game/movie/videodec.cpp:7:videoDecSetStream__FP8VideoDeciiPFP7sceMpegP13sceMpegCbDataPv_iPv": {
+    "name": "videoDecSetStream__FP8VideoDeciiPFP7sceMpegP13sceMpegCbDataPv_iPv",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecSetStream__FP8VideoDeciiPFP7sceMpegP13sceMpegCbDataPv_iPv.s",
+    "vram": "0x0023CBD0",
+    "file_offset": "0x13DB50",
+    "size": 32,
+    "note": "Registers movie callback: func_0012AEC8(self,a,b,cb,userdata); return 1; (libSCE stub lib.s:24492 keeps a 3-word keyed callback table at self+0x40). 5-arg passthrough, nop in jal delay slot, li v0,1 between lq and jr. Callback type decoded from funccptr token PF+params+_return: int (*)(sceMpeg*, sceMpegCbData*, void*) - the trailing Pv is the 5th OUTER param (userdata), callers initAll__Fiii 0x23A8D0/F4 pass a0-a4. Verified: object 8/8 words, R_MIPS_26 -> func_0012AEC8 (0x12AEC8), full make + cmp passes, count 805->804, decomp-verifier MATCH. See decomp_state/notes/videodec_videoDecSetStream.md",
+    "matched_date": "2026-09-05"
   }
 }
