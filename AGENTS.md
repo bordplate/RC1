@@ -271,13 +271,13 @@ The repository-local `.opencode/opencode.jsonc` selects the requested local
 OpenAI-compatible provider as the default model:
 
 - Provider ID: `qwen-local`
-- Base URL: `http://10.9.0.201:8080`
-- Model ID: `Qwen3.8-27B`
+- Base URL: `http://127.0.0.1:8081`
+- Model ID: `qwen3.8-27b`
 - Context limit: `262144`
 - Configured output limit: `32768`
 
-The full model reference is `qwen-local/Qwen3.8-27B`. The inference endpoint
-advertises `Qwen3.8-27B` through `/models`.
+The full model reference is `qwen-local/qwen3.8-27b`. The inference endpoint
+advertises `qwen3.8-27b` through `/models`.
 OpenCode reads configuration at startup, so restart it after configuration
 changes.
 
@@ -315,6 +315,18 @@ while a blocker lacks a note, when the build fails, or when the final ELF does
 not compare equal to `assets/boot_elf.elf`.
 
 ## Function Workflow
+
+### Subagent Delegation
+
+- Use `decomp-researcher` before implementing an unfamiliar target when Ghidra,
+  assembly, caller, or data-layout research can be performed independently.
+- Use `explore` for quick read-only repository searches that do not require the
+  RC1-specific research report.
+- Keep source edits and iteration in the primary agent. Do not have multiple
+  agents modify the same function concurrently.
+- Use `decomp-verifier` after implementation for an independent mechanical
+  object/assembly and full-ELF parity check before committing.
+- Subagents must stay within the one function selected for the current attempt.
 
 For each selected function:
 
@@ -389,8 +401,8 @@ exactly one push notification to the owner's phone from the repo root using
 `brrr.py` (stdlib only, works without the venv):
 
 ```sh
-python3 brrr.py -t "RC1 decomp" -s "matched strfile_func_0023BA48" \
-  "57 nonmatching left, build parity OK"
+python3 brrr.py -t "RC1 decomp" -s "matched strfile_findpos" \
+  "Matching decomp of string function to find position of a character. 57 nonmatching left"
 ```
 
 Format rules — mobile pushes get truncated, keep the whole thing under ~200
@@ -401,11 +413,10 @@ characters:
   `blocked <name>: <one-phrase reason>` (e.g. `blocked func_0023AEE0: EGC
   3-store tail reorder`). If no function was finished, use a short
   description of the session outcome instead.
-- message body: current project status — the nonmatching count from
-  `python3 tools/decomp_status.py --count` plus `build parity OK` or
-  `parity FAILED` from the final `cmp`.
+- message body: description of the work done and the nonmatching count from
+  `python3 tools/decomp_status.py --count`.
 
-Do not paste diffs, decompiler output, or note contents into the notification.
+Do not paste diffs, decompiler output, or verbose note contents into the notification.
 If `brrr.py` fails (network down, rotated token), note it in the attempt
 record and continue; the notification is not part of the completion oracle.
 
