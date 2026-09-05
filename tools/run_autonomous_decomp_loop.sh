@@ -62,6 +62,8 @@ while true; do
         exit 0
     fi
 
-    opencode run "$prompt"
+    opencode run --thinking --auto "$prompt"
     sleep 10
 done
+
+./brrr.py "RC1 decomp has stopped!" --title "RC1 decomp"
