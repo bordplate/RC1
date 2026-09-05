@@ -804,5 +804,15 @@
     "size": 28,
     "note": "Space-transition setup: 0x15F600=param (space id; DoSpaceTransition tests <8 next to GameMode@0x15F604), D_0015F5B0=1 (flag read by Transition_DoTransition__Fv), 0x15F618=1 (pending flag; read by func_00230EE8, cleared by func_00230F60). VOID function: li v0,1 is just the store constant, all six callers (0x2222E8/0x2233C8/0x223790/0x223998/0x1FD53C/0x1FD5CC) ignore v0. int-returning forms are impossible: EGC reserves v0 for the return and splits the body constant into v1 (2x li, 8 instr); only void collapses to the original single hoisted li v0,1 (7 instr). Verified with a standalone EGC -G8 -O2 matrix of 8 int-returning forms (all identical 2-li shape). Cast stores give $at bases (constant-cast idiom); the gp-relative third store is a plain extern \"C\" int D_0015F5B0 (in gp window). Source order cast600; gp5B0; cast618 reproduces machine order cast600; cast618; jr; <gp5B0 in delay slot>; naive order puts the gp store second. Verified: space.o body 7 instr identical, GPREL16 D_0015F5B0=-0x7650; built slice 0x12F108..+0x1C == original (01000224 1600013c 00f624ac 1600013c 18f622ac 0800e003 b08982af); full make+cmp passes; count 813->812. See notes/space_func_0022E188.md.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:46:snd_StopSound": {
+    "name": "snd_StopSound",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_StopSound.s",
+    "vram": "0x0012E368",
+    "file_offset": "0x2F2E8",
+    "size": 48,
+    "note": "Stops one sound stream: 1-word stack payload {id}, sends IOP sound cmd 0x15 (4-byte payload) via snd_SendIOPCommandNoWait(0x15, 4, &data, 0, 0). Signature void snd_StopSound(int) confirmed from both call sites (0x2160FC music_UpdateStream, 0x22D4E4 sound_update: one int in a0, return ignored). Callee prologue (0x12E6E0) takes 5 args (cmd,count,data,x,y). Three source forms (scalar+&data / array+assign / array-init) compile byte-identical under local EGC 2.95.2 -G8 -O2; scalar form kept. Verified: built ELF slice 0x2F2E8..0x2F318 == assets slice (12 words); full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status 811->810.",
+    "matched_date": "2026-09-05"
   }
 }
