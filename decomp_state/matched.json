@@ -774,5 +774,15 @@
     "size": 40,
     "note": "HUD bump-heap reset: heapCursor(0x19A3F8)=D_001940CC; heapEnd(0x19A3FC)=D_001940CC+0x64000. Both globals out of gp window; section(.data) externs give the original absolute lui/lw + lui/addiu pair. Two non-constant stores sharing one base emit in REVERSE source order (first stmt's store in jr delay slot) \u2014 same rule as the constant-store case in stream_func_00217020; source [end, cursor] matched first try. Plain C++ func (no extern \"C\") mangles to Hud_HeapReset__Fv as referenced by Hud_HeapAlloc's generated asm. 10/10 words == original, full cmp passes. See decomp_state/notes/hud_Hud_HeapReset__Fv.md.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/lights.cpp:7:RefreshPointLight": {
+    "name": "RefreshPointLight",
+    "source": "code/game/lights.cpp",
+    "asm": "code/_generated/nonmatchings/game/lights/RefreshPointLight.s",
+    "vram": "0x00201F58",
+    "file_offset": "0x102ED8",
+    "size": 44,
+    "note": "Two-call void wrapper: DetachPointLight(idx); CreatePointLight(idx); (rebuilds one dynamic point-light slot; caller UpdateAllPointLights 0x00201A28 discards the return). Mixed mangling: RefreshPointLight/CreatePointLight unmangled (C), DetachPointLight__Fi C++-mangled. extern \"C\" cannot wrap it (would C-link the DetachPointLight call); instead C++ decl + asm label on the PROTOTYPE 'void RefreshPointLight(int idx) asm(\"RefreshPointLight\");' then normal definition (EGC rejects asm() on the out-of-line definition: 'parse error before {'). EGC schedules the shared arg into $16 in call1's jal delay slot and back to $a0 in call2's, 0x20 frame (sq $16,0/sq $ra,0x10), bare jr $ra. C definition placed between the CreatePointLight and DetachPointLight INCLUDE_ASM lines preserves .text layout (lights.o +0x530, 4-byte align gap before +0x560). Verified: lights.o body 11 instr identical, relocs R_MIPS_26 DetachPointLight__Fi+CreatePointLight, nm 'T RefreshPointLight'; built slice 0x102ED8..+0x2C == original; full clean make+cmp passes; count 814->813. See notes/lights_RefreshPointLight.md.",
+    "matched_date": "2026-09-05"
   }
 }
