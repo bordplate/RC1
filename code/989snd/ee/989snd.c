@@ -102,7 +102,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GetVAGStreamTim
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_IsVAGStreamBuffered_CB);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCheckCDIdle);
+void snd_StreamSafeCheckCDIdle(int arg) {
+    int buf[4];
+    buf[0] = arg;
+    snd_SendIOPCommandAndWait(0x36, 4, buf);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdRead);
 

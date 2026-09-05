@@ -922,5 +922,15 @@
     "size": 36,
     "note": "snd_SendIOPCommandAndWait(0x5B, 0, 0) - fetches the current movie NAX timing value, called by sendADPCM__FP9_AudioDec. The caller consumes v0 after the call (subu v0, v0, lw(s0,0x60)) but snd_SendIOPCommandAndWait is declared void in 989snd.c; the void wrapper leaves v0 unmodified after the tail call, identical machine behavior. Same codegen shape as snd_CloseMovieSound/snd_ResetMovieSound: 0x10 frame, li a0,0x5B, sq, move a1,zero, jal (R_MIPS_26 on .text section symbol -> 0x12E548), move a2,zero delay slot, lq, jr, addiu sp. 10/10 words verified, full make + cmp passes, count -> 799, decomp-verifier MATCH. See decomp_state/notes/989snd_snd_ResetMovieSound__GetMovieNAX.md",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:89:snd_StreamSafeCheckCDIdle": {
+    "name": "snd_StreamSafeCheckCDIdle",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_StreamSafeCheckCDIdle.s",
+    "vram": "0x0012ED30",
+    "file_offset": "0x2FCB0",
+    "size": 40,
+    "note": "int buf[4]; buf[0]=arg; snd_SendIOPCommandAndWait(0x36, 4, buf) - polls the 989snd IOP stream plugin for CD idle. Callers music_Stop and func_0022D708 pass 1; func_0022D708 then reads v0 (s2=v0) - the void wrapper propagates v0 naturally since the tail call is the last body action. EGC reproduces the original's interleaving: li a1,4 first, sw a0,0(sp), move a2,sp, sq ra,16(sp), jal, li a0,0x36 in the delay slot. 0x20 frame (4-int buf @0(sp), ra @0x10). 10/10 words verified, full make + cmp passes, count 799->797 (with snd_InitMovieSound), decomp-verifier MATCH. See decomp_state/notes/989snd_snd_StreamSafeCheckCDIdle__InitMovieSound.md",
+    "matched_date": "2026-09-05"
   }
 }
