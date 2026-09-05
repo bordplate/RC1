@@ -53,5 +53,16 @@
   "status": "blocked",
   "date": "2026-09-05",
   "note": "Implicit a1 pass-through, not expressible in C++. videoDecEndPut (0x23CC10, 7 instr) does jal viBufEndPut; <addiu a0,a0,0x48> with NO a1 setup, but viBufEndPut__FP5ViBufi consumes a1 (daddu s2,a1,0; adds it to buf field_0x14 and the 64-bit field_0x48). BOTH callers set a1 immediately before the call: videoCallback 0x23B6F4 (daddu a1,s3,0) and videoDecFlush 0x23CDA4 (daddu a1,v0,0, v0=slti result) - the count rides in a1 across the videoDecEndPut boundary. The function semantically takes (self, count) but is mangled __FP8VideoDec (1 param). No C++ form compiles to the original: a 1-arg viBufEndPut decl mangles the call to viBufEndPut__FP5ViBuf (wrong symbol); a 2-arg call needs an li/load for a1 (extra instruction); default args also materialize. Original likely came from a declaration/definition mismatch; EGC 2.95.2 cannot regenerate it from well-formed C++. Blocked. See decomp_state/notes/videodec_videoDecEndPut.md"
+ },
+ "code/game/framebuf.cpp:16:PutDispBuffer__Fv": {
+  "name": "PutDispBuffer__Fv",
+  "source": "code/game/framebuf.cpp",
+  "asm": "code/_generated/nonmatchings/game/framebuf/PutDispBuffer__Fv.s",
+  "vram": "0x001FB2A8",
+  "file_offset": "0xFC228",
+  "size": 40,
+  "note": "C form identified and verified at the instruction level EXCEPT one prologue-scheduling difference. Body is func_00121E40(*(void**)0x15EEB8) - func_00121E40 is an alabel (real linkable symbol) in code/_generated/sce/lib.s, D_0015EEB8 is a writable pointer in section .lit4. Using the constant-cast idiom (*(void**)0x15EEB8, NOT the named symbol) makes EGC emit the correct 'lui a0,%hi; lw a0,%lo(a0)' base-register form (named symbol gives 'lui v0; lw a0,0(v0)' - wrong base reg). BUT the original order is: addiu sp; lui a0; lw a0; sq ra,0(sp); jal; nop; lq; jr; addiu - i.e. the argument lui/lw are scheduled BEFORE the ra save. EGC 2.95.2 (project flags) always emits the prologue 'addiu sp; sq ra' as a fixed unit at the top, then the body (lui/lw/jal), giving: addiu; sq; lui; lw; jal; nop; lq; jr; addiu. The sq ra cannot be moved after the body loads with any C form tried (direct cast, named symbol, temp variable). This is an EGC prologue-scheduling difference vs the original Insomniac compiler, not a source-structure issue. Blocker: EGC emits sq ra before the argument materialization; original delays it after. See decomp_state/notes/framebuf_PutDispBuffer.md",
+  "reason": "EGC prologue scheduling: sq ra emitted before arg lui/lw; original interleaves them",
+  "blocked_date": "2026-09-05"
  }
 }
