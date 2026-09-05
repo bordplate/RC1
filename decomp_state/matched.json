@@ -764,5 +764,15 @@
     "size": 76,
     "note": "Game main loop: f = startlevel__Fv; while(true){ f(); f = ParseBin(); FlushCache(0); FlushCache(2); }. EGC auto-emits the leading 'jal __main; nop' for C++ main (do NOT write __main() in source \u2014 it doubles the call). 'f = ParseBin()' store lands in the first FlushCache delay slot; ParseBin jal relocations to the .text section symbol (ParseBin is at the object's section origin) and links correctly. 19/19 object words == original, full cmp passes. See decomp_state/notes/boot_main.md.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/hud.cpp:13:Hud_HeapReset__Fv": {
+    "name": "Hud_HeapReset__Fv",
+    "source": "code/game/hud.cpp",
+    "asm": "code/_generated/nonmatchings/game/hud/Hud_HeapReset__Fv.s",
+    "vram": "0x001FF260",
+    "file_offset": "0x1001E0",
+    "size": 40,
+    "note": "HUD bump-heap reset: heapCursor(0x19A3F8)=D_001940CC; heapEnd(0x19A3FC)=D_001940CC+0x64000. Both globals out of gp window; section(.data) externs give the original absolute lui/lw + lui/addiu pair. Two non-constant stores sharing one base emit in REVERSE source order (first stmt's store in jr delay slot) \u2014 same rule as the constant-store case in stream_func_00217020; source [end, cursor] matched first try. Plain C++ func (no extern \"C\") mangles to Hud_HeapReset__Fv as referenced by Hud_HeapAlloc's generated asm. 10/10 words == original, full cmp passes. See decomp_state/notes/hud_Hud_HeapReset__Fv.md.",
+    "matched_date": "2026-09-05"
   }
 }
