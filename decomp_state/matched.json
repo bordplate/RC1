@@ -842,5 +842,15 @@
     "file_offset": "0x2FB50",
     "size": 44,
     "note": "Sends IOP sound command 0x34 (stop all streams) via snd_SendIOPCommandNoWait(0x34,0,0,0,0); void, no params (sole caller 0x215FC4 in FUN_00215EE8 passes none). 0x10 frame, li a0 hoisted above sq ra,0(sp). The jal carries the documented section-symbol R_MIPS_26 (callee snd_SendIOPCommandNoWait defined later in the same TU via INCLUDE_ASM); linked word 0x0C04B9B8 equals original. 4-byte dead tail func_0012EC00 (addiu sp,sp,0x10 at 0x12EC00) not regenerable by local EGC; INCLUDE_ASM retained, entry blocked. See decomp_state/notes/989snd_snd_StopAllStreams.md."
+  },
+  "code/game/movie/movie.cpp:7:switchThread": {
+    "name": "switchThread",
+    "source": "code/game/movie/movie.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/movie/switchThread.s",
+    "vram": "0x0023A770",
+    "file_offset": "0x13B6F0",
+    "size": 28,
+    "note": "EE thread yield: func_001188C0(1); func_001188C0 is the handwritten libSCE syscall-0x2B (sched_yield) stub in code/_generated/sce/lib.s, declared extern \"C\" in movie.cpp. Single-call wrapper shape: 0x10 frame, sq/lq ra at 0(sp), addiu a0,1 hoisted into the jal delay slot (callee prototype must declare the int param). Symbol is unmangled in the original (callers jal switchThread), so the definition is extern \"C\" void switchThread() in a C++ TU. All 5 callers use nop delay slots and never read v0 -> void. Verified: object 7/7 words identical, R_MIPS_26 on func_001188C0, full make + cmp passes, count 807->806. See decomp_state/notes/movie_switchThread.md",
+    "matched_date": "2026-09-05"
   }
 }

@@ -4,7 +4,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", func_0023A3B8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", readMpeg__FP8VideoDecP7ReadBufP7StrFile);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", switchThread);
+extern "C" void func_001188C0(int);
+
+extern "C" void switchThread() {
+    func_001188C0(1);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", isAudioOK);
 
