@@ -101,7 +101,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012EC00);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_PlayVAGStreamByLocEx_CB);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_PauseVAGStream);
+void snd_PauseVAGStream(int a) {
+    int buf[1];
+    buf[0] = a;
+    snd_SendIOPCommandNoWait(0x2D, 0x4, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_ContinueVAGStream);
 
