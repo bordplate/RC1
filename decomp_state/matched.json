@@ -872,5 +872,15 @@
     "size": 32,
     "note": "Registers movie callback: func_0012AEC8(self,a,b,cb,userdata); return 1; (libSCE stub lib.s:24492 keeps a 3-word keyed callback table at self+0x40). 5-arg passthrough, nop in jal delay slot, li v0,1 between lq and jr. Callback type decoded from funccptr token PF+params+_return: int (*)(sceMpeg*, sceMpegCbData*, void*) - the trailing Pv is the 5th OUTER param (userdata), callers initAll__Fiii 0x23A8D0/F4 pass a0-a4. Verified: object 8/8 words, R_MIPS_26 -> func_0012AEC8 (0x12AEC8), full make + cmp passes, count 805->804, decomp-verifier MATCH. See decomp_state/notes/videodec_videoDecSetStream.md",
     "matched_date": "2026-09-05"
+  },
+  "code/game/mobyfunc.cpp:115:InitMobyClassDists__Fv": {
+    "name": "InitMobyClassDists__Fv",
+    "source": "code/game/mobyfunc.cpp",
+    "asm": "code/_generated/nonmatchings/game/mobyfunc/InitMobyClassDists__Fv.s",
+    "vram": "0x0020D1F0",
+    "file_offset": "0x10E170",
+    "size": 40,
+    "note": "Single-call wrapper: FastMemSet((void*)0x70003A00, 0x40000000, 0x380) - fills the moby class-distance table (EE DMA addr 0x70003A00) with the word 0x40000000, 0x380 bytes. FastMemSet is the extern \"C\" word-fill loop in code/_generated/game/fastfunc.s (declared in common.h). 0x10 frame; EGC schedules the 3 constant args around the sq (lui a0 before, lui a1 + ori a0 after, li a2 in the jal delay slot) - plain single statement reproduces exactly, no temps/reordering. Siblings Stash/RestoreMobyClassDists move the same 0x380 bytes to/from D_001B2E80 via FastMemCopy. Verified: object 10/10 words, R_MIPS_26 -> FastMemSet (0x1F97E8), full make + cmp passes, count 804->803, decomp-verifier MATCH. See decomp_state/notes/mobyfunc_InitMobyClassDists.md",
+    "matched_date": "2026-09-05"
   }
 }

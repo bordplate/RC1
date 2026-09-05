@@ -112,7 +112,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D060);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", ProcessMobyAnimData__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", InitMobyClassDists__Fv);
+void InitMobyClassDists() {
+    FastMemSet((void*)0x70003A00, 0x40000000, 0x380);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", StashMobyClassDists__Fv);
 
