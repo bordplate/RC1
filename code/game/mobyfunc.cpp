@@ -116,9 +116,15 @@ void InitMobyClassDists() {
     FastMemSet((void*)0x70003A00, 0x40000000, 0x380);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", StashMobyClassDists__Fv);
+extern char D_001B2E80[] __attribute__((section(".data")));
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", RestoreMobyClassDists__Fv);
+void StashMobyClassDists() {
+    FastMemCopy(D_001B2E80, (void*)0x70003A00, 0x380);
+}
+
+void RestoreMobyClassDists() {
+    FastMemCopy((void*)0x70003A00, D_001B2E80, 0x380);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobysSetup__Fv);
 

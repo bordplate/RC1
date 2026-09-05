@@ -882,5 +882,25 @@
     "size": 40,
     "note": "Single-call wrapper: FastMemSet((void*)0x70003A00, 0x40000000, 0x380) - fills the moby class-distance table (EE DMA addr 0x70003A00) with the word 0x40000000, 0x380 bytes. FastMemSet is the extern \"C\" word-fill loop in code/_generated/game/fastfunc.s (declared in common.h). 0x10 frame; EGC schedules the 3 constant args around the sq (lui a0 before, lui a1 + ori a0 after, li a2 in the jal delay slot) - plain single statement reproduces exactly, no temps/reordering. Siblings Stash/RestoreMobyClassDists move the same 0x380 bytes to/from D_001B2E80 via FastMemCopy. Verified: object 10/10 words, R_MIPS_26 -> FastMemSet (0x1F97E8), full make + cmp passes, count 804->803, decomp-verifier MATCH. See decomp_state/notes/mobyfunc_InitMobyClassDists.md",
     "matched_date": "2026-09-05"
+  },
+  "code/game/mobyfunc.cpp:117:StashMobyClassDists__Fv": {
+    "name": "StashMobyClassDists__Fv",
+    "source": "code/game/mobyfunc.cpp",
+    "asm": "code/_generated/nonmatchings/game/mobyfunc/StashMobyClassDists__Fv.s",
+    "vram": "0x0020D218",
+    "file_offset": "0x10E198",
+    "size": 44,
+    "note": "FastMemCopy(D_001B2E80, (void*)0x70003A00, 0x380) - moves the 0x380-byte moby class-distance table from the live EE DMA buffer 0x70003A00 (filled by InitMobyClassDists) into RAM stash D_001B2E80 (.data). FastMemCopy(dst,src,size) is the 128-bit-step copy loop in code/_generated/game/fastfunc.s, declared in common.h next to FastMemSet. D_001B2E80 is outside the gp window so declared 'extern char D_001B2E80[] __attribute__((section(\".data\")))' to get the plain HI16/LO16 pair. 0x10 frame; EGC interleaves the two address materializations around the sq, li a2,0x380 in the jal delay slot. Paired with RestoreMobyClassDists (arg-swapped twin) in the same hunk. Verified: object 11/11 words, R_MIPS_HI16/LO16 -> D_001B2E80 (0x1B2E80), R_MIPS_26 -> FastMemCopy (0x1F98D0), full make + cmp passes, count 803->801, decomp-verifier MATCH. See decomp_state/notes/mobyfunc_StashRestoreMobyClassDists.md",
+    "matched_date": "2026-09-05"
+  },
+  "code/game/mobyfunc.cpp:119:RestoreMobyClassDists__Fv": {
+    "name": "RestoreMobyClassDists__Fv",
+    "source": "code/game/mobyfunc.cpp",
+    "asm": "code/_generated/nonmatchings/game/mobyfunc/RestoreMobyClassDists__Fv.s",
+    "vram": "0x0020D248",
+    "file_offset": "0x10E1C8",
+    "size": 44,
+    "note": "FastMemCopy((void*)0x70003A00, D_001B2E80, 0x380) - restores the moby class-distance table from RAM stash D_001B2E80 back into the live EE DMA buffer 0x70003A00. Arg-swapped twin of StashMobyClassDists (dst/src flipped), same codegen shape (0x10 frame, address materializations interleaved around the sq, li a2 in the jal delay slot). Verified: object 11/11 words, relocs as in the Stash note, full make + cmp passes, count 803->801, decomp-verifier MATCH. See decomp_state/notes/mobyfunc_StashRestoreMobyClassDists.md",
+    "matched_date": "2026-09-05"
   }
 }
