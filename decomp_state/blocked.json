@@ -1,37 +1,47 @@
 {
-  "code/game/hud.cpp:13:Hud_HeapReset__Fv": {
-    "status": "blocked",
-    "date": "2026-09-04",
-    "note": "HUD linear-heap reset: D_0019A3E8.field_0x10 = D_001940CC; D_0019A3E8.field_0x14 = D_001940CC + 0x64000 (D_001940CC is the pool base written once at 0x201640 during init; field_0x10/0x14 are the alloc head/end used by Hud_HeapAlloc). Candidate C reproduces the exact 10-instruction structure, ordering, offsets and delay slot (lui base-hi / lui const-hi / lw p / lui heap-hi / ori / addiu / addu p+const / sw [heap+0x10] / jr ra / <delay> sw [heap+0x14]), but EGC 2.95.2 v2.73a with project flags (-G8 -O2 -ffast-math -fno-exceptions) allocates the loaded pool value to $a0/$a1 (hi/value) where the original uses $a1/$a2 - a one-register tiebreak identical in class to readBufEndGet (see notes/readbuf_endGet_codegen.md). Tried without flipping it: C and C++ free functions, instance method (this unused, same allocation), const local temp, int/u32 temps, pointer decl + deref, casts, signed/unsigned constant. Likely needs the (still unknown) original compiler flag difference. Also learned: this EGC build mangles C++ methods cfront-style (HeapReset__3Hud), so the PS2-style binary name requires 'void HeapReset() asm(\"Hud_HeapReset__Fv\")' on the in-class declaration (works for symbols, does not affect allocation). Symbol trick + struct (pad[4]; u32 field_0x10; u32 field_0x14;) are ready to drop in once registers match."
-  },
-  "code/game/menu.cpp:128:func_00207690": {
-    "status": "blocked",
-    "date": "2026-09-04",
-    "note": "FP-delay-NOP toolchain mismatch. Semantics (from raw words at file 0x108610, vram 0x00207690, 16 words): int func(int a, float g1, float g2, float f){ if (a>=-66) return D_0013D3D8!=0; return 58.5f<=f; }. Body = slti a0,a0,-66 / bnez a0,FPblk <ds lui v1,%hi(D_0013D3D8)> / lbu v0,%lo(D)(v1) / jr ra <ds sltu v0,0,v0> / FPblk: lui at,0x426A / mtc1 at,f0 / NOP / c.le.s f0,f14(=3rd float arg->cf0..f14) / NOP / bc1t end <ds addiu v0,0,1> / move v0,zero / end: jr ra <ds nop>. NOTE the 58.5 constant is 0x426A0000 (float 58.5), NOT 0.9. The compared float lands in $f14 only when the prototype has THREE float params (EGC packs floats f12,f13,f14) plus one int in a0; with 1-2 floats it uses f12/f13 and misses. Candidate C 'if(a>=-66) return D_0013D3D8!=0; return 58.5f<=f;' with prototype (int,float,float,float) compiles to the SAME 15 words for idx0-7 and idx9-14 but OMITS the single MTC1->C1 latency NOP at idx8 (original is 16 words, mine 15; only that one word differs). Tried: if/else, negated cond, ternary, named temps, with and without -ffast-math, float literal 58.5f (double 58.5 instead emits 'li.d $f5,..; jal dpcmp' libm call = worse). Sibling FP funcs in this file (func_00207720 etc.) share the same 'lui/mtc1/NOP/c.le.s/NOP/bc1x' pattern, so ALL COP1 comparison functions will hit this until the original EGC build's FP delay-slot scheduling is reproduced. Blocked pending a matching compiler flag/version; re-test if toolchain changes."
-  },
-  "code/game/menu.cpp:134:func_00208818": {
-    "status": "blocked",
-    "date": "2026-09-04",
-    "note": "6-arg orientation test (a,b in a0/a1, c,d in a2/a3, e,f in t0/t1 - EGC passes args 5/6 in caller-saved t0/t1, confirmed by compiling a 6-arg caller and matching original call sites byte-for-byte): (e-c)*(b-d) - (f-d)*(a-c) < 0. Register allocation matches the original (a-c in a0, b-d in a1, e-c in v0, f-d in t1, mults in the same order), but two -O2 EGC v2.73a tie-breaks differ and are invariant across ~12 tried source shapes (expression operand orders, named int temps in every order, ternary, < vs > forms, unsigned params): (1) the four independent subus are scheduled [v0,t1,a0,a1] i.e. a fixed source-order rotation by 2, vs original [a0,a1,v0,t1]; (2) '< 0' compiles to 'srl v0,v0,31' instead of the original 'slti v0,v0,0'. -O1 and -O3 both keep the wrong -O2 rotation for the subus; -O1 also re-schedules sibling callers (func_00206978's 'sq ra' hoisted above the constant loads) while the original caller matches -O2 exactly, so the original binary is -O2 and this is a toolchain tie-break mismatch, same class as readBufEndGet / Hud_HeapReset. See notes/menu_func_00206978.md."
-  },
-  "code/game/menu.cpp:251:func_002088A8": {
-    "status": "blocked",
-    "date": "2026-09-04",
-    "note": "Menu callback over global struct D_0013D290: *(int*)0x15EEB0 = 3; S+0x1C = S+0xBC; S+0xF4 = 0 (one lw, two sw, plus the 0x15EEB0 cast store). Semantic C is known and trivial, but EGC 2.95.2 -G8 -O2 schedules the 9 instructions in a different order than the original under EVERY statement ordering and temp-variable form tried (6 variants: 3 pure orderings + 3 with an int temp holding the 0xBC load). EGC puts the value load li v1,3 BEFORE the base lui v0, defers the base lo addiu until AFTER the 0x15EEB0 store, and emits sw zero,0xF4 BEFORE lw a0,0xBC. The original interleaves: lui v0; addiu v1,3; addiu v0,lo; lui at; sw 0x15EEB0; lw a0,0xBC; sw zero,0xF4; jr; <ds sw a0,0x1C>. All three orderings differ by scheduler tiebreak, not by dependency, so no source permutation fixes it. Same class as the Hud_HeapReset__Fv register/schedule tiebreak. Blocked pending a compiler-flag change or a different source form that shifts EGC's tiebreaks (the original's base-lui-first + base-complete-before-cast-store + lw-before-sw-zero ordering)."
-  },
-  "code/game/movie/videodec.cpp:41:func_0023D0E0": {
-    "status": "blocked",
-    "date": "2026-09-04",
-    "note": "mpeg callback viBufStopDMA((ViBuf*)((u32)*(u32*)0x16120C+0xD9090));return 1;. EGC v2.73a post-reload reorder pass places the constant-address load at its last use (after the prologue sq ra) and adds conservative memory dep load->sq, pinning the load last; original schedules load FIRST with prologue split around the const pair. ~15 C formulations + flag variants all give the same wrong order. See decomp_state/notes/videodec_func_0023D0E0.md (twin func_0023D110 same blocker)."
-  },
-  "code/game/movie/vibuf.cpp:9:scTag2": {
-    "status": "blocked",
-    "date": "2026-09-04",
-    "note": "64-bit DMA tag writer *p=(u64)a|((u64)b>>4)|(u64)c;. Original keeps 64-bit dsrl shift + per-operand dsll32 zexts; EGC v2.73a folds to 32-bit srl/dsrl32 + single trailing zext at every -O level. No source form forces the 64-bit dsrl on a value EGC knows is <2^32. See decomp_state/notes/vibuf_scTag2.md."
-  },
-  "code/game/help.cpp:12:func_001FDD50": {
-    "status": "blocked",
-    "date": "2026-09-05",
-    "note": "NOT a function: 4-byte unreachable dead-code tail of msg_string__Fi (EGC 2.95.2 artifact). The instruction 'sh zero, 0x38(v0)' at 0x1FDD50 sits after msg_string's 'jr ra; addiu sp' epilogue; verified unreachable (no jal/j references anywhere in the binary, jumptable jtbl_001E7A20 entries checked, Ghidra has no function at this address). No C function can compile to a bare store + nop with no return, and the true C form of msg_string that regenerates it (an extra store before the return that EGC schedules dead after the jr) was not found: the matched early-return form of msg_string__Fi emits no dead bytes, and local-variable forms miscompile the body (bltz/move). Its INCLUDE_ASM is retained deliberately to supply the 8 bytes (sh + nop) so the full ELF stays byte-for-byte. Generalization: ~46 similar 4-byte 'functions' across the binary (addiu sp / sw / sh / lw / daddu + nop) are dead tails of the preceding function \u2014 see decomp_state/notes/help_msg_string__Fi.md."
-  }
+ "code/game/hud.cpp:13:Hud_HeapReset__Fv": {
+  "status": "blocked",
+  "date": "2026-09-04",
+  "note": "HUD linear-heap reset: D_0019A3E8.field_0x10 = D_001940CC; D_0019A3E8.field_0x14 = D_001940CC + 0x64000 (D_001940CC is the pool base written once at 0x201640 during init; field_0x10/0x14 are the alloc head/end used by Hud_HeapAlloc). Candidate C reproduces the exact 10-instruction structure, ordering, offsets and delay slot (lui base-hi / lui const-hi / lw p / lui heap-hi / ori / addiu / addu p+const / sw [heap+0x10] / jr ra / <delay> sw [heap+0x14]), but EGC 2.95.2 v2.73a with project flags (-G8 -O2 -ffast-math -fno-exceptions) allocates the loaded pool value to $a0/$a1 (hi/value) where the original uses $a1/$a2 - a one-register tiebreak identical in class to readBufEndGet (see notes/readbuf_endGet_codegen.md). Tried without flipping it: C and C++ free functions, instance method (this unused, same allocation), const local temp, int/u32 temps, pointer decl + deref, casts, signed/unsigned constant. Likely needs the (still unknown) original compiler flag difference. Also learned: this EGC build mangles C++ methods cfront-style (HeapReset__3Hud), so the PS2-style binary name requires 'void HeapReset() asm(\"Hud_HeapReset__Fv\")' on the in-class declaration (works for symbols, does not affect allocation). Symbol trick + struct (pad[4]; u32 field_0x10; u32 field_0x14;) are ready to drop in once registers match."
+ },
+ "code/game/menu.cpp:128:func_00207690": {
+  "status": "blocked",
+  "date": "2026-09-04",
+  "note": "FP-delay-NOP toolchain mismatch. Semantics (from raw words at file 0x108610, vram 0x00207690, 16 words): int func(int a, float g1, float g2, float f){ if (a>=-66) return D_0013D3D8!=0; return 58.5f<=f; }. Body = slti a0,a0,-66 / bnez a0,FPblk <ds lui v1,%hi(D_0013D3D8)> / lbu v0,%lo(D)(v1) / jr ra <ds sltu v0,0,v0> / FPblk: lui at,0x426A / mtc1 at,f0 / NOP / c.le.s f0,f14(=3rd float arg->cf0..f14) / NOP / bc1t end <ds addiu v0,0,1> / move v0,zero / end: jr ra <ds nop>. NOTE the 58.5 constant is 0x426A0000 (float 58.5), NOT 0.9. The compared float lands in $f14 only when the prototype has THREE float params (EGC packs floats f12,f13,f14) plus one int in a0; with 1-2 floats it uses f12/f13 and misses. Candidate C 'if(a>=-66) return D_0013D3D8!=0; return 58.5f<=f;' with prototype (int,float,float,float) compiles to the SAME 15 words for idx0-7 and idx9-14 but OMITS the single MTC1->C1 latency NOP at idx8 (original is 16 words, mine 15; only that one word differs). Tried: if/else, negated cond, ternary, named temps, with and without -ffast-math, float literal 58.5f (double 58.5 instead emits 'li.d $f5,..; jal dpcmp' libm call = worse). Sibling FP funcs in this file (func_00207720 etc.) share the same 'lui/mtc1/NOP/c.le.s/NOP/bc1x' pattern, so ALL COP1 comparison functions will hit this until the original EGC build's FP delay-slot scheduling is reproduced. Blocked pending a matching compiler flag/version; re-test if toolchain changes."
+ },
+ "code/game/menu.cpp:134:func_00208818": {
+  "status": "blocked",
+  "date": "2026-09-04",
+  "note": "6-arg orientation test (a,b in a0/a1, c,d in a2/a3, e,f in t0/t1 - EGC passes args 5/6 in caller-saved t0/t1, confirmed by compiling a 6-arg caller and matching original call sites byte-for-byte): (e-c)*(b-d) - (f-d)*(a-c) < 0. Register allocation matches the original (a-c in a0, b-d in a1, e-c in v0, f-d in t1, mults in the same order), but two -O2 EGC v2.73a tie-breaks differ and are invariant across ~12 tried source shapes (expression operand orders, named int temps in every order, ternary, < vs > forms, unsigned params): (1) the four independent subus are scheduled [v0,t1,a0,a1] i.e. a fixed source-order rotation by 2, vs original [a0,a1,v0,t1]; (2) '< 0' compiles to 'srl v0,v0,31' instead of the original 'slti v0,v0,0'. -O1 and -O3 both keep the wrong -O2 rotation for the subus; -O1 also re-schedules sibling callers (func_00206978's 'sq ra' hoisted above the constant loads) while the original caller matches -O2 exactly, so the original binary is -O2 and this is a toolchain tie-break mismatch, same class as readBufEndGet / Hud_HeapReset. See notes/menu_func_00206978.md."
+ },
+ "code/game/menu.cpp:251:func_002088A8": {
+  "status": "blocked",
+  "date": "2026-09-04",
+  "note": "Menu callback over global struct D_0013D290: *(int*)0x15EEB0 = 3; S+0x1C = S+0xBC; S+0xF4 = 0 (one lw, two sw, plus the 0x15EEB0 cast store). Semantic C is known and trivial, but EGC 2.95.2 -G8 -O2 schedules the 9 instructions in a different order than the original under EVERY statement ordering and temp-variable form tried (6 variants: 3 pure orderings + 3 with an int temp holding the 0xBC load). EGC puts the value load li v1,3 BEFORE the base lui v0, defers the base lo addiu until AFTER the 0x15EEB0 store, and emits sw zero,0xF4 BEFORE lw a0,0xBC. The original interleaves: lui v0; addiu v1,3; addiu v0,lo; lui at; sw 0x15EEB0; lw a0,0xBC; sw zero,0xF4; jr; <ds sw a0,0x1C>. All three orderings differ by scheduler tiebreak, not by dependency, so no source permutation fixes it. Same class as the Hud_HeapReset__Fv register/schedule tiebreak. Blocked pending a compiler-flag change or a different source form that shifts EGC's tiebreaks (the original's base-lui-first + base-complete-before-cast-store + lw-before-sw-zero ordering)."
+ },
+ "code/game/movie/videodec.cpp:41:func_0023D0E0": {
+  "status": "blocked",
+  "date": "2026-09-04",
+  "note": "mpeg callback viBufStopDMA((ViBuf*)((u32)*(u32*)0x16120C+0xD9090));return 1;. EGC v2.73a post-reload reorder pass places the constant-address load at its last use (after the prologue sq ra) and adds conservative memory dep load->sq, pinning the load last; original schedules load FIRST with prologue split around the const pair. ~15 C formulations + flag variants all give the same wrong order. See decomp_state/notes/videodec_func_0023D0E0.md (twin func_0023D110 same blocker)."
+ },
+ "code/game/movie/vibuf.cpp:9:scTag2": {
+  "status": "blocked",
+  "date": "2026-09-04",
+  "note": "64-bit DMA tag writer *p=(u64)a|((u64)b>>4)|(u64)c;. Original keeps 64-bit dsrl shift + per-operand dsll32 zexts; EGC v2.73a folds to 32-bit srl/dsrl32 + single trailing zext at every -O level. No source form forces the 64-bit dsrl on a value EGC knows is <2^32. See decomp_state/notes/vibuf_scTag2.md."
+ },
+ "code/game/help.cpp:12:func_001FDD50": {
+  "status": "blocked",
+  "date": "2026-09-05",
+  "note": "NOT a function: 4-byte unreachable dead-code tail of msg_string__Fi (EGC 2.95.2 artifact). The instruction 'sh zero, 0x38(v0)' at 0x1FDD50 sits after msg_string's 'jr ra; addiu sp' epilogue; verified unreachable (no jal/j references anywhere in the binary, jumptable jtbl_001E7A20 entries checked, Ghidra has no function at this address). No C function can compile to a bare store + nop with no return, and the true C form of msg_string that regenerates it (an extra store before the return that EGC schedules dead after the jr) was not found: the matched early-return form of msg_string__Fi emits no dead bytes, and local-variable forms miscompile the body (bltz/move). Its INCLUDE_ASM is retained deliberately to supply the 8 bytes (sh + nop) so the full ELF stays byte-for-byte. Generalization: ~46 similar 4-byte 'functions' across the binary (addiu sp / sw / sh / lw / daddu + nop) are dead tails of the preceding function \u2014 see decomp_state/notes/help_msg_string__Fi.md."
+ },
+ "code/game/vuchain.cpp:15:VU1_addDataRef__FPvi": {
+  "status": "blocked",
+  "date": "2026-09-05",
+  "note": "Self-based non-hoisted head-pointer loads (lui r,0x16; lw r,3840(r) re-materialized 5x, target==base reg) + GPREL final stores (D_00160F00 delay-slot, D_00162C20 dead tail). Local EGC 2.95.2 (-O1 and -O2, -G8) always HOISTS the reused constant/symbol address into a dedicated base reg (lui+ori full constant, or lui a2 + lw X,0(a2)); it never emits the 2-instr self-based re-materialized form. Tried: plain int (GPREL 1-instr), constant (int)*(int*)0x160F00 (hoisted lui+ori), section(.data) int (hoisted base a2), struct field (hoisted base). C structure that matches regs/offsets/stores found (recompute-per-statement form) but its loads come out hoisted. EGC version/flag difference; byte match not achievable with current toolchain. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
+ },
+ "code/game/vuchain.cpp:17:func_00233880": {
+  "status": "blocked",
+  "date": "2026-09-05",
+  "note": "NOT a function: 4-byte unreachable dead-code tail of VU1_addDataRef__FPvi (sw v0,-16352(gp)=D_00162C20 at 0x233880, write-only global). Blocked together with its parent VU1_addDataRef__FPvi, which is itself blocked (self-based non-hoisted load pattern not reproducible by local EGC). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
+ }
 }
