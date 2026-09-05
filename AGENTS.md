@@ -173,11 +173,26 @@ whose only statement is a call passing literal 0 (`callee(0);`) compiles to a
 (word 0x0000202D — objdump prints it as `move a0,zero`) hoisted into the `jal`
 delay slot; the epilogue is the standard `lq; jr; <ds addiu>`. The callee MUST
 be declared with a parameter (e.g. `int`) in the extern prototype — a `(void)`
-prototype suppresses the argument setup and the delay slot comes out as `nop`,
-breaking the match (see
-decomp_state/notes/stash_func_00232CE0.md for the matched function).
+ prototype suppresses the argument setup and the delay slot comes out as `nop`,
+ breaking the match (see
+ decomp_state/notes/stash_func_00232CE0.md for the matched function).
 
-Observation observed 2026-09-04 (branch-delay-slot scheduling for constant
+ Observation observed 2026-09-05 (prologue/body interleaving depends on the
+ body kind): whether EGC emits the `sq $ra` prologue store BEFORE or AFTER an
+ independent body instruction is not fixed. An INDEPENDENT constant store (not
+ feeding a call argument), e.g. `GLOBAL = 0; callee();` with a plain `extern
+ int GLOBAL;` (GP-relative `sw zero,off(gp)`), is hoisted BEFORE the `sq ra`:
+ `addiu sp; sw zero,off(gp); sq ra; jal; nop; lq; jr; addiu sp` — matches the
+ original snd_UnkFunction_0012eb00 (see
+ decomp_state/notes/989snd_snd_UnkFunction_0012eb00.md). But a body that
+ MATERIALIZES A CALL ARGUMENT (a `lui/lw` loading a pointer to pass), e.g.
+ `callee(*(void**)0xADDR);`, keeps the `sq ra` FIRST: `addiu sp; sq ra; lui;
+ lw; jal` — that ordering could NOT be made to match the original PutDispBuffer,
+ whose `lui/lw` sit before the `sq ra` (blocked, see
+ decomp_state/notes/framebuf_PutDispBuffer.md). So: independent-store bodies
+ match, argument-load-body prologue order does not (yet).
+
+ Observation observed 2026-09-04 (branch-delay-slot scheduling for constant
 stores): for `if (cond) GLOBAL = N;` where GLOBAL is a plain `int` declared
 with `__attribute__((section(".data")))`, EGC puts the STORE-ADDRESS `lui` in
 the branch delay slot (`beqz; <lui>; li; sw; jr; nop`). The original menu

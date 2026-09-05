@@ -942,5 +942,15 @@
     "size": 60,
     "note": "int buf[6]; buf[i]=arg_i; snd_SendIOPCommandAndWait(0x3B, 0x18, buf) - initializes the 989snd movie-sound subsystem. Caller audioDecCreate passes (0x400, 0x1000, 0x400, 0, 5, 3) and stores v0/v1 after the call into AudioDec+0x48/0x4C - the void wrapper propagates v0/v1 since the tail call is the last body action. EGC reproduces the original's interleaving exactly: the li a0,0x3B / li a1,0x18 setup emitted between the six buf[i] stores in source order, last store (a5) in the jal delay slot. 0x30 frame (6-int buf @0(sp), ra @0x20, 0x18-0x1f padding), data = move a2,sp. 15/15 words verified, full make + cmp passes, count -> 797, decomp-verifier MATCH. See decomp_state/notes/989snd_snd_StreamSafeCheckCDIdle__InitMovieSound.md",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:71:snd_UnkFunction_0012eb00": {
+    "name": "snd_UnkFunction_0012eb00",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_UnkFunction_0012eb00.s",
+    "vram": "0x0012EB00",
+    "file_offset": "0x2FA80",
+    "size": 32,
+    "note": "D_0015ECC4 = 0; snd_FlushSoundCommands(); - clears the GP-relative 989snd callback slot D_0015ECC4 (0x15ECC4, .lit4, plain 'extern int' for GPREL16) then flushes the IOP command queue (snd_FlushSoundCommands @0x12DC80, no-arg). Called from movie setup + game sound/update. EGC schedules the independent constant store BEFORE the sq ra prologue store (addiu; sw zero,off(gp); sq ra; jal; nop; lq; jr; addiu) - matches original. New externs added to 989snd.c: snd_FlushSoundCommands(void), int D_0015ECC4. 8/8 words verified, GPREL16 -> -0x7F3C from gp, R_MIPS_26 -> 0x12DC80, full make + cmp passes, count 797->796, decomp-verifier MATCH. See decomp_state/notes/989snd_snd_UnkFunction_0012eb00.md",
+    "matched_date": "2026-09-05"
   }
 }

@@ -2,6 +2,7 @@
 
 extern void snd_SendIOPCommandAndWait(int cmd, int count, void* data);
 extern void snd_SendIOPCommandNoWait(int cmd, int count, void* data, int x, int y);
+extern void snd_FlushSoundCommands(void);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StartSoundSystem);
 
@@ -13,6 +14,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GotReturns);
 
 extern void* D_0015EC80;
 extern int D_0015EC84;
+extern int D_0015ECC4;
 
 void snd_PrepareReturnBuffer(int* buf, int index) {
     D_0015EC84 = index;
@@ -82,7 +84,10 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SendCurrentBatc
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UnkFunction_0012eaf0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UnkFunction_0012eb00);
+void snd_UnkFunction_0012eb00(void) {
+    D_0015ECC4 = 0;
+    snd_FlushSoundCommands();
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_InitVAGStreamingEx);
 
