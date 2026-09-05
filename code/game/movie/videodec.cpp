@@ -36,13 +36,17 @@ typedef struct VideoDec {
 
 int viBufCount(ViBuf* buf);
 
+int viBufBeginPut(ViBuf* buf, u8** data, int* size, u8** data2, int* size2);
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023CBC8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecSetStream__FP8VideoDeciiPFP7sceMpegP13sceMpegCbDataPv_iPv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecBeginPut__FP8VideoDecPPUcPiT1T2);
+int videoDecBeginPut(VideoDec* self, u8** data, int* size, u8** data2, int* size2) {
+    return viBufBeginPut(&self->vibuf, data, size, data2, size2);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecEndPut__FP8VideoDec);
 

@@ -852,5 +852,15 @@
     "size": 28,
     "note": "EE thread yield: func_001188C0(1); func_001188C0 is the handwritten libSCE syscall-0x2B (sched_yield) stub in code/_generated/sce/lib.s, declared extern \"C\" in movie.cpp. Single-call wrapper shape: 0x10 frame, sq/lq ra at 0(sp), addiu a0,1 hoisted into the jal delay slot (callee prototype must declare the int param). Symbol is unmangled in the original (callers jal switchThread), so the definition is extern \"C\" void switchThread() in a C++ TU. All 5 callers use nop delay slots and never read v0 -> void. Verified: object 7/7 words identical, R_MIPS_26 on func_001188C0, full make + cmp passes, count 807->806. See decomp_state/notes/movie_switchThread.md",
     "matched_date": "2026-09-05"
+  },
+  "code/game/movie/videodec.cpp:45:videoDecBeginPut__FP8VideoDecPPUcPiT1T2": {
+    "name": "videoDecBeginPut__FP8VideoDecPPUcPiT1T2",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecBeginPut__FP8VideoDecPPUcPiT1T2.s",
+    "vram": "0x0023CBF0",
+    "file_offset": "0x13DB70",
+    "size": 28,
+    "note": "Passthrough wrapper: return viBufBeginPut(&self->vibuf, data, size, data2, size2). Mangled name decoded with 0-based Tn: (VideoDec*, u8**, int*, u8**, int*) - the 1-based guess both mangles wrong (T0T1) and trips a cfront 'not a base type' parser bug when passing u8** var args. a1-a4 forwarded untouched; only a0=self+0x48 in the jal delay slot; 0x10 frame sq/lq ra. viBufBeginPut still INCLUDE_ASM in vibuf.cpp, declared here to link. Verified: object 7/7 words, R_MIPS_26 -> viBufBeginPut__FP5ViBufPPUcPiT1T2 (0x23BE20), full make + cmp passes, count 806->805, decomp-verifier MATCH. See decomp_state/notes/videodec_videoDecBeginPut.md",
+    "matched_date": "2026-09-05"
   }
 }

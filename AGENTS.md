@@ -346,6 +346,20 @@ void music::Unpause() { ... }
 The codegen is then a true C++ instance method (`this` in `$a0`, unused unless
 referenced); the label does not affect register allocation.
 
+Mangling note (verified 2026-09-05): repeated parameter types are encoded
+`Tn` with **n = 0-based index of the first parameter** — `T1` means "same
+type as parameter 2", `T2` "same type as parameter 3", etc. (and `T0` =
+parameter 1). So `videoDecBeginPut__FP8VideoDecPPUcPiT1T2` decodes to
+(VideoDec*, u8**, int*, **u8**\*, **int**\*) and `cpy2area__FPUciT0iT0iT0i`
+to (u8*, i, u8*, i, u8*, i, u8*, i). Do NOT read Tn 1-based: the wrong
+signature (a) mangles to T0T1 instead of T1T2 and (b) trips a cfront parser
+bug — declaring the callee with `u8**` params while calling it with a u8**
+variable as one of several args fails with "type `X' is not a base type for
+type `Y'" (bogus; e.g. "ViBuf is not a base type for VideoDec"). The correct
+0-based signature compiles cleanly. Always confirm the mangled name with `nm`
+on the built object before trusting a signature (see
+decomp_state/notes/videodec_videoDecBeginPut.md).
+
 ## Commit Discipline
 
 Create one commit per successfully decompiled function. A function is not ready
