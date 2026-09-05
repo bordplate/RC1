@@ -618,6 +618,16 @@
     "note": "Stash SIF/IOP streaming init: one-line wrapper func_0011AB20(0) (SCE-lib, code/_generated/sce/lib.s). 0x10 frame, sq/lq ra; EGC hoists the arg-0 load daddu $4,$0,$0 (word 0x0000202D, prints as 'move a0,zero') into the jal delay slot. Callee must be declared with an int param or the delay slot becomes nop. Callers: 0x1EB900 in Transition_DoTransition__Fv, 0x20197C in InitOnce__Fv. See decomp_state/notes/stash_func_00232CE0.md. Verified: image slice 0x133C60 (28 bytes) built==original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; count 831->830.",
     "matched_date": "2026-09-04"
   },
+  "code/game/stash.cpp:11:func_00233038": {
+    "name": "func_00233038",
+    "source": "code/game/stash.cpp",
+    "asm": "code/_generated/nonmatchings/game/stash/func_00233038.s",
+    "vram": "0x00233038",
+    "file_offset": "0x133FB8",
+    "size": 40,
+    "note": "Bounds-checked slot lookup: return D_001DD1D8[i].f1 (2nd int of the 16-byte entry) if i<0x40 else -3. D_001DD1D8 = 64x16B stash streaming table (vram 0x1DD1D8, 0x400), same table/index arithmetic as sibling func_00232D00/Stash_SendData/func_00232F20. unsigned param required (original sltiu; signed gives slti); declared 'extern \"C\" StashEntry16 D_001DD1D8[64]' (4-int struct) so the array index reproduces 'sll a0,4'. KEY GOTCHA: original stash.o .text is 0x388 - 8 bytes of trailing nops after this last function (vram 0x233060/0x233064); the C body is only 0x28 and the linker packs .text back-to-back, so the short object shifted tfragfunc.o + every later section 8 bytes early and broke full-ELF parity (33411 diff bytes from 0xEA540). Fixed with two file-scope asm(\"nop\"); after the function (same idiom as ParseBin in boot.cpp). Verified: stash.o body 10 instr identical, relocs R_MIPS_HI16/LO16 D_001DD1D8 (0x16/0xd1d8); stash.o .text 0x388 == original subsegment span; built slice 0x133FB8..0x133FE7 == original; full make + cmp passes; count 812->811. See decomp_state/notes/stash_func_00233038.md.",
+    "matched_date": "2026-09-05"
+  },
   "code/game/draw.cpp:128:func_001F6270": {
     "name": "func_001F6270",
     "source": "code/game/draw.cpp",
