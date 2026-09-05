@@ -902,5 +902,15 @@
     "size": 44,
     "note": "FastMemCopy((void*)0x70003A00, D_001B2E80, 0x380) - restores the moby class-distance table from RAM stash D_001B2E80 back into the live EE DMA buffer 0x70003A00. Arg-swapped twin of StashMobyClassDists (dst/src flipped), same codegen shape (0x10 frame, address materializations interleaved around the sq, li a2 in the jal delay slot). Verified: object 11/11 words, relocs as in the Stash note, full make + cmp passes, count 803->801, decomp-verifier MATCH. See decomp_state/notes/mobyfunc_StashRestoreMobyClassDists.md",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:113:snd_ResetMovieSound": {
+    "name": "snd_ResetMovieSound",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_ResetMovieSound.s",
+    "vram": "0x0012F0A8",
+    "file_offset": "0x30010",
+    "size": 36,
+    "note": "snd_SendIOPCommandAndWait(0x3D, 0, 0) - one-call wrapper resetting the 989snd movie-sound subsystem, called by audioDecReset__FP9_AudioDec. Same family as matched snd_CloseMovieSound (cmd 0x3C) and its arg-swapped sibling snd_GetMovieNAX (cmd 0x5B, separate commit). Exact snd_CloseMovieSound codegen shape: 0x10 frame, li a0,CMD, sq, move a1,zero, jal (R_MIPS_26 against .text section symbol, resolves 0x12E548 per symbols.txt), move a2,zero in the delay slot, lq, jr, addiu sp. 10/10 words verified, full make + cmp passes, count 801->799 (with GetMovieNAX), decomp-verifier MATCH. See decomp_state/notes/989snd_snd_ResetMovieSound__GetMovieNAX.md",
+    "matched_date": "2026-09-05"
   }
 }

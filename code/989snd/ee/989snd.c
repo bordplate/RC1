@@ -126,7 +126,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F020);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_InitMovieSound);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_ResetMovieSound);
+void snd_ResetMovieSound(void) {
+    snd_SendIOPCommandAndWait(0x3D, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F0D0);
 
