@@ -227,11 +227,18 @@ C++ `main` gets a compiler-inserted `jal __main; nop` at the top of the body
 SECOND jal — 21 words vs the original 19; no explicit call + no extern
 declaration reproduces the original). This held in a TU with no global
 constructors, so treat it as unconditional for C++ main in this EGC build.
-Also: a `jal` to a function INCLUDE_ASM'd earlier in the same file can
-relocation-reference the `.text` section symbol (addend 0) instead of the
-function symbol when the callee sits at the object's section origin — it links
-to the identical address; judge such relocs by the link result, not the symbol
-name (see decomp_state/notes/boot_main.md for the matched main).
+Also: a `jal` to a function that is DEFINED LATER IN THE SAME TU (whether a
+later C definition or a later `INCLUDE_ASM` block) relocation-references the
+`.text` section symbol (addend 0) instead of the function symbol (verified
+2026-09-05 with a standalone EGC+ld test: every same-section call to a
+later-defined target gets this reloc, at any offset). Mechanism: EGC writes
+the 26-bit field as the target's offset within the section (>>2), and
+ps2-elf-ld resolves R_MIPS_26 on the section symbol as
+final_field = (section_VMA + old_field<<2) >> 2, so the linked word is the
+exact section-absolute jal — byte-identical to the original. Judge such
+relocs by the link result (full `cmp`), not the symbol name (see
+decomp_state/notes/boot_main.md and
+decomp_state/notes/989snd_snd_StopAllStreams.md).
 
 Observation observed 2026-09-05 (constant-store register depends on return
 type): for a function that stores constants and RETURNS an int, EGC reserves

@@ -86,7 +86,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UnkFunction_001
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_InitVAGStreamingEx);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StopAllStreams);
+void snd_StopAllStreams(void) {
+    snd_SendIOPCommandNoWait(0x34, 0, 0, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012EC00);
 

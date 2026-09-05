@@ -43,5 +43,10 @@
   "status": "blocked",
   "date": "2026-09-05",
   "note": "NOT a function: 4-byte unreachable dead-code tail of VU1_addDataRef__FPvi (sw v0,-16352(gp)=D_00162C20 at 0x233880, write-only global). Blocked together with its parent VU1_addDataRef__FPvi, which is itself blocked (self-based non-hoisted load pattern not reproducible by local EGC). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
+ },
+ "code/989snd/ee/989snd.c:93:func_0012EC00": {
+  "status": "blocked",
+  "date": "2026-09-05",
+  "note": "NOT a function: 4-byte unreachable dead-code tail of snd_StopAllStreams (addiu sp,sp,0x10 at 0x12EC00 / file 0x2FB80, right after the parent's jr ra; <addiu sp,sp,0x10> epilogue; parent frame is 0x10 so this is a dead duplicate deallocate). Local EGC 2.95.2 v2.73a never emits a dead addiu sp,sp,N (only dead stores; /tmp/opencode/tail_exp t1-t10). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/989snd_snd_StopAllStreams.md."
  }
 }
