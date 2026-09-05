@@ -30,7 +30,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022DC38);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_StopAllSounds__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022DD78);
+extern "C" void func_0022DD78(int a, long b) {
+    int c = (int)b;
+    if (c)
+        *(int*)c = a;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022DD90);
 

@@ -823,5 +823,15 @@
     "file_offset": "0x2EE78",
     "size": 28,
     "note": "Prepares IOP return buffer: D_0015EC84=index, D_0015EC80=buf (first two .core_lit words, direct sw disp(gp) via R_MIPS_GPREL16), then buf[index+1]=0; *buf=0 (second zero-store in jr $ra delay slot; independent sll for the index*4 base hoisted above the gp stores). Caller 0x12E74C: snd_PrepareReturnBuffer(0x133100, 1); snd_GotReturns polls D_0015EC80. PITFALL: Ghidra Gp name puGpffff8080 = gp-0x7F80 = 0x15EC80, NOT D_0015EE80 (that lit label is 0x200 away; wrong name broke parity at the two GPREL16 displacement bytes). See decomp_state/notes/snd_PrepareReturnBuffer.md"
+  },
+  "code/game/sound.cpp:33:func_0022DD78": {
+    "name": "func_0022DD78",
+    "source": "code/game/sound.cpp",
+    "asm": "code/_generated/nonmatchings/game/sound/func_0022DD78.s",
+    "vram": "0x0022DD78",
+    "file_offset": "0x12ECF8",
+    "size": 24,
+    "note": "Bank-load callback for snd_BankLoadFromEE_CB (registered by func_00230F60 at 0x231588 and func_00204428 at 0x20470C, called via jalr from snd_FlushSoundCommands 0x12DDA0 with a1=D_0015ECD8). Truncates 64-bit a1 to 32 bits (EGC dsll32/dsra32 shamt-0 identity pair) and stores a0 there: extern \"C\" void func_0022DD78(int a,long b){int c=(int)b;if(c)*(int*)c=a;}. EGC EE quirk: the store lands in the bnezl delay slot (executes unconditionally); void* param forms lack the truncation pair and do not match. Kept extern \"C\" + func_ name: included asm in space.o/loaders references the symbol unmangled. Verified: object 6/6 words identical, full make + cmp passes, decomp_status 809->808, decomp-verifier 4/4. See decomp_state/notes/func_0022DD78.md",
+    "matched_date": "2026-09-05"
   }
 }
