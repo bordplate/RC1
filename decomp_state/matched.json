@@ -952,5 +952,15 @@
     "size": 32,
     "note": "D_0015ECC4 = 0; snd_FlushSoundCommands(); - clears the GP-relative 989snd callback slot D_0015ECC4 (0x15ECC4, .lit4, plain 'extern int' for GPREL16) then flushes the IOP command queue (snd_FlushSoundCommands @0x12DC80, no-arg). Called from movie setup + game sound/update. EGC schedules the independent constant store BEFORE the sq ra prologue store (addiu; sw zero,off(gp); sq ra; jal; nop; lq; jr; addiu) - matches original. New externs added to 989snd.c: snd_FlushSoundCommands(void), int D_0015ECC4. 8/8 words verified, GPREL16 -> -0x7F3C from gp, R_MIPS_26 -> 0x12DC80, full make + cmp passes, count 797->796, decomp-verifier MATCH. See decomp_state/notes/989snd_snd_UnkFunction_0012eb00.md",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:47:snd_StopAllSounds": {
+    "name": "snd_StopAllSounds",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_StopAllSounds.s",
+    "vram": "0x0012E3B8",
+    "file_offset": "0x2F338",
+    "size": 44,
+    "note": "snd_SendIOPCommandNoWait(0x18, 0, 0, 0, 0) - stops all sound voices (IOP cmd 0x18, no payload). No stack buffer (all args zero). 0x10 frame; li a0,0x18 then the four move a1/a2/a3,zero and the delay-slot move a4,zero around the sq/jal. Part of the snd_SendIOPCommandNoWait wrapper family (see snd_PauseVAGStream/ContinueVAGStream/UnloadBank/SetPlaybackMode/SetMasterVolume, same commit batch). 11/11 words verified in scratch, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }

@@ -60,7 +60,9 @@ void snd_StopSound(int id) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012E398);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StopAllSounds);
+void snd_StopAllSounds(void) {
+    snd_SendIOPCommandNoWait(0x18, 0, 0, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_PauseAllSoundsInGroup);
 
