@@ -932,5 +932,15 @@
     "size": 40,
     "note": "int buf[4]; buf[0]=arg; snd_SendIOPCommandAndWait(0x36, 4, buf) - polls the 989snd IOP stream plugin for CD idle. Callers music_Stop and func_0022D708 pass 1; func_0022D708 then reads v0 (s2=v0) - the void wrapper propagates v0 naturally since the tail call is the last body action. EGC reproduces the original's interleaving: li a1,4 first, sw a0,0(sp), move a2,sp, sq ra,16(sp), jal, li a0,0x36 in the delay slot. 0x20 frame (4-int buf @0(sp), ra @0x10). 10/10 words verified, full make + cmp passes, count 799->797 (with snd_InitMovieSound), decomp-verifier MATCH. See decomp_state/notes/989snd_snd_StreamSafeCheckCDIdle__InitMovieSound.md",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:111:snd_InitMovieSound": {
+    "name": "snd_InitMovieSound",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_InitMovieSound.s",
+    "vram": "0x0012F068",
+    "file_offset": "0x2FFE8",
+    "size": 60,
+    "note": "int buf[6]; buf[i]=arg_i; snd_SendIOPCommandAndWait(0x3B, 0x18, buf) - initializes the 989snd movie-sound subsystem. Caller audioDecCreate passes (0x400, 0x1000, 0x400, 0, 5, 3) and stores v0/v1 after the call into AudioDec+0x48/0x4C - the void wrapper propagates v0/v1 since the tail call is the last body action. EGC reproduces the original's interleaving exactly: the li a0,0x3B / li a1,0x18 setup emitted between the six buf[i] stores in source order, last store (a5) in the jal delay slot. 0x30 frame (6-int buf @0(sp), ra @0x20, 0x18-0x1f padding), data = move a2,sp. 15/15 words verified, full make + cmp passes, count -> 797, decomp-verifier MATCH. See decomp_state/notes/989snd_snd_StreamSafeCheckCDIdle__InitMovieSound.md",
+    "matched_date": "2026-09-05"
   }
 }

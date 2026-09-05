@@ -128,7 +128,16 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_AutoReverb);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F020);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_InitMovieSound);
+void snd_InitMovieSound(int a, int b, int c, int d, int e, int f) {
+    int buf[6];
+    buf[0] = a;
+    buf[1] = b;
+    buf[2] = c;
+    buf[3] = d;
+    buf[4] = e;
+    buf[5] = f;
+    snd_SendIOPCommandAndWait(0x3B, 0x18, buf);
+}
 
 void snd_ResetMovieSound(void) {
     snd_SendIOPCommandAndWait(0x3D, 0, 0);
