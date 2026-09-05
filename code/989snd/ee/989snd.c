@@ -41,7 +41,12 @@ void snd_UnloadBank(int a) {
     snd_SendIOPCommandNoWait(0x6, 0x4, buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetMasterVolume);
+void snd_SetMasterVolume(int a, int b) {
+    int buf[2];
+    buf[0] = a;
+    buf[1] = b;
+    snd_SendIOPCommandNoWait(0x9, 0x8, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetPlaybackMode);
 

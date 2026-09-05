@@ -992,5 +992,15 @@
     "size": 48,
     "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x6, 0x4, buf, 0, 0) - unloads a sound bank (IOP cmd 0x6, 1-int payload = bank id). Same 1-int-buffer shape as snd_PauseVAGStream/ContinueVAGStream (cmd 0x2D/0x2E) and snd_SetPlaybackMode (cmd 0xB); only the cmd constant differs. 0x20 frame, buf @0(sp), ra @0x10(sp); li a1,4; sw a0; move a2,sp; sq; li a0,0x6; move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:27:snd_SetMasterVolume": {
+    "name": "snd_SetMasterVolume",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_SetMasterVolume.s",
+    "vram": "0x0012E208",
+    "file_offset": "0x2F188",
+    "size": 52,
+    "note": "int buf[2]; buf[0]=a; buf[1]=b; snd_SendIOPCommandNoWait(0x9, 0x8, buf, 0, 0) - sets master volume (IOP cmd 0x9, 2-int payload: volume + ?). 0x20 frame, 2-int buf @0(sp)/4(sp), ra @0x10(sp). EGC reproduces the original's interleaving exactly: move a3,zero FIRST, then sw a0,0(sp); move a2,sp; sw a1,4(sp); li a0,9; sq; li a1,8; jal; move a4,zero (delay); lq; jr; addiu. 13/13 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }
