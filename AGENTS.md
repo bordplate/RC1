@@ -233,7 +233,19 @@ regenerate the tail bytes and drop the orphan INCLUDE_ASM in the same commit; if
 no form is found, keep the orphan INCLUDE_ASM (it supplies the 8 bytes and keeps
 parity) and block the orphan entry explaining it is a dead tail, not a function
 (see decomp_state/notes/help_msg_string__Fi.md — msg_string__Fi matched with its
-orphan func_001FDD50 retained).
+ orphan func_001FDD50 retained).
+
+Observation observed 2026-09-05 (EGC auto-emits `jal __main` for C++ main): a
+C++ `main` gets a compiler-inserted `jal __main; nop` at the top of the body
+(verified: writing an explicit `__main();` statement in the source emits a
+SECOND jal — 21 words vs the original 19; no explicit call + no extern
+declaration reproduces the original). This held in a TU with no global
+constructors, so treat it as unconditional for C++ main in this EGC build.
+Also: a `jal` to a function INCLUDE_ASM'd earlier in the same file can
+relocation-reference the `.text` section symbol (addend 0) instead of the
+function symbol when the callee sits at the object's section origin — it links
+to the identical address; judge such relocs by the link result, not the symbol
+name (see decomp_state/notes/boot_main.md for the matched main).
 
 ## OpenCode Model And MCP Configuration
 

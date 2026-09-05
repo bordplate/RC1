@@ -754,5 +754,15 @@
     "size": 32,
     "note": "One-statement movie-audio teardown: snd_CloseMovieSound(); return 1;. Closes the movie SPU stream (snd_CloseMovieSound, matched, 989snd.c:119, vram 0x12F0E0, calls snd_SendIOPCommandAndWait(0x3C,0,0)) and reports success. Sole caller: the movie end sequence (0x23AB20) tearing down the movie struct at D_0016120C in order video dec (+0xD9048), audio dec (+0xD9100, this fn), vo buf (+0xD9040), then removing DMAC/INTC handlers on channel 2; the _AudioDec argument is unused. Written as a pure C++ free function int audioDecDelete(_AudioDec*) \u2014 EGC old-cfront mangling yields audioDecDelete__FP9_AudioDec exactly (voBufDelete/strFileDelete recipe). First C++ file to reference an snd_* symbol: added extern \"C\" void snd_CloseMovieSound(void); (no 989snd header exists; inline extern \"C\" precedent: movie.cpp STUB_printf/ErrMessage). Codegen: 0x10 frame sq/lq $ra 0(sp); the void prototype of the callee is what yields the nop in the jal delay slot (a parameterized prototype would emit daddu a0,zero,zero there \u2014 inverse of the stash_func_00232CE0 rule); li v0,1 stays AFTER lq ra (EGC keeps the return-value setup in source order, no hoist above the epilogue reload); jr ra; <ds addiu sp,sp,0x10>. Verified: all 8 object words identical to the original (27bdffe0 7fbf0000 0c04bc38 00000000 7bbf0000 24020001 03e00008 27bd0010; jal is R_MIPS_26 -> snd_CloseMovieSound, resolved to the same word by the final link), clean full build + cmp build/boot_elf.elf assets/boot_elf.elf byte-for-byte, decomp_status 817->816.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/boot.cpp:84:main": {
+    "name": "main",
+    "source": "code/game/boot.cpp",
+    "asm": "code/_generated/nonmatchings/game/boot/main.s",
+    "vram": "0x0012D9D8",
+    "file_offset": "0x2E958",
+    "size": 76,
+    "note": "Game main loop: f = startlevel__Fv; while(true){ f(); f = ParseBin(); FlushCache(0); FlushCache(2); }. EGC auto-emits the leading 'jal __main; nop' for C++ main (do NOT write __main() in source \u2014 it doubles the call). 'f = ParseBin()' store lands in the first FlushCache delay slot; ParseBin jal relocations to the .text section symbol (ParseBin is at the object's section origin) and links correctly. 19/19 object words == original, full cmp passes. See decomp_state/notes/boot_main.md.",
+    "matched_date": "2026-09-05"
   }
 }
