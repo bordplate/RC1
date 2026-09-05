@@ -102,29 +102,6 @@ stdio MCP server that forwards calls to the HTTP backend. `opencode mcp list`
 only verifies that the adapter process starts; the `curl` check verifies that
 headless Ghidra is actually running.
 
-## Required Local Inputs
-
-Before starting the autonomous loop, the local machine must have:
-
-- the original NTSC `SCUS_971.99` / `boot_elf.elf` in `assets/`
-- EEGCC 2.95.2 and its Wine32 runtime under `tools/cc/` and `tools/wine/`
-- MIPS binutils and the PS2 linker tools
-- Wrench under `tools/wrench-release/` if ISO or asset validation is needed
-- Python dependencies installed in `.venv`
-- the headless Ghidra backend running with this project loaded
-- opencode installed
-
-For a fresh checkout, create `userconfig.mk` from the template and adjust local
-paths, then activate the Python environment:
-
-```sh
-cp userconfig.template.mk userconfig.mk
-source .venv/bin/activate
-```
-
-Do not commit local tool installations, credentials, generated assembly, build
-output, or `userconfig.mk`.
-
 ## Build And Split
 
 From the repository root:
@@ -274,29 +251,6 @@ order `castA; gpC; castB` reproduces machine order `castA; castB; jr;
 <gpC in delay slot>`; the naive `castA; castB; gpC` order puts the gp store
 second instead (same note).
 
-## OpenCode Model And MCP Configuration
-
-The repository-local `.opencode/opencode.jsonc` selects the requested local
-OpenAI-compatible provider as the default model:
-
-- Provider ID: `qwen-local`
-- Base URL: `http://127.0.0.1:8081`
-- Model ID: `qwen3.8-27b`
-- Context limit: `262144`
-- Configured output limit: `32768`
-
-The full model reference is `qwen-local/qwen3.8-27b`. The inference endpoint
-advertises `qwen3.8-27b` through `/models`.
-OpenCode reads configuration at startup, so restart it after configuration
-changes.
-
-For a one-shot autonomous iteration, run from the repository root after
-starting headless Ghidra:
-
-```sh
-opencode run "Autonomously continue the RC1 matching decompilation. Work on exactly one function. Use headless Ghidra MCP, generated assembly, compiler output, object/asm diffs, and full binary comparison as ground truth. Replace one decompilable nonmatching INCLUDE_ASM function with matching C/C++, verify its object/assembly output and full ELF parity, then commit only that function and its intended state note. Never declare success unless the mechanical completion condition passes."
-```
-
 ## Durable State
 
 `decomp_state/` is agent memory, not the success oracle:
@@ -353,6 +307,8 @@ For each selected function:
 11. Send the status push notification (see Mobile Status Notification).
 
 The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, or even same behavior but with a different instruction. It must be a perfect match.
+
+You should rename unnamed functions and globals when it becomes apparent what they do.
 
 Prefer small leaf functions and one function at a time. Preserve old compiler
 compatibility and existing project style. Do not rewrite unrelated code. If
@@ -429,28 +385,6 @@ Do not paste diffs, decompiler output, or verbose note contents into the notific
 If `brrr.py` fails (network down, rotated token), note it in the attempt
 record and continue; the notification is not part of the completion oracle.
 
-## Autonomous Loop
-
-The checked-in outer loop is `tools/run_autonomous_decomp_loop.sh`. It activates
-`.venv`, reuses or starts the headless Ghidra backend, waits for its HTTP API,
-invokes `tools/decomp_status.py --complete`, and only stops after the
-mechanical completion check passes. It then runs `opencode run` for the next
-iteration.
-
-Start the complete autonomous process with one command:
-
-```sh
-tools/run_autonomous_decomp_loop.sh
-```
-
-The script can validate headless setup without starting opencode:
-
-```sh
-tools/run_autonomous_decomp_loop.sh --check-only
-```
-
-If the script starts Ghidra itself, it cleans that process up when stopped. An
-already-running backend is reused and is not stopped by the script.
-
+## Closing notes
 
 Update this document as you learn about the project, and new and better strategies to progress with decompilation. 
