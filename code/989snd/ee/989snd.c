@@ -158,7 +158,9 @@ void snd_SendCurrentBatch(void) {
     snd_batchFreeBytes[next] = 0xFFC;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UnkFunction_0012eaf0);
+void snd_UnkFunction_0012eaf0(void) {
+    D_0015ECC4 = 1;
+}
 
 void snd_UnkFunction_0012eb00(void) {
     D_0015ECC4 = 0;
