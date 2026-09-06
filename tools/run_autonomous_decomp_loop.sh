@@ -56,7 +56,7 @@ if [[ "${1:-}" == "--check-only" ]]; then
     exit 0
 fi
 
-prompt='Continue the autonomous RC1 matching decompilation. Review AGENTS.md and existing decomp_state notes, select exactly one useful function, use Ghidra MCP and local build/diff tools, make progress, verify the function mechanically, run the full build/parity check, commit only that verified function and its intended state note, and update notes. Do not commit a function unless its object/assembly output matches and cmp build/boot_elf.elf assets/boot_elf.elf passes. Stop only if the full mechanical completion condition has passed.'
+prompt='Continue the autonomous RC1 matching decompilation. Review AGENTS.md and existing decomp_state notes, select exactly one useful function, use Ghidra MCP and local build/diff tools, make progress, verify the function mechanically, run the full build/parity check, commit only that verified function and its intended state note, and update notes. Do not commit a function unless its object/assembly output matches and cmp build/boot_elf.elf assets/boot_elf.elf passes.'
 
 while true; do
     if python3 tools/decomp_status.py --complete; then

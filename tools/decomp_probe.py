@@ -33,6 +33,8 @@ def main():
     parser.add_argument("reference", type=Path, help="generated original .s")
     parser.add_argument("symbol", help="candidate's linker symbol (check nm for C++)")
     parser.add_argument("--flags", default="", help="extra flags, e.g. --flags=-fno-schedule-insns")
+    parser.add_argument("--define", action="append", default=[], metavar="NAME=ADDRESS",
+                        help="verified experiment-only symbol address (repeatable)")
     parser.add_argument("--out", type=Path, required=True, help="experiment output directory")
     parser.add_argument("--cross", default=str(ROOT / "tools/mips64r5900el-ps2-elf/usr/bin/mips64r5900el-ps2-elf"))
     args = parser.parse_args()
@@ -64,6 +66,15 @@ def main():
                 if int(symbols[name], 16) != int(value, 16):
                     parser.error(f"conflicting address for {name}")
             symbols[name] = value.lower()
+    for definition in args.define:
+        match = re.fullmatch(r"([A-Za-z_]\w*)=(0x[0-9a-fA-F]+)", definition)
+        if not match:
+            parser.error(f"invalid --define {definition!r}; expected NAME=0xADDRESS")
+        name, value = match.groups()
+        value = value.lower()
+        if name in symbols and int(symbols[name], 16) != int(value, 16):
+            parser.error(f"--define conflicts with existing address for {name}")
+        symbols[name] = value
     with base.with_suffix(".o").open("rb") as stream:
         elf = ELFFile(stream)
         table = elf.get_section_by_name(".symtab")
@@ -102,7 +113,8 @@ def main():
         if old != new:
             differences.append({"address": hex(address + index), "original": old.hex(), "candidate": new.hex()})
     result = {"source": str(args.source), "reference": str(args.reference), "symbol": args.symbol,
-              "flags": args.flags, "original_size": len(expected), "candidate_size": size,
+              "flags": args.flags, "definitions": args.define,
+              "original_size": len(expected), "candidate_size": size,
               "source_sha256": hashlib.sha256(args.source.read_bytes()).hexdigest(),
               "original_sha256": hashlib.sha256(original).hexdigest(),
               "match": not differences, "differences": differences}
