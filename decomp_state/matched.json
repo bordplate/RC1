@@ -1132,5 +1132,15 @@
     "size": 52,
     "note": "int buf[2]; buf[0]=a; buf[1]=b; snd_SendIOPCommandNoWait(0x51, 0x8, buf, 0, 0) - pre-allocates the reverb work area (IOP cmd 0x51, 2-int payload). Same 2-int-buffer NoWait shape as snd_SetMasterVolume (cmd 0x9) / snd_SetMixerMode (cmd 0xD); only the cmd constant differs. 0x20 frame; move a3,zero first, then sw a0; move a2,sp; sw a1; li a0,0x51; sq; li a1,8; jal; move a4,zero (delay); lq; jr; addiu. 13/13 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:103:snd_SetReverbEx": {
+    "name": "snd_SetReverbEx",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_SetReverbEx.s",
+    "vram": "0x0012EF68",
+    "file_offset": "0x2FEE8",
+    "size": 64,
+    "note": "int buf[5]; buf[i]=arg_i; snd_SendIOPCommandNoWait(0x50, 0x14, buf, 0, 0) - sets reverb parameters (IOP cmd 0x50, 5-int payload). 0x30 frame, 5-int buf @0(sp)..0x10(sp), ra @0x20(sp). EGC reproduces the original's store order exactly: sw a0; sw a4 (buf[4] first); li a0,0x50 (cmd); sw a1; move a4,zero (y); sw a2; li a1,0x14 (count); sw a3; move a2,sp (data); sq; jal; move a3,zero (x, delay); lq; jr; addiu. 16/16 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }

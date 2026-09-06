@@ -181,7 +181,15 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdCal
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012EF58);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetReverbEx);
+void snd_SetReverbEx(int a, int b, int c, int d, int e) {
+    int buf[5];
+    buf[0] = a;
+    buf[1] = b;
+    buf[2] = c;
+    buf[3] = d;
+    buf[4] = e;
+    snd_SendIOPCommandNoWait(0x50, 0x14, buf, 0, 0);
+}
 
 void snd_PreAllocReverbWorkArea(int a, int b) {
     int buf[2];
