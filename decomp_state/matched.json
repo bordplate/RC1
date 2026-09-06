@@ -1172,5 +1172,15 @@
     "size": 76,
     "note": "C++ method. func_001189B0(self->sema); int x=(self->field_0x10<<11)+self->field_0x14; func_00118990(self->sema); return x. func_001189B0/90 are IPU syscalls (0x44/0x42) defined in code/_generated/sce/lib.s (real symbols, extern C). NOTE: moved the ViBuf struct out of videodec.cpp into a new shared header code/include/vibuf.h (included by both videodec.cpp and vibuf.cpp) so vibuf.cpp can name the type for correct cfront mangling (viBufCount__FP5ViBuf). 19/19 words verified (two jal are relocs; trailing nop is .align padding), full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/movie/videodec.cpp:42:videoDecDelete__FP8VideoDec": {
+    "name": "videoDecDelete__FP8VideoDec",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecDelete__FP8VideoDec.s",
+    "vram": "0x0023CC38",
+    "file_offset": "0x13DBB8",
+    "size": 52,
+    "note": "C++ method. viBufDelete(&self->vibuf); func_0012B9E0(self); return 1. ViBuf is at offset 0x48 in VideoDec (self->_pad[0x48]). func_0012B9E0 is a trivial 'return 1' stub in code/_generated/sce/lib.s (extern C). viBufDelete is declared (currently INCLUDE_ASM/blocked in vibuf.cpp) and called here - the call links to its symbol. 13/13 words verified (two jal are relocs), full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }

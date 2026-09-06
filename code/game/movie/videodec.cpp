@@ -20,6 +20,9 @@ typedef int (*videoDecCallback)(struct sceMpeg*, struct sceMpegCbData*, void*);
 extern "C" int func_0012AEC8(VideoDec* self, int a, int b,
     videoDecCallback cb, void* userdata);
 
+void viBufDelete(ViBuf* self);
+extern "C" int func_0012B9E0(void* p);
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023CBC8);
@@ -39,7 +42,11 @@ void videoDecReset(VideoDec* self) {
     self->state = 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecDelete__FP8VideoDec);
+int videoDecDelete(VideoDec* self) {
+    viBufDelete(&self->vibuf);
+    func_0012B9E0(self);
+    return 1;
+}
 
 void videoDecAbort(VideoDec* self) {
     self->state = 1;
