@@ -13,7 +13,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_002168A8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216950);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216990);
+extern "C" void func_00216990(int a0, long a1) {
+    int p = (int)a1;
+    if (p && a0 && *(s16*)(p + 0xA) == 2) {
+        *(s16*)(p + 0xA) = 3;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_002169C0);
 

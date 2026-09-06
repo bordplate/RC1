@@ -1182,5 +1182,15 @@
     "size": 52,
     "note": "C++ method. viBufDelete(&self->vibuf); func_0012B9E0(self); return 1. ViBuf is at offset 0x48 in VideoDec (self->_pad[0x48]). func_0012B9E0 is a trivial 'return 1' stub in code/_generated/sce/lib.s (extern C). viBufDelete is declared (currently INCLUDE_ASM/blocked in vibuf.cpp) and called here - the call links to its symbol. 13/13 words verified (two jal are relocs), full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/stream.cpp:16:func_00216990": {
+    "name": "func_00216990",
+    "source": "code/game/stream.cpp",
+    "asm": "code/_generated/nonmatchings/game/stream/func_00216990.s",
+    "vram": "0x00216990",
+    "file_offset": "0x117910",
+    "size": 48,
+    "note": "extern \"C\" (referenced by unmangled symbol from music_UpdateStream by-address). Callback: int p=(int)a1 (64->32 truncation via dsll32/dsra32 - 2nd param MUST be `long`); if (p && a0 && *(s16*)(p+0xA)==2) *(s16*)(p+0xA)=3. KEY: the half load must be SIGNED (s16*, emits `lh` opcode 0x21) to match the original - u16* emits `lhu` (0x25) which fails. Constants 2/3 hoist into the beqz/bne branch delay slots naturally. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }
