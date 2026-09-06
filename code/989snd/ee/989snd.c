@@ -165,7 +165,14 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetReverbEx);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_PreAllocReverbWorkArea);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_AutoReverb);
+void snd_AutoReverb(int a, int b, int c, int d) {
+    int buf[4];
+    buf[0] = a;
+    buf[1] = b;
+    buf[2] = c;
+    buf[3] = d;
+    snd_SendIOPCommandNoWait(0x10, 0x10, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F020);
 

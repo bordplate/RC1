@@ -1042,5 +1042,15 @@
     "size": 48,
     "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x17, 0x4, buf, 0, 0) - resumes all sounds in a group (IOP cmd 0x17, 1-int payload = group id). Arg-swapped twin of snd_PauseAllSoundsInGroup (cmd 0x16), identical 1-int-buffer codegen. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:107:snd_AutoReverb": {
+    "name": "snd_AutoReverb",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_AutoReverb.s",
+    "vram": "0x0012EFE0",
+    "file_offset": "0x2FF60",
+    "size": 60,
+    "note": "int buf[4]; buf[i]=arg_i; snd_SendIOPCommandNoWait(0x10, 0x10, buf, 0, 0) - enables auto-reverb (IOP cmd 0x10, 4-int payload). 0x20 frame, 4-int buf @0(sp)..0xC(sp), ra @0x10(sp). EGC reproduces the original's interleaving exactly: move a4,zero (y) FIRST, then sw a0,a1; li a0,0x10 (cmd); sw a2; li a1,0x10 (count); sw a3; move a2,sp (data); sq; jal; move a3,zero (x, delay); lq; jr; addiu. 15/15 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
+    "matched_date": "2026-09-05"
   }
 }
