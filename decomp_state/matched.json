@@ -1022,5 +1022,15 @@
     "size": 52,
     "note": "int buf[2]; buf[0]=a; buf[1]=b; snd_SendIOPCommandNoWait(0xD, 0x8, buf, 0, 0) - sets mixer mode (IOP cmd 0xD, 2-int payload). Same 2-int-buffer shape as snd_SetMasterVolume (cmd 0x9); only the cmd constant differs. 0x20 frame, 2-int buf, ra @0x10(sp); move a3,zero first, then sw a0; move a2,sp; sw a1; li a0,0xD; sq; li a1,8; jal; move a4,zero (delay); lq; jr; addiu. 13/13 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:49:snd_PauseAllSoundsInGroup": {
+    "name": "snd_PauseAllSoundsInGroup",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_PauseAllSoundsInGroup.s",
+    "vram": "0x0012E3E8",
+    "file_offset": "0x2F368",
+    "size": 48,
+    "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x16, 0x4, buf, 0, 0) - pauses all sounds in a group (IOP cmd 0x16, 1-int payload = group id). Same 1-int-buffer shape as snd_PauseVAGStream/ContinueVAGStream/UnloadBank/SetPlaybackMode/ContinueAllSoundsInGroup (cmd 0x17); only the cmd constant differs. 0x20 frame, buf @0(sp), ra @0x10(sp); li a1,4; sw a0; move a2,sp; sq; li a0,0x16; move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
+    "matched_date": "2026-09-05"
   }
 }
