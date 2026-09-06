@@ -291,6 +291,20 @@ loads the field into v1, emits `movz` instead of `movn`) — prefer the inline
 accessor form for small min/clamp helpers (see decomp_state/matched.json
 entry readBufEndGet__FP7ReadBufi, matched with count as `int`).
 
+Observation observed 2026-09-06 (EGC 8-arg register ABI — 7th/8th int args in
+t2/t3): this EGC 2.95.2 build passes the 7th and 8th INTEGER parameters in
+**t2/t3 ($10/$11)** — the register arg window is a0-a5, t0-t3, NOT the usual
+a0-a5 + stack. Verified with snd_PlaySoundVolPanPMPB (0x12E308, 8-int wrapper
+that forwards g/h into the IOP x/y): the original forwards t2/t3, and BOTH
+callers (0x22D65C, 0x22EB84-8C) load t2/t3 as their FINAL call-setup right
+before the jal. A standalone probe of the exact C (6 params to buf[6] + 2
+forwarded) compiled with the project flags emitted all 18 words byte-identical,
+including EGC's idiosyncratic `move v0,a3` (save arg4 before a3 is reused),
+`sw t1,20(sp)` in the `jal` delay slot, and `move t0,t3` (arg8→a4) clobbering
+arg5's register after its buf store. So when a function has 7+ int params,
+declare all 8 and expect the 7th/8th to arrive in t2/t3 — do not model them as
+stack args (see decomp_state/notes/989snd_snd_PlaySoundVolPanPMPB.md).
+
 ## Durable State
 
 `decomp_state/` is agent memory, not the success oracle:

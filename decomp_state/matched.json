@@ -1246,5 +1246,13 @@
     "file_offset": "0xF88F8",
     "size": 44,
     "note": "Void wrapper that calls three zero-arg draw init helpers in order: PutDrawBufferLarge() (0x1fb2d0, framebuf.cpp), InitViewContext() (0x1f2c60), UpdateViewContext() (0x1f2d98) - the latter two defined in this TU. Implemented as extern \"C\" void func_001F7978(void) so the plain (unmangled) symbol matches the linker-script pin and the single caller (pause func_002196B8 @0x219b34 jal). The three callees are declared as plain C++ (void f();) so the calls mangle to <name>__Fv. EGC emits a 0x10 frame (addiu/sq ra), three jal with nop delay slots, and the standard lq/jr/addiu epilogue; all 11 words byte-identical to original (incl. resolved jal target words 0c07ecb4/0c07cb18/0c07cb66). Full cmp passes."
+  },
+  "code/989snd/ee/989snd.c:78:snd_PlaySoundVolPanPMPB": {
+    "name": "snd_PlaySoundVolPanPMPB",
+    "source": "code/989snd/ee/989snd.c",
+    "vram": "0x0012E308",
+    "size": 72,
+    "matched_date": "2026-09-06",
+    "note": "8-parameter wrapper: buf[6]=a..f, snd_SendIOPCommandNoWait(0x11, 0x18, buf, g, h). Verified EGC passes 7th/8th int args in t2/t3: original forwards t2/t3 as the IOP x/y and both callers set them as final call setup; standalone probe of this exact C is byte-identical (18/18 words incl. the move-v0-a3 / sw-t1-in-delay-slot idiosyncrasies). jal is R_MIPS_26 on .text (later same-TU INCLUDE_ASM) resolving to 0x12E6E0 at link. Full boot cmp passes. See notes/989snd_snd_PlaySoundVolPanPMPB.md."
   }
 }
