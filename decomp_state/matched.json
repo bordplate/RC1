@@ -1112,5 +1112,15 @@
     "size": 56,
     "note": "int buf[5]; buf[i]=arg_i; snd_SendIOPCommandAndWait(0x3E, 0x14, buf) - starts the movie sound (IOP cmd 0x3E, 5-int payload; the blocking Wait variant, 3 args). 0x30 frame, 5-int buf @0(sp)..0x10(sp), ra @0x20(sp). Same 5-int-buffer Wait shape as snd_InitMovieSound (6-int, cmd 0x3B): sw a0,a1; li a0,0x3E (cmd); sw a2; li a1,0x14 (count); sq; move a2,sp (data); sw a3; jal; sw a4 (delay); lq; jr; addiu. 14/14 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:35:snd_SetGroupVoiceRange": {
+    "name": "snd_SetGroupVoiceRange",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_SetGroupVoiceRange.s",
+    "vram": "0x0012E2B8",
+    "file_offset": "0x2F238",
+    "size": 60,
+    "note": "int buf[3]; buf[i]=arg_i; snd_SendIOPCommandNoWait(0x4E, 0xC, buf, 0, 0) - sets a group's voice range (IOP cmd 0x4E, 3-int payload). 0x20 frame, 3-int buf, ra @0x10(sp). EGC reproduces the original's quirky order exactly: move v0,a1 FIRST (arg b staged in v0), then sw a0; li a1,0xC (count); sw a2; li a0,0x4E (cmd); sq; move a2,sp (data); sw v0,4(sp) (buf[1] from v0); move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 15/15 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }

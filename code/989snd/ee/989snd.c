@@ -65,7 +65,13 @@ void snd_SetMixerMode(int a, int b) {
     snd_SendIOPCommandNoWait(0xD, 0x8, buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetGroupVoiceRange);
+void snd_SetGroupVoiceRange(int a, int b, int c) {
+    int buf[3];
+    buf[0] = a;
+    buf[1] = b;
+    buf[2] = c;
+    snd_SendIOPCommandNoWait(0x4E, 0xC, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012E2F8);
 
