@@ -92,5 +92,16 @@
  },
  "code/game/permcb/permcb.cpp:3:vsync_callback__Fi": {
   "note": "16-word GS vsync interrupt handler: frm_vsync_cnt(0x15ED48)+=1; D_0015ED50 = frm_clock_time(0x15ED40)+*(int*)0x10000800; return 0. Mixed access: original uses ABSOLUTE lui/ld+sd for the two 64-bit frm_* (both in .bss, in gp window) but GP-RELATIVE sd a2,-0x7EB0(gp) for D_0015ED50. Tested natural C form (extern s64 .bss for frm_*, int return 0): EGC reorders the whole body -- loads the two 64-bit globals into a0/v1, materializes+loads the int directly into a1 (lui a1; lw a1,0x800(a1)) with NO explicit dsll32/dsrl32 sign-extension, then daddu a0,a0,a1 and daddiu v1,v1,1 (swapped which global is incremented). Original instead: ld frm_vsync_cnt->a0, lui/ori 0x10000800->a1, ld frm_clock_time->a2, daddiu a0+1, daddu v0,0,0(return), sd a0->frm_vsync_cnt, lw v1,0(a1), dsll32 v1, dsrl32 v1 (REDUNDANT explicit sign-ext), daddu a2,a2,v1, jr, sd a2->D_0015ED50. EGC's register allocation (a0/v1/a1/a3), load interleaving, and omission of the original's redundant dsll32/dsrl32 all diverge; not reproducible with any natural C form I tried. Needs the D_0015ED50=0x15ed50 symbol added to config/symbols.txt for the gp-relative store. Same register/scheduling-diff class as PutDispBuffer/func_002166E8."
+
+ },
+ "code/989snd/ee/989snd.c:67:snd_SendCurrentBatch": {
+  "status": "blocked",
+  "date": "2026-09-06",
+  "note": "EGC epilogue register-allocation shift vs original for byte-identical preceding code (words 0-49 match exactly; epilogue words 50-68 differ in f/n/Pbase/Rbase/0xFFC register choice: original v1/a0/a1/a0/a2, mine v0/v1/a0/v1/a1). Not steerable from C source after many variants (int* vs int arrays+casts, buf/cnt locals, pointer temps, store reorder, dropping the D_0015ECC4=1 store). Root split: epilogue lw <reg>,D_0015ECC0 -> original picks v1 (colder), mine v0 (hotter), same free set/last-use order. Same class as the Hud_HeapReset__Fv / menu_func_002088A8 register/schedule tiebreaks. Also out-of-gp D_0015EBC0/D_00153D20 must be passed as address constants (&sym, .data section) not loaded values; func_0011B3B8/B1C8 uppercase-B in sce/lib.s. See decomp_state/notes/989snd_snd_SendCurrentBatch.md."
+ },
+ "code/989snd/ee/989snd.c:69:snd_UnkFunction_0012eaf0": {
+  "status": "blocked",
+  "date": "2026-09-06",
+  "note": "Unreachable dead-tail artifact of snd_SendCurrentBatch (0x12EAF0, 4 words: li v0,1; jr ra; sw v0,D_0015ECC4; nop) = the original EGC's dead image of the D_0015ECC4 = 1 store. Not a real function; nothing jumps here. Orphan INCLUDE_ASM retained to supply the bytes (baseline build+cmp pass). Cannot regenerate to parity because the parent snd_SendCurrentBatch's epilogue register allocation is blocked. See decomp_state/notes/989snd_snd_SendCurrentBatch.md."
  }
 }
