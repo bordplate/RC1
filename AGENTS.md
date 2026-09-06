@@ -273,6 +273,17 @@ order `castA; gpC; castB` reproduces machine order `castA; castB; jr;
 <gpC in delay slot>`; the naive `castA; castB; gpC` order puts the gp store
 second instead (same note).
 
+Observation observed 2026-09-06 (signed vs unsigned comparison fixes the field
+type): when a `(a < b) ? a : b` (or `a < b` in a branch) compiles to `sltu`
+(funct 0x2B) but the original uses `slt` (funct 0x2A) — a single-word diff in an
+otherwise byte-identical function — the compared struct field is SIGNED, not
+unsigned. Declaring it `int` instead of `u32` flips EGC to `slt` and matches.
+Also: the inline form (`int ret=(n<fld)?n:fld; fld-=ret; return ret;`) can match
+where a separate `int avail=fld;` local mis-allocates (hoists the param into v0,
+loads the field into v1, emits `movz` instead of `movn`) — prefer the inline
+accessor form for small min/clamp helpers (see decomp_state/matched.json
+entry readBufEndGet__FP7ReadBufi, matched with count as `int`).
+
 ## Durable State
 
 `decomp_state/` is agent memory, not the success oracle:
