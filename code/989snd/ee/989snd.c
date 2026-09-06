@@ -96,7 +96,11 @@ void snd_ContinueAllSoundsInGroup(int a) {
     snd_SendIOPCommandNoWait(0x17, 0x4, buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SoundIsStillPlaying_CB);
+void snd_SoundIsStillPlaying_CB(int a, int b, int c) {
+    int buf[1];
+    buf[0] = a;
+    snd_SendIOPCommandNoWait(0x19, 0x4, buf, b, c);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012E478);
 
