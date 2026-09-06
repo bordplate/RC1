@@ -29,7 +29,13 @@ extern "C" int audioDecIsPageFull(_AudioDec* self) {
     return self->sentPos >= 0x1000;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecSend);
+void sendADPCM(_AudioDec* self);
+
+extern "C" void audioDecSend(_AudioDec* self) {
+    if (*(int*)self) {
+        sendADPCM(self);
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", sendToSPU__FP9_AudioDecPUcii);
 

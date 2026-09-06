@@ -1142,5 +1142,15 @@
     "size": 64,
     "note": "int buf[5]; buf[i]=arg_i; snd_SendIOPCommandNoWait(0x50, 0x14, buf, 0, 0) - sets reverb parameters (IOP cmd 0x50, 5-int payload). 0x30 frame, 5-int buf @0(sp)..0x10(sp), ra @0x20(sp). EGC reproduces the original's store order exactly: sw a0; sw a4 (buf[4] first); li a0,0x50 (cmd); sw a1; move a4,zero (y); sw a2; li a1,0x14 (count); sw a3; move a2,sp (data); sq; jal; move a3,zero (x, delay); lq; jr; addiu. 16/16 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/movie/audiodec.cpp:19:audioDecSend": {
+    "name": "audioDecSend",
+    "source": "code/game/movie/audiodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/audiodec/audioDecSend.s",
+    "vram": "0x0023AEF0",
+    "file_offset": "0x13BE70",
+    "size": 36,
+    "note": "extern \"C\" - if (*(int*)self) sendADPCM(self). Sends the audio decoder's ADPCM stream only when the AudioDec is active (first field at offset 0 nonzero). sendADPCM is a C++ method (mangled sendADPCM__FP9_AudioDec), audioDecSend is extern C (unmangled per symbols.txt:384). Codegen: 0x10 frame; lw v0,0(a0); beqz v0 (skip); sq ra,0(sp) in the beqz delay slot; jal sendADPCM; nop; lq; jr; addiu. 9/9 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }
