@@ -4,7 +4,7 @@
 typedef struct ReadBuf {
     u8 data[0x50000];
     u32 putPos;
-    u32 count;
+    int count;
     u32 capacity;
 } ReadBuf;
 
@@ -22,4 +22,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufEndPut__FP
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufBeginGet__FP7ReadBufPPUc);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufEndGet__FP7ReadBufi);
+int readBufEndGet(ReadBuf* buf, int n) {
+    int ret = (n < buf->count) ? n : buf->count;
+    buf->count -= ret;
+    return ret;
+}
