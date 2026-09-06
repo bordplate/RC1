@@ -141,7 +141,11 @@ void snd_ContinueVAGStream(int a) {
     snd_SendIOPCommandNoWait(0x2E, 0x4, buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GetVAGStreamTimeRemaining_CB);
+void snd_GetVAGStreamTimeRemaining_CB(int a, int b, int c) {
+    int buf[1];
+    buf[0] = a;
+    snd_SendIOPCommandNoWait(0x32, 0x4, buf, b, c);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_IsVAGStreamBuffered_CB);
 
