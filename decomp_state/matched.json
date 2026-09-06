@@ -1012,5 +1012,15 @@
     "size": 48,
     "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0xB, 0x4, buf, 0, 0) - sets playback mode (IOP cmd 0xB, 1-int payload). Same 1-int-buffer shape as snd_PauseVAGStream/ContinueVAGStream/UnloadBank (cmd 0x2D/0x2E/0x6); only the cmd constant differs. 0x20 frame, buf @0(sp), ra @0x10(sp); li a1,4; sw a0; move a2,sp; sq; li a0,0xB; move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:33:snd_SetMixerMode": {
+    "name": "snd_SetMixerMode",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_SetMixerMode.s",
+    "vram": "0x0012E280",
+    "file_offset": "0x2F200",
+    "size": 52,
+    "note": "int buf[2]; buf[0]=a; buf[1]=b; snd_SendIOPCommandNoWait(0xD, 0x8, buf, 0, 0) - sets mixer mode (IOP cmd 0xD, 2-int payload). Same 2-int-buffer shape as snd_SetMasterVolume (cmd 0x9); only the cmd constant differs. 0x20 frame, 2-int buf, ra @0x10(sp); move a3,zero first, then sw a0; move a2,sp; sw a1; li a0,0xD; sq; li a1,8; jal; move a4,zero (delay); lq; jr; addiu. 13/13 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
+    "matched_date": "2026-09-05"
   }
 }

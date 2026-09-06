@@ -56,7 +56,12 @@ void snd_SetPlaybackMode(int a) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012E270);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetMixerMode);
+void snd_SetMixerMode(int a, int b) {
+    int buf[2];
+    buf[0] = a;
+    buf[1] = b;
+    snd_SendIOPCommandNoWait(0xD, 0x8, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SetGroupVoiceRange);
 
