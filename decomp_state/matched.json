@@ -1122,5 +1122,15 @@
     "size": 60,
     "note": "int buf[3]; buf[i]=arg_i; snd_SendIOPCommandNoWait(0x4E, 0xC, buf, 0, 0) - sets a group's voice range (IOP cmd 0x4E, 3-int payload). 0x20 frame, 3-int buf, ra @0x10(sp). EGC reproduces the original's quirky order exactly: move v0,a1 FIRST (arg b staged in v0), then sw a0; li a1,0xC (count); sw a2; li a0,0x4E (cmd); sq; move a2,sp (data); sw v0,4(sp) (buf[1] from v0); move a3,zero; jal; move a4,zero (delay); lq; jr; addiu. 15/15 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:105:snd_PreAllocReverbWorkArea": {
+    "name": "snd_PreAllocReverbWorkArea",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_PreAllocReverbWorkArea.s",
+    "vram": "0x0012EFA8",
+    "file_offset": "0x2FF28",
+    "size": 52,
+    "note": "int buf[2]; buf[0]=a; buf[1]=b; snd_SendIOPCommandNoWait(0x51, 0x8, buf, 0, 0) - pre-allocates the reverb work area (IOP cmd 0x51, 2-int payload). Same 2-int-buffer NoWait shape as snd_SetMasterVolume (cmd 0x9) / snd_SetMixerMode (cmd 0xD); only the cmd constant differs. 0x20 frame; move a3,zero first, then sw a0; move a2,sp; sw a1; li a0,0x51; sq; li a1,8; jal; move a4,zero (delay); lq; jr; addiu. 13/13 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }
