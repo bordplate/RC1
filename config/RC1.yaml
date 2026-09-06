@@ -145,6 +145,8 @@ segments:
     - [0x1031f0, cpp, game/loaders]
     - [0x105c70, cpp, game/map]     # Lots of things that are referenced in draw_map_screen which is part of pause.cpp
     - [0x1078f8, cpp, game/menu]    # Just a guess, could be slightly later
+    - [0x109798, cpp, game/menu_callbacks]
+    - [0x109850, cpp, game/menu_post]
     - [0x109fb0, cpp, game/memcard]
     - [0x10c340, asm, game/miscproc]
     - [0x10c8d0, asm, game/missionfunc] # Referenced in some map func stuff

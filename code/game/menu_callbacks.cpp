@@ -1,3 +1,6 @@
+#include "common.h"
+#include "menu.h"
+
 extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
     register int x asm("$4") = a - c;
     asm volatile("" : "+r"(x));
@@ -13,4 +16,15 @@ extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
     if (r < 0)
         return 1;
     return 0;
+}
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/menu_callbacks", func_00208840);
+
+extern "C" void menu_restoreSelection(void) {
+    MenuData_0013D290* menu = &D_0013D290;
+    *(int*)0x15EEB0 = 3;
+    register int selected asm("$4");
+    selected = menu->saved;
+    menu->selected = selected;
+    menu->pending = 0;
 }

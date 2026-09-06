@@ -317,7 +317,11 @@ stack args (see decomp_state/notes/989snd_snd_PlaySoundVolPanPMPB.md).
 
 The status tool enumerates source files directly, so stale queue entries cannot
 make the project appear complete. Every blocked target must have a non-empty
-`note` or `reason` in `blocked.json`.
+`note` or `reason` in `blocked.json`. Before adding any new blocker, the primary
+agent must invoke `last-resort-decompiler` for that exact target and try any
+concrete recommendation it returns. The blocker note must summarize that final
+escalation and its result; if the usage-limited agent could not run because of
+quota, authentication, or configuration, record the failed invocation instead.
 
 Useful status commands:
 
@@ -356,6 +360,13 @@ production build. See its updated blocker note.
   agents modify the same function concurrently.
 - Use `decomp-verifier` after implementation for an independent mechanical
   object/assembly and full-ELF parity check before committing.
+- `last-resort-decompiler` uses the usage-limited GPT-5.6 Sol model. Do not use
+  it for routine targets or initial research. Invoke it only after the primary
+  agent has exhausted normal source, assembly, Ghidra, compiler-probe, and
+  `decomp-researcher` work and is otherwise ready to add a blocker.
+- No new entry may be added to `decomp_state/blocked.json` until
+  `last-resort-decompiler` has been tried on that exact target. Apply and test
+  its concrete recommendations before deciding the target remains blocked.
 - Subagents must stay within the one function selected for the current attempt.
 
 For each selected function:
@@ -369,9 +380,14 @@ For each selected function:
 6. Replace only the selected placeholder with compatible C/C++.
 7. Compile and inspect compiler errors.
 8. Diff the candidate object/assembly against the original.
-9. Iterate until the function matches or record a concrete blocker.
-10. Run the full build/parity check before treating progress as durable.
-11. Send the status push notification (see Mobile Status Notification).
+9. Iterate with normal tools until the function matches or all ordinary routes
+   are exhausted.
+10. Before recording a new blocker, invoke `last-resort-decompiler` for the
+    target and implement and mechanically test any concrete recommendation.
+11. Only then, if it still does not match, record a concrete blocker including
+    the last-resort result or failed invocation.
+12. Run the full build/parity check before treating progress as durable.
+13. Send the status push notification (see Mobile Status Notification).
 
 The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, or even same behavior but with a different instruction. It must be a perfect match.
 
@@ -411,12 +427,20 @@ on the 64-bit GPR value, not just its low word. `slti ...,0xBE` compares with
 +190 (16-bit sign extension), not -66. See the scTag2 and menu threshold
 probes before diagnosing an optimization bug from these instructions.
 
-Verified flag scope (2026-09-06): menu.cpp alone uses
-`-fno-schedule-insns`; sound-library and other files retain defaults.
-This matches menu_pointIsClockwise and, with the documented equivalent store
-reorder in func_002089A8, all previously matched C in the full boot image.
-It does NOT establish the original build's flags. Revalidate future menu
-candidates with this flag, and do not apply it globally.
+Verified flag scope (2026-09-06): the menu Splat segment is split at exact
+function boundaries so conflicting scheduler requirements stay local.
+`menu.cpp` (file 0x1078F8..0x109797) and `menu_post.cpp`
+(0x109850..0x109FAF) use `-fno-schedule-insns`; `menu_callbacks.cpp`
+(0x109798..0x10984F) uses `-fno-schedule-insns2`. This matches
+menu_pointIsClockwise and menu_restoreSelection while preserving every prior
+menu match and full boot parity. Sound-library and other files retain defaults.
+It does NOT establish the original build's flags. Revalidate future candidates
+with their owning TU's flag, and do not apply either scheduler flag globally.
+When adjacent functions require conflicting verified flags, prefer this Splat
+boundary split over per-function compiler hacks: add boundaries at function
+file offsets in `config/RC1.yaml`, move source/INCLUDE_ASM paths to consecutive
+TUs, assign object-private flags in Makefile, rerun split, inspect linker order,
+and require a clean full-image comparison.
 
 Mangling note (verified 2026-09-05): repeated parameter types are encoded
 `Tn` with **n = 0-based index of the first parameter** — `T1` means "same
@@ -485,6 +509,9 @@ characters:
   description of the session outcome instead.
 - message body: description of the work done and the nonmatching count from
   `python3 tools/decomp_status.py --count`.
+- If `last-resort-decompiler` was invoked, include the exact phrase
+  `last-resort GPT-5.6 Sol used` in the message body, whether it found a match,
+  confirmed a blocker, or failed because the model was unavailable.
 
 Do not paste diffs, decompiler output, or verbose note contents into the notification.
 If `brrr.py` fails (network down, rotated token), note it in the attempt

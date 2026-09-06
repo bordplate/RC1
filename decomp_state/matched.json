@@ -1,4 +1,21 @@
 {
+  "code/game/hud.cpp:23:Hud_HeapReset__Fv": {
+    "name": "Hud_HeapReset__Fv",
+    "source": "code/game/hud.cpp",
+    "vram": "0x001FF260",
+    "size": 40,
+    "matched_date": "2026-09-05",
+    "note": "HUD heap reset: heapCursor=D_001940CC and heapEnd=D_001940CC+0x64000. The reverse source store order emits cursor before jr and end in its delay slot. hud.o matches all 40 bytes and full boot parity passes. This was already active matching C; its stale blocked.json entry was removed on 2026-09-06. See notes/hud_Hud_HeapReset__Fv.md."
+  },
+  "code/game/menu_callbacks.cpp:23:menu_restoreSelection": {
+    "name": "menu_restoreSelection",
+    "original_name": "func_002088A8",
+    "source": "code/game/menu_callbacks.cpp",
+    "vram": "0x002088A8",
+    "size": 36,
+    "matched_date": "2026-09-06",
+    "note": "Restores D_0013D290.selected from saved, clears pending, and writes menu state 3. A fixed $a0 selected temporary plus -fno-schedule-insns2 matches all 36 bytes. The menu segment was split at exact Splat function boundaries so only menu_callbacks.cpp receives that flag; menu.cpp/menu_post.cpp retain -fno-schedule-insns. Standalone positive/negative controls and clean full boot parity pass. See notes/menu_func_002088A8.md."
+  },
   "code/989snd/ee/989snd.c:134:snd_SendCurrentBatch": {
     "name": "snd_SendCurrentBatch",
     "source": "code/989snd/ee/989snd.c",
@@ -15,14 +32,22 @@
     "matched_date": "2026-09-06",
     "note": "Corrected semantics: (u64)address<<32 | ((u64)id<<32)>>4 | (u64)count. Prior note misread dsll32 as zero extension. Existing default flags match all 36 relocated bytes; full boot cmp passes with C active. No compiler change. See notes/vibuf_scTag2.md."
   },
-  "code/game/menu.cpp:247:menu_pointIsClockwise": {
+  "code/game/menu_callbacks.cpp:4:menu_pointIsClockwise": {
     "name": "menu_pointIsClockwise",
     "original_name": "func_00208818",
-    "source": "code/game/menu.cpp",
+    "source": "code/game/menu_callbacks.cpp",
     "vram": "0x00208818",
     "size": 36,
     "matched_date": "2026-09-06",
-    "note": "Unblocked with menu.cpp-only -fno-schedule-insns. Standalone relocated probe matches all 36 bytes; full boot cmp passes after adapting func_002089A8 store order to this flag. No compiler patch required. See notes/menu_func_00208818.md and compiler_workflow.md."
+    "note": "Explicit register locals and zero-byte dependency barriers make the four subtractions match with default, pre-RA-disabled, and post-RA-disabled scheduling. Production places this function in the exact-boundary menu_callbacks.cpp slice with -fno-schedule-insns2 for its adjacent callback. Standalone relocated probe and clean full boot parity pass. See notes/menu_func_00208818.md and compiler_workflow.md."
+  },
+  "code/game/menu.cpp:134:func_00207690": {
+    "name": "func_00207690",
+    "source": "code/game/menu.cpp",
+    "vram": "0x00207690",
+    "size": 64,
+    "matched_date": "2026-09-06",
+    "note": "Corrected the threshold to signed +190 and used the (int, float, float, float) ABI so the compared argument arrives in f14. A volatile inline asm nop with the threshold as an FPU input forces EGC to materialize mtc1 before the required EE COP1 hazard nop; it emits no extra non-reference instruction. Standalone relocated probe and full boot cmp pass. See notes/menu_func_00207690.md and compiler_workflow.md."
   },
   "code/game/menu.cpp:20:func_002069C0": {
     "name": "func_002069C0",
@@ -683,70 +708,70 @@
     "note": "One-line pause-menu callback: func_00225AC0(1); return 0. func_00225AC0 is the pause-screen sound slot allocator (fills the 5-slot table at DAT_001d60b8; param = active slot count). All 8 xrefs are DATA function-pointer table entries (0x1CF990..0x1D4B48). EGC emits the stash_func_00232CE0 wrapper shape (0x10 frame, sq/lq ra at 0(sp), literal-arg load addiu a0,0,1 word 0x01000424 in the jal delay slot; callee prototype must take a parameter) plus the return-0 daddu v0,0,0 hoisted between lq ra and jr ra (jr delay slot taken by addiu sp restore; cf. func_0021CAC8 where the same daddu lands in the jr delay slot with no frame). Verified: built 0x21CAE0..0x21CAFF words F0FFBD27 0000BF7F B096080C 01000424 0000BF7B 2D100000 0800E003 1000BD27 byte-identical to original; full make + cmp build/boot_elf.elf assets/boot_elf.elf passes; decomp_status --count 828 -> 827. See decomp_state/notes/pause_func_0021CAE0.md.",
     "matched_date": "2026-09-04"
   },
-  "code/game/menu.cpp:289:func_00208EB8": {
+  "code/game/menu_post.cpp:60:func_00208EB8": {
     "name": "func_00208EB8",
-    "source": "code/game/menu.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu/func_00208EB8.s",
+    "source": "code/game/menu_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu_post/func_00208EB8.s",
     "vram": "0x00208EB8",
     "file_offset": "0x109E38",
     "size": 32,
     "note": "Menu callback: if (D_0013D2AC) *(int*)0x15EEB0 = 3. Single DATA xref (fp-table entry 0x1A0484). Key codegen finding: a plain 'extern int D_0015EEB0' ref would go GP-relative (address inside gp window), and even with section(\".data\") EGC schedules the store-address lui into the beqz delay slot (wrong order); the constant-cast store *(int*)0x15EEB0 = 3 puts li v0,3 in the beqz delay slot and lui at,0x16 after (byte-identical, matches the sibling family 0x208E68/E90/ED8/F00). D_0013D2AC needs the section(\".data\") attribute or the link fails with R_MIPS_GPREL16 truncation (out-of-window undefined sym). See decomp_state/notes/menu_func_00208EB8.md. Verified: built slice 0x109E38..0x109E58 words 1400023C ACD2438C 03006010 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 827 -> 826.",
     "matched_date": "2026-09-04"
   },
-  "code/game/menu.cpp:285:func_00208E68": {
+  "code/game/menu_post.cpp:44:func_00208E68": {
     "name": "func_00208E68",
-    "source": "code/game/menu.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu/func_00208E68.s",
+    "source": "code/game/menu_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu_post/func_00208E68.s",
     "vram": "0x00208E68",
     "file_offset": "0x109DE8",
     "size": 36,
     "note": "Menu callback: if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Single DATA xref (fp-table entry 0x1A047C). Clone family: func_00208E90/0x208ED8/0x208F00 are byte-identical. Codegen: the constant-cast idiom is required on BOTH load and store - a plain global load gives base register v1 (lui v1; lw v0,off(v1)) while the original reuses v0 (lui v0,0x16; lw v0,-4428(v0)); with both sides cast the whole 9-instruction body matches including li v0,3 in the bnez delay slot and at as store base (see menu_func_00208EB8.md for the store-side finding). Verified: built slice 0x109DE8..0x109E0C words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 826 -> 825.",
     "matched_date": "2026-09-04"
   },
-  "code/game/menu.cpp:292:func_00208E90": {
+  "code/game/menu_post.cpp:51:func_00208E90": {
     "name": "func_00208E90",
-    "source": "code/game/menu.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu/func_00208E90.s",
+    "source": "code/game/menu_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu_post/func_00208E90.s",
     "vram": "0x00208E90",
     "file_offset": "0x109E10",
     "size": 36,
     "note": "Byte-identical clone of matched func_00208E68 (menu callback family): if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Same constant-cast-on-both-sides idiom; only the bnez target offset differs (same relative distance, so the object is byte-identical). Verified: built slice 0x109E10..0x109E34 words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 825 -> 824. See decomp_state/notes/menu_func_00208E68.md.",
     "matched_date": "2026-09-04"
   },
-  "code/game/menu.cpp:302:func_00208ED8": {
+  "code/game/menu_post.cpp:66:func_00208ED8": {
     "name": "func_00208ED8",
-    "source": "code/game/menu.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu/func_00208ED8.s",
+    "source": "code/game/menu_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu_post/func_00208ED8.s",
     "vram": "0x00208ED8",
     "file_offset": "0x109E58",
     "size": 36,
     "note": "Byte-identical clone of matched func_00208E68 (menu callback family): if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Same constant-cast-on-both-sides idiom; only the bnez target offset differs (same relative distance, object byte-identical). Verified: built slice 0x109E58..0x109E7C words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 824 -> 823. See decomp_state/notes/menu_func_00208E68.md.",
     "matched_date": "2026-09-04"
   },
-  "code/game/menu.cpp:314:func_00208F00": {
+  "code/game/menu_post.cpp:73:func_00208F00": {
     "name": "func_00208F00",
-    "source": "code/game/menu.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu/func_00208F00.s",
+    "source": "code/game/menu_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu_post/func_00208F00.s",
     "vram": "0x00208F00",
     "file_offset": "0x109E80",
     "size": 36,
     "note": "Byte-identical clone of matched func_00208E68 (menu callback family): if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3. Same constant-cast-on-both-sides idiom; only the bnez target offset differs (same relative distance, object byte-identical). This completes the four-clone family (0x208E68/90/ED8/F00 all matched). Verified: built slice 0x109E80..0x109EA4 words 1600023C B4EE428C 40004230 03004014 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 823 -> 822. See decomp_state/notes/menu_func_00208E68.md.",
     "matched_date": "2026-09-04"
   },
-  "code/game/menu.cpp:298:func_00208980": {
+  "code/game/menu_post.cpp:6:func_00208980": {
     "name": "func_00208980",
-    "source": "code/game/menu.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu/func_00208980.s",
+    "source": "code/game/menu_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu_post/func_00208980.s",
     "vram": "0x00208980",
     "file_offset": "0x109900",
     "size": 40,
     "note": "Menu callback: if ((*(int*)0x15EEB4 ^ 1) & 1) *(int*)0x15EEB0 = 3 (i.e. set 0x15EEB0=3 when bit 0 of 0x15EEB4 is CLEAR). Single DATA xref (fp-table entry 0x1A0440). xori 1; andi 1 bit-test idiom plus the constant-cast-on-both-sides access (menu_func_00208E68.md) reproduces all 10 instructions byte-for-byte, li v0,3 in the beqz delay slot. Verified: built slice 0x109900..0x109928 words 1600023C B4EE428C 01004238 01004230 03004010 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 822 -> 821.",
     "matched_date": "2026-09-04"
   },
-  "code/game/menu.cpp:261:func_002089A8": {
+  "code/game/menu_post.cpp:12:func_002089A8": {
     "name": "func_002089A8",
-    "source": "code/game/menu.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu/func_002089A8.s",
+    "source": "code/game/menu_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/menu_post/func_002089A8.s",
     "vram": "0x002089A8",
     "file_offset": "0x109928",
     "size": 36,

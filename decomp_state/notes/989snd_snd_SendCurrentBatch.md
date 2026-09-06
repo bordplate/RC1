@@ -35,10 +35,10 @@ All ten tests pass, including the six compiler-probe runs. Status is 768
 nonmatching (753 active, 15 associated with blocked records). The matched
 notification was delivered. No compiler flags changed for this function.
 
-The adjacent snd_UnkFunction_0012eaf0 remains an assembly fallback. The old
-"dead tail" classification is not established merely by lack of xrefs; its
-li/jr/sw shape is also a normal callable flag setter. It should be researched
-independently, including overlays. No fourth store was added to the parent.
+The adjacent `snd_UnkFunction_0012eaf0` was subsequently matched independently
+as a callable `D_0015ECC4 = 1` setter. Ghidra and the boot ELF contain six direct
+call xrefs, disproving the historical dead-tail classification below. No fourth
+store was added to the parent. See `989snd_snd_UnkFunction_0012eaf0.md`.
 
 ## Historical Investigation (Superseded)
 

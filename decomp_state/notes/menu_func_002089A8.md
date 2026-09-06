@@ -1,7 +1,9 @@
 # func_002089A8 (vram 0x2089A8, file 0x109928, 36 bytes) — MATCHED 2026-09-04
 
-2026-09-06: menu.cpp now uses `-fno-schedule-insns` to unblock the edge test.
-The equivalent source order is E0, state, DC under that flag. Full boot cmp
+2026-09-06: this function moved to `menu_post.cpp`, which retains
+`-fno-schedule-insns` after the menu segment was split to isolate the adjacent
+post-RA scheduler requirement. The equivalent source order is E0, state, DC
+under that flag. Full boot cmp
 passes; the bytes below are unchanged. The older permutation explanation
 applies only to the previous default flags.
 

@@ -46,7 +46,8 @@ PRODG_DIR = tools/cc
 COMMON_COMPILE_FLAGS = -G8 -O2 -ffast-math -fno-exceptions -Wa,-EL -Wa,-Icode/include
 
 # Verified against the full boot image; do not propagate into 989snd.
-$(OBJ_DIR)/game/menu.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
+$(OBJ_DIR)/game/menu.o $(OBJ_DIR)/game/menu_post.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
+$(OBJ_DIR)/game/menu_callbacks.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns2
 
 # Isolated experiments, never linked into the game. PROBE_FLAGS are appended.
 .PHONY: probe

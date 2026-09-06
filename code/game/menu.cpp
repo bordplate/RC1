@@ -129,7 +129,15 @@ extern "C" int func_00207680(void) {
     return D_0013D3CD != 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207690);
+extern u8 D_0013D3D8 __attribute__((section(".data")));
+
+extern "C" int func_00207690(int x, float unused1, float unused2, float y) {
+    if (x >= 190)
+        return D_0013D3D8 != 0;
+    float threshold = 58.5f;
+    asm volatile("nop" : : "f"(threshold));
+    return threshold <= y;
+}
 
 extern u8 D_0013D3D4 __attribute__((section(".data")));
 
@@ -243,106 +251,3 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208770);
 
 extern "C" void func_00208810(void) {
 }
-
-extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
-    int x = a - c;
-    int y = b - d;
-    int r = (e - c) * y - (f - d) * x;
-    if (r < 0)
-        return 1;
-    return 0;
-}
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208840);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002088A8);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002088D0);
-
-extern "C" void func_00208980(void) {
-    if ((*(int*)0x15EEB4 ^ 1) & 1) {
-        *(int*)0x15EEB0 = 3;
-    }
-}
-
-struct MenuData_0013D290 {
-    char pad[0xDC];
-    int field_0xDC;
-    int field_0xE0;
-};
-
-extern "C" struct MenuData_0013D290 D_0013D290 __attribute__((section(".data")));
-
-extern "C" void func_002089A8(void) {
-    D_0013D290.field_0xE0 = -1;
-    *(int*)0x15EEB0 = 4;
-    D_0013D290.field_0xDC = -1;
-}
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002089D0);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208A38);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208A78);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208AF8);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208B28);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208B88);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208BC0);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208C00);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208C70);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208CA8);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208D20);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208D60);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208DD8);
-
-extern "C" void func_00208E68(void) {
-    if (*(int*)0x15EEB4 & 0x40) {
-        return;
-    }
-    *(int*)0x15EEB0 = 3;
-}
-
-extern "C" void func_00208E90(void) {
-    if (*(int*)0x15EEB4 & 0x40) {
-        return;
-    }
-    *(int*)0x15EEB0 = 3;
-}
-
-extern "C" int D_0013D2AC __attribute__((section(".data")));
-
-extern "C" void func_00208EB8(void) {
-    if (D_0013D2AC) {
-        *(int*)0x15EEB0 = 3;
-    }
-}
-
-extern "C" void func_00208ED8(void) {
-    if (*(int*)0x15EEB4 & 0x40) {
-        return;
-    }
-    *(int*)0x15EEB0 = 3;
-}
-
-extern "C" void func_00208F00(void) {
-    if (*(int*)0x15EEB4 & 0x40) {
-        return;
-    }
-    *(int*)0x15EEB0 = 3;
-}
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208F28);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208FA0);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208FE8);

@@ -1,53 +1,54 @@
 # Remaining Probe Results
 
-The following attempts retained their assembly fallbacks. No compiler patch
+The remaining attempts retained their assembly fallbacks. No compiler patch
 was justified by these results. Reproducible sources are in ../probes/ and
 commands are described in ../compiler_workflow.md.
 
 ## Final Session Verification
 
-Two successful replacements: menu_pointIsClockwise (formerly func_00208818)
-and scTag2, 36 bytes each. Their standalone relocated probes match; their
-fallbacks are removed from production source. The menu-only flag also required
-the documented equivalent func_002089A8 store reorder.
+Four successful replacements: menu_pointIsClockwise (formerly func_00208818),
+menu_restoreSelection (formerly func_002088A8), scTag2, and func_00207690.
+Their standalone relocated probes match and their fallbacks are removed.
+The menu segment is split at exact function boundaries to isolate conflicting
+pre-RA/post-RA scheduler flags without changing prior matches.
 
 `make clean && make split && make -j2` followed by
 `cmp build/boot_elf.elf assets/boot_elf.elf` passes. Both images have SHA-256
 `e050581032e4bb3f20341307da5b69b76f1574910519155380ea771e55c3c0c9`.
-Six tooling tests pass. The edge positive control passes and default-flag
-negative control fails at the expected four positions. `make -n -W` on an
-included menu assembly file schedules menu.o recompilation. `git diff --check`
-passes. `--complete` correctly fails: 769 nonmatching functions remain,
-including 16 associated with blocker records by stable source/name identity.
-All five finished attempts sent their single mobile notification successfully.
+The edge and callback positive controls pass; the callback pre-RA-disabled
+negative control differs at the expected seven positions. `--complete`
+correctly fails because other nonmatching functions remain.
 
 ## func_00207690
 
-Corrected semantics: `if (x >= 190) return D_0013D3D8 != 0; return 58.5f <= y;`
-with arguments `(int, float, float, float)`. The older blocked.json note
-misreads the 16-bit immediate 0x00BE as -66. It is +190. The constant 58.5f
-and f14 placement are correct. Ghidra currently has no function at this address.
+Matched 2026-09-06. Corrected semantics: `if (x >= 190) return D_0013D3D8 != 0;`
+then `return 58.5f <= y;`, with arguments `(int, float, float, float)` so the
+compared argument arrives in f14. The original's explicit NOP between `mtc1`
+and `c.le.s` is an EE COP1 hazard. A plain C candidate remains one word short,
+but this compiler accepts the following scheduling constraint and matches all
+64 bytes:
 
-Default flags produce 60 bytes versus 64: one missing NOP between mtc1 and
-c.le.s. Compiler -S output contains `li.s` and a COMMENT `#nop`, not an
-explicit mtc1 or nop. Macro expansion/hazard handling is therefore an
-assembler-level investigation too, not just a scheduler issue.
-The following isolated tests still fail: default, -mcpu=r5900, -Wa,-m5900,
--Wa,-g, -Wa,-O0, -Wa,-mips1. The latter also changes `daddu` to `addu`.
-`-fno-schedule-insns -mcpu=r4000` additionally changes the FP comparison
-opcode. Do not enable these flags globally or insert an unexplained inline nop.
+```cpp
+float threshold = 58.5f;
+asm volatile("nop" : : "f"(threshold));
+return threshold <= y;
+```
 
-## func_002088A8
+The FPU input operand makes the compiler materialize `threshold` before the
+inline NOP; the asm emits the hazard NOP itself. This is not a post-build word
+patch. The candidate matches under the existing menu-only
+`-fno-schedule-insns` flag, and full boot parity passes. Keep the FPU operand:
+an unbound `asm("nop")` is scheduled before `lui`/`mtc1` and does not match.
+
+## menu_restoreSelection (func_002088A8)
 
 Retested the correct struct-field form in probes/menu_callback.cpp.
-`-fno-schedule-insns` alone still differs in scheduling. Explicitly creating
-a local struct pointer fixes the register choices but not the order.
-`-fno-schedule-insns2` alone gets the instruction order exactly right, but
-uses v1 instead of a0 for the 0xBC load and 0x1C store (two word differences).
-Disabling both passes changes base/constant order and the trailing stores.
-Useful next experiment: source lifetime/type changes under nopost, then
-evaluate the impact on the rest of menu.cpp; do not assume menu's currently
-verified pre-RA-off configuration also solves this callback.
+`-fno-schedule-insns2` plus an explicit fixed `$a0` selected temporary gets all
+instruction order and register choices exactly right. The safe isolation is now
+implemented: Splat boundaries at file offsets `0x109798` and `0x109850` create
+`menu_callbacks.cpp` around the conflicting slice, while the prefix and suffix
+retain `-fno-schedule-insns`. The generated linker script places all three
+objects consecutively. Standalone comparison and clean full boot parity pass.
 
 ## PutDispBuffer__Fv
 

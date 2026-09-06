@@ -29,30 +29,35 @@ Use natural C++ names, e.g. `PutDispBuffer`, not `PutDispBuffer__Fv`.
 `extern "C"` is appropriate for original unmangled C symbols, not as a way to
 hand-spell a C++ mangled name. Verify parameter types and ABI from callers.
 
-Two positive controls (both exit 0):
+Scheduling positive controls (all exit 0):
 
 ```sh
 python tools/decomp_probe.py decomp_state/probes/menu_edge.cpp \
   decomp_state/probes/reference/menu_edge.s menu_pointIsClockwise \
-  --flags=-fno-schedule-insns --out /tmp/opencode/check-edge
+  --out /tmp/opencode/check-edge
+python tools/decomp_probe.py decomp_state/probes/menu_callback.cpp \
+  decomp_state/probes/reference/menu_callback.s menu_restoreSelection \
+  --flags=-fno-schedule-insns2 --out /tmp/opencode/check-callback
 python tools/decomp_probe.py decomp_state/probes/vibuf_tag.cpp \
   decomp_state/probes/reference/vibuf_tag.s scTag2 \
   --out /tmp/opencode/check-tag
 ```
 
-Negative control: rerun the edge probe without `--flags` in a different output
-directory. It must exit 1 and report four reordered instruction positions.
-The following unresolved FP probe must also exit 1:
+Negative control: rerun the callback probe with `--flags=-fno-schedule-insns`
+in a different output directory. It must exit 1 and report seven reordered
+instruction positions; a compilation error is not a valid negative result.
+The matching FP-hazard probe should exit 0:
 
 ```sh
 python tools/decomp_probe.py decomp_state/probes/menu_threshold.cpp \
-  code/_generated/nonmatchings/game/menu/func_00207690.s menu_threshold \
+  decomp_state/probes/reference/menu_threshold.s menu_threshold \
   --out /tmp/opencode/check-fp
 ```
 
 The probe uses Makefile EEGCC/WINE/include/default flags, with experiment flags
-appended. It deliberately does NOT inherit production per-file overrides:
-pass `--flags=-fno-schedule-insns` for menu.cpp's current configuration.
+appended. It deliberately does NOT inherit production per-file overrides.
+`menu.cpp` and `menu_post.cpp` use `-fno-schedule-insns`, while the exact-boundary
+`menu_callbacks.cpp` slice uses `-fno-schedule-insns2`.
 Compiler output remains under the experiment directory: candidate.s, .o,
 .elf, .log and .json, plus snapshots of the source and original reference.
 The log records commands and compiler/linker output. A failed rerun invalidates
@@ -98,7 +103,10 @@ tests require a completed JSON diff with the expected number of differences.
    declaring an int-returning RPC call void shifts later register allocation.
 3. Inspect candidate.s AND the assembled object. `li.s` is a macro, `#nop`
    is only a comment. A missing hazard NOP can be an assembler issue even
-   when the source-level compiler scheduling appears correct.
+   when the source-level compiler scheduling appears correct. For EE COP1
+   hazards, first test an inline asm instruction with the value as an input
+   operand (for example `asm volatile("nop" : : "f"(threshold));`); an
+   unbound asm statement may be scheduled before the value materialization.
 4. Test one relevant pass at a time: `-fno-schedule-insns` (pre-register
    allocation), `-fno-schedule-insns2` (post-register allocation), then both.
    Preserve the best source and exact differences; do not run hundreds of
@@ -107,6 +115,12 @@ tests require a completed JSON diff with the expected number of differences.
    a separate library; its flag requirements do not prove menu's requirements.
    Any flag that changes existing matches needs an explanation and full parity.
    Do not introduce arbitrary per-function compiler hacks just to hide a diff.
+   If adjacent functions demonstrably need conflicting flags, split the Splat
+   C/C++ segment at exact function file offsets, move the source into consecutive
+   TUs, and assign flags to those objects. Confirm the generated linker script
+   keeps them consecutive, preserve shared layouts in a tracked top-level header,
+   and require a clean full-image comparison. `menu_callbacks.cpp` is the working
+   example; do not split in the middle of a function or use overlapping sections.
 6. Escalate to a compiler-version/assembler investigation only with a minimal
    correct reproducer, stage-specific evidence, exact versions and controls.
    Failure of some source forms does not prove no C form can match. An alternate
@@ -162,15 +176,18 @@ finished attempt as described in AGENTS.md. Commit only when requested.
   first 68 bytes. Only final mixed absolute/GP addressing remains unresolved;
   this disproves the old "cannot generate these loads" compiler claim.
 
-- menu_pointIsClockwise (formerly func_00208818): matched with menu-only
-  pre-RA scheduling disabled. func_002089A8 uses equivalent E0/state/DC source
-  store order under that flag. Full boot parity passes.
+- menu_pointIsClockwise (formerly func_00208818): explicit register locals and
+  zero-byte dependency barriers now match under default or either scheduler
+  override. It lives in `menu_callbacks.cpp`, an exact-boundary Splat slice.
 - scTag2: matched with DEFAULT flags by correcting the 64-bit tag expression.
   No special compiler required.
-- func_00207690: corrected threshold is +190, not -66; still missing one FP
-  hazard NOP. See notes/compiler_retests_2026_09_06.md.
-- func_002088A8: post-RA scheduling disabled gets the correct order with a
-  local struct pointer, leaving two register differences. Not yet integrated.
+- func_00207690: matched with the corrected +190 threshold and an FPU-input
+  inline asm hazard NOP under the existing menu-only flag. See
+  notes/menu_func_00207690.md.
+- menu_restoreSelection (formerly func_002088A8): matched all 36 bytes using a
+  fixed `$a0` temporary and `-fno-schedule-insns2`. The menu segment is split at
+  `0x109798` and `0x109850`, safely isolating that flag from the surrounding
+  `-fno-schedule-insns` code. Clean full boot parity passes.
 - PutDispBuffer__Fv: natural C++ name verified; tested scheduler/alias flags
   still fail prologue order. See the same retest note.
 

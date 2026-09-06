@@ -11,6 +11,8 @@ extern "C" MenuData D_0013D290 __attribute__((section(".data")));
 extern "C" void menu_restoreSelection(void) {
     MenuData* menu = &D_0013D290;
     *(int*)0x15EEB0 = 3;
-    menu->selected = menu->saved;
+    register int selected asm("$4");
+    selected = menu->saved;
+    menu->selected = selected;
     menu->pending = 0;
 }

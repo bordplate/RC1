@@ -31,13 +31,18 @@ class ToolchainTests(unittest.TestCase):
     def test_gp_relocation(self):
         self.probe("gp_control.cpp", "gp_control.s", "gp_control")
 
-    def test_menu_flag(self):
-        self.probe("menu_edge.cpp", "menu_edge.s", "menu_pointIsClockwise",
-                   "-fno-schedule-insns")
-        self.probe("menu_edge.cpp", "menu_edge.s", "menu_pointIsClockwise", differences=4)
+    def test_menu_scheduling(self):
+        self.probe("menu_edge.cpp", "menu_edge.s", "menu_pointIsClockwise")
+        self.probe("menu_callback.cpp", "menu_callback.s", "menu_restoreSelection",
+                   "-fno-schedule-insns2")
+        self.probe("menu_callback.cpp", "menu_callback.s", "menu_restoreSelection",
+                   "-fno-schedule-insns", differences=7)
 
     def test_tag(self):
         self.probe("vibuf_tag.cpp", "vibuf_tag.s", "scTag2")
+
+    def test_menu_threshold(self):
+        self.probe("menu_threshold.cpp", "menu_threshold.s", "menu_threshold")
 
     def test_rpc_return_type(self):
         self.probe("snd_batch.c", "snd_batch.s", "snd_SendCurrentBatch")
