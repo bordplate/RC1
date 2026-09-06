@@ -1082,5 +1082,15 @@
     "size": 48,
     "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x32, 0x4, buf, b, c) - queries remaining VAG stream time (IOP cmd 0x32, 1-int payload; args b,c passed through as the x,y NoWait params). 0x20 frame, buf @0(sp), ra @0x10(sp); move a3,a1 (x); sw a0; move a4,a2 (y); sq; li a0,0x32; li a1,4; jal; move a2,sp (data, delay); lq; jr; addiu. Arg-swapped twin of snd_IsVAGStreamBuffered_CB (cmd 0x4F). 12/12 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:87:snd_IsVAGStreamBuffered_CB": {
+    "name": "snd_IsVAGStreamBuffered_CB",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_IsVAGStreamBuffered_CB.s",
+    "vram": "0x0012ED00",
+    "file_offset": "0x2FC80",
+    "size": 48,
+    "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x4F, 0x4, buf, b, c) - checks whether a VAG stream is buffered (IOP cmd 0x4F, 1-int payload; args b,c passed through as the x,y NoWait params). Identical pass-through codegen to snd_GetVAGStreamTimeRemaining_CB (cmd 0x32): move a3,a1; sw a0; move a4,a2; sq; li a0,0x4F; li a1,4; jal; move a2,sp (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
+    "matched_date": "2026-09-05"
   }
 }
