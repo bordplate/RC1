@@ -4,8 +4,8 @@
 #include "types.h"
 
 typedef struct ViBuf {
-    u32 data;
-    u32 chcr;
+    u32 base;
+    u32 tagBase;
     u32 blocks;
     u32 field_0x0c;
     u32 field_0x10;

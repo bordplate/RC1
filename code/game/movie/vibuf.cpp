@@ -5,7 +5,13 @@ extern "C" int func_00118980(int a);
 extern "C" int func_00118990(int a);
 extern "C" int func_001189B0(int a);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", getFIFOindex__FP5ViBufPv);
+u32 getFIFOindex(ViBuf* self, void* v) {
+    u32 i = ((self->blocks << 4) + self->tagBase + 0x10) & 0xFFFFFFF;
+    if (v == (void*)i) {
+        return 0;
+    }
+    return ((u32)v - self->base) >> 11;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", setD3_CHCR__FUi);
 
