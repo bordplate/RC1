@@ -16,7 +16,13 @@ void readBufCreate(ReadBuf* self) {
 
 void readBufDelete(ReadBuf* self) {}
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufBeginPut__FP7ReadBufPPUc);
+int readBufBeginPut(ReadBuf* buf, u8** out) {
+    int space = buf->capacity - buf->count;
+    if (space) {
+        *out = buf->data + buf->putPos;
+    }
+    return space;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufEndPut__FP7ReadBufi);
 
