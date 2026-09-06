@@ -33,7 +33,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_BankLoadFromEE_
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012E198);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_ResolveBankXREFS);
+void snd_ResolveBankXREFS(void) {
+    snd_SendIOPCommandNoWait(0x8, 0, 0, 0, 0);
+}
 
 void snd_UnloadBank(int a) {
     int buf[1];
