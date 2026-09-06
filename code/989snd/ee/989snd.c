@@ -88,7 +88,11 @@ void snd_PauseAllSoundsInGroup(int a) {
     snd_SendIOPCommandNoWait(0x16, 0x4, buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_ContinueAllSoundsInGroup);
+void snd_ContinueAllSoundsInGroup(int a) {
+    int buf[1];
+    buf[0] = a;
+    snd_SendIOPCommandNoWait(0x17, 0x4, buf, 0, 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SoundIsStillPlaying_CB);
 
