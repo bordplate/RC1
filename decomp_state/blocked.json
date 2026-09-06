@@ -64,5 +64,33 @@
   "note": "C form identified and verified at the instruction level EXCEPT one prologue-scheduling difference. Body is func_00121E40(*(void**)0x15EEB8) - func_00121E40 is an alabel (real linkable symbol) in code/_generated/sce/lib.s, D_0015EEB8 is a writable pointer in section .lit4. Using the constant-cast idiom (*(void**)0x15EEB8, NOT the named symbol) makes EGC emit the correct 'lui a0,%hi; lw a0,%lo(a0)' base-register form (named symbol gives 'lui v0; lw a0,0(v0)' - wrong base reg). BUT the original order is: addiu sp; lui a0; lw a0; sq ra,0(sp); jal; nop; lq; jr; addiu - i.e. the argument lui/lw are scheduled BEFORE the ra save. EGC 2.95.2 (project flags) always emits the prologue 'addiu sp; sq ra' as a fixed unit at the top, then the body (lui/lw/jal), giving: addiu; sq; lui; lw; jal; nop; lq; jr; addiu. The sq ra cannot be moved after the body loads with any C form tried (direct cast, named symbol, temp variable). This is an EGC prologue-scheduling difference vs the original Insomniac compiler, not a source-structure issue. Blocker: EGC emits sq ra before the argument materialization; original delays it after. See decomp_state/notes/framebuf_PutDispBuffer.md",
   "reason": "EGC prologue scheduling: sq ra emitted before arg lui/lw; original interleaves them",
   "blocked_date": "2026-09-05"
+ },
+ "code/game/movie/vibuf.cpp:21:viBufDelete__FP5ViBuf": {
+  "name": "viBufDelete__FP5ViBuf",
+  "reason": "EGC constant-store addressing: original stores *(int*)0x1000B410/B420/B430 via lui/ori/sw (3 instr each, regs a0/a1/v0), but EGC emits compact lui $at + sw zero,negoff($at) (2 instr each). Body is setD4_CHCR(5); 3 constant stores; func_00118980(self->sema); return 1. All non-store instructions match (19 vs 22 words). Could not force the lui/ori/sw 3-instr form with natural C; deferred.",
+  "blocked_date": "2026-09-05"
+ },
+ "code/game/stream.cpp:4:func_002166E8": {
+  "name": "func_002166E8",
+  "reason": "Register allocation: original uses a1($5) for BOTH the condition load (lh a1,0x8(s0)) and the store value (addiu a1,0,1; sb a1,0xA(s0)); EGC allocates the condition to v1 and the store constant to v0. The structure matches (0x20 frame, D_001516D0 base saved in s0 across the snd_StreamSafeCdBreak call, lui-before-sq prologue, beqz, jal, sb) but the a1-vs-v1/v0 register split could not be forced with natural C (tested: void/int return, explicit value var, const-cast, symbol-base forms - all give v1/v0). C form: u8* base=(u8*)D_001516D0; if(*(s16*)(base+8)) { snd_StreamSafeCdBreak(); base[0xA]=1; }. Deferred.",
+  "blocked_date": "2026-09-05"
+ },
+ "code/game/mobyutil.cpp:49:func_002141F8": {
+  "name": "func_002141F8",
+  "reason": "Layout/scheduling: original uses `bnel a0,0,body` (branch to body, return-0 is the MID-fallthrough at the first return point) with 2 extra nops after the andi, and the final return load in the jr delay slot. EGC emits the inverted natural layout: `beqz a0,ret` (return-0 at the END, body as fallthrough), no extra nops. C form (verified logic): if (a0 && (*(u16*)(a0+0x34) & 0x20)) return *(int*)(*(void**)(a0+0x78)+OFF); return 0; where OFF=0x0. The branch direction + ret0 position + 2-nop padding could not be reproduced with natural C; both near-identical getters blocked. Deferred.",
+  "blocked_date": "2026-09-05"
+ },
+ "code/game/mobyutil.cpp:51:func_00214228": {
+  "name": "func_00214228",
+  "reason": "Layout/scheduling: original uses `bnel a0,0,body` (branch to body, return-0 is the MID-fallthrough at the first return point) with 2 extra nops after the andi, and the final return load in the jr delay slot. EGC emits the inverted natural layout: `beqz a0,ret` (return-0 at the END, body as fallthrough), no extra nops. C form (verified logic): if (a0 && (*(u16*)(a0+0x34) & 0x20)) return *(int*)(*(void**)(a0+0x78)+OFF); return 0; where OFF=0x10. The branch direction + ret0 position + 2-nop padding could not be reproduced with natural C; both near-identical getters blocked. Deferred.",
+  "blocked_date": "2026-09-05"
+ },
+ "code/game/stream.cpp:14:func_00216950": {
+  "name": "func_00216950",
+  "reason": "Complex control flow EGC structures differently: original is 0x20 frame (saves s0=D_001516D0 base used for both sh stores), `bne a0,1` to epilogue, then GetError() with `sh zero,0x8(s0)` in the jal delay slot, then `beqz err` (return 0) / `sh 2,0x8(s0)`+return 2. EGC emits 0x10 frame, loads the D base into a0 AFTER the call, uses `bnez err` (inverted), an explicit `b` to epilogue, and extra li v1/v0. C form verified logically: if(a0!=1)return 1; err=GetError(); *(u16*)(D+8)=0; if(err){*(u16*)(D+8)=2;return 2;} return 0. The 0x20-frame + s0-base-across-call + delay-slot-store + beqz-direction could not be reproduced. Deferred.",
+  "blocked_date": "2026-09-05"
+ },
+ "code/game/permcb/permcb.cpp:3:vsync_callback__Fi": {
+  "note": "16-word GS vsync interrupt handler: frm_vsync_cnt(0x15ED48)+=1; D_0015ED50 = frm_clock_time(0x15ED40)+*(int*)0x10000800; return 0. Mixed access: original uses ABSOLUTE lui/ld+sd for the two 64-bit frm_* (both in .bss, in gp window) but GP-RELATIVE sd a2,-0x7EB0(gp) for D_0015ED50. Tested natural C form (extern s64 .bss for frm_*, int return 0): EGC reorders the whole body -- loads the two 64-bit globals into a0/v1, materializes+loads the int directly into a1 (lui a1; lw a1,0x800(a1)) with NO explicit dsll32/dsrl32 sign-extension, then daddu a0,a0,a1 and daddiu v1,v1,1 (swapped which global is incremented). Original instead: ld frm_vsync_cnt->a0, lui/ori 0x10000800->a1, ld frm_clock_time->a2, daddiu a0+1, daddu v0,0,0(return), sd a0->frm_vsync_cnt, lw v1,0(a1), dsll32 v1, dsrl32 v1 (REDUNDANT explicit sign-ext), daddu a2,a2,v1, jr, sd a2->D_0015ED50. EGC's register allocation (a0/v1/a1/a3), load interleaving, and omission of the original's redundant dsll32/dsrl32 all diverge; not reproducible with any natural C form I tried. Needs the D_0015ED50=0x15ed50 symbol added to config/symbols.txt for the gp-relative store. Same register/scheduling-diff class as PutDispBuffer/func_002166E8."
  }
 }
