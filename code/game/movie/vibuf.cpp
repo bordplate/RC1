@@ -1,4 +1,9 @@
 #include "common.h"
+#include "vibuf.h"
+
+extern "C" int func_00118980(int a);
+extern "C" int func_00118990(int a);
+extern "C" int func_001189B0(int a);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", getFIFOindex__FP5ViBufPv);
 
@@ -24,7 +29,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufRestartDMA__FP
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufDelete__FP5ViBuf);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufCount__FP5ViBuf);
+int viBufCount(ViBuf* self) {
+    func_001189B0(self->sema);
+    int x = (self->field_0x10 << 11) + self->field_0x14;
+    func_00118990(self->sema);
+    return x;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufFlush__FP5ViBuf);
 
