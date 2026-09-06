@@ -177,7 +177,15 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F76A0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7888);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7978);
+void PutDrawBufferLarge();
+void InitViewContext();
+void UpdateViewContext();
+
+extern "C" void func_001F7978(void) {
+    PutDrawBufferLarge();
+    InitViewContext();
+    UpdateViewContext();
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F79A8);
 
