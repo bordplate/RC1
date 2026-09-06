@@ -291,4 +291,6 @@ void snd_GetMovieNAX(void) {
     snd_SendIOPCommandAndWait(0x5B, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GetDopplerPitchMod);
+int snd_GetDopplerPitchMod(int arg0) {
+    return arg0 * 1524 / 741;
+}
