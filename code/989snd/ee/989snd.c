@@ -203,7 +203,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StartMovieSound
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F140);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_UpdateMovieADPCM);
+void snd_UpdateMovieADPCM(int a, int b) {
+    int buf[2];
+    buf[0] = a;
+    buf[1] = b;
+    snd_SendIOPCommandAndWait(0x5A, 0x8, buf);
+}
 
 void snd_GetMovieNAX(void) {
     snd_SendIOPCommandAndWait(0x5B, 0, 0);

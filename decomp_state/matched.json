@@ -1062,5 +1062,15 @@
     "size": 44,
     "note": "snd_SendIOPCommandNoWait(0x8, 0, 0, 0, 0) - resolves bank cross-references (IOP cmd 0x8, no payload). No stack buffer (all args zero). Same no-buffer shape as snd_StopAllSounds (cmd 0x18); only the cmd constant differs. 0x10 frame; li a0,8 then the four move a1/a2/a3,zero and delay-slot move a4,zero around sq/jal. 11/11 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:123:snd_UpdateMovieADPCM": {
+    "name": "snd_UpdateMovieADPCM",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_UpdateMovieADPCM.s",
+    "vram": "0x0012F148",
+    "file_offset": "0x300C8",
+    "size": 44,
+    "note": "int buf[2]; buf[0]=a; buf[1]=b; snd_SendIOPCommandAndWait(0x5A, 0x8, buf) - updates the movie ADPCM decoder (IOP cmd 0x5A, 2-int payload; the blocking Wait variant, 3 args). 0x20 frame, 2-int buf, ra @0x10(sp); sw a0; move a2,sp; sw a1; li a0,0x5A; sq; jal; li a1,8 (count in the delay slot); lq; jr; addiu. 11/11 words verified, full make + cmp passes, decomp-verifier MATCH (batch of 4).",
+    "matched_date": "2026-09-05"
   }
 }
