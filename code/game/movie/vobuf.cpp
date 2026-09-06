@@ -24,7 +24,12 @@ extern "C" int voBufIsFull__FP5VoBuf(VoBuf* self) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufIncCount__FP5VoBuf);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufGetData__FP5VoBuf);
+void* voBufGetData(VoBuf* self) {
+    if (voBufIsFull__FP5VoBuf(self)) {
+        return 0;
+    }
+    return (void*)((char*)self->data + self->head * 0xD0000);
+}
 
 extern "C" int voBufIsEmpty(VoBuf* self) {
     return self->count == 0;

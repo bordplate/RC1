@@ -1152,5 +1152,15 @@
     "size": 36,
     "note": "extern \"C\" - if (*(int*)self) sendADPCM(self). Sends the audio decoder's ADPCM stream only when the AudioDec is active (first field at offset 0 nonzero). sendADPCM is a C++ method (mangled sendADPCM__FP9_AudioDec), audioDecSend is extern C (unmangled per symbols.txt:384). Codegen: 0x10 frame; lw v0,0(a0); beqz v0 (skip); sq ra,0(sp) in the beqz delay slot; jal sendADPCM; nop; lq; jr; addiu. 9/9 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/game/movie/vobuf.cpp:13:voBufGetData__FP5VoBuf": {
+    "name": "voBufGetData__FP5VoBuf",
+    "source": "code/game/movie/vobuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/vobuf/voBufGetData__FP5VoBuf.s",
+    "vram": "0x0023D288",
+    "file_offset": "0x13E208",
+    "size": 64,
+    "note": "C++ method (auto-mangles to voBufGetData__FP5VoBuf). Returns the VoBuf element at head when the buffer is not full, else 0:  if (voBufIsFull(self)) return 0; return (void*)((char*)self->data + self->head * 0xD0000). CRITICAL codegen findings: (1) pointers are 4 bytes on this MIPS target, so VoBuf is data@0, tags@4, head@8, count@12, capacity@16 (the earlier 8-byte-pointer assumption was wrong - matched voBufReset/voBufIsFull confirm count@12, head@8, capacity@16). (2) the stride constant is literally 0xD0000 (lui v1,0xD), NOT 13 - EGC emits lui (not addiu) only for the 0xD0000 form, matching the original's single lui. (3) the INVERTED condition `if (full) return 0; return compute;` makes EGC emit `bnezl` (opcode 0x15, word 0x54400006), which matches the original; the non-inverted `if (!full) return compute; return 0;` emits plain `bnez`/bne (0x14400006) which does NOT match. 16/16 words verified (jal is a reloc), full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }
