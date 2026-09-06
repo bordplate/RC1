@@ -48,6 +48,13 @@ decomp_state/notes/snd_PrepareReturnBuffer.md).
 
 ## Local Toolchain
 
+Before retrying a blocked function, follow `decomp_state/compiler_workflow.md`.
+It provides executable isolated probes, known-good/known-bad controls, and a
+decision tree. Historical blocker notes are hypotheses, not ground truth:
+`scTag2` was unblocked by correcting a misread shift, and the menu edge test
+by a per-translation-unit flag with the existing compiler. Neither required
+an Insomniac compiler patch. Read any `correction` field before an older note.
+
 - EEGCC 2.95.2 runs through the local Wine wrapper configured in
   `userconfig.mk`.
 - MIPS binutils are under `tools/mipsel-linux-gnu/` and the PS2 linker tools
@@ -124,11 +131,11 @@ cmp build/boot_elf.elf assets/boot_elf.elf
 Never enable `ALLOW_NONMATCHING` globally. Do not remove an assembly fallback
 until the compiled output has been compared mechanically.
 
-The Makefile has no dependency from a C/C++ object to the generated `.s` files
-it `INCLUDE_ASM`s. If you rename a symbol that other included assembly
-references, also `touch` those source files before rebuilding, or stale objects
-survive and linking fails with an undefined reference to the old name (see
-decomp_state/notes/audiodec_func_0023AEE0.md).
+The Makefile now tracks same-stem generated matching/nonmatching assembly,
+top-level project headers, Makefile, and userconfig.mk for C/C++ objects.
+Cross-directory/nested includes and command-line flag overrides are not fully
+tracked: use a clean verification (or `make -B`) after such experiments.
+After renaming symbols, rerun split and force the affected objects to rebuild.
 
 The compiler is correct, but compiler flags may not necessarily match what Insomniac used yet. Try to identify compiler flags when you encounter a larger function that otherwise won't match. Update this when you're confident compiler flags are correct.
 
@@ -312,6 +319,19 @@ not compare equal to `assets/boot_elf.elf`.
 
 ## Function Workflow
 
+Verified callee-prototype effect (2026-09-06): an ignored return value still
+affects EGC register allocation. snd_SendCurrentBatch's 276-byte body matches
+with `int sceSifCallRpc(...)`; declaring that callee `void` alone produces ten
+epilogue word differences despite identical code before the call. Confirm
+CALLEE return types, not just the selected function's return type, before
+blaming allocator tie-breaks. See the snd_batch positive/negative probes.
+
+Verified address-splitting scope (2026-09-06): `-mno-split-addresses` with
+SYMBOLIC .data loads reproduces VU1_addDataRef's first 68 bytes, including all
+five self-based lui/lw sequences. It does not fix repeated constant-address
+casts, nor the final GP-relative store. No vuchain flag was enabled in the
+production build. See its updated blocker note.
+
 ### Subagent Delegation
 
 - Use `decomp-researcher` before implementing an unfamiliar target when Ghidra,
@@ -353,16 +373,15 @@ the candidate object or function assembly has been compared mechanically.
 
 In C++ files, avoid creating `extern "C"` prefixed functions with manualled mangled names and instead create them as pure C++ functions and let the compiler mangle the names like it should.
 
-Mangling note (verified 2026-09-04): this EGC v2.73a build uses old cfront-style
-mangling. For parameterized methods the established recipe works — a free C++
-function named `className_method` taking the object pointer first mangles to the
-binary's `className_method__F...` name (e.g. `readBufCreate(ReadBuf*)` ->
-`readBufCreate__FP7ReadBuf`). For ZERO-argument methods (`...__Fv`) that recipe
-fails: a free function named exactly `music_Unpause__Fv` mangles to
-`music_Unpause__Fv__Fv`, and a real class method mangles cfront-style
-(`Unpause__3music`). To emit the exact binary name for such methods, declare a
-real class method with an asm label on the IN-CLASS declaration only (EGC's
-parser rejects `asm()` on the out-of-class definition):
+Mangling correction (verified 2026-09-06): this EGC v2.73a build uses old
+cfront-style mangling. Free functions work for both parameterized and
+zero-argument names: `readBufCreate(ReadBuf*)` produces
+`readBufCreate__FP7ReadBuf`; `void PutDispBuffer(void)` produces
+`PutDispBuffer__Fv` (verified by the linked probe). Remove the `__F...` suffix
+when writing the source identifier; do not include it in the C++ name.
+Do not invent a class/unused `this` merely to obtain a zero-argument symbol.
+The older workaround below is only appropriate when evidence establishes a
+real instance method and an unusual linker label is genuinely necessary:
 
 ```cpp
 class music { public: void Unpause() asm("music_Unpause__Fv"); };
@@ -371,6 +390,19 @@ void music::Unpause() { ... }
 
 The codegen is then a true C++ instance method (`this` in `$a0`, unused unless
 referenced); the label does not affect register allocation.
+
+Instruction-decoding corrections (2026-09-06): `dsll32 r,r,0` shifts LEFT by
+32, and only a subsequent `dsrl32 r,r,0` completes zero extension. `or` works
+on the 64-bit GPR value, not just its low word. `slti ...,0xBE` compares with
++190 (16-bit sign extension), not -66. See the scTag2 and menu threshold
+probes before diagnosing an optimization bug from these instructions.
+
+Verified flag scope (2026-09-06): menu.cpp alone uses
+`-fno-schedule-insns`; sound-library and other files retain defaults.
+This matches menu_pointIsClockwise and, with the documented equivalent store
+reorder in func_002089A8, all previously matched C in the full boot image.
+It does NOT establish the original build's flags. Revalidate future menu
+candidates with this flag, and do not apply it globally.
 
 Mangling note (verified 2026-09-05): repeated parameter types are encoded
 `Tn` with **n = 0-based index of the first parameter** — `T1` means "same

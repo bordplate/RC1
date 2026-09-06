@@ -1,6 +1,24 @@
 # scTag2 (code/game/movie/vibuf.cpp)
 
-Blocked 2026-09-04: EGC 2.95.2 SN v2.73a cannot reproduce the original 64-bit
+MATCHED 2026-09-06 with the existing compiler and default project flags.
+The old analysis below is incorrect: `dsll32 r,r,0` means shift LEFT by 32,
+not zero extension. Only a subsequent `dsrl32 r,r,0` completes a zero extension.
+The corrected expression is:
+
+```cpp
+*tag = ((u64)address << 32) | (((u64)id << 32) >> 4) | (u64)count;
+```
+
+Ghidra at 0x23BC20 confirms exactly this expression. Callers in viBufReset
+pass masked DMA addresses, tag IDs 3/2, and QWC 0x80/0. The resulting tag is
+NOT limited to 32 bits. `decomp_state/probes/vibuf_tag.cpp` matches all 36
+relocated bytes using `tools/decomp_probe.py` with no extra flags. Replacing
+the fallback in vibuf.cpp also passes the full boot comparison (769 remain).
+This was a semantic error, not a compiler optimization or version issue.
+
+## Historical Analysis (Incorrect)
+
+Previously blocked 2026-09-04: EGC 2.95.2 SN v2.73a cannot reproduce the original 64-bit
 shift + per-operand zext codegen; it folds everything to 32-bit.
 
 ## Semantics (Ghidra + asm)

@@ -1,4 +1,46 @@
-# snd_SendCurrentBatch (code/989snd/ee/989snd.c) — BLOCKED 2026-09-06
+# snd_SendCurrentBatch (code/989snd/ee/989snd.c) - MATCHED 2026-09-06
+
+## Resolution
+
+The register mismatch was caused by a WRONG CALLEE PROTOTYPE, not a custom
+register allocator. func_0011B1C8 is sceSifCallRpc and returns int status codes
+(Ghidra confirms -1/-2/-3/0 paths). The previous candidate declared it void.
+Using int, even though snd_SendCurrentBatch discards the return, makes all
+276 bytes match with DEFAULT compiler flags. Switching only that declaration
+back to void reproduces ten differing epilogue words, starting at 0x12EAA0.
+Do not force registers or alter the sound-library flags for this function.
+
+The old note ALSO misidentified two GP globals: returns are at 0x15ECB8
+(gp-0x7F48), and free-byte counts are at 0x15ECA8 (gp-0x7F58), NOT 0x15ECC8
+and 0x15ECB8. The packet pointer array is at 0x15ECA0; index at 0x15ECC0.
+These now have descriptive snd_batch* names in source/config/Ghidra.
+The RPC/check callees are named sceSifCallRpc/sceSifCheckStatRpc.
+
+Reproduce both controls:
+
+```sh
+source .venv/bin/activate
+python tools/decomp_probe.py decomp_state/probes/snd_batch.c \
+  decomp_state/probes/reference/snd_batch.s snd_SendCurrentBatch \
+  --out /tmp/opencode/batch-good
+python tools/decomp_probe.py decomp_state/probes/snd_batch.c \
+  decomp_state/probes/reference/snd_batch.s snd_SendCurrentBatch \
+  --flags=-DRPC_RETURN=void --out /tmp/opencode/batch-bad
+```
+
+The first exits 0, the second exits 1 with exactly ten word differences.
+Both are automated in tools/test_decomp_toolchain.py. Final verification used
+`make clean && make split && make -j2`, followed by full boot cmp: PASS.
+All ten tests pass, including the six compiler-probe runs. Status is 768
+nonmatching (753 active, 15 associated with blocked records). The matched
+notification was delivered. No compiler flags changed for this function.
+
+The adjacent snd_UnkFunction_0012eaf0 remains an assembly fallback. The old
+"dead tail" classification is not established merely by lack of xrefs; its
+li/jr/sw shape is also a normal callable flag setter. It should be researched
+independently, including overlays. No fourth store was added to the parent.
+
+## Historical Investigation (Superseded)
 
 `void snd_SendCurrentBatch(void)` at vram `0x12E9D8`, 0x114-byte body (69 words) plus a
 0xC-byte dead-tail artifact `snd_UnkFunction_0012eaf0` at `0x12EAF0`.

@@ -51,6 +51,14 @@ def blocked_entries():
     return {entry["id"]: entry for entry in blocked}
 
 
+def target_key(target_id):
+    # Historical state IDs include mutable source line numbers.
+    parts = target_id.rsplit(":", 2)
+    if len(parts) == 3 and parts[1].isdigit():
+        return f"{parts[0]}:{parts[2]}"
+    return target_id
+
+
 def run_parity():
     build = subprocess.run(["make"], cwd=ROOT)
     if build.returncode:
@@ -78,34 +86,33 @@ def main():
         print(len(found))
         return 0
 
-    blocked = blocked_entries()
-    active = [entry for entry in found if entry["id"] not in blocked]
+    blocked = {target_key(key): value for key, value in blocked_entries().items()}
+    active = [entry for entry in found if target_key(entry["id"]) not in blocked]
     print(f"targets={len(found)} active={len(active)} blocked={len(found) - len(active)}")
 
     if not args.complete:
         return 0
-    if active:
-        print("Incomplete: active nonmatching INCLUDE_ASM targets remain.", file=sys.stderr)
-        return 1
     missing_notes = [
-        entry["id"]
-        for entry in found
-        if entry["id"] in blocked
-        and not (
-            isinstance(blocked[entry["id"]], str)
-            and blocked[entry["id"]].strip()
-            or isinstance(blocked[entry["id"]], dict)
-            and (blocked[entry["id"]].get("note") or blocked[entry["id"]].get("reason"))
+        key
+        for key, value in blocked.items()
+        if not (
+            isinstance(value, str) and value.strip()
+            or isinstance(value, dict)
+            and any(isinstance(value.get(field), str) and value[field].strip()
+                    for field in ("note", "reason"))
         )
     ]
     if missing_notes:
         print("Incomplete: blocked targets need blocker notes:", file=sys.stderr)
         print("\n".join(missing_notes), file=sys.stderr)
         return 1
+    if found:
+        print("Incomplete: nonmatching INCLUDE_ASM targets remain (blocked is not matched).", file=sys.stderr)
+        return 1
     if not run_parity():
         print("Incomplete: build/parity check failed.", file=sys.stderr)
         return 1
-    print("Complete: all targets are matched or explicitly blocked and parity passes.")
+    print("Complete: no nonmatching targets remain and parity passes.")
     return 0
 
 

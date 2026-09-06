@@ -1,5 +1,29 @@
 # VU1_addDataRef__FPvi (0x233830, 0x4C) — BLOCKED
 
+## 2026-09-06 Deeper Retest
+
+The old claim that this compiler cannot generate the repeated self-based loads
+is disproven. `probes/vuchain_symbol.cpp` with `-mno-split-addresses` matches
+the first 68 bytes EXACTLY, including all five loads and register choices.
+The remaining mismatch is the final store: the `.data` symbol declaration
+causes absolute lui/sw, followed by jr/nop (84 total bytes), instead of
+jr with GP-relative sw in its delay slot (76 bytes). The constant-address
+source in probes/vuchain_dataref.cpp still hoists its address; disabling
+GCSE, expensive optimizations, or address splitting does not fix that form.
+The address-splitting flag is effective on SYMBOLIC loads, not those constants.
+
+Both experiments exclude the unreachable second store and leave the original
+orphan fallback untouched. Including that store naturally makes it live before
+the return, which is not equivalent to the original. Do not fabricate a second
+global alias solely to make reads absolute and writes GP-relative without
+documenting the data representation. Next useful investigation is how original
+symbol declarations or assembler relaxation produced the mixed access modes.
+No production compiler flags changed for this retest.
+
+This attempt exposed a probe-tool bug: the default linker script overrode
+`--defsym _gp=...`. decomp_probe.py now uses an explicit script and asserts the
+linked GP is 0x166C00. The new gp_control probe matches all 12 original bytes.
+
 Bump allocator for the VU1 command chain. `D_00160F00` holds the bump pointer
 V. Writes a 0x10-byte slot `[x|0x30000000, p, 0, 0]` at [V..V+0xC], then advances
 both `D_00160F00` and (dead-tail) `D_00162C20` to V+0x10.

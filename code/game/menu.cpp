@@ -1,10 +1,10 @@
 #include "common.h"
 #include "types.h"
 
-extern "C" int func_00208818(int a, int b, int c, int d, int e, int f);
+extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f);
 
 extern "C" int func_00206978(int x, int y) {
-    return func_00208818(x, y, 0xD3, 0xDB, 0x129, 0xF9);
+    return menu_pointIsClockwise(x, y, 0xD3, 0xDB, 0x129, 0xF9);
 }
 
 extern u8 D_0013D394 __attribute__((section(".data")));
@@ -244,7 +244,14 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208770);
 extern "C" void func_00208810(void) {
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208818);
+extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
+    int x = a - c;
+    int y = b - d;
+    int r = (e - c) * y - (f - d) * x;
+    if (r < 0)
+        return 1;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00208840);
 
@@ -267,9 +274,9 @@ struct MenuData_0013D290 {
 extern "C" struct MenuData_0013D290 D_0013D290 __attribute__((section(".data")));
 
 extern "C" void func_002089A8(void) {
+    D_0013D290.field_0xE0 = -1;
     *(int*)0x15EEB0 = 4;
     D_0013D290.field_0xDC = -1;
-    D_0013D290.field_0xE0 = -1;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002089D0);

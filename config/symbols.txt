@@ -1,5 +1,16 @@
 _start = 0x12d728;
 _exit = 0x12d8e8;
+menu_pointIsClockwise = 0x00208818;
+D_00160F00 = 0x00160F00;
+D_0015FD64 = 0x0015FD64;
+snd_batchCommandBuffers = 0x0015ECA0;
+snd_batchFreeBytes = 0x0015ECA8;
+snd_batchReturnBuffers = 0x0015ECB8;
+snd_batchIndex = 0x0015ECC0;
+D_0015EBC0 = 0x0015EBC0;
+D_00153D20 = 0x00153D20;
+sceSifCheckStatRpc = 0x0011B3B8;
+sceSifCallRpc = 0x0011B1C8;
 
 __main = 0x011dcc8;
 main = 0x12d9d8;

@@ -1,4 +1,29 @@
 {
+  "code/989snd/ee/989snd.c:134:snd_SendCurrentBatch": {
+    "name": "snd_SendCurrentBatch",
+    "source": "code/989snd/ee/989snd.c",
+    "vram": "0x0012E9D8",
+    "size": 276,
+    "matched_date": "2026-09-06",
+    "note": "Unblocked with default flags. Correct sceSifCallRpc prototype returns int, not void, even though caller discards result. The wrong void declaration alone reproduces 10 epilogue word differences. Also corrected return-buffer/free-byte global addresses to 0x15ECB8/0x15ECA8. Entire relocated 276-byte probe and full boot cmp pass. Adjacent snd_UnkFunction_0012eaf0 fallback retained independently. See notes/989snd_snd_SendCurrentBatch.md."
+  },
+  "code/game/movie/vibuf.cpp:14:scTag2": {
+    "name": "scTag2",
+    "source": "code/game/movie/vibuf.cpp",
+    "vram": "0x0023BC20",
+    "size": 36,
+    "matched_date": "2026-09-06",
+    "note": "Corrected semantics: (u64)address<<32 | ((u64)id<<32)>>4 | (u64)count. Prior note misread dsll32 as zero extension. Existing default flags match all 36 relocated bytes; full boot cmp passes with C active. No compiler change. See notes/vibuf_scTag2.md."
+  },
+  "code/game/menu.cpp:247:menu_pointIsClockwise": {
+    "name": "menu_pointIsClockwise",
+    "original_name": "func_00208818",
+    "source": "code/game/menu.cpp",
+    "vram": "0x00208818",
+    "size": 36,
+    "matched_date": "2026-09-06",
+    "note": "Unblocked with menu.cpp-only -fno-schedule-insns. Standalone relocated probe matches all 36 bytes; full boot cmp passes after adapting func_002089A8 store order to this flag. No compiler patch required. See notes/menu_func_00208818.md and compiler_workflow.md."
+  },
   "code/game/menu.cpp:20:func_002069C0": {
     "name": "func_002069C0",
     "source": "code/game/menu.cpp",

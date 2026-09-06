@@ -1,4 +1,5 @@
 # Force use GNU tools
+.DEFAULT_GOAL := all
 FIND := /usr/bin/find
 
 ifeq ($(OS),Windows_NT)
@@ -44,7 +45,23 @@ PRODG_DIR = tools/cc
 
 COMMON_COMPILE_FLAGS = -G8 -O2 -ffast-math -fno-exceptions -Wa,-EL -Wa,-Icode/include
 
+# Verified against the full boot image; do not propagate into 989snd.
+$(OBJ_DIR)/game/menu.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
+
+# Isolated experiments, never linked into the game. PROBE_FLAGS are appended.
+.PHONY: probe
+probe:
+	@test -n "$(PROBE_SOURCE)" -a -n "$(PROBE_OUT)" || (echo 'Set PROBE_SOURCE and PROBE_OUT (without extension)'; exit 1)
+	@mkdir -p $(dir $(PROBE_OUT))
+	$(EEGCC) -S $(COMMON_COMPILE_FLAGS) $(PROBE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $(PROBE_SOURCE) -o $(PROBE_OUT).s
+	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) $(PROBE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $(PROBE_SOURCE) -o $(PROBE_OUT).o
+
 all: $(TARGET)
+
+# Flag/header changes must not silently reuse objects from an older experiment.
+$(SRC_CPP:code/%.cpp=$(OBJ_DIR)/%.o) $(SRC_C:code/%.c=$(OBJ_DIR)/%.o): Makefile $(wildcard userconfig.mk code/include/*.h)
+
+.SECONDEXPANSION:
 
 split:
 	python -m splat split config/RC1.yaml --disassemble-all
@@ -68,10 +85,10 @@ $(OBJ_DIR)/%.o: code/%.s
 	@mkdir -p $(dir $@)
 	$(CROSS)-as $(INCLUDE) -EL -no-pad-sections -march=5900 -mabi=eabi $< -o $@
 
-$(OBJ_DIR)/%.o: code/%.c
+$(OBJ_DIR)/%.o: code/%.c $$(wildcard code/_generated/nonmatchings/$$*/*.s code/_generated/matchings/$$*/*.s)
 	@mkdir -p $(dir $@)
-	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
+	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) $(PRIVATE_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
 
-$(OBJ_DIR)/%.o: code/%.cpp
+$(OBJ_DIR)/%.o: code/%.cpp $$(wildcard code/_generated/nonmatchings/$$*/*.s code/_generated/matchings/$$*/*.s)
 	@mkdir -p $(dir $@)
-	$(EEGCC) -v -c -x c++ $(COMMON_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
+	$(EEGCC) -v -c -x c++ $(COMMON_COMPILE_FLAGS) $(PRIVATE_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
