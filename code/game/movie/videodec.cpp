@@ -14,6 +14,7 @@ int viBufBeginPut(ViBuf* buf, u8** data, int* size, u8** data2, int* size2);
 
 struct sceMpeg;
 struct sceMpegCbData;
+struct sceMpegCbDataError;
 
 typedef int (*videoDecCallback)(struct sceMpeg*, struct sceMpegCbData*, void*);
 
@@ -78,7 +79,13 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecMain__FP
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", decBs0__FP8VideoDec);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", mpegError__FP7sceMpegP18sceMpegCbDataErrorPv);
+extern char D_00161220[];
+extern "C" void STUB_printf(const char* fmt, ...);
+
+int mpegError(struct sceMpeg* mpeg, struct sceMpegCbDataError* err, void* user) {
+    STUB_printf(D_00161220, *(int*)((char*)err + 4));
+    return 1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", mpegNodata__FP7sceMpegP13sceMpegCbDataPv);
 

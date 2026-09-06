@@ -1287,5 +1287,13 @@
     "size": 12,
     "matched_date": "2026-09-06",
     "note": "Sets D_0015ECC4 (gp - 0x7F3C, the 989snd RPC-in-flight/return-pending flag) to 1; void. void-with-single-constant-store shape: hoisted li v0,1, jr $ra, GPREL16 sw in the delay slot, nop (4/4 words). D_0015ECC4 is the pre-existing plain extern int (in gp window), same idiom as matched snd_UnkFunction_0012eb00 which clears it. Pinned symbol name kept (config/symbols.txt:42). All 6 callers (0x1EB9A4, 0x216878/8F8/92C, 0x22D6B4, 0x22EB5C) ignore the return value. Full boot cmp passes; decomp-verifier PASS. See notes/989snd_snd_UnkFunction_0012eaf0.md."
+  },
+  "code/game/movie/videodec.cpp:85:mpegError__FP7sceMpegP18sceMpegCbDataErrorPv": {
+    "name": "mpegError__FP7sceMpegP18sceMpegCbDataErrorPv",
+    "source": "code/game/movie/videodec.cpp",
+    "vram": "0x0023D080",
+    "size": 40,
+    "matched_date": "2026-09-06",
+    "note": "SCE Mpeg decode error callback: STUB_printf(D_00161220 /* .lit format string \"%s\\n\" */, *(int*)((char*)err + 4)); return 1. Standalone probe byte-identical (40/40 bytes at original address, runtime GP). STUB_printf return discarded: both void (project convention, same as matched ErrMessage) and int prototypes match; void used. D_00161220 is a .lit label (lit.lit4.s) declared plain extern char[], same idiom as matched ErrMessage/D_001611F8. Full boot cmp passes. Name pinned config/symbols.txt:407. See notes/videodec_mpegError.md."
   }
 }
