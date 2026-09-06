@@ -211,7 +211,15 @@ void snd_CloseMovieSound(void) {
     snd_SendIOPCommandAndWait(0x3C, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StartMovieSound);
+void snd_StartMovieSound(int a, int b, int c, int d, int e) {
+    int buf[5];
+    buf[0] = a;
+    buf[1] = b;
+    buf[2] = c;
+    buf[3] = d;
+    buf[4] = e;
+    snd_SendIOPCommandAndWait(0x3E, 0x14, buf);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012F140);
 

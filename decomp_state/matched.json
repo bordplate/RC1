@@ -1102,5 +1102,15 @@
     "size": 48,
     "note": "int buf[1]; buf[0]=a; snd_SendIOPCommandNoWait(0x19, 0x4, buf, b, c) - queries whether a sound is still playing (IOP cmd 0x19, 1-int payload; args b,c passed through as the x,y NoWait params). Same pass-through codegen as snd_GetVAGStreamTimeRemaining_CB/IsVAGStreamBuffered_CB (cmd 0x32/0x4F): move a3,a1; sw a0; move a4,a2; sq; li a0,0x19; li a1,4; jal; move a2,sp (delay); lq; jr; addiu. 12/12 words verified, full make + cmp passes, decomp-verifier MATCH.",
     "matched_date": "2026-09-05"
+  },
+  "code/989snd/ee/989snd.c:119:snd_StartMovieSound": {
+    "name": "snd_StartMovieSound",
+    "source": "code/989snd/ee/989snd.c",
+    "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_StartMovieSound.s",
+    "vram": "0x0012F108",
+    "file_offset": "0x30088",
+    "size": 56,
+    "note": "int buf[5]; buf[i]=arg_i; snd_SendIOPCommandAndWait(0x3E, 0x14, buf) - starts the movie sound (IOP cmd 0x3E, 5-int payload; the blocking Wait variant, 3 args). 0x30 frame, 5-int buf @0(sp)..0x10(sp), ra @0x20(sp). Same 5-int-buffer Wait shape as snd_InitMovieSound (6-int, cmd 0x3B): sw a0,a1; li a0,0x3E (cmd); sw a2; li a1,0x14 (count); sq; move a2,sp (data); sw a3; jal; sw a4 (delay); lq; jr; addiu. 14/14 words verified, full make + cmp passes, decomp-verifier MATCH.",
+    "matched_date": "2026-09-05"
   }
 }
