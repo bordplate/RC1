@@ -1369,5 +1369,15 @@
     "size": 44,
     "matched_date": "2026-09-07",
     "note": "Byte-identical clone of already-matched func_001F7978 (code/game/draw.cpp): PutDrawBufferLarge(); InitViewContext(); UpdateViewContext(); - re-initializes the GTE draw buffer + view context between the two VU-microcode draw phases of the vendor scene (caller func_00239780 loads VU program 0x1FB740 on both sides). 12 instruction words verified identical to func_001F7978's; standalone probe (decomp_state/probes/vendor_00239750.cpp) matched all 44 bytes with default flags. Renamed to setupViewContext (added to config/symbols.txt; re-ran split so func_00239780's generated jal references the new name). Clean build + cmp byte-identical; count 753->752."
+  },
+  "code/game/memcard.cpp:24:memcard_GetDataSize": {
+    "name": "memcard_GetDataSize",
+    "source": "code/game/memcard.cpp",
+    "asm": "code/_generated/nonmatchings/game/memcard/memcard_GetDataSize.s",
+    "vram": "0x0020AC88",
+    "file_offset": "0x10BC08",
+    "size": 56,
+    "note": "Save-block size walker over 16-byte record headers ({header,size,...}, 0-terminated): total starts at 8, each record adds 8 + record size, and the (total+3) & -4 4-byte re-alignment happens EVERY iteration - the `and` lives in the bnez delay slot, so rounding is per-pass, not once after the loop (Ghidra's `+ 0xb & 0xfffffffc` is the right model). The -4 mask is hoisted once into $6 before the loop; +3 is materialized into v0 per iteration. Matched with body split as `size += 8; size += data[1]; size = (size + 3) & -4; data += 4;` - a single folded expression (v2) keeps the accumulator in the wrong register, and rounding once after the loop (v1) makes EGC split the mask into li/ori and change the body size. Probe decomp_state/probes/memcard_GetDataSize.cpp all 56 bytes; clean build + cmp byte-for-byte; count 752->751. See decomp_state/notes/memcard_GetDataSize.md.",
+    "matched_date": "2026-09-07"
   }
 }
