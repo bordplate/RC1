@@ -1332,5 +1332,13 @@
     "size": 80,
     "matched_date": "2026-09-07",
     "note": "Occlusion dispatcher on global OcclUpdate (0x18C334): 0->FastMemSet(OcclVisibility@0x193FC0,-1,0x80); 2->BuildOcclVisibility; else nothing. void. KEY: only SYMBOL-based access (extern int OcclUpdate / extern char OcclVisibility[] with __attribute__((section(\".data\")))) reproduces the original schedule (load base in v0 separate from v1 value, sq ra deferred into the bnez delay slot, li v0,2 deferred to else block, lui hoisted before addiu sp). Constant-address casts stuck EGC on v1 base + addiu/sq up front + li v0,2 in the bnez delay slot; no C restructuring flipped it. See decomp_state/notes/draw_UpdateOcclusion__Fv.md."
+  },
+  "code/game/pause.cpp:203:func_00221908": {
+    "name": "func_00221908",
+    "source": "code/game/pause.cpp",
+    "vram": "0x00221908",
+    "size": 40,
+    "matched_date": "2026-09-07",
+    "note": "Pause update callback (vtable 0x1D2260 = {0x221908, 0x221930}): if (D_0013CB04 & 0x40) D_001D5BF8 = &D_001D22F8; return 0. int return with delay-slot daddu (void gives nop tail); out-of-window plain section-attributed globals reproduce the original lui-a0 condition base, and the symbol form D_001D5BF8=&D_001D22F8 (not the constant 0x1D22F8) reproduces the lui-dst-before-addiu-src store order. All 40 bytes and full boot cmp pass. See notes/pause_func_00221908.md."
   }
 }
