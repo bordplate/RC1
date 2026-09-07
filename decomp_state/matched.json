@@ -1350,5 +1350,15 @@
     "size": 52,
     "note": "Pauses the SIF music channels: writes the (state, value) s16 pairs of MusicState D_001516D0 (0x40,0x42) and (0x78,0x7A) to (-0x8000,0) unconditionally, plus (0x5C,0x5E) when the int param is nonzero; all 3 callers pass 0. Three findings: (1) fields must be s16, not u16 - storing -0x8000 into u16 emits ori 0x8000 (34028000) but the original has addiu -0x8000 (24028000); (2) EGC 4-independent-constant-store permutation is a pair-swap: source [s1,s2,s3,s4] emits [s3,s4,s1,jr,<bds s2>], so source order 40,42,78,7A reproduces original 78,7A,40,[jr]42 (naive order emitted 40,42,78,[jr]7A); (3) EGC schedules the D_001516D0 hi lui into the beqz branch delay slot (materialized only on the not-taken path) - plain direct-global access reproduces it, no cast/pointer needed. Definition-order pitfall: original .text has Pause (0x216050) BEFORE Unpause (0x216088), so the C def must precede music::Unpause() in the TU - defining it after made parity fail with 61 bytes (swapped functions + 2 wrong jal targets at file 0xFCA6C/0xFE638). Verified: decomp-verifier clean build + cmp byte-identical, object 13 words identical (HI16/LO16 relocs on D_001516D0), music_Unpause re-verified unchanged; count 755->754. See decomp_state/notes/music_music_Pause__Fi.md.",
     "matched_date": "2026-09-07"
+  },
+  "code/game/movie/readbuf.cpp:27:readBufEndPut__FP7ReadBufi": {
+    "name": "readBufEndPut__FP7ReadBufi",
+    "source": "code/game/movie/readbuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/readbuf/readBufEndPut__FP7ReadBufi.s",
+    "vram": "0x0023B990",
+    "file_offset": "0x13C910",
+    "size": 68,
+    "note": "Ring-buffer 'commit n bytes written' accessor: m = min(n, capacity-count) via signed slt/movn; putPos = (putPos+m) % capacity via signed div+mfhi; count += m. Two key facts: (1) ReadBuf fields putPos/capacity were u32 in our struct but the original codegen is SIGNED (slt + div, not sltu/divu), so the struct fields were switched to int - codegen-invisible for the already-matched siblings (readBufCreate/BeginPut/EndGet re-verified byte-identical); (2) EGC emits a div-by-zero debug guard as a degenerate no-op branch on the divisor (beqzl cap,+8) with `break 0,7` (word CD010000) in its delay slot - same idiom as matched snd_GetDopplerPitchMod. Statement order matters: the putPos statement must precede the count statement - only that order flips EGC's allocation to capacity=a3/count=t0 and places the guard right after the three loads (8 variants fuzzed standalone; putPos-first, locals, and spelled-out-count forms all match, count-first or putPos += m before the modulo emits an extra putPos store or the mirror a3/t0 allocation). Verified: decomp-verifier clean build, object 17/17 words, cmp byte-for-byte; count 754->753. See decomp_state/notes/readbuf_readBufEndPut__FP7ReadBufi.md.",
+    "matched_date": "2026-09-07"
   }
 }
