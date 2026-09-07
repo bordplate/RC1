@@ -1428,5 +1428,14 @@
     "size": 44,
     "matched_date": "2026-09-07",
     "note": "Sound-slot callback (fn-ptr registered by sound_update via snd_ FUN_0012e4c0/0x12e448): *c=a; if a==0 also clears c+4 (byte), c+0x18, c+0x1C. Sibling of matched func_0022DD78. Key points: (1) arg is signed int from long b so EGC sign-extends (dsll32+dsra32, not zero-extend); (2) tail is 3 const stores to register base a1 in fixed stmt3;stmt1;stmt2 permutation, so source order must be 0x18,0x1C,4 to emit original 4,0x18,0x1C; (3) char (not u8) for the +4 store to avoid a types.h include. See notes/sound_func_0022DDD8.md."
+  },
+  "code/game/bloaders.cpp:5:LoadDebugFont": {
+    "name": "LoadDebugFont",
+    "source": "code/game/bloaders.cpp",
+    "vram": "0x001E9338",
+    "file_offset": "0xEA2B8",
+    "size": 108,
+    "matched_date": "2026-09-08",
+    "note": "Debug-font load: Load(D_001AABC0, D_00137B80.src, D_00137B80.size); LoadPifAsPSMT8H(D_001AABC0, buf, *(u32*)0x15EE88+0xC0000, 0x3FFC00); *(u64*)0x15EEC8 = *(u64*)buf (buf is a local 0x18 PIF-header buffer). Key codegen fact: D_001AABC0 must be passed as the ADDRESS OF A GLOBAL (extern u8 D_001AABC0[]), not as a constant or a local int holding the constant. A compile-time constant (literal or folded local) is re-materialized as lui/ori into a0 at each use (no s0 save, 0x30 frame, 24 diffs); the symbol address survives CSE as one value live across the first call, so EGC keeps it in s0 (sq/lq + two move a0,s0) exactly like the original. D_00137B80 is a {pad[8], src@8, size@0xC} load descriptor (same pattern as the 0x139078+ table used by Transition_DoTransition's six Load calls). 0x15EE88/0x15EEC8 (in gp window) need constant-cast absolute accesses. buf[0x18] and buf[0x20] both match (locals padded to a 0x20 area). Probe match:true (108/108 bytes), object diff clean modulo 6 pending relocs (2x HI16/LO16 + 2x jal R_MIPS_26), clean build + cmp OK. The 8 bytes at 0x1E93A8 after the epilogue are a dead orphan tail, retained as INCLUDE_ASM and blocked (see notes/bloaders_LoadDebugFont.md)."
   }
 }

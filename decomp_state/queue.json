@@ -549,7 +549,7 @@
     "line": 5,
     "asm": "code/_generated/nonmatchings/game/bloaders/LoadDebugFont.s",
     "name": "LoadDebugFont",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/bloaders.cpp:7:func_001E93A8",

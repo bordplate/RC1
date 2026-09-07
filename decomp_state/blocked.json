@@ -83,5 +83,10 @@
     "status": "blocked",
     "date": "2026-09-07",
     "note": "Guard-load RTL split in EGC 2.95.2: constant-based guard (*(int*)0x15F618) reaches reload as one indivisible mem op, so the scheduler keeps 'sq ra' in the prologue and pulls the epilogue 'lq ra' into the bnez delay slot -> 14 words vs 13 (load form lui v0/lw v0 is otherwise exact). Symbol-based guard (section .lit4 / int[] / struct / static / &-cast) gets the goal schedule (sq in branch ds, no redundant lq, 13 words) but EGC emits the lui ABOVE 'addiu sp' and allocates the value to v1 (lw v1/bnez v1) instead of v0. Plain in-window extern -> single gp-relative lw (12 words). Exhausted: C/C++, -O0/1/3, -fno-schedule-insns{,2}, -mno-split-addresses, -G0, -ffixed-v1, -fforce-addr/-fforce-mem, -frerun-*, regmove/GCSE/peephole/CSE/caller-saves disabled, ~20 source forms. last-resort GPT-5.6 Sol (2026-09-07) confirmed via RTL dumps (high/low ops fixed v0/v1 pre-schedule vs indivisible const mem op) and found no escape; recommended retaining the fallback. See notes/draw_func_001F4248.md."
+  },
+  "code/game/bloaders.cpp:7:func_001E93A8": {
+    "status": "blocked",
+    "date": "2026-09-08",
+    "note": "NOT a function: 4-byte unreachable dead-code tail of LoadDebugFont (addiu sp,sp,0x10 at 0x1E93A8 / file 0xEA328, after the parent's jr ra; <addiu sp,sp,0x40> epilogue, with a 4-byte nop gap at 0x1E93A4). Not a duplicate of the parent's 0x40 deallocation (unlike sibling tails 0x12EC00/0x23ACB0) and not expressible in C: any local accounting for 0x10 changes the parent frame to 0x50, breaking the verified -0x40 prologue and +0x40 epilogue; EGC 2.95.2 emits no dead addiu after jr ra in any tested form. Raw-ELF scan: no jal/j targets 0x1E93A8 (words 0x0C07A4EA/0x0807A4EA absent); Ghidra has no function there. Parent matched 2026-09-08. last-resort GPT-5.6 Sol used: tested the dead volatile-local form (first diff at 0x1E9338, frame -0x50) and confirmed no C form regenerates the tail; recommended retaining the fallback. INCLUDE_ASM retained to supply the 8 bytes; clean build + cmp OK. See notes/bloaders_LoadDebugFont.md."
   }
 }
