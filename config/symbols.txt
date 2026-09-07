@@ -152,6 +152,7 @@ UNK_NoMapAvailable = 0x0205640;
 
 // game/pause.cpp
 PauseAllSounds = 0x00218d78;
+SetPauseActionList = 0x0021a1b0;
 DrawMapScreen = 0x0021be60;
 SoundOptionsMenu = 0x0021cb30;
 LoadHandGadget = 0x00224368;

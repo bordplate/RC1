@@ -1389,5 +1389,14 @@
     "size": 44,
     "note": "Lights both tie light banks: LightTies(D_001E3200); LightTies(D_001E4400); where LightTies (0x237370, tieproc) walks a 0xFFFF-terminated u16 light-index array and sets up VU1 lighting. EGC hoists the first argument's lui above sq ra and puts the addiu lo in the first jal delay slot; second call is plain lui/jal/<addiu>. Default flags, no scheduler override (unlike PutDispBuffer's blocked lui/lw pointer-load body, a constant-address hi/lo arg schedules this way). Probe decomp_state/probes/tiefunc_00235898.cpp all 44 bytes; clean build + cmp byte-for-byte; count 751->750. See decomp_state/notes/tiefunc_func_00235898.md.",
     "matched_date": "2026-09-07"
+  },
+  "code/game/pause.cpp:25:func_0021A1B0": {
+    "name": "SetPauseActionList",
+    "original_name": "func_0021A1B0",
+    "source": "code/game/pause.cpp",
+    "vram": "0x0021A1B0",
+    "size": 44,
+    "matched_date": "2026-09-07",
+    "note": "Sets the pause mode struct's action/entry-table pointer (offset 0x34, consumer func_0021ABF8 walks 12-byte entries: id 0xF2xx + 32-bit param-record pointer) to one of two static tables per boot flag *(int*)0x15EE90 (InitOnce: memcard buffer char != 'N'): !=0 -> D_001D4810 (3 entries), ==0 -> D_001D4840 (2 entries). EGC codegen: int literals compile branchless (movz) so the values must be symbol addresses; writing the condition as '!= 0' (not '== 0') makes EGC emit the original 'beq ==0' polarity with the ==0 case in the delay slot; the flag load needs the constant-address cast for the original lui v0/lw v0,off(v0) base-register form (plain .data symbol gives lui v1 base). See decomp_state/notes/pause_func_0021A1B0.md. Probe v4 matched all 44 bytes; clean build + cmp byte-identical; count 750->749."
   }
 }
