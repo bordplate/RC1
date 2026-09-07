@@ -20,7 +20,33 @@ extern "C" void func_00216990(int a0, long a1) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_002169C0);
+typedef struct {
+    u8 pad_0x54[0x54];
+    s16 field_0x54;
+    s16 field_0x56;
+    s16 field_0x58;
+} MusicTransState;
+
+extern MusicTransState D_001516D0 __attribute__((section(".data")));
+
+extern "C" void func_00215970(int param_1, int param_2, int param_3);
+
+extern "C" void func_002169C0(int param_1, long param_2) {
+    int p = (int)param_2;
+    if (p) {
+        *(int*)p = param_1;
+        if (param_1) {
+            if (*(s16*)(p + 0xA) == 1) {
+                *(s16*)(p + 0xA) = 2;
+            }
+        }
+        else {
+            func_00215970(D_001516D0.field_0x54,
+                          D_001516D0.field_0x58,
+                          D_001516D0.field_0x56);
+        }
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216A20);
 
