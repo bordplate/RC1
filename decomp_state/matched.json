@@ -1340,5 +1340,15 @@
     "size": 40,
     "matched_date": "2026-09-07",
     "note": "Pause update callback (vtable 0x1D2260 = {0x221908, 0x221930}): if (D_0013CB04 & 0x40) D_001D5BF8 = &D_001D22F8; return 0. int return with delay-slot daddu (void gives nop tail); out-of-window plain section-attributed globals reproduce the original lui-a0 condition base, and the symbol form D_001D5BF8=&D_001D22F8 (not the constant 0x1D22F8) reproduces the lui-dst-before-addiu-src store order. All 40 bytes and full boot cmp pass. See notes/pause_func_00221908.md."
+  },
+  "code/game/music.cpp:33:music_Pause__Fi": {
+    "name": "music_Pause__Fi",
+    "source": "code/game/music.cpp",
+    "asm": "code/_generated/nonmatchings/game/music/music_Pause__Fi.s",
+    "vram": "0x00216050",
+    "file_offset": "0x116fd0",
+    "size": 52,
+    "note": "Pauses the SIF music channels: writes the (state, value) s16 pairs of MusicState D_001516D0 (0x40,0x42) and (0x78,0x7A) to (-0x8000,0) unconditionally, plus (0x5C,0x5E) when the int param is nonzero; all 3 callers pass 0. Three findings: (1) fields must be s16, not u16 - storing -0x8000 into u16 emits ori 0x8000 (34028000) but the original has addiu -0x8000 (24028000); (2) EGC 4-independent-constant-store permutation is a pair-swap: source [s1,s2,s3,s4] emits [s3,s4,s1,jr,<bds s2>], so source order 40,42,78,7A reproduces original 78,7A,40,[jr]42 (naive order emitted 40,42,78,[jr]7A); (3) EGC schedules the D_001516D0 hi lui into the beqz branch delay slot (materialized only on the not-taken path) - plain direct-global access reproduces it, no cast/pointer needed. Definition-order pitfall: original .text has Pause (0x216050) BEFORE Unpause (0x216088), so the C def must precede music::Unpause() in the TU - defining it after made parity fail with 61 bytes (swapped functions + 2 wrong jal targets at file 0xFCA6C/0xFE638). Verified: decomp-verifier clean build + cmp byte-identical, object 13 words identical (HI16/LO16 relocs on D_001516D0), music_Unpause re-verified unchanged; count 755->754. See decomp_state/notes/music_music_Pause__Fi.md.",
+    "matched_date": "2026-09-07"
   }
 }

@@ -37,18 +37,30 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/music", music_Transition__Fiiii);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/music", music_Stop__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/music", music_Pause__Fi);
-
 typedef struct MusicState {
     u8 pad0_40[0x40];
-    u16 field_0x40;
-    u8 pad42_5c[0x1A];
-    u16 field_0x5C;
-    u8 pad5e_78[0x1A];
-    u16 field_0x78;
+    s16 field_0x40;
+    s16 field_0x42;
+    u8 pad44_5c[0x18];
+    s16 field_0x5C;
+    s16 field_0x5E;
+    u8 pad60_78[0x18];
+    s16 field_0x78;
+    s16 field_0x7A;
 } MusicState;
 
 extern MusicState D_001516D0 __attribute__((section(".data")));
+
+void music_Pause(int param_1) {
+    if (param_1 != 0) {
+        D_001516D0.field_0x5C = -0x8000;
+        D_001516D0.field_0x5E = 0;
+    }
+    D_001516D0.field_0x40 = -0x8000;
+    D_001516D0.field_0x42 = 0;
+    D_001516D0.field_0x78 = -0x8000;
+    D_001516D0.field_0x7A = 0;
+}
 
 class music {
 public:
