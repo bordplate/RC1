@@ -6197,7 +6197,7 @@
     "line": 37,
     "asm": "code/_generated/nonmatchings/game/sound/func_0022DDD8.s",
     "name": "func_0022DDD8",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/sound.cpp:39:func_0022DE08",
