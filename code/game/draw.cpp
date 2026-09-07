@@ -182,7 +182,36 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F75F0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F7660);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontSetWindow);
+typedef struct FontWindow {
+    short x;
+    short y;
+    short w;
+    short h;
+    short textX;
+    short textY;
+    short maxTextH;
+    short totalH;
+    short lineH;
+    short flags;
+    short offX;
+    short offY;
+} FontWindow;
+
+extern "C" void FontSetWindow(FontWindow *f, short x, short y, short w, short h,
+                              short textX, short textY, short lineH, int flags) {
+    f->x = x;
+    f->y = y;
+    f->w = w;
+    f->h = h;
+    f->textX = textX;
+    f->textY = textY;
+    f->lineH = lineH;
+    f->flags = flags;
+    f->maxTextH = 0;
+    f->totalH = 0;
+    f->offX = 0;
+    f->offY = 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F76A0);
 

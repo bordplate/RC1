@@ -1408,5 +1408,15 @@
     "size": 44,
     "matched_date": "2026-09-07",
     "note": "Pause action-table callback (fn-ptr in tables 0x1D1DD4/0x1D24C4): reloads the object's 0x44 field through func_00225530 and stores it back. Matched as `int* p { p[0x11] = func_00225530(p[0x11]); return 0; }` (0x44==0x11*4) with a forward-declared `extern \"C\" int func_00225530(int);` (its INCLUDE_ASM is later in the same TU). EGC default flags reproduce all 12 words: 0x20 frame, move s0,a0, lw a0,0x44(s0) in the jal delay slot, sw v0,0x44(s0), move v0,zero between the lq ra and lq s0, addiu sp in the jr delay slot. The int callee prototype is required (result consumed by the store). Probe all 44 bytes; clean build + cmp byte-for-byte; count 749->748. See notes/pause_func_0021EAF0.md."
+  },
+  "code/game/draw.cpp:154:FontSetWindow": {
+    "name": "FontSetWindow",
+    "source": "code/game/draw.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw/FontSetWindow.s",
+    "vram": "0x001F7668",
+    "file_offset": "0xF85E8",
+    "size": 56,
+    "matched_date": "2026-09-07",
+    "note": "Font window setter: writes all 12 shorts of the FontWindow struct (x,y,w,h,textX,textY, then maxTextH/totalH/lineH/flags/offX/offY) used by the FontPrintWindow family (0x1F7580/0x1F75F0 -> 0x1F7090: clip setup, word-wrapping, line drawing). 9 params: ptr + 8 shorts, but the 9th (flags) is passed as a 32-bit stack arg (lw, always 7 = flags 1|2|4 at the three call sites 0x1F4C98/0x1FEC04/0x1FDDEC). Matched with default flags; key findings: EGC hoists the stack-arg lw to the first instruction, and the four trailing constant stores follow the right-rotation rule machine=[S4,S1,S2,jr,S3-delay] (source order maxTextH,totalH,offX,offY -> original 0x16;0xC;0xE;jr;0x14). 16-bit params emit lh for the stack load, so flags must be int."
   }
 }

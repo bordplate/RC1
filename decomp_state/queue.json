@@ -1389,7 +1389,7 @@
     "line": 154,
     "asm": "code/_generated/nonmatchings/game/draw/FontSetWindow.s",
     "name": "FontSetWindow",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/draw.cpp:156:func_001F76A0",
