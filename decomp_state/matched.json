@@ -1314,5 +1314,13 @@
     "file_offset": "0x117940",
     "size": 92,
     "note": "Music transition IOP-event callback, registered by the music range handlers (func_00215440 family in music.cpp) via func_0012EC08->func_0012E6E0; the registered address and a pointer to D_001516D0+0x50 are pushed as stack args, so the only xrefs are DATA (pointer stores), no jal. Body: int p=(int)param_2 (param_2 MUST be `long`; dsll32/dsra32 in-place sign-extend then beqz - same recipe as func_00216990); if (p) { *(int*)p = param_1; if (param_1) { if (*(s16*)(p+0xA)==1) *(s16*)(p+0xA)=2; } else { func_00215970(D_001516D0.field_0x54, field_0x58, field_0x56); } }. Codegen keys: (1) the store must be hoisted ABOVE the if(param_1) branch - EGC then lands it in the beqz-a0 delay slot (executes on both paths, storing 0 on the call path, matching the original); with the store inside the if body EGC puts li v0,1 in that slot and delays the sw to the bne slot (3-word schedule mismatch). (2) The D_001516D0+0x54/56/58 fields must be s16 (emits lh); u16 emits lhu. (3) Local struct MusicTransState {u8 pad[0x54]; s16 f54,f56,f58;} with the fields at exact offsets keeps all three call-arg loads as direct base+offset (lh a2,0x56; lh a0,0x54; jal; lh a1,0x58 delay). Epilogue lq ra is auto-duplicated (bne delay slot + merge) with no C trick. Object 23/23 words and full-ELF cmp verified (decomp-verifier, 2026-09-07). See notes/stream_func_002169C0.md."
+  },
+  "code/game/memcard.cpp:19:memcard_Init": {
+    "name": "memcard_Init",
+    "source": "code/game/memcard.cpp",
+    "vram": "0x0020AC58",
+    "size": 48,
+    "matched_date": "2026-09-07",
+    "note": "Calls SCE-lib func_001233F0 (IOP memcard-lib init RPC) and, on nonzero return, prints the rodata string at D_001E8360 ('ERROR: could not init memcard lib') via STUB_printf. Unmangled original symbol, so the definition is extern \"C\" in memcard.cpp (siblings like memcard_Save__Fii stay C++-mangled). 0x10 frame with sq/lq ra; beqz v0 puts lq ra in its delay slot and the fall-through reloads ra before the shared jr epilogue (same shape as func_002169C0). Caller FUN_00201650 ignores the return value, so void. All 48 bytes match with default flags on the first probe (decomp_state/probes/memcard_init.cpp); clean full boot parity passes. See notes/memcard_memcard_Init.md."
   }
 }
