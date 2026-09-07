@@ -1379,5 +1379,15 @@
     "size": 56,
     "note": "Save-block size walker over 16-byte record headers ({header,size,...}, 0-terminated): total starts at 8, each record adds 8 + record size, and the (total+3) & -4 4-byte re-alignment happens EVERY iteration - the `and` lives in the bnez delay slot, so rounding is per-pass, not once after the loop (Ghidra's `+ 0xb & 0xfffffffc` is the right model). The -4 mask is hoisted once into $6 before the loop; +3 is materialized into v0 per iteration. Matched with body split as `size += 8; size += data[1]; size = (size + 3) & -4; data += 4;` - a single folded expression (v2) keeps the accumulator in the wrong register, and rounding once after the loop (v1) makes EGC split the mask into li/ori and change the body size. Probe decomp_state/probes/memcard_GetDataSize.cpp all 56 bytes; clean build + cmp byte-for-byte; count 752->751. See decomp_state/notes/memcard_GetDataSize.md.",
     "matched_date": "2026-09-07"
+  },
+  "code/game/tiefunc.cpp:9:func_00235898": {
+    "name": "func_00235898",
+    "source": "code/game/tiefunc.cpp",
+    "asm": "code/_generated/nonmatchings/game/tiefunc/func_00235898.s",
+    "vram": "0x00235898",
+    "file_offset": "0x136818",
+    "size": 44,
+    "note": "Lights both tie light banks: LightTies(D_001E3200); LightTies(D_001E4400); where LightTies (0x237370, tieproc) walks a 0xFFFF-terminated u16 light-index array and sets up VU1 lighting. EGC hoists the first argument's lui above sq ra and puts the addiu lo in the first jal delay slot; second call is plain lui/jal/<addiu>. Default flags, no scheduler override (unlike PutDispBuffer's blocked lui/lw pointer-load body, a constant-address hi/lo arg schedules this way). Probe decomp_state/probes/tiefunc_00235898.cpp all 44 bytes; clean build + cmp byte-for-byte; count 751->750. See decomp_state/notes/tiefunc_func_00235898.md.",
+    "matched_date": "2026-09-07"
   }
 }
