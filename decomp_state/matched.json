@@ -1398,5 +1398,15 @@
     "size": 44,
     "matched_date": "2026-09-07",
     "note": "Sets the pause mode struct's action/entry-table pointer (offset 0x34, consumer func_0021ABF8 walks 12-byte entries: id 0xF2xx + 32-bit param-record pointer) to one of two static tables per boot flag *(int*)0x15EE90 (InitOnce: memcard buffer char != 'N'): !=0 -> D_001D4810 (3 entries), ==0 -> D_001D4840 (2 entries). EGC codegen: int literals compile branchless (movz) so the values must be symbol addresses; writing the condition as '!= 0' (not '== 0') makes EGC emit the original 'beq ==0' polarity with the ==0 case in the delay slot; the flag load needs the constant-address cast for the original lui v0/lw v0,off(v0) base-register form (plain .data symbol gives lui v1 base). See decomp_state/notes/pause_func_0021A1B0.md. Probe v4 matched all 44 bytes; clean build + cmp byte-identical; count 750->749."
+  },
+  "code/game/pause.cpp:157:func_0021EAF0": {
+    "name": "func_0021EAF0",
+    "source": "code/game/pause.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause/func_0021EAF0.s",
+    "vram": "0x0021EAF0",
+    "file_offset": "0x11FA70",
+    "size": 44,
+    "matched_date": "2026-09-07",
+    "note": "Pause action-table callback (fn-ptr in tables 0x1D1DD4/0x1D24C4): reloads the object's 0x44 field through func_00225530 and stores it back. Matched as `int* p { p[0x11] = func_00225530(p[0x11]); return 0; }` (0x44==0x11*4) with a forward-declared `extern \"C\" int func_00225530(int);` (its INCLUDE_ASM is later in the same TU). EGC default flags reproduce all 12 words: 0x20 frame, move s0,a0, lw a0,0x44(s0) in the jal delay slot, sw v0,0x44(s0), move v0,zero between the lq ra and lq s0, addiu sp in the jr delay slot. The int callee prototype is required (result consumed by the store). Probe all 44 bytes; clean build + cmp byte-for-byte; count 749->748. See notes/pause_func_0021EAF0.md."
   }
 }

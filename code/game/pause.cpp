@@ -152,7 +152,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", DrawQuitGameMenu);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021EA48);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_0021EAF0);
+extern "C" int func_00225530(int);
+
+extern "C" int func_0021EAF0(int* p) {
+    p[0x11] = func_00225530(p[0x11]);
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", DrawItemsMenu);
 
