@@ -1322,5 +1322,15 @@
     "size": 48,
     "matched_date": "2026-09-07",
     "note": "Calls SCE-lib func_001233F0 (IOP memcard-lib init RPC) and, on nonzero return, prints the rodata string at D_001E8360 ('ERROR: could not init memcard lib') via STUB_printf. Unmangled original symbol, so the definition is extern \"C\" in memcard.cpp (siblings like memcard_Save__Fii stay C++-mangled). 0x10 frame with sq/lq ra; beqz v0 puts lq ra in its delay slot and the fall-through reloads ra before the shared jr epilogue (same shape as func_002169C0). Caller FUN_00201650 ignores the return value, so void. All 48 bytes match with default flags on the first probe (decomp_state/probes/memcard_init.cpp); clean full boot parity passes. See notes/memcard_memcard_Init.md."
+  },
+  "code/game/draw.cpp:36:UpdateOcclusion__Fv": {
+    "name": "UpdateOcclusion__Fv",
+    "source": "code/game/draw.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw/UpdateOcclusion__Fv.s",
+    "vram": "0x001F2C10",
+    "file_offset": "0xF3B90",
+    "size": 80,
+    "matched_date": "2026-09-07",
+    "note": "Occlusion dispatcher on global OcclUpdate (0x18C334): 0->FastMemSet(OcclVisibility@0x193FC0,-1,0x80); 2->BuildOcclVisibility; else nothing. void. KEY: only SYMBOL-based access (extern int OcclUpdate / extern char OcclVisibility[] with __attribute__((section(\".data\")))) reproduces the original schedule (load base in v0 separate from v1 value, sq ra deferred into the bnez delay slot, li v0,2 deferred to else block, lui hoisted before addiu sp). Constant-address casts stuck EGC on v1 base + addiu/sq up front + li v0,2 in the bnez delay slot; no C restructuring flipped it. See decomp_state/notes/draw_UpdateOcclusion__Fv.md."
   }
 }

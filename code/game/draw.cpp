@@ -33,7 +33,18 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", GetOcclGridFromPair__Fiiii
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", BuildOcclVisibility__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", UpdateOcclusion__Fv);
+void BuildOcclVisibility(void);
+
+extern "C" int OcclUpdate __attribute__((section(".data")));
+extern "C" char OcclVisibility[] __attribute__((section(".data")));
+
+void UpdateOcclusion() {
+    if (OcclUpdate == 0) {
+        FastMemSet(OcclVisibility, -1, 0x80);
+    } else if (OcclUpdate == 2) {
+        BuildOcclVisibility();
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", InitViewContext__Fv);
 
