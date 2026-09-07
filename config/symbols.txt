@@ -532,3 +532,6 @@ PatchTieGifs = 0x0235780;
 BuildTieTextureDma = 0x02370c0;
 TieProc = 0x235be8;
 LightTies = 0x0237370;
+
+// vendor
+setupViewContext = 0x00239750;

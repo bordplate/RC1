@@ -22,7 +22,15 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/vendor", func_00239328);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vendor", func_00239690);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/vendor", func_00239750);
+void PutDrawBufferLarge();
+void InitViewContext();
+void UpdateViewContext();
+
+extern "C" void setupViewContext(void) {
+    PutDrawBufferLarge();
+    InitViewContext();
+    UpdateViewContext();
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vendor", func_00239780);
 

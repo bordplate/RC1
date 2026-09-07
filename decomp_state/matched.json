@@ -1360,5 +1360,14 @@
     "size": 68,
     "note": "Ring-buffer 'commit n bytes written' accessor: m = min(n, capacity-count) via signed slt/movn; putPos = (putPos+m) % capacity via signed div+mfhi; count += m. Two key facts: (1) ReadBuf fields putPos/capacity were u32 in our struct but the original codegen is SIGNED (slt + div, not sltu/divu), so the struct fields were switched to int - codegen-invisible for the already-matched siblings (readBufCreate/BeginPut/EndGet re-verified byte-identical); (2) EGC emits a div-by-zero debug guard as a degenerate no-op branch on the divisor (beqzl cap,+8) with `break 0,7` (word CD010000) in its delay slot - same idiom as matched snd_GetDopplerPitchMod. Statement order matters: the putPos statement must precede the count statement - only that order flips EGC's allocation to capacity=a3/count=t0 and places the guard right after the three loads (8 variants fuzzed standalone; putPos-first, locals, and spelled-out-count forms all match, count-first or putPos += m before the modulo emits an extra putPos store or the mirror a3/t0 allocation). Verified: decomp-verifier clean build, object 17/17 words, cmp byte-for-byte; count 754->753. See decomp_state/notes/readbuf_readBufEndPut__FP7ReadBufi.md.",
     "matched_date": "2026-09-07"
+  },
+  "code/game/vendor.cpp:25:func_00239750": {
+    "name": "setupViewContext",
+    "original_name": "func_00239750",
+    "source": "code/game/vendor.cpp",
+    "vram": "0x00239750",
+    "size": 44,
+    "matched_date": "2026-09-07",
+    "note": "Byte-identical clone of already-matched func_001F7978 (code/game/draw.cpp): PutDrawBufferLarge(); InitViewContext(); UpdateViewContext(); - re-initializes the GTE draw buffer + view context between the two VU-microcode draw phases of the vendor scene (caller func_00239780 loads VU program 0x1FB740 on both sides). 12 instruction words verified identical to func_001F7978's; standalone probe (decomp_state/probes/vendor_00239750.cpp) matched all 44 bytes with default flags. Renamed to setupViewContext (added to config/symbols.txt; re-ran split so func_00239780's generated jal references the new name). Clean build + cmp byte-identical; count 753->752."
   }
 }
