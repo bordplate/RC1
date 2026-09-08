@@ -158,7 +158,9 @@ segments:
     - [0x118048, cpp, game/pad]
     - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
     - [0x119808, cpp, game/partupd]
-    - [0x119c90, cpp, game/pause] 
+    - [0x119c90, cpp, game/pause]
+    - [0x119ee8, cpp, game/pause_sched]
+    - [0x119f18, cpp, game/pause_post]
     - [0x1286c0, asm, game/shadowproc]
     - [0x129870, cpp, game/shrubfunc]
     - [0x129b68, asm, game/shrubproc]
