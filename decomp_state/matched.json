@@ -1465,5 +1465,13 @@
     "size": 48,
     "matched_date": "2026-09-08",
     "note": "Single-call wrapper: self->f48 = func_00225CD8(self->f48); return 0; 0x20 frame saving ra@0x10/s0@0x0, s0=self, arg lw hoisted into jal delay slot, return stored back to same field, int return 0. All 12 words match; full boot parity passes. See notes/pause_func_00222F58.md."
+  },
+  "code/989snd/ee/989snd.c:141:snd_PostMessage": {
+    "matched_date": "2026-09-08",
+    "name": "snd_PostMessage",
+    "note": "p = snd_batchCommandBuffers[snd_batchIndex]; (*p)++; snd_FlushSoundCommands(); Increments the active batch command count (buffer ptr 0x15ECA0, idx 0x15ECC0) then flushes the IOP queue. Matching form needs all data work before the call (0x10 frame, ra only, sw v0,0(a0) in jal delay slot); explicit-v form grows frame to 0x30 saving $16/$17. Default flags. See notes/989snd_snd_PostMessage.md.",
+    "size": 56,
+    "source": "code/989snd/ee/989snd.c",
+    "vram": "0x0012E9A0"
   }
 }

@@ -127,8 +127,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SendIOPCommandA
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SendIOPCommandNoWait);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_PostMessage);
-
 extern void FlushCache(int);
 extern int D_00153D20 __attribute__((section(".data")));
 extern int D_0015EBC0 __attribute__((section(".data")));
@@ -139,6 +137,12 @@ extern int snd_batchIndex;
 extern int sceSifCheckStatRpc(void*);
 extern void func_00116078(void*);
 extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);
+
+void snd_PostMessage(void) {
+    int* p = snd_batchCommandBuffers[snd_batchIndex];
+    (*p)++;
+    snd_FlushSoundCommands();
+}
 
 void snd_SendCurrentBatch(void) {
     int next;
