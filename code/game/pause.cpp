@@ -277,7 +277,17 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00222D98);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00222F18);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause", func_00222F58);
+extern "C" int func_00225CD8(int param_1);
+
+typedef struct {
+    int pad[18];
+    int f48;
+} PauseCallback;
+
+extern "C" int func_00222F58(PauseCallback *self) {
+    self->f48 = func_00225CD8(self->f48);
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause", SavingDataMenu);
 

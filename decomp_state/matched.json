@@ -1457,5 +1457,13 @@
     "size": 92,
     "matched_date": "2026-09-08",
     "note": "Two FastMemCopy calls + pointer store. Two codegen requirements: (1) the 0x1870C0 load must be a GLOBAL load declared `extern u32 curCam __attribute__((section(\".data\")))` \u2014 EGC then uses a SEPARATE base register (v0) and hoists the lui to the second prologue slot, matching the original; a constant-cast load binds base=dest (a1) and fails 7 prologue words, a plain extern u32* without section hits R_MIPS_GPREL16. (2) The buffers must be LOCAL pointers (u8 *dst = backupCam; u8 *p = backupCamData;) so EGC keeps dst in s1 / p in s0 across both calls and emits `addiu a1, s0, -0x500` in the second delay slot; inline array expressions swap the s-registers and fold the -0x500 into an independent lui/addiu. See decomp_state/notes/camera_BackupCurrentCam.md"
+  },
+  "code/game/pause.cpp:287:func_00222F58": {
+    "name": "func_00222F58",
+    "source": "code/game/pause.cpp",
+    "vram": "0x00222F58",
+    "size": 48,
+    "matched_date": "2026-09-08",
+    "note": "Single-call wrapper: self->f48 = func_00225CD8(self->f48); return 0; 0x20 frame saving ra@0x10/s0@0x0, s0=self, arg lw hoisted into jal delay slot, return stored back to same field, int return 0. All 12 words match; full boot parity passes. See notes/pause_func_00222F58.md."
   }
 }
