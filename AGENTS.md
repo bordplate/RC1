@@ -34,6 +34,14 @@ big-endian hex string, i.e. the little-endian instruction word reversed. A
 standard `jr $ra` (word 0x03E00008, stored LE as `08 00 E0 03`) shows up as
 `0800E003`. Read those fields back as LE (or just objdump the object / read
 raw ELF bytes) before diffing instruction words.
+
+Splat misdecode quirk (verified 2026-09-08): Splat's disassembler prints
+`daddu $2, $0, $0` for the instruction word 0x0000102D, which is actually
+`move v0,zero` (or v0,zero,$0). So every "daddu $2,$0,$0" in generated `.s`
+files is a zero-move, not a daddu (all 313 occurrences in the boot ELF). The
+EGC `return 0;` / `int x = 0;` idiom is this move encoding; objdump of
+`assets/boot_elf.elf` is ground truth whenever Splat's mnemonic and the hex
+field disagree (see decomp_state/notes/memcard_TestChecksum.md).
 - Compiler output and object/assembly diffs judge candidate quality.
 
 Ghidra Gp-name pitfall (verified 2026-09-05): Ghidra names gp-relative data
@@ -171,8 +179,8 @@ constant stores sharing a REGISTER base (e.g. `sw zero,off(a0)`), not just a
 %hi/%lo global base. Source order `f40, f50, f3c` reproduces an original tail
 `sw 0x3c; sw 0x40; jr $ra; <sw 0x50>`; natural order `f3c, f40, f50` instead
 emits `0x50, 0x3c, jr, <0x40>` (wrong). The `return 0;` still hoists
-`daddu $v0,$0,$0` above the stores (see
-decomp_state/notes/pause_func_002223D8.md).
+`move v0,zero` (0x0000102D; Splat misdecodes it as `daddu $v0,$0,$0`)
+above the stores (see decomp_state/notes/pause_func_002223D8.md).
 
 Observation observed 2026-09-04 (single-call wrappers): a zero-arg C function
 whose only statement is a call passing literal 0 (`callee(0);`) compiles to a

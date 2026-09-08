@@ -1473,5 +1473,13 @@
     "size": 56,
     "source": "code/989snd/ee/989snd.c",
     "vram": "0x0012E9A0"
+  },
+  "code/game/memcard.cpp:39:memcard_TestChecksum": {
+    "name": "memcard_TestChecksum",
+    "source": "code/game/memcard.cpp",
+    "vram": "0x0020AD38",
+    "size": 60,
+    "matched_date": "2026-09-08",
+    "note": "Save-record CRC check: data={len,crc,payload}; returns (data[1]!=0 && memcard_Checksum(data+2,data[0])==data[1]). Crux: hoist 'int len = data[0];' BEFORE the if so the len load takes the beqz delay slot and the b=0 move hoists above the prologue saves; with the len load inside the if EGC emits a stable 5-word diff across ~40 tested forms and all scheduler-flag combos. Found by last-resort GPT-5.6 Sol. Also documented: Splat misdecodes 0x0000102D (move v0,zero) as 'daddu $2,$0,$0' in its mnemonics. Default flags; decomp_probe match:true, full boot parity byte-for-byte. See notes/memcard_TestChecksum.md."
   }
 }

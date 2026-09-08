@@ -34,7 +34,16 @@ extern "C" int memcard_GetDataSize(int* data) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_Checksum);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_TestChecksum);
+extern "C" int memcard_Checksum(int* data, int len);
+
+extern "C" int memcard_TestChecksum(int* data) {
+    int stored_crc = data[1];
+    int result = 0;
+    int len = data[0];
+    if (stored_crc != 0)
+        result = memcard_Checksum(data + 2, len) == stored_crc;
+    return result;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_PrepData);
 
