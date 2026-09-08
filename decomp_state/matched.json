@@ -1489,5 +1489,15 @@
   "size": 44,
   "matched_date": "2026-09-08",
   "note": "Pause-screen entry state writer: f0=0x2D, f110=0, GameMode(0x15F604)=3, fC=0, f10=0 (D_001D5BF0, 0x114-byte struct, absolute HI16/LO16). Needs -fno-schedule-insns (source-order stores; default hoists GameMode to pos 2) plus register bindings base->asm(\"$3\") (forces base_hi into $a0) and mode->asm(\"$5\") (GM via $at). pause.o can't take the flag (breaks func_0021A318 + func@0x2223D8), so the pause Splat segment was split into pause/pause_sched/pause_post at 0x119ee8/0x119f18; pause_sched.o gets the flag. probe 44/44, full clean build + cmp identical, count 740->739. See notes/pause_func_00218F68.md."
+ },
+ "code/game/pause_post.cpp:97:func_0021CB00": {
+  "name": "func_0021CB00",
+  "source": "code/game/pause_post.cpp",
+  "asm": "code/_generated/nonmatchings/game/pause_post/func_0021CB00.s",
+  "vram": "0x0021CB00",
+  "file_offset": "0x11DA80",
+  "size": 48,
+  "matched_date": "2026-09-08",
+  "note": "Stores D_0015EDF0*8/10 to D_0013E5A0 and returns zero. A constant-address input load is required for the original self-based v1 lui/lw and scheduling; the output is symbolic .data for matching HI16/LO16 relocations. All 48 bytes and the full clean boot ELF match. See notes/pause_func_0021CB00.md."
  }
 }

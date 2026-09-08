@@ -92,7 +92,12 @@ extern "C" int func_0021CAE0(void) {
     return 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021CB00);
+extern "C" int D_0013E5A0 __attribute__((section(".data")));
+
+extern "C" int func_0021CB00(void) {
+    D_0013E5A0 = *(int*)0x15EDF0 * 8 / 10;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", SoundOptionsMenu);
 
@@ -380,4 +385,3 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_002271D0);
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00227378);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00227548);
-
