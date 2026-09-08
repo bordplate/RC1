@@ -1437,5 +1437,15 @@
     "size": 108,
     "matched_date": "2026-09-08",
     "note": "Debug-font load: Load(D_001AABC0, D_00137B80.src, D_00137B80.size); LoadPifAsPSMT8H(D_001AABC0, buf, *(u32*)0x15EE88+0xC0000, 0x3FFC00); *(u64*)0x15EEC8 = *(u64*)buf (buf is a local 0x18 PIF-header buffer). Key codegen fact: D_001AABC0 must be passed as the ADDRESS OF A GLOBAL (extern u8 D_001AABC0[]), not as a constant or a local int holding the constant. A compile-time constant (literal or folded local) is re-materialized as lui/ori into a0 at each use (no s0 save, 0x30 frame, 24 diffs); the symbol address survives CSE as one value live across the first call, so EGC keeps it in s0 (sq/lq + two move a0,s0) exactly like the original. D_00137B80 is a {pad[8], src@8, size@0xC} load descriptor (same pattern as the 0x139078+ table used by Transition_DoTransition's six Load calls). 0x15EE88/0x15EEC8 (in gp window) need constant-cast absolute accesses. buf[0x18] and buf[0x20] both match (locals padded to a 0x20 area). Probe match:true (108/108 bytes), object diff clean modulo 6 pending relocs (2x HI16/LO16 + 2x jal R_MIPS_26), clean build + cmp OK. The 8 bytes at 0x1E93A8 after the epilogue are a dead orphan tail, retained as INCLUDE_ASM and blocked (see notes/bloaders_LoadDebugFont.md)."
+  },
+  "code/game/movie/videodec.cpp:42:videoDecEndPut__FP8VideoDec": {
+    "name": "videoDecEndPut__FP8VideoDec",
+    "source": "code/game/movie/videodec.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/videodec/videoDecEndPut__FP8VideoDec.s",
+    "vram": "0x0023CC10",
+    "file_offset": "0x13DB90",
+    "size": 28,
+    "matched_date": "2026-09-08",
+    "note": "Single-call wrapper: viBufEndPut(&self->vibuf) with NO a1 setup. The 2-arg callee consumes a1 (ipuBp/field_0x48 += count) but both callers (videoCallback 0x23B6F8, videoDecFlush 0x23CDA8) load a1 themselves right before the jal, so the count crosses the boundary implicitly. Reproduced with a 1-param declaration carrying an asm label: `void viBufEndPut(ViBuf*) asm(\"viBufEndPut__FP5ViBufi\");` + 1-arg call \u2014 EGC hoists addiu a0,a0,0x48 into the jal delay slot, 7 words exact. 2-arg call forms materialize a1 (8 words, no match). Supersedes the 2026-09-05 blocker that claimed no C++ form exists."
   }
 }

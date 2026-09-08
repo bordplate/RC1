@@ -12,6 +12,8 @@ int viBufCount(ViBuf* buf);
 
 int viBufBeginPut(ViBuf* buf, u8** data, int* size, u8** data2, int* size2);
 
+void viBufEndPut(ViBuf* buf) asm("viBufEndPut__FP5ViBufi");
+
 struct sceMpeg;
 struct sceMpegCbData;
 struct sceMpegCbDataError;
@@ -37,7 +39,9 @@ int videoDecBeginPut(VideoDec* self, u8** data, int* size, u8** data2, int* size
     return viBufBeginPut(&self->vibuf, data, size, data2, size2);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecEndPut__FP8VideoDec);
+void videoDecEndPut(VideoDec* self) {
+    viBufEndPut(&self->vibuf);
+}
 
 void videoDecReset(VideoDec* self) {
     self->state = 0;
