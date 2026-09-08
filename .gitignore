@@ -1,7 +1,6 @@
 .venv/
 ee-gcc2.95.2-SN-v2.73a.tar.gz
 tools/cc/
-.opencode/node_modules/
 
 assets/
 disc/
