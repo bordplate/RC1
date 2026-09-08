@@ -496,6 +496,8 @@ message such as `decomp: match FunctionName`. If parity or the function-level
 diff fails, do not commit; record the concrete blocker and continue without
 claiming the function is matched.
 
+Push `main` to `origin` when you've committed.
+
 ## Mobile Status Notification
 
 After each finished function attempt — matched, blocked, or bailed on — send

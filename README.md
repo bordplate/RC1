@@ -1,4 +1,8 @@
 # Ratchet & Clank 1 decompilation
+
+> [!NOTE]
+> Most/all of the recent changes are automated AI slop. 
+
 > [!CAUTION]
 > **This project does not have active developers or maintainers.** It is provided as an initial project structure for someone wanting to pick up RC1 decompilation. The project is currently mostly empty, but builds a byte-for-byte matching binary. 
 
