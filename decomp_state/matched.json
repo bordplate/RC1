@@ -1447,5 +1447,15 @@
     "size": 28,
     "matched_date": "2026-09-08",
     "note": "Single-call wrapper: viBufEndPut(&self->vibuf) with NO a1 setup. The 2-arg callee consumes a1 (ipuBp/field_0x48 += count) but both callers (videoCallback 0x23B6F8, videoDecFlush 0x23CDA8) load a1 themselves right before the jal, so the count crosses the boundary implicitly. Reproduced with a 1-param declaration carrying an asm label: `void viBufEndPut(ViBuf*) asm(\"viBufEndPut__FP5ViBufi\");` + 1-arg call \u2014 EGC hoists addiu a0,a0,0x48 into the jal delay slot, 7 words exact. 2-arg call forms materialize a1 (8 words, no match). Supersedes the 2026-09-05 blocker that claimed no C++ form exists."
+  },
+  "code/game/camera.cpp:3:BackupCurrentCam": {
+    "name": "BackupCurrentCam",
+    "source": "code/game/camera.cpp",
+    "asm": "code/_generated/nonmatchings/game/camera/BackupCurrentCam.s",
+    "vram": "0x001EBC90",
+    "file_offset": "0xECC10",
+    "size": 92,
+    "matched_date": "2026-09-08",
+    "note": "Two FastMemCopy calls + pointer store. Two codegen requirements: (1) the 0x1870C0 load must be a GLOBAL load declared `extern u32 curCam __attribute__((section(\".data\")))` \u2014 EGC then uses a SEPARATE base register (v0) and hoists the lui to the second prologue slot, matching the original; a constant-cast load binds base=dest (a1) and fails 7 prologue words, a plain extern u32* without section hits R_MIPS_GPREL16. (2) The buffers must be LOCAL pointers (u8 *dst = backupCam; u8 *p = backupCamData;) so EGC keeps dst in s1 / p in s0 across both calls and emits `addiu a1, s0, -0x500` in the second delay slot; inline array expressions swap the s-registers and fold the -0x500 into an independent lui/addiu. See decomp_state/notes/camera_BackupCurrentCam.md"
   }
 }

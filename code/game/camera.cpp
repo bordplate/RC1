@@ -1,6 +1,17 @@
 #include "common.h"
+#include "types.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", BackupCurrentCam);
+extern u8 backupCam[];
+extern u8 backupCamData[];
+extern u32 curCam __attribute__((section(".data")));
+
+extern "C" void BackupCurrentCam(void) {
+    u8 *dst = backupCam;
+    FastMemCopy(dst, (void*)curCam, 0xA0);
+    u8 *p = backupCamData;
+    FastMemCopy(p, p - 0x500, 0x280);
+    *(void**)(dst + 0x70) = p;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", ExecuteCamPostUpdFuncs);
 

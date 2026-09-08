@@ -108,6 +108,9 @@ ExecuteCamPostUpdFuncs = 0x01ebcf0;
 CamPostUpdRoutineCnt = 0x015ef8c;
 CamPostUpdRoutines = 0x01892b0;
 BackupCurrentCam = 0x01ebc90;
+curCam = 0x1870c0;
+backupCam = 0x189210;
+backupCamData = 0x1898d0;
 
 frm_vsync_cnt = 0x15ed48;
 frm_clock_time = 0x15ed40;
