@@ -1,101 +1,108 @@
 {
- "code/game/movie/movie.cpp:11:isAudioOK": {
-  "status": "blocked",
-  "date": "2026-09-08",
-  "vram": "0x0023A790",
-  "size": 44,
-  "note": "return audioDecIsPageFull((AudioDec*)((u8*)(base at 0x16120C) + 0xD9100)); base=*(int*)0x16120C. Original hoists the load pair (lui v0; lw v0,off(v0) self-overwrite, value in v0) AND the const-hi (lui a0) BEFORE the prologue, then ori a0 + sq ra after. EGC 2.95.2 ties the two needed properties to mutually-exclusive address kinds: the self-overwriting v0 load + `addu a0,v0,a0` comes ONLY from a CONSTANT-cast address (never hoisted; prologue always first, load last), while pre-prologue hoisting comes ONLY from a SYMBOL address (section .data), which forces the base reg stable across the HI16/LO16 reloc pair so the value lands in v1 and the const-hi interleaves before the lw. Plain in-window extern -> single GPREL lw (wrong). ~20 forms + flags (-fno-schedule-insns/2, -G0, both) + `register int base asm(\"$2\")` (matches words 4..11 exactly; 3-word prefix still v1-base + interleaved) all fail the prefix. last-resort GPT-5.6 Sol used: high confidence no ordinary form/flag emits the exact schedule. Same blocker as videodec_func_0023D0E0 and VU1_addDataRef (load-first + split prologue). proceedAudio__Fv (0x23ABA0) is a byte-identical twin (only jal target differs) and is blocked by the same issue. INCLUDE_ASM retained. See decomp_state/notes/movie_isAudioOK.md."
- },
- "code/game/movie/videodec.cpp:41:func_0023D0E0": {
-  "status": "blocked",
-  "date": "2026-09-04",
-  "note": "mpeg callback viBufStopDMA((ViBuf*)((u32)*(u32*)0x16120C+0xD9090));return 1;. EGC v2.73a post-reload reorder pass places the constant-address load at its last use (after the prologue sq ra) and adds conservative memory dep load->sq, pinning the load last; original schedules load FIRST with prologue split around the const pair. ~15 C formulations + flag variants all give the same wrong order. See decomp_state/notes/videodec_func_0023D0E0.md (twin func_0023D110 same blocker)."
- },
- "code/game/help.cpp:12:func_001FDD50": {
-  "status": "blocked",
-  "date": "2026-09-05",
-  "note": "NOT a function: 4-byte unreachable dead-code tail of msg_string__Fi (EGC 2.95.2 artifact). The instruction 'sh zero, 0x38(v0)' at 0x1FDD50 sits after msg_string's 'jr ra; addiu sp' epilogue; verified unreachable (no jal/j references anywhere in the binary, jumptable jtbl_001E7A20 entries checked, Ghidra has no function at this address). No C function can compile to a bare store + nop with no return, and the true C form of msg_string that regenerates it (an extra store before the return that EGC schedules dead after the jr) was not found: the matched early-return form of msg_string__Fi emits no dead bytes, and local-variable forms miscompile the body (bltz/move). Its INCLUDE_ASM is retained deliberately to supply the 8 bytes (sh + nop) so the full ELF stays byte-for-byte. Generalization: ~46 similar 4-byte 'functions' across the binary (addiu sp / sw / sh / lw / daddu + nop) are dead tails of the preceding function — see decomp_state/notes/help_msg_string__Fi.md."
- },
- "code/game/vuchain.cpp:15:VU1_addDataRef__FPvi": {
-  "correction": "2026-09-06 deeper retest: SYMBOLIC .data loads with -mno-split-addresses match the first 68 bytes exactly; only absolute-vs-GP final store remains (84 vs 76 bytes). Historical impossibility claim is false. See probes/vuchain_symbol.cpp and notes/vuchain_VU1_addDataRef__FPvi.md. Orphan retained.",
-  "status": "blocked",
-  "date": "2026-09-05",
-  "note": "Self-based non-hoisted head-pointer loads (lui r,0x16; lw r,3840(r) re-materialized 5x, target==base reg) + GPREL final stores (D_00160F00 delay-slot, D_00162C20 dead tail). Local EGC 2.95.2 (-O1 and -O2, -G8) always HOISTS the reused constant/symbol address into a dedicated base reg (lui+ori full constant, or lui a2 + lw X,0(a2)); it never emits the 2-instr self-based re-materialized form. Tried: plain int (GPREL 1-instr), constant (int)*(int*)0x160F00 (hoisted lui+ori), section(.data) int (hoisted base a2), struct field (hoisted base). C structure that matches regs/offsets/stores found (recompute-per-statement form) but its loads come out hoisted. EGC version/flag difference; byte match not achievable with current toolchain. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
- },
- "code/game/vuchain.cpp:17:func_00233880": {
-  "status": "blocked",
-  "date": "2026-09-05",
-  "note": "NOT a function: 4-byte unreachable dead-code tail of VU1_addDataRef__FPvi (sw v0,-16352(gp)=D_00162C20 at 0x233880, write-only global). Blocked together with its parent VU1_addDataRef__FPvi, which is itself blocked (self-based non-hoisted load pattern not reproducible by local EGC). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
- },
- "code/989snd/ee/989snd.c:93:func_0012EC00": {
-  "status": "blocked",
-  "date": "2026-09-05",
-  "note": "NOT a function: 4-byte unreachable dead-code tail of snd_StopAllStreams (addiu sp,sp,0x10 at 0x12EC00 / file 0x2FB80, right after the parent's jr ra; <addiu sp,sp,0x10> epilogue; parent frame is 0x10 so this is a dead duplicate deallocate). Local EGC 2.95.2 v2.73a never emits a dead addiu sp,sp,N (only dead stores; /tmp/opencode/tail_exp t1-t10). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/989snd_snd_StopAllStreams.md."
- },
- "code/game/framebuf.cpp:16:PutDispBuffer__Fv": {
-  "correction": "2026-09-06: function length is 36 bytes (40 includes padding). Free C++ void PutDispBuffer(void) mangles correctly without a class or asm label. -fno-schedule-insns2 and -fargument-noalias-global still fail prologue ordering. See notes/compiler_retests_2026_09_06.md.",
-  "name": "PutDispBuffer__Fv",
-  "source": "code/game/framebuf.cpp",
-  "asm": "code/_generated/nonmatchings/game/framebuf/PutDispBuffer__Fv.s",
-  "vram": "0x001FB2A8",
-  "file_offset": "0xFC228",
-  "size": 40,
-  "note": "C form identified and verified at the instruction level EXCEPT one prologue-scheduling difference. Body is func_00121E40(*(void**)0x15EEB8) - func_00121E40 is an alabel (real linkable symbol) in code/_generated/sce/lib.s, D_0015EEB8 is a writable pointer in section .lit4. Using the constant-cast idiom (*(void**)0x15EEB8, NOT the named symbol) makes EGC emit the correct 'lui a0,%hi; lw a0,%lo(a0)' base-register form (named symbol gives 'lui v0; lw a0,0(v0)' - wrong base reg). BUT the original order is: addiu sp; lui a0; lw a0; sq ra,0(sp); jal; nop; lq; jr; addiu - i.e. the argument lui/lw are scheduled BEFORE the ra save. EGC 2.95.2 (project flags) always emits the prologue 'addiu sp; sq ra' as a fixed unit at the top, then the body (lui/lw/jal), giving: addiu; sq; lui; lw; jal; nop; lq; jr; addiu. The sq ra cannot be moved after the body loads with any C form tried (direct cast, named symbol, temp variable). This is an EGC prologue-scheduling difference vs the original Insomniac compiler, not a source-structure issue. Blocker: EGC emits sq ra before the argument materialization; original delays it after. See decomp_state/notes/framebuf_PutDispBuffer.md",
-  "reason": "EGC prologue scheduling: sq ra emitted before arg lui/lw; original interleaves them",
-  "blocked_date": "2026-09-05"
- },
- "code/game/movie/vibuf.cpp:21:viBufDelete__FP5ViBuf": {
-  "name": "viBufDelete__FP5ViBuf",
-  "reason": "EGC constant-store addressing: original stores *(int*)0x1000B410/B420/B430 via lui/ori/sw (3 instr each, regs a0/a1/v0), but EGC emits compact lui $at + sw zero,negoff($at) (2 instr each). Body is setD4_CHCR(5); 3 constant stores; func_00118980(self->sema); return 1. All non-store instructions match (19 vs 22 words). Could not force the lui/ori/sw 3-instr form with natural C; deferred.",
-  "blocked_date": "2026-09-05"
- },
- "code/game/stream.cpp:4:func_002166E8": {
-  "name": "func_002166E8",
-  "reason": "Register allocation: original uses a1($5) for BOTH the condition load (lh a1,0x8(s0)) and the store value (addiu a1,0,1; sb a1,0xA(s0)); EGC allocates the condition to v1 and the store constant to v0. The structure matches (0x20 frame, D_001516D0 base saved in s0 across the snd_StreamSafeCdBreak call, lui-before-sq prologue, beqz, jal, sb) but the a1-vs-v1/v0 register split could not be forced with natural C (tested: void/int return, explicit value var, const-cast, symbol-base forms - all give v1/v0). C form: u8* base=(u8*)D_001516D0; if(*(s16*)(base+8)) { snd_StreamSafeCdBreak(); base[0xA]=1; }. Deferred.",
-  "blocked_date": "2026-09-05"
- },
- "code/game/mobyutil.cpp:49:func_002141F8": {
-  "name": "func_002141F8",
-  "reason": "Layout/scheduling: original uses `bnel a0,0,body` (branch to body, return-0 is the MID-fallthrough at the first return point) with 2 extra nops after the andi, and the final return load in the jr delay slot. EGC emits the inverted natural layout: `beqz a0,ret` (return-0 at the END, body as fallthrough), no extra nops. C form (verified logic): if (a0 && (*(u16*)(a0+0x34) & 0x20)) return *(int*)(*(void**)(a0+0x78)+OFF); return 0; where OFF=0x0. The branch direction + ret0 position + 2-nop padding could not be reproduced with natural C; both near-identical getters blocked. Deferred.",
-  "blocked_date": "2026-09-05"
- },
- "code/game/mobyutil.cpp:51:func_00214228": {
-  "name": "func_00214228",
-  "reason": "Layout/scheduling: original uses `bnel a0,0,body` (branch to body, return-0 is the MID-fallthrough at the first return point) with 2 extra nops after the andi, and the final return load in the jr delay slot. EGC emits the inverted natural layout: `beqz a0,ret` (return-0 at the END, body as fallthrough), no extra nops. C form (verified logic): if (a0 && (*(u16*)(a0+0x34) & 0x20)) return *(int*)(*(void**)(a0+0x78)+OFF); return 0; where OFF=0x10. The branch direction + ret0 position + 2-nop padding could not be reproduced with natural C; both near-identical getters blocked. Deferred.",
-  "blocked_date": "2026-09-05"
- },
- "code/game/stream.cpp:14:func_00216950": {
-  "name": "func_00216950",
-  "reason": "Complex control flow EGC structures differently: original is 0x20 frame (saves s0=D_001516D0 base used for both sh stores), `bne a0,1` to epilogue, then GetError() with `sh zero,0x8(s0)` in the jal delay slot, then `beqz err` (return 0) / `sh 2,0x8(s0)`+return 2. EGC emits 0x10 frame, loads the D base into a0 AFTER the call, uses `bnez err` (inverted), an explicit `b` to epilogue, and extra li v1/v0. C form verified logically: if(a0!=1)return 1; err=GetError(); *(u16*)(D+8)=0; if(err){*(u16*)(D+8)=2;return 2;} return 0. The 0x20-frame + s0-base-across-call + delay-slot-store + beqz-direction could not be reproduced. Deferred.",
-  "blocked_date": "2026-09-05"
- },
- "code/game/permcb/permcb.cpp:3:vsync_callback__Fi": {
-  "note": "16-word GS vsync interrupt handler: frm_vsync_cnt(0x15ED48)+=1; D_0015ED50 = frm_clock_time(0x15ED40)+*(int*)0x10000800; return 0. Mixed access: original uses ABSOLUTE lui/ld+sd for the two 64-bit frm_* (both in .bss, in gp window) but GP-RELATIVE sd a2,-0x7EB0(gp) for D_0015ED50. Tested natural C form (extern s64 .bss for frm_*, int return 0): EGC reorders the whole body -- loads the two 64-bit globals into a0/v1, materializes+loads the int directly into a1 (lui a1; lw a1,0x800(a1)) with NO explicit dsll32/dsrl32 sign-extension, then daddu a0,a0,a1 and daddiu v1,v1,1 (swapped which global is incremented). Original instead: ld frm_vsync_cnt->a0, lui/ori 0x10000800->a1, ld frm_clock_time->a2, daddiu a0+1, daddu v0,0,0(return), sd a0->frm_vsync_cnt, lw v1,0(a1), dsll32 v1, dsrl32 v1 (REDUNDANT explicit sign-ext), daddu a2,a2,v1, jr, sd a2->D_0015ED50. EGC's register allocation (a0/v1/a1/a3), load interleaving, and omission of the original's redundant dsll32/dsrl32 all diverge; not reproducible with any natural C form I tried. Needs the D_0015ED50=0x15ed50 symbol added to config/symbols.txt for the gp-relative store. Same register/scheduling-diff class as PutDispBuffer/func_002166E8."
- },
- "code/game/camera.cpp:5:ExecuteCamPostUpdFuncs": {
-  "name": "ExecuteCamPostUpdFuncs",
-  "status": "blocked",
-  "date": "2026-09-07",
-  "vram": "0x001EBCF0",
-  "size": 108,
-  "reason": "NOSPLIT counter re-lui/hoist requires -mno-split-addresses, but that fuses the out-of-gp-window array base into `la` (high->s1); original array is explicit lui v0;addiu s1. 106/108 best.",
-  "note": "for(i=0;i<CamPostUpdRoutineCnt(0x15EF8C);i++) CamPostUpdRoutines[0x1892B0][i](); cnt=0. BEST=106/108: symbolic counter __attribute__((section(.data))) + symbolic array + -mno-split-addresses (decomp_state/probes/camera_execpostupd_v2.cpp). Counter is IN gp window -> NOSPLIT gives lui/lw re-materialized 3x (front/back/store), hoisted before the saves, frame 0x30: MATCHES. Array is OUTSIDE gp window -> NOSPLIT emits `la $17,sym` (fused: lui s1,hi; addiu s1,s1,lo) but original is explicit (lui v0,hi; addiu s1,v0,lo); the ONLY 2 diffs are 0x1EBD10/14 (lui+addiu high reg s1 vs v0). PLAIN (no NOSPLIT, v2) gives the correct explicit array (high v0) but caches the counter high into s2 (frame 0x40, `move s2,v1`, back-edge/store reuse s2 no re-lui) - wrong. Root: counter needs NOSPLIT (re-lui+hoist) while the out-of-gp-window array needs PLAIN (explicit la); single per-TU flag cannot do both, and the array is outside the gp window so NOSPLIT always fuses it via `la`. Tried v1-v14 (cast/symbol/volatile/param/constant-array/inline-reg-asm) + scheduler & gcse flags: constant-address counter (v1) is a single RTL movsi that reload pass parks AFTER the saves (6 prologue diffs, not hoisted); volatile (v14) 30 diffs; constant-array (v12/v13) reshuffles loop regs (10 diffs); -fno-schedule-insns/2 and -fno-gcse worse; -fno-gcse-lm/-fno-cprop-registers unsupported by EGC 2.95.2. last-resort GPT-5.6 Sol used: confirmed the 106/108 NOSPLIT route and that the counter prologue is fully fixed by symbolic+.data+NOSPLIT; its register-asm/inline-asm array fixes change the loop register allocation (10 diffs) and do not match. Keep orphan dead-tail func_001EBD60 (camera.cpp:7). camera.cpp is all-INCLUDE_ASM so a per-TU flag is safe but moot without a full match. See decomp_state/notes/camera_ExecuteCamPostUpdFuncs.md."
- },
- "code/game/draw.cpp:65:func_001F4248": {
-  "status": "blocked",
-  "date": "2026-09-07",
-  "note": "Guard-load RTL split in EGC 2.95.2: constant-based guard (*(int*)0x15F618) reaches reload as one indivisible mem op, so the scheduler keeps 'sq ra' in the prologue and pulls the epilogue 'lq ra' into the bnez delay slot -> 14 words vs 13 (load form lui v0/lw v0 is otherwise exact). Symbol-based guard (section .lit4 / int[] / struct / static / &-cast) gets the goal schedule (sq in branch ds, no redundant lq, 13 words) but EGC emits the lui ABOVE 'addiu sp' and allocates the value to v1 (lw v1/bnez v1) instead of v0. Plain in-window extern -> single gp-relative lw (12 words). Exhausted: C/C++, -O0/1/3, -fno-schedule-insns{,2}, -mno-split-addresses, -G0, -ffixed-v1, -fforce-addr/-fforce-mem, -frerun-*, regmove/GCSE/peephole/CSE/caller-saves disabled, ~20 source forms. last-resort GPT-5.6 Sol (2026-09-07) confirmed via RTL dumps (high/low ops fixed v0/v1 pre-schedule vs indivisible const mem op) and found no escape; recommended retaining the fallback. See notes/draw_func_001F4248.md."
- },
- "code/game/bloaders.cpp:7:func_001E93A8": {
-  "status": "blocked",
-  "date": "2026-09-08",
-  "note": "NOT a function: 4-byte unreachable dead-code tail of LoadDebugFont (addiu sp,sp,0x10 at 0x1E93A8 / file 0xEA328, after the parent's jr ra; <addiu sp,sp,0x40> epilogue, with a 4-byte nop gap at 0x1E93A4). Not a duplicate of the parent's 0x40 deallocation (unlike sibling tails 0x12EC00/0x23ACB0) and not expressible in C: any local accounting for 0x10 changes the parent frame to 0x50, breaking the verified -0x40 prologue and +0x40 epilogue; EGC 2.95.2 emits no dead addiu after jr ra in any tested form. Raw-ELF scan: no jal/j targets 0x1E93A8 (words 0x0C07A4EA/0x0807A4EA absent); Ghidra has no function there. Parent matched 2026-09-08. last-resort GPT-5.6 Sol used: tested the dead volatile-local form (first diff at 0x1E9338, frame -0x50) and confirmed no C form regenerates the tail; recommended retaining the fallback. INCLUDE_ASM retained to supply the 8 bytes; clean build + cmp OK. See notes/bloaders_LoadDebugFont.md."
- },
- "code/game/menu_callbacks.cpp:21:func_00208840": {
-  "status": "blocked",
-  "date": "2026-09-09",
-  "vram": "0x00208840",
-  "size": 100,
-  "note": "menu_dispatchCallback (0x208840, 100B): state=*0x15EEB0; 0x1A0438_table[state](); D_00161280=*0x161280+1 (gp-rel store); state2=*0x15EEB0; if(state2!=state) *0x161280=0 (abs). SOLVED: the two *0x15EEB0 loads must NOT CSE-merge (natural form shares a base reg -> 3-save 0x30 frame, 108B). Forcing the mat into a HARD reg (`register int addr asm(\"$16\")==0x15EEB0; int state=*(int*)addr;`) creates a CSE cost TIE (COST(const)=2 == COST(hard reg)=2) that stops the merge -> two self-overwrite lui/lw pairs + 2-save 0x20 frame, matching. RESIDUAL (4 words, prologue only): best candidate (k1) matches 21/25 words, ALL body+epilogue byte-identical; only the prologue save order/placement differs. Candidate RTL (gen_prologue, present before sched2) emits [sq ra, sq s0] and sched2 places both BEFORE load1 (sq ra pos3, sq s0 pos5). Original emits [sq s0 early (pos3, after T-hi), sq ra LATE (pos7, after load1)]. Save ORDER [s0,ra] vs [ra,s0] is the compiler's natural order in some matched fns (main, RefreshPointLight, videoDecDelete, voBufGetData) but [ra,s0] in others (LoadDebugFont, memcard_TestChecksum, func_0021EAF0/222F58) - so it is RTL-specific, not fixed. TRIED (all still 4-word under default scheduling): mat in $16/$25/$2/$3/$12/$15; load-RESULT into $16 (frame 0x30); state2 forced to $3; statement reordering; zero-byte `asm volatile(\\\"\\\":\\\"+r\\\"(state))` and input-only and `$ra`-clobber forms (8 words, worse); table base forced to $3 (6 words, funcptr->v1); table returns int (17); dispatch returns int (4, same); flags -fsched-interblock/-fno-sched-interblock/-fsched-spec/-fno-sched-spec (no change). FLAG CONFLICT: this fn needs sched2 ENABLED (default or -fno-schedule-insns) for the interleaved saves + a0 funcptr + T-before-load1; under the segment's production flag -fno-schedule-insns2 it is 7 words off (saves bunched, load1 before T, funcptr v0). Sibling menu_restoreSelection (same menu_callbacks Splat segment 0x109798..0x10984F) requires -fno-schedule-insns2, so a Splat boundary split would be needed - but is pointless until the 4-word save order is solved. last-resort GPT-5.6 Sol used: diagnosed as a sched2/prologue-thread save-UID tie-break; its concrete variants (zero-byte dep, $ra clobber, fixed-table-reg, callback/dispatch return-type, sched-flag matrix) were all tested and none beat the 4-word diff. INCLUDE_ASM(func_00208840) retained. See decomp_state/notes/menu_dispatchCallback.md."
- }
+  "code/game/movie/movie.cpp:11:isAudioOK": {
+    "status": "blocked",
+    "date": "2026-09-08",
+    "vram": "0x0023A790",
+    "size": 44,
+    "note": "return audioDecIsPageFull((AudioDec*)((u8*)(base at 0x16120C) + 0xD9100)); base=*(int*)0x16120C. Original hoists the load pair (lui v0; lw v0,off(v0) self-overwrite, value in v0) AND the const-hi (lui a0) BEFORE the prologue, then ori a0 + sq ra after. EGC 2.95.2 ties the two needed properties to mutually-exclusive address kinds: the self-overwriting v0 load + `addu a0,v0,a0` comes ONLY from a CONSTANT-cast address (never hoisted; prologue always first, load last), while pre-prologue hoisting comes ONLY from a SYMBOL address (section .data), which forces the base reg stable across the HI16/LO16 reloc pair so the value lands in v1 and the const-hi interleaves before the lw. Plain in-window extern -> single GPREL lw (wrong). ~20 forms + flags (-fno-schedule-insns/2, -G0, both) + `register int base asm(\"$2\")` (matches words 4..11 exactly; 3-word prefix still v1-base + interleaved) all fail the prefix. last-resort GPT-5.6 Sol used: high confidence no ordinary form/flag emits the exact schedule. Same blocker as videodec_func_0023D0E0 and VU1_addDataRef (load-first + split prologue). proceedAudio__Fv (0x23ABA0) is a byte-identical twin (only jal target differs) and is blocked by the same issue. INCLUDE_ASM retained. See decomp_state/notes/movie_isAudioOK.md."
+  },
+  "code/game/movie/videodec.cpp:41:func_0023D0E0": {
+    "status": "blocked",
+    "date": "2026-09-04",
+    "note": "mpeg callback viBufStopDMA((ViBuf*)((u32)*(u32*)0x16120C+0xD9090));return 1;. EGC v2.73a post-reload reorder pass places the constant-address load at its last use (after the prologue sq ra) and adds conservative memory dep load->sq, pinning the load last; original schedules load FIRST with prologue split around the const pair. ~15 C formulations + flag variants all give the same wrong order. See decomp_state/notes/videodec_func_0023D0E0.md (twin func_0023D110 same blocker)."
+  },
+  "code/game/help.cpp:12:func_001FDD50": {
+    "status": "blocked",
+    "date": "2026-09-05",
+    "note": "NOT a function: 4-byte unreachable dead-code tail of msg_string__Fi (EGC 2.95.2 artifact). The instruction 'sh zero, 0x38(v0)' at 0x1FDD50 sits after msg_string's 'jr ra; addiu sp' epilogue; verified unreachable (no jal/j references anywhere in the binary, jumptable jtbl_001E7A20 entries checked, Ghidra has no function at this address). No C function can compile to a bare store + nop with no return, and the true C form of msg_string that regenerates it (an extra store before the return that EGC schedules dead after the jr) was not found: the matched early-return form of msg_string__Fi emits no dead bytes, and local-variable forms miscompile the body (bltz/move). Its INCLUDE_ASM is retained deliberately to supply the 8 bytes (sh + nop) so the full ELF stays byte-for-byte. Generalization: ~46 similar 4-byte 'functions' across the binary (addiu sp / sw / sh / lw / daddu + nop) are dead tails of the preceding function \u2014 see decomp_state/notes/help_msg_string__Fi.md."
+  },
+  "code/game/vuchain.cpp:15:VU1_addDataRef__FPvi": {
+    "correction": "2026-09-06 deeper retest: SYMBOLIC .data loads with -mno-split-addresses match the first 68 bytes exactly; only absolute-vs-GP final store remains (84 vs 76 bytes). Historical impossibility claim is false. See probes/vuchain_symbol.cpp and notes/vuchain_VU1_addDataRef__FPvi.md. Orphan retained.",
+    "status": "blocked",
+    "date": "2026-09-05",
+    "note": "Self-based non-hoisted head-pointer loads (lui r,0x16; lw r,3840(r) re-materialized 5x, target==base reg) + GPREL final stores (D_00160F00 delay-slot, D_00162C20 dead tail). Local EGC 2.95.2 (-O1 and -O2, -G8) always HOISTS the reused constant/symbol address into a dedicated base reg (lui+ori full constant, or lui a2 + lw X,0(a2)); it never emits the 2-instr self-based re-materialized form. Tried: plain int (GPREL 1-instr), constant (int)*(int*)0x160F00 (hoisted lui+ori), section(.data) int (hoisted base a2), struct field (hoisted base). C structure that matches regs/offsets/stores found (recompute-per-statement form) but its loads come out hoisted. EGC version/flag difference; byte match not achievable with current toolchain. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
+  },
+  "code/game/vuchain.cpp:17:func_00233880": {
+    "status": "blocked",
+    "date": "2026-09-05",
+    "note": "NOT a function: 4-byte unreachable dead-code tail of VU1_addDataRef__FPvi (sw v0,-16352(gp)=D_00162C20 at 0x233880, write-only global). Blocked together with its parent VU1_addDataRef__FPvi, which is itself blocked (self-based non-hoisted load pattern not reproducible by local EGC). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
+  },
+  "code/989snd/ee/989snd.c:93:func_0012EC00": {
+    "status": "blocked",
+    "date": "2026-09-05",
+    "note": "NOT a function: 4-byte unreachable dead-code tail of snd_StopAllStreams (addiu sp,sp,0x10 at 0x12EC00 / file 0x2FB80, right after the parent's jr ra; <addiu sp,sp,0x10> epilogue; parent frame is 0x10 so this is a dead duplicate deallocate). Local EGC 2.95.2 v2.73a never emits a dead addiu sp,sp,N (only dead stores; /tmp/opencode/tail_exp t1-t10). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/989snd_snd_StopAllStreams.md."
+  },
+  "code/game/framebuf.cpp:16:PutDispBuffer__Fv": {
+    "correction": "2026-09-06: function length is 36 bytes (40 includes padding). Free C++ void PutDispBuffer(void) mangles correctly without a class or asm label. -fno-schedule-insns2 and -fargument-noalias-global still fail prologue ordering. See notes/compiler_retests_2026_09_06.md.",
+    "name": "PutDispBuffer__Fv",
+    "source": "code/game/framebuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/framebuf/PutDispBuffer__Fv.s",
+    "vram": "0x001FB2A8",
+    "file_offset": "0xFC228",
+    "size": 40,
+    "note": "C form identified and verified at the instruction level EXCEPT one prologue-scheduling difference. Body is func_00121E40(*(void**)0x15EEB8) - func_00121E40 is an alabel (real linkable symbol) in code/_generated/sce/lib.s, D_0015EEB8 is a writable pointer in section .lit4. Using the constant-cast idiom (*(void**)0x15EEB8, NOT the named symbol) makes EGC emit the correct 'lui a0,%hi; lw a0,%lo(a0)' base-register form (named symbol gives 'lui v0; lw a0,0(v0)' - wrong base reg). BUT the original order is: addiu sp; lui a0; lw a0; sq ra,0(sp); jal; nop; lq; jr; addiu - i.e. the argument lui/lw are scheduled BEFORE the ra save. EGC 2.95.2 (project flags) always emits the prologue 'addiu sp; sq ra' as a fixed unit at the top, then the body (lui/lw/jal), giving: addiu; sq; lui; lw; jal; nop; lq; jr; addiu. The sq ra cannot be moved after the body loads with any C form tried (direct cast, named symbol, temp variable). This is an EGC prologue-scheduling difference vs the original Insomniac compiler, not a source-structure issue. Blocker: EGC emits sq ra before the argument materialization; original delays it after. See decomp_state/notes/framebuf_PutDispBuffer.md",
+    "reason": "EGC prologue scheduling: sq ra emitted before arg lui/lw; original interleaves them",
+    "blocked_date": "2026-09-05"
+  },
+  "code/game/movie/vibuf.cpp:21:viBufDelete__FP5ViBuf": {
+    "name": "viBufDelete__FP5ViBuf",
+    "reason": "EGC constant-store addressing: original stores *(int*)0x1000B410/B420/B430 via lui/ori/sw (3 instr each, regs a0/a1/v0), but EGC emits compact lui $at + sw zero,negoff($at) (2 instr each). Body is setD4_CHCR(5); 3 constant stores; func_00118980(self->sema); return 1. All non-store instructions match (19 vs 22 words). Could not force the lui/ori/sw 3-instr form with natural C; deferred.",
+    "blocked_date": "2026-09-05"
+  },
+  "code/game/stream.cpp:4:func_002166E8": {
+    "name": "func_002166E8",
+    "reason": "Register allocation: original uses a1($5) for BOTH the condition load (lh a1,0x8(s0)) and the store value (addiu a1,0,1; sb a1,0xA(s0)); EGC allocates the condition to v1 and the store constant to v0. The structure matches (0x20 frame, D_001516D0 base saved in s0 across the snd_StreamSafeCdBreak call, lui-before-sq prologue, beqz, jal, sb) but the a1-vs-v1/v0 register split could not be forced with natural C (tested: void/int return, explicit value var, const-cast, symbol-base forms - all give v1/v0). C form: u8* base=(u8*)D_001516D0; if(*(s16*)(base+8)) { snd_StreamSafeCdBreak(); base[0xA]=1; }. Deferred.",
+    "blocked_date": "2026-09-05"
+  },
+  "code/game/mobyutil.cpp:49:func_002141F8": {
+    "name": "func_002141F8",
+    "reason": "Layout/scheduling: original uses `bnel a0,0,body` (branch to body, return-0 is the MID-fallthrough at the first return point) with 2 extra nops after the andi, and the final return load in the jr delay slot. EGC emits the inverted natural layout: `beqz a0,ret` (return-0 at the END, body as fallthrough), no extra nops. C form (verified logic): if (a0 && (*(u16*)(a0+0x34) & 0x20)) return *(int*)(*(void**)(a0+0x78)+OFF); return 0; where OFF=0x0. The branch direction + ret0 position + 2-nop padding could not be reproduced with natural C; both near-identical getters blocked. Deferred.",
+    "blocked_date": "2026-09-05"
+  },
+  "code/game/mobyutil.cpp:51:func_00214228": {
+    "name": "func_00214228",
+    "reason": "Layout/scheduling: original uses `bnel a0,0,body` (branch to body, return-0 is the MID-fallthrough at the first return point) with 2 extra nops after the andi, and the final return load in the jr delay slot. EGC emits the inverted natural layout: `beqz a0,ret` (return-0 at the END, body as fallthrough), no extra nops. C form (verified logic): if (a0 && (*(u16*)(a0+0x34) & 0x20)) return *(int*)(*(void**)(a0+0x78)+OFF); return 0; where OFF=0x10. The branch direction + ret0 position + 2-nop padding could not be reproduced with natural C; both near-identical getters blocked. Deferred.",
+    "blocked_date": "2026-09-05"
+  },
+  "code/game/stream.cpp:14:func_00216950": {
+    "name": "func_00216950",
+    "reason": "Complex control flow EGC structures differently: original is 0x20 frame (saves s0=D_001516D0 base used for both sh stores), `bne a0,1` to epilogue, then GetError() with `sh zero,0x8(s0)` in the jal delay slot, then `beqz err` (return 0) / `sh 2,0x8(s0)`+return 2. EGC emits 0x10 frame, loads the D base into a0 AFTER the call, uses `bnez err` (inverted), an explicit `b` to epilogue, and extra li v1/v0. C form verified logically: if(a0!=1)return 1; err=GetError(); *(u16*)(D+8)=0; if(err){*(u16*)(D+8)=2;return 2;} return 0. The 0x20-frame + s0-base-across-call + delay-slot-store + beqz-direction could not be reproduced. Deferred.",
+    "blocked_date": "2026-09-05"
+  },
+  "code/game/permcb/permcb.cpp:3:vsync_callback__Fi": {
+    "note": "16-word GS vsync interrupt handler: frm_vsync_cnt(0x15ED48)+=1; D_0015ED50 = frm_clock_time(0x15ED40)+*(int*)0x10000800; return 0. Mixed access: original uses ABSOLUTE lui/ld+sd for the two 64-bit frm_* (both in .bss, in gp window) but GP-RELATIVE sd a2,-0x7EB0(gp) for D_0015ED50. Tested natural C form (extern s64 .bss for frm_*, int return 0): EGC reorders the whole body -- loads the two 64-bit globals into a0/v1, materializes+loads the int directly into a1 (lui a1; lw a1,0x800(a1)) with NO explicit dsll32/dsrl32 sign-extension, then daddu a0,a0,a1 and daddiu v1,v1,1 (swapped which global is incremented). Original instead: ld frm_vsync_cnt->a0, lui/ori 0x10000800->a1, ld frm_clock_time->a2, daddiu a0+1, daddu v0,0,0(return), sd a0->frm_vsync_cnt, lw v1,0(a1), dsll32 v1, dsrl32 v1 (REDUNDANT explicit sign-ext), daddu a2,a2,v1, jr, sd a2->D_0015ED50. EGC's register allocation (a0/v1/a1/a3), load interleaving, and omission of the original's redundant dsll32/dsrl32 all diverge; not reproducible with any natural C form I tried. Needs the D_0015ED50=0x15ed50 symbol added to config/symbols.txt for the gp-relative store. Same register/scheduling-diff class as PutDispBuffer/func_002166E8."
+  },
+  "code/game/camera.cpp:5:ExecuteCamPostUpdFuncs": {
+    "name": "ExecuteCamPostUpdFuncs",
+    "status": "blocked",
+    "date": "2026-09-07",
+    "vram": "0x001EBCF0",
+    "size": 108,
+    "reason": "NOSPLIT counter re-lui/hoist requires -mno-split-addresses, but that fuses the out-of-gp-window array base into `la` (high->s1); original array is explicit lui v0;addiu s1. 106/108 best.",
+    "note": "for(i=0;i<CamPostUpdRoutineCnt(0x15EF8C);i++) CamPostUpdRoutines[0x1892B0][i](); cnt=0. BEST=106/108: symbolic counter __attribute__((section(.data))) + symbolic array + -mno-split-addresses (decomp_state/probes/camera_execpostupd_v2.cpp). Counter is IN gp window -> NOSPLIT gives lui/lw re-materialized 3x (front/back/store), hoisted before the saves, frame 0x30: MATCHES. Array is OUTSIDE gp window -> NOSPLIT emits `la $17,sym` (fused: lui s1,hi; addiu s1,s1,lo) but original is explicit (lui v0,hi; addiu s1,v0,lo); the ONLY 2 diffs are 0x1EBD10/14 (lui+addiu high reg s1 vs v0). PLAIN (no NOSPLIT, v2) gives the correct explicit array (high v0) but caches the counter high into s2 (frame 0x40, `move s2,v1`, back-edge/store reuse s2 no re-lui) - wrong. Root: counter needs NOSPLIT (re-lui+hoist) while the out-of-gp-window array needs PLAIN (explicit la); single per-TU flag cannot do both, and the array is outside the gp window so NOSPLIT always fuses it via `la`. Tried v1-v14 (cast/symbol/volatile/param/constant-array/inline-reg-asm) + scheduler & gcse flags: constant-address counter (v1) is a single RTL movsi that reload pass parks AFTER the saves (6 prologue diffs, not hoisted); volatile (v14) 30 diffs; constant-array (v12/v13) reshuffles loop regs (10 diffs); -fno-schedule-insns/2 and -fno-gcse worse; -fno-gcse-lm/-fno-cprop-registers unsupported by EGC 2.95.2. last-resort GPT-5.6 Sol used: confirmed the 106/108 NOSPLIT route and that the counter prologue is fully fixed by symbolic+.data+NOSPLIT; its register-asm/inline-asm array fixes change the loop register allocation (10 diffs) and do not match. Keep orphan dead-tail func_001EBD60 (camera.cpp:7). camera.cpp is all-INCLUDE_ASM so a per-TU flag is safe but moot without a full match. See decomp_state/notes/camera_ExecuteCamPostUpdFuncs.md."
+  },
+  "code/game/draw.cpp:65:func_001F4248": {
+    "status": "blocked",
+    "date": "2026-09-07",
+    "note": "Guard-load RTL split in EGC 2.95.2: constant-based guard (*(int*)0x15F618) reaches reload as one indivisible mem op, so the scheduler keeps 'sq ra' in the prologue and pulls the epilogue 'lq ra' into the bnez delay slot -> 14 words vs 13 (load form lui v0/lw v0 is otherwise exact). Symbol-based guard (section .lit4 / int[] / struct / static / &-cast) gets the goal schedule (sq in branch ds, no redundant lq, 13 words) but EGC emits the lui ABOVE 'addiu sp' and allocates the value to v1 (lw v1/bnez v1) instead of v0. Plain in-window extern -> single gp-relative lw (12 words). Exhausted: C/C++, -O0/1/3, -fno-schedule-insns{,2}, -mno-split-addresses, -G0, -ffixed-v1, -fforce-addr/-fforce-mem, -frerun-*, regmove/GCSE/peephole/CSE/caller-saves disabled, ~20 source forms. last-resort GPT-5.6 Sol (2026-09-07) confirmed via RTL dumps (high/low ops fixed v0/v1 pre-schedule vs indivisible const mem op) and found no escape; recommended retaining the fallback. See notes/draw_func_001F4248.md."
+  },
+  "code/game/bloaders.cpp:7:func_001E93A8": {
+    "status": "blocked",
+    "date": "2026-09-08",
+    "note": "NOT a function: 4-byte unreachable dead-code tail of LoadDebugFont (addiu sp,sp,0x10 at 0x1E93A8 / file 0xEA328, after the parent's jr ra; <addiu sp,sp,0x40> epilogue, with a 4-byte nop gap at 0x1E93A4). Not a duplicate of the parent's 0x40 deallocation (unlike sibling tails 0x12EC00/0x23ACB0) and not expressible in C: any local accounting for 0x10 changes the parent frame to 0x50, breaking the verified -0x40 prologue and +0x40 epilogue; EGC 2.95.2 emits no dead addiu after jr ra in any tested form. Raw-ELF scan: no jal/j targets 0x1E93A8 (words 0x0C07A4EA/0x0807A4EA absent); Ghidra has no function there. Parent matched 2026-09-08. last-resort GPT-5.6 Sol used: tested the dead volatile-local form (first diff at 0x1E9338, frame -0x50) and confirmed no C form regenerates the tail; recommended retaining the fallback. INCLUDE_ASM retained to supply the 8 bytes; clean build + cmp OK. See notes/bloaders_LoadDebugFont.md."
+  },
+  "code/game/menu_callbacks.cpp:21:func_00208840": {
+    "status": "blocked",
+    "date": "2026-09-09",
+    "vram": "0x00208840",
+    "size": 100,
+    "note": "menu_dispatchCallback (0x208840, 100B): state=*0x15EEB0; 0x1A0438_table[state](); D_00161280=*0x161280+1 (gp-rel store); state2=*0x15EEB0; if(state2!=state) *0x161280=0 (abs). SOLVED: the two *0x15EEB0 loads must NOT CSE-merge (natural form shares a base reg -> 3-save 0x30 frame, 108B). Forcing the mat into a HARD reg (`register int addr asm(\"$16\")==0x15EEB0; int state=*(int*)addr;`) creates a CSE cost TIE (COST(const)=2 == COST(hard reg)=2) that stops the merge -> two self-overwrite lui/lw pairs + 2-save 0x20 frame, matching. RESIDUAL (4 words, prologue only): best candidate (k1) matches 21/25 words, ALL body+epilogue byte-identical; only the prologue save order/placement differs. Candidate RTL (gen_prologue, present before sched2) emits [sq ra, sq s0] and sched2 places both BEFORE load1 (sq ra pos3, sq s0 pos5). Original emits [sq s0 early (pos3, after T-hi), sq ra LATE (pos7, after load1)]. Save ORDER [s0,ra] vs [ra,s0] is the compiler's natural order in some matched fns (main, RefreshPointLight, videoDecDelete, voBufGetData) but [ra,s0] in others (LoadDebugFont, memcard_TestChecksum, func_0021EAF0/222F58) - so it is RTL-specific, not fixed. TRIED (all still 4-word under default scheduling): mat in $16/$25/$2/$3/$12/$15; load-RESULT into $16 (frame 0x30); state2 forced to $3; statement reordering; zero-byte `asm volatile(\\\"\\\":\\\"+r\\\"(state))` and input-only and `$ra`-clobber forms (8 words, worse); table base forced to $3 (6 words, funcptr->v1); table returns int (17); dispatch returns int (4, same); flags -fsched-interblock/-fno-sched-interblock/-fsched-spec/-fno-sched-spec (no change). FLAG CONFLICT: this fn needs sched2 ENABLED (default or -fno-schedule-insns) for the interleaved saves + a0 funcptr + T-before-load1; under the segment's production flag -fno-schedule-insns2 it is 7 words off (saves bunched, load1 before T, funcptr v0). Sibling menu_restoreSelection (same menu_callbacks Splat segment 0x109798..0x10984F) requires -fno-schedule-insns2, so a Splat boundary split would be needed - but is pointless until the 4-word save order is solved. last-resort GPT-5.6 Sol used: diagnosed as a sched2/prologue-thread save-UID tie-break; its concrete variants (zero-byte dep, $ra clobber, fixed-table-reg, callback/dispatch return-type, sched-flag matrix) were all tested and none beat the 4-word diff. INCLUDE_ASM(func_00208840) retained. See decomp_state/notes/menu_dispatchCallback.md."
+  },
+  "code/game/draw.cpp:56:func_001F21A8": {
+    "status": "blocked",
+    "date": "2026-09-09",
+    "vram": "0x001F21A8",
+    "size": 4,
+    "note": "Dead tail of func_001F2070, not a function: unreachable 4-byte fragment (sw $zero,0x1B0($v0)) 8-aligned right after the parent's jr ra/addiu epilogue (nop at +4, nop at +4 after). Nothing jumps to it; Ghidra has no function/xrefs there. The store reuses v0=0x190000 (stale %hi of D_0018CF10 loaded at 0x1F2120 for the divisor); target 0x1901B0 = D_0018CF10+0x32A0, zeroed .data, no symbol. 12+ C forms probed with the project EGC (field f1B0/f12A0/f32A0 same or separate struct type, int/float, separate symbol at 0x1901B0, int array, constant-address cast, double store, page-anchor D_00190000 representation, -fno-schedule-insns/2 variants, source-order permutations): EGC either emits a base fixup (addiu) or a second lui so the store becomes a 2-instruction LIVE store before the jr (316B), or uses at/v1 as base; it never emits a post-epilogue dead store from a 256B-frame function. Parent func_001F2070 matched 308/308 without the store statement; this INCLUDE_ASM supplies the 8 bytes (nop/sw/nop via .align 3 boundaries) and keeps full boot parity. last-resort GPT-5.6 Sol invoked 2026-09-09: confirmed no pure C form exists (the intermediate v0=0x190000 has no corresponding C pointer value; EGC terminates after the jr delay slot for all tested forms) and recommended retaining the orphan. See decomp_state/notes/draw_func_001F2070.md."
+  }
 }

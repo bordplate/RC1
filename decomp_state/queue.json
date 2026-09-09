@@ -853,12 +853,12 @@
     "line": 15,
     "asm": "code/_generated/nonmatchings/game/draw/func_001F2070.s",
     "name": "func_001F2070",
-    "status": "todo"
+    "status": "matched"
   },
   {
-    "id": "code/game/draw.cpp:17:func_001F21A8",
+    "id": "code/game/draw.cpp:56:func_001F21A8",
     "source": "code/game/draw.cpp",
-    "line": 17,
+    "line": 56,
     "asm": "code/_generated/nonmatchings/game/draw/func_001F21A8.s",
     "name": "func_001F21A8",
     "status": "todo"

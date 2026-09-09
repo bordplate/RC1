@@ -1,0 +1,7 @@
+{
+  "target": "func_001F2070",
+  "outcome": "matched",
+  "orphan": "func_001F21A8 retained (dead tail, blocked; last-resort GPT-5.6 Sol used)",
+  "parity": "cmp build/boot_elf.elf assets/boot_elf.elf OK",
+  "notification": "pending"
+}

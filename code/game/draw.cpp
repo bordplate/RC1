@@ -12,7 +12,46 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0CE0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F2068);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F2070);
+struct Camera {
+    float f00;
+    char pad_04[0x3C];
+    float matrix[16];
+    char pad_80[0xC0];
+    float f140;
+    float f144;
+    float f148;
+    char pad_14C[0x64];
+    float f1B0;
+};
+
+extern "C" Camera D_00186F40;
+extern "C" Camera D_0018CF10;
+
+extern "C" void func_001F9FC8(void *a0);
+extern "C" void func_001FA378(void *a0, void *a1, void *a2);
+extern "C" void func_001F9A68(void *a0, void *a1, float f);
+extern "C" void func_001F9D20(void *a0, void *a1, void *a2);
+
+extern "C" void func_001F2070(float *out, float *vec) {
+    float v[16];
+    float m[16];
+    float s4[4];
+    float r4[4];
+    func_001F9FC8(v);
+    v[12] = -D_00186F40.f140 * 1024.0f;
+    v[13] = -D_00186F40.f144 * 1024.0f;
+    v[14] = -D_00186F40.f148 * 1024.0f;
+    func_001FA378(m, D_00186F40.matrix, v);
+    func_001F9A68(s4, vec, 1024.0f);
+    s4[3] = 1.0f;
+    func_001F9D20(r4, s4, m);
+    float scale = D_0018CF10.f00 / r4[3];
+    out[2] = r4[2] * 0.0009765625f;
+    r4[0] = r4[0] * scale + 2048.0f;
+    r4[1] = r4[1] * scale + 2048.0f;
+    out[0] = r4[0] * 16.0f;
+    out[1] = r4[1] * 16.0f;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F21A8);
 
