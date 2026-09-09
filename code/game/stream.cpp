@@ -11,7 +11,29 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/stream", Load);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_002168A8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216950);
+typedef struct {
+    u8 pad_0x08[0x08];
+    s16 field_0x08;
+    u8 pad_0x0A[0x4A];
+    s16 field_0x54;
+    s16 field_0x56;
+    s16 field_0x58;
+} MusicTransState;
+
+extern MusicTransState D_001516D0 __attribute__((section(".data")));
+
+extern "C" int snd_StreamSafeCdGetError(void);
+
+extern "C" void func_00216950(int param_1) {
+    if (param_1 != 1) {
+        return;
+    }
+    D_001516D0.field_0x08 = 0;
+    int err = snd_StreamSafeCdGetError();
+    if (err) {
+        D_001516D0.field_0x08 = 2;
+    }
+}
 
 extern "C" void func_00216990(int a0, long a1) {
     int p = (int)a1;
@@ -19,15 +41,6 @@ extern "C" void func_00216990(int a0, long a1) {
         *(s16*)(p + 0xA) = 3;
     }
 }
-
-typedef struct {
-    u8 pad_0x54[0x54];
-    s16 field_0x54;
-    s16 field_0x56;
-    s16 field_0x58;
-} MusicTransState;
-
-extern MusicTransState D_001516D0 __attribute__((section(".data")));
 
 extern "C" void func_00215970(int param_1, int param_2, int param_3);
 

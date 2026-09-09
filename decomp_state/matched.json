@@ -1516,5 +1516,13 @@
     "size": 308,
     "matched_date": "2026-09-09",
     "note": "Perspective projection: view = cam.matrix(D_00186F40 @0x40) * translate(-cam.@0x140..0x148 * 1024); r4 = (vec*1024, 1.0) * view; scale = D_0018CF10.f00 / r4[3]; out[2]=r4[2]/1024; r4[0]=r4[0]*scale+2048; r4[1]=r4[1]*scale+2048; out[0]=r4[0]*16; out[1]=r4[1]*16. EGC needs r4[0]/out[0] first in source order to emit the original r4[1]-first register schedule. Dead tail sw zero,0x1B0(v0) at 0x1F21A8 is unreproducible; orphan INCLUDE_ASM retained (see blocked)."
+  },
+  "code/game/stream.cpp:14:func_00216950": {
+    "name": "func_00216950",
+    "source": "code/game/stream.cpp",
+    "vram": "0x00216950",
+    "size": 60,
+    "matched_date": "2026-09-09",
+    "note": "Safe-CD music streaming IOP callback (registered by func_00215420 via snd_StreamSafeCdCallback; driver snd_FlushSoundCommands always jalr's it with a0=1 and ignores the result). When param_1==1: D_001516D0.field_0x08 = 0, err = snd_StreamSafeCdGetError(), if (err) field_0x08 = 2. VOID return: the li v0,2 is store data hoisted into the beqz delay slot and left in v0 at jr ra; an int return adds a 16th word (li v0,2 reload at the merge). Store-before-call is required so EGC keeps the base in s0 across the call (0x20 frame). music.cpp prototypes updated int->void. See notes/stream_func_00216950.md."
   }
 }
