@@ -1524,5 +1524,13 @@
     "size": 60,
     "matched_date": "2026-09-09",
     "note": "Safe-CD music streaming IOP callback (registered by func_00215420 via snd_StreamSafeCdCallback; driver snd_FlushSoundCommands always jalr's it with a0=1 and ignores the result). When param_1==1: D_001516D0.field_0x08 = 0, err = snd_StreamSafeCdGetError(), if (err) field_0x08 = 2. VOID return: the li v0,2 is store data hoisted into the beqz delay slot and left in v0 at jr ra; an int return adds a 16th word (li v0,2 reload at the merge). Store-before-call is required so EGC keeps the base in s0 across the call (0x20 frame). music.cpp prototypes updated int->void. See notes/stream_func_00216950.md."
+  },
+  "code/game/mobyutil.cpp:49:func_002141F8": {
+    "name": "func_002141F8",
+    "source": "code/game/mobyutil.cpp",
+    "vram": "0x002141F8",
+    "size": 48,
+    "matched_date": "2026-09-09",
+    "note": "Returns *(void**) of the table pointer at MobyInstance+0x78 when the 0x20 mode bit (u16 at +0x34) is set, else 0; twin func_00214228 reads the +0x10 word instead. Uses raw byte offsets because the project MobyInstance/vec4 layout is 8 bytes short (s128=long long=8B vs real 16B vec4): struct fields would land at 0x2C/0x68 instead of the original 0x34/0x78. The andi/nop/nop/beqz shape needs THREE explicit nops in compiler .s (EE assembler consumes one as the beqz dslot nop when it pulls the lw out of the dslot); one asm volatile with three nops placed after the & 0x20 into an int local reproduces the exact 12 words. See notes/mobyutil_func_002141F8.md."
   }
 }

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "types.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00212C28);
 
@@ -46,7 +47,19 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00214100);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_002141E8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_002141F8);
+struct MobyInstance;
+
+extern "C" void* func_002141F8(struct MobyInstance *m) {
+    if (!m)
+        return 0;
+    int t = *(u16*)((char*)m + 0x34) & 0x20;
+    asm volatile("nop\n\t" "nop\n\t" "nop");
+    if (t) {
+        void* p = *(void**)((char*)m + 0x78);
+        return *(void**)p;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00214228);
 
