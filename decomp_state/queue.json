@@ -7142,5 +7142,13 @@
     "asm": "code/_generated/nonmatchings/game/wad/func_0012F368.s",
     "name": "func_0012F368",
     "status": "todo"
+  },
+  {
+    "id": "code/game/actuator.cpp:11:texResetCursor__Fv",
+    "source": "code/game/actuator.cpp",
+    "line": 11,
+    "asm": "code/_generated/matchings/game/actuator/texResetCursor__Fv.s",
+    "name": "texResetCursor__Fv",
+    "status": "matched"
   }
 ]

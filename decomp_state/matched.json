@@ -1499,5 +1499,14 @@
   "size": 48,
   "matched_date": "2026-09-08",
   "note": "Stores D_0015EDF0*8/10 to D_0013E5A0 and returns zero. A constant-address input load is required for the original self-based v1 lui/lw and scheduling; the output is symbolic .data for matching HI16/LO16 relocations. All 48 bytes and the full clean boot ELF match. See notes/pause_func_0021CB00.md."
+ },
+ "code/game/actuator.cpp:11:texResetCursor__Fv": {
+  "name": "texResetCursor__Fv",
+  "original_name": "func_001E9120 (live 24-byte portion at 0x1E9128)",
+  "source": "code/game/actuator.cpp",
+  "vram": "0x001E9128",
+  "size": 24,
+  "matched_date": "2026-09-09",
+  "note": "Resets the VRAM/GPU bump allocator at level start: cursor D_0015EE74 = base D_0015EE8C, counter D_0015EF20 = 0. void return + direct stores match (EGC loads base into v0, gp-relative store for the cursor). Was the live half of the old 0x20-byte func_001E9120; split via a symbols.txt entry, the 4-byte dead tail stays INCLUDE_ASM, and two file-scope asm(\"nop\") supply the 8-byte gap at 0x1E9140-0x1E9147 (stash.cpp convention) that otherwise shrank actuator.o by 8 bytes and shifted startlevel__Fv. Clean full boot parity passes. See notes/actuator_texResetCursor.md."
  }
 }

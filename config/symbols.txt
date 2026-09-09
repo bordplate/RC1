@@ -486,6 +486,9 @@ VU1_swapChain__Fv = 0x0233630;
 VU1_initChain__Fv = 0x02335d0;
 VU1_setScissor__Fiiii = 0x233a40;
 
+// actuator.cpp
+texResetCursor__Fv = 0x1e9128;
+
 // bloaders
 LoadPifAsPSMT8H = 0x1e9168;
 LoadDebugFont = 0x1e9338;
