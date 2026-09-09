@@ -24,7 +24,9 @@ extern "C" int func_0012AEC8(VideoDec* self, int a, int b,
     videoDecCallback cb, void* userdata);
 
 void viBufDelete(ViBuf* self);
+void viBufAddDMA(ViBuf* buf);
 extern "C" int func_0012B9E0(void* p);
+extern "C" void switchThread(void);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi);
 
@@ -98,7 +100,11 @@ int mpegError(struct sceMpeg* mpeg, struct sceMpegCbDataError* err, void* user) 
     return 1;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", mpegNodata__FP7sceMpegP13sceMpegCbDataPv);
+int mpegNodata(struct sceMpeg* mpeg, struct sceMpegCbData* cbData, void* user) {
+    switchThread();
+    viBufAddDMA((ViBuf*)(*(int*)0x16120C + 0xD9090));
+    return 1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023D0E0);
 

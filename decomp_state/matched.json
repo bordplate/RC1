@@ -1540,5 +1540,13 @@
     "size": 72,
     "matched_date": "2026-09-09",
     "note": "Returns nonzero iff videoDecInputCount(self)==0 AND func_0012BA58(self)>0, where func_0012BA58 (in the unsplit sce/lib blob) tests (*(u32**)(mpeg+0x40))[1]==0 of the embedded SCE mpeg struct. Only caller: readMpeg's wait loop (0x23A6E8). Two EGC quirks: (1) func_0012BA58 must be prototyped with an UNSIGNED return - the original compare is sltu, an int prototype emits slt (1-word diff); (2) the 'int ret = 0' local needs s1 as home (s1 saved in prologue, zeroed in the first jal dslot, zero-return in the bnez dslot) - an early-return form cannot match. Verified by decomp_probe (72/72 bytes), objdump of the built ELF (18/18 words), and full boot cmp. See notes/videodec_videoDecIsFlushed__FP8VideoDec.md."
+  },
+  "code/game/movie/videodec.cpp:39:mpegNodata__FP7sceMpegP13sceMpegCbDataPv": {
+    "name": "mpegNodata__FP7sceMpegP13sceMpegCbDataPv",
+    "source": "code/game/movie/videodec.cpp",
+    "vram": "0x0023D0A8",
+    "size": 56,
+    "matched_date": "2026-09-09",
+    "note": "SCE mpeg no-data callback (videoDecCallback). Yields the thread (switchThread) then arms the video DMA: viBufAddDMA((ViBuf*)(*(int*)0x16120C + 0xD9090)); returns 1. 0x16120C is the 32-bit movie-data base; +0xD9090 is the video ViBuf (sibling +0xD9100 is the _AudioDec used by isAudioOK/proceedAudio). Matched with the plain constant-cast load (absolute lui/lw RELOAD into $v0, addu in the jal delay slot) under default flags - the two-call body (switchThread then viBufAddDMA) keeps the standard prologue-first schedule. Contrast: the single-call isAudioOK/proceedAudio hoist the load before the prologue and remain a 3-word EGC register-allocation gap (value $v1 vs $v0). Verified by decomp_probe (56/56 bytes), make clean+split, and full boot cmp. See notes/videodec_mpegNodata__FP7sceMpegP13sceMpegCbDataPv.md."
   }
 }
