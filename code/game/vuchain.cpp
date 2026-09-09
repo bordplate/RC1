@@ -2,7 +2,16 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", VU0_loadMicroProgram__FPl);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_002335A0);
+extern "C" int D_00160F0C;
+extern "C" int D_001DDFB8[];
+
+extern "C" int *func_002335A0(void) {
+    int idx = *(int *)0x15ED84;
+    if (idx >= 19) idx = 0;
+    int *p = D_001DDFB8 + idx;
+    D_00160F0C = *p;
+    return p;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", VU1_initChain__Fv);
 

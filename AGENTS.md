@@ -358,6 +358,29 @@ five self-based lui/lw sequences. It does not fix repeated constant-address
 casts, nor the final GP-relative store. No vuchain flag was enabled in the
 production build. See its updated blocker note.
 
+Observation observed 2026-09-08 (s0-relative plain-extern stores + out-of-
+window address splitting): a plain `extern "C" int` global inside the gp
+window compiles to an **s0-relative** GPREL16 access — `sw/lw r,
+addr-0x166C00 (s0)` — NOT gp-relative. Splat prints the base as `$28` and
+objdump mislabels it `(gp)`; decode the word (rs field) to tell them apart.
+The GPREL16 relocation fills the offset exactly as for gp, so a plain
+extern matches whenever the original shows the s0 base (the original text
+contains 764 such accesses; confirmed in matched functions incl.
+texResetCursor__Fv, space_func_0022E188, and func_002335A0). When hunting
+the target global, compute `target = gp + signed(imm)` — printed labels and
+guessed D_ names have both misled (func_002335A0's store is D_00160F0C, not
+D_00160F24; Splat's -0x5CF4 label was the only correct field). For
+OUT-OF-WINDOW addresses the split convention depends on how the address is
+written: a constant cast `(T *)0xADDR` with low16 >= 0x8000 emits an UNSIGNED
+split (`lui 0x1D; ori 0xDFB8` for 0x1DDFB8), while a symbol reference emits
+`%hi/%lo` relocs that the assembler resolves as a SIGNED split
+(`lui 0x1E; addiu -0x2048`). Match the original's convention: signed split in
+the original => declare a real symbol (e.g. `extern "C" int D_001DDFB8[]`;
+such addresses are assigned in build/SCUS_971.99.ld even when absent from
+undefined_syms_auto.txt). Inside the gp window the opposite holds: casts are
+needed to force absolute lui/lw (see the menu-family notes). Full record:
+decomp_state/notes/vuchain_func_002335A0.md.
+
 ### Subagent Delegation
 
 - Use `decomp-researcher` before implementing an unfamiliar target when Ghidra,
