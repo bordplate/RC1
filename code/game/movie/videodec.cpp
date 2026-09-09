@@ -77,7 +77,14 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023CD00);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecFlush__FP8VideoDec);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecIsFlushed__FP8VideoDec);
+extern "C" unsigned int func_0012BA58(VideoDec* self);
+
+int videoDecIsFlushed(VideoDec* self) {
+    int ret = 0;
+    if (videoDecInputCount(self) == 0)
+        ret = func_0012BA58(self) > 0;
+    return ret;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecMain__FPv);
 

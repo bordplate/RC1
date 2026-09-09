@@ -55,6 +55,7 @@ void/int both match — see videoDecReset.)
   offset `0x48`; need a `ViBuf` type declaration and a method-bearing
   `VideoDec` layout (old-GCC mangling: free function, not class method —
   confirm label form in callers before writing C++ methods).
-- `videoDecIsFlushed__FP8VideoDec` (0x48): `if (InputCount()==0) return
-  func_0012BA58(self)>0; return 0;` — note the bnez delay slot zeroes $v0,
-  so the not-flushed path returns 0 (not "true").
+ - `videoDecIsFlushed__FP8VideoDec` (0x48): MATCHED 2026-09-09. See
+   notes/videodec_videoDecIsFlushed__FP8VideoDec.md (the bnez delay slot
+   zeroes $v0 so the not-flushed path returns 0; func_0012BA58 needs an
+   unsigned return for the original `sltu`).

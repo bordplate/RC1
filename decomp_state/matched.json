@@ -1532,5 +1532,13 @@
     "size": 48,
     "matched_date": "2026-09-09",
     "note": "Returns *(void**) of the table pointer at MobyInstance+0x78 when the 0x20 mode bit (u16 at +0x34) is set, else 0; twin func_00214228 reads the +0x10 word instead. Uses raw byte offsets because the project MobyInstance/vec4 layout is 8 bytes short (s128=long long=8B vs real 16B vec4): struct fields would land at 0x2C/0x68 instead of the original 0x34/0x78. The andi/nop/nop/beqz shape needs THREE explicit nops in compiler .s (EE assembler consumes one as the beqz dslot nop when it pulls the lw out of the dslot); one asm volatile with three nops placed after the & 0x20 into an int local reproduces the exact 12 words. See notes/mobyutil_func_002141F8.md."
+  },
+  "code/game/movie/videodec.cpp:31:videoDecIsFlushed__FP8VideoDec": {
+    "name": "videoDecIsFlushed__FP8VideoDec",
+    "source": "code/game/movie/videodec.cpp",
+    "vram": "0x0023CDE0",
+    "size": 72,
+    "matched_date": "2026-09-09",
+    "note": "Returns nonzero iff videoDecInputCount(self)==0 AND func_0012BA58(self)>0, where func_0012BA58 (in the unsplit sce/lib blob) tests (*(u32**)(mpeg+0x40))[1]==0 of the embedded SCE mpeg struct. Only caller: readMpeg's wait loop (0x23A6E8). Two EGC quirks: (1) func_0012BA58 must be prototyped with an UNSIGNED return - the original compare is sltu, an int prototype emits slt (1-word diff); (2) the 'int ret = 0' local needs s1 as home (s1 saved in prologue, zeroed in the first jal dslot, zero-return in the bnez dslot) - an early-return form cannot match. Verified by decomp_probe (72/72 bytes), objdump of the built ELF (18/18 words), and full boot cmp. See notes/videodec_videoDecIsFlushed__FP8VideoDec.md."
   }
 }
