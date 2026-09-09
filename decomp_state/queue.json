@@ -2661,7 +2661,7 @@
     "line": 45,
     "asm": "code/_generated/nonmatchings/game/menu/func_00207480.s",
     "name": "func_00207480",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/menu.cpp:47:func_002074B0",

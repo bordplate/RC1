@@ -1548,5 +1548,13 @@
     "size": 56,
     "matched_date": "2026-09-09",
     "note": "SCE mpeg no-data callback (videoDecCallback). Yields the thread (switchThread) then arms the video DMA: viBufAddDMA((ViBuf*)(*(int*)0x16120C + 0xD9090)); returns 1. 0x16120C is the 32-bit movie-data base; +0xD9090 is the video ViBuf (sibling +0xD9100 is the _AudioDec used by isAudioOK/proceedAudio). Matched with the plain constant-cast load (absolute lui/lw RELOAD into $v0, addu in the jal delay slot) under default flags - the two-call body (switchThread then viBufAddDMA) keeps the standard prologue-first schedule. Contrast: the single-call isAudioOK/proceedAudio hoist the load before the prologue and remain a 3-word EGC register-allocation gap (value $v1 vs $v0). Verified by decomp_probe (56/56 bytes), make clean+split, and full boot cmp. See notes/videodec_mpegNodata__FP7sceMpegP13sceMpegCbDataPv.md."
+  },
+  "code/game/menu.cpp:89:func_00207480": {
+    "name": "func_00207480",
+    "source": "code/game/menu.cpp",
+    "vram": "0x00207480",
+    "size": 44,
+    "matched_date": "2026-09-10",
+    "note": "Menu predicate callback (jump table vram 0x19FF70, entry 0x19FF90). int func(int x, int y): for y >= 0x101 returns (D_001413DC ^ 0xF) < 1 (i.e. D_001413DC == 0xF), else D_0013D3BD != 0. Both globals are in core.data, outside the gp window, so absolute lui/lw access sharing base lui 0x14 in the branch delay slot. Matched by writing the condition NEGATED (y >= 0x101) so EGC -fno-schedule-insns keeps the 2-instruction body (lbu D_0013D3BD; sltu) in the fall-through with the beqz target on the 3-instruction else (lw D_001413DC; xori; sltiu); the natural (y < 0x101) form emits bnez and swaps the two blocks. decomp_probe 44/44 bytes; clean build + full boot cmp pass; count 732->731."
   }
 }

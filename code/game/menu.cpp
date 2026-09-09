@@ -83,7 +83,23 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207300);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002073B8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207480);
+// D_0013D3BD: menu item enabled-flag byte in the 0x13D394 per-item family;
+// the specific item is unconfirmed.
+extern u8 D_0013D3BD __attribute__((section(".data")));
+// D_001413DC: menu state word; func_00207480 checks it for == 0xF. Unconfirmed.
+extern u32 D_001413DC __attribute__((section(".data")));
+
+// func_00207480: menu predicate callback (jump table vram 0x19FF70, entry
+// 0x19FF90). Returns the D_0013D3BD flag for y < 0x101, else D_001413DC == 0xF.
+// C linkage: emitted as the unmangled symbol the menu jump table references.
+extern "C" int func_00207480(int x, int y) {
+    // Negated condition is match-critical: EGC must keep the 2-instruction
+    // body (lbu; sltu) in the fall-through with the beqz target on the
+    // 3-instruction else; (y < 0x101) emits bnez and swaps the two blocks.
+    if (y >= 0x101)
+        return (D_001413DC ^ 0xF) < 1;
+    return D_0013D3BD != 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002074B0);
 
