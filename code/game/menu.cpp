@@ -92,6 +92,8 @@ extern u32 D_001413DC __attribute__((section(".data")));
 // func_00207480: menu predicate callback (jump table vram 0x19FF70, entry
 // 0x19FF90). Returns the D_0013D3BD flag for y < 0x101, else D_001413DC == 0xF.
 // C linkage: emitted as the unmangled symbol the menu jump table references.
+// The specific menu item/state this predicate gates is unconfirmed, so the
+// address-based name is retained.
 extern "C" int func_00207480(int x, int y) {
     // Negated condition is match-critical: EGC must keep the 2-instruction
     // body (lbu; sltu) in the fall-through with the beqz target on the
