@@ -391,6 +391,13 @@ decomp_state/notes/vuchain_func_002335A0.md.
   agents modify the same function concurrently.
 - Use `decomp-verifier` after implementation for an independent mechanical
   object/assembly and full-ELF parity check before committing.
+- `expert` is a highly usage-restricted, one-shot GPT-6 Astra consultant for a
+  problem that remains genuinely stuck after normal research and experiments.
+  Do not use it routinely or for an initial investigation. Invoke it at most
+  once for a target, with one complete self-contained dossier: exact objective,
+  original assembly/raw words, Ghidra and source evidence, object diffs, all
+  meaningful attempted variants, and the unresolved question. Do not resume
+  its task or ask follow-ups; mechanically test its recommendations locally.
 - `last-resort-decompiler` uses the usage-limited GPT-5.6 Sol model. Do not use
   it for routine targets or initial research. Invoke it only after the primary
   agent has exhausted normal source, assembly, Ghidra, compiler-probe, and
@@ -420,19 +427,26 @@ For each selected function:
 12. Run the full build/parity check before treating progress as durable.
 13. Send the status push notification (see Mobile Status Notification).
 
-The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, or even same behavior but with a different instruction. It must be a perfect match.
+The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, 
+or even same behavior but with a different instruction. It must be a perfect match.
 
-You should rename unnamed functions and globals when it becomes apparent what they do.
+You should rename unnamed functions and globals when it becomes apparent what 
+they do. As you learn more about the target and its datastructures,  you should 
+be renaming code that is already committed too. You may perform refactors across 
+the codebase to achieve this. The goal is readable code. Likewise, you should 
+avoid magic numbers by replacing them with appropriately named constants.
 
 Prefer small leaf functions and one function at a time. Preserve old compiler
-compatibility and existing project style. Do not rewrite unrelated code. If
-repeated attempts fail, record the concrete blocker and continue elsewhere.
+compatibility and existing project style. If repeated attempts fail, record the
+ concrete blocker and continue elsewhere.
 
 For an experimental candidate that needs a temporary assembly fallback, retain
 the project's existing `INCLUDE_ASM` path while iterating. Only remove it after
 the candidate object or function assembly has been compared mechanically.
 
 In C++ files, avoid creating `extern "C"` prefixed functions with manualled mangled names and instead create them as pure C++ functions and let the compiler mangle the names like it should.
+Insomniac wrote most of the game using C++ without classes. If you `extern "C"` everything you might struggle to match the assembly of the original executable. Prefer to write functions in C++ unless there's clear evidence the function is a pure C function.
+Just because a symbol initially has an unmangled name doesn't mean it's not a C++ function, it often just means Splat, some tool, or another attempt at decompiling didn't give it a mangled name. Whenever you're writing a function in a .cpp file you should assume it's a C++ function unless there's strong proof otherwise from the original game binary.
 
 Mangling correction (verified 2026-09-06): this EGC v2.73a build uses old
 cfront-style mangling. Free functions work for both parameterized and
@@ -520,6 +534,8 @@ diff fails, do not commit; record the concrete blocker and continue without
 claiming the function is matched.
 
 Push `main` to `origin` when you've committed.
+
+Clean test probes and temporary files after finishing. 
 
 ## Mobile Status Notification
 
