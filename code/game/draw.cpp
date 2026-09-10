@@ -24,28 +24,28 @@ struct Camera {
     float f1B0;
 };
 
-extern "C" Camera D_00186F40;
-extern "C" Camera D_0018CF10;
+extern Camera currentCamera;
+extern Camera drawCamera;
 
 extern "C" void func_001F9FC8(void *a0);
 extern "C" void func_001FA378(void *a0, void *a1, void *a2);
 extern "C" void func_001F9A68(void *a0, void *a1, float f);
 extern "C" void func_001F9D20(void *a0, void *a1, void *a2);
 
-extern "C" void func_001F2070(float *out, float *vec) {
+void projectWorldPoint(float* out, float* vec) {
     float v[16];
     float m[16];
     float s4[4];
     float r4[4];
     func_001F9FC8(v);
-    v[12] = -D_00186F40.f140 * 1024.0f;
-    v[13] = -D_00186F40.f144 * 1024.0f;
-    v[14] = -D_00186F40.f148 * 1024.0f;
-    func_001FA378(m, D_00186F40.matrix, v);
+    v[12] = -currentCamera.f140 * 1024.0f;
+    v[13] = -currentCamera.f144 * 1024.0f;
+    v[14] = -currentCamera.f148 * 1024.0f;
+    func_001FA378(m, currentCamera.matrix, v);
     func_001F9A68(s4, vec, 1024.0f);
     s4[3] = 1.0f;
     func_001F9D20(r4, s4, m);
-    float scale = D_0018CF10.f00 / r4[3];
+    float scale = drawCamera.f00 / r4[3];
     out[2] = r4[2] * 0.0009765625f;
     r4[0] = r4[0] * scale + 2048.0f;
     r4[1] = r4[1] * scale + 2048.0f;
@@ -55,9 +55,9 @@ extern "C" void func_001F2070(float *out, float *vec) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F21A8);
 
-extern "C" void func_001F21B0(void) {
+void draw_noopA(void) {
 }
-extern "C" void func_001F21B8(void) {
+void draw_noopB(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F21C0);
@@ -153,36 +153,36 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DrawUIFrame);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6060);
 
-extern "C" int D_0015F49C;
+extern int drawOcclusionEnabled;
 
-extern "C" void func_001F61E8(void) {
-    D_0015F49C = 1;
+void enableOcclusion(void) {
+    drawOcclusionEnabled = 1;
 }
 
-extern "C" void func_001F61F8(void) {
-    D_0015F49C = 0;
+void disableOcclusion(void) {
+    drawOcclusionEnabled = 0;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6200);
 
 extern "C" int func_001F6200(char* param_1, int param_2, char* param_3);
 
-extern "C" char D_001DF050[];
+extern char fontSmallGlyphs[];
 
-extern "C" int func_001F6250(char* param_1, int param_2) {
-    return func_001F6200(param_1, param_2, D_001DF050);
+int drawTextSmall(char* param_1, int param_2) {
+    return func_001F6200(param_1, param_2, fontSmallGlyphs);
 }
 
-extern "C" char D_001DF3F0[];
+extern char fontMediumGlyphs[];
 
-extern "C" int func_001F6270(char* param_1, int param_2) {
-    return func_001F6200(param_1, param_2, D_001DF3F0);
+int drawTextMedium(char* param_1, int param_2) {
+    return func_001F6200(param_1, param_2, fontMediumGlyphs);
 }
 
-extern "C" char D_001DF790[];
+extern char fontLargeGlyphs[];
 
-extern "C" int func_001F6290(char* param_1, int param_2) {
-    return func_001F6200(param_1, param_2, D_001DF790);
+int drawTextLarge(char* param_1, int param_2) {
+    return func_001F6200(param_1, param_2, fontLargeGlyphs);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrint);
@@ -260,7 +260,7 @@ void PutDrawBufferLarge();
 void InitViewContext();
 void UpdateViewContext();
 
-extern "C" void func_001F7978(void) {
+void draw_prepareFrame(void) {
     PutDrawBufferLarge();
     InitViewContext();
     UpdateViewContext();
