@@ -1572,5 +1572,13 @@
     "size": 48,
     "matched_date": "2026-09-10",
     "note": "Twin of matched moby_getActiveObject (func_002141F8): byte-identical except the final load reads the +0x10 word of the per-moby variable block at MobyInstance+0x78 instead of +0x00, gated on the same 0x20 mode bit (u16 at +0x34). Replaced with C as moby_getSecondaryObject using the same three-nop asm trick and raw byte offsets (project MobyInstance/vec4 layout is 8 bytes short, see notes/mobyutil_func_002141F8.md). The still-INCLUDE_ASM caller func_00213920 references the original symbol, so config/linker_aliases.ld carries func_00214228 = 0x00214228 while the C definition emits mangled moby_getSecondaryObject__FP12MobyInstance placed at 0x214228 by object layout. Verified: the object's 12 words at the function slot are byte-identical to the original and full build + cmp passes."
+  },
+  "code/989snd/ee/989snd.c:122:snd_SetSoundParams_CB": {
+    "name": "snd_SetSoundParams_CB",
+    "source": "code/989snd/ee/989snd.c",
+    "vram": "0x0012E4C0",
+    "size": 72,
+    "matched_date": "2026-09-10",
+    "note": "8-parameter wrapper, byte-identical twin of matched snd_PlaySoundVolPanPMPB (0x12E308) except IOP command 0x21 vs 0x11: buf[6]=a..f, snd_SendIOPCommandNoWait(0x21, 0x18, buf, g, h). Both callers (sound update at 0x22D61C and 0x21658C) pass (volume, flags, pan, ?, ?, ?, tablePtr, entityPtr) \u2014 g/h are the 7th/8th int args in t2/t3 per the verified EGC ABI. Standalone probe byte-identical (72/72 bytes, 18/18 words incl. move-v0-a3 / sw-t1-in-jal-delay-slot idiosyncrasies); linked-ELF function words compared equal; clean rebuild + cmp passes. See notes/989snd_snd_SetSoundParams_CB.md."
   }
 }
