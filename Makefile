@@ -80,7 +80,7 @@ $(TARGET): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CROSS)-strip $(OBJS) -N dummy-symbol-name
 	# _gp must match the runtime $gp: crt0 loads D_00166C00 into $gp at boot.
-	$(CROSS)-ld -EL -m elf32lr5900 --defsym _gp=0x166c00 -T $(BUILD_DIR)/undefined_funcs_auto.txt -T $(BUILD_DIR)/undefined_syms_auto.txt -T $(BASENAME).ld -Map build/$(BASENAME).ld $(OBJS) -o $@
+	$(CROSS)-ld -EL -m elf32lr5900 --defsym _gp=0x166c00 -T $(BUILD_DIR)/undefined_funcs_auto.txt -T $(BUILD_DIR)/undefined_syms_auto.txt -T config/linker_aliases.ld -T $(BASENAME).ld -Map build/$(BASENAME).ld $(OBJS) -o $@
 	$(CROSS)-objcopy $(TARGET) build/boot_elf.elf -O binary
 
 $(OBJ_DIR)/%.o: code/%.s

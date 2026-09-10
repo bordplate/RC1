@@ -425,7 +425,9 @@ For each selected function:
 11. Only then, if it still does not match, record a concrete blocker including
     the last-resort result or failed invocation.
 12. Run the full build/parity check before treating progress as durable.
-13. Send the status push notification (see Mobile Status Notification).
+13. Make sure the decompiled function adheres to STYLEGUIDE.md and then invoke
+      the `decomp-verifier` subagent to verify the quality of the decomp.
+14. Send the status push notification (see Mobile Status Notification).
 
 The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, 
 or even same behavior but with a different instruction. It must be a perfect match.
@@ -447,6 +449,7 @@ the candidate object or function assembly has been compared mechanically.
 In C++ files, avoid creating `extern "C"` prefixed functions with manualled mangled names and instead create them as pure C++ functions and let the compiler mangle the names like it should.
 Insomniac wrote most of the game using C++ without classes. If you `extern "C"` everything you might struggle to match the assembly of the original executable. Prefer to write functions in C++ unless there's clear evidence the function is a pure C function.
 Just because a symbol initially has an unmangled name doesn't mean it's not a C++ function, it often just means Splat, some tool, or another attempt at decompiling didn't give it a mangled name. Whenever you're writing a function in a .cpp file you should assume it's a C++ function unless there's strong proof otherwise from the original game binary.
+A name such as `func_XXXXXX` is only Splat's placeholder for an unknown symbol; it is not evidence of C linkage. Likewise, `DAT_XXXXXX` and `D_XXXXXX` are address placeholders, not semantic names. Every decompiled unknown function or global must be investigated and renamed in source, with its verified address retained in `config/symbols.txt` or the linker alias file as needed. Update every source reference and the symbol configuration together. Only retain an address-based name when the symbol is still an `INCLUDE_ASM` placeholder or the investigation genuinely cannot establish a better name; in the latter case add the required explanatory comment from `STYLEGUIDE.md`. Shared structs and declarations are part of the refactor: when a function's accesses establish a field or global layout, correct the shared definition and update all affected users rather than preserving opaque pointer arithmetic to avoid touching neighboring code.
 
 Mangling correction (verified 2026-09-06): this EGC v2.73a build uses old
 cfront-style mangling. Free functions work for both parameterized and
