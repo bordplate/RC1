@@ -21,7 +21,7 @@ extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_callbacks", func_00208840);
 
 extern "C" void menu_restoreSelection(void) {
-    MenuData_0013D290* menu = &D_0013D290;
+    MenuState* menu = &menuStateData;
     *(int*)0x15EEB0 = 3;
     register int selected asm("$4");
     selected = menu->saved;

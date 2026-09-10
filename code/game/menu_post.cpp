@@ -10,9 +10,9 @@ void menu_post_enableSubmenu(void) {
 }
 
 void menu_post_selectNextPage(void) {
-    D_0013D290.field_0xE0 = -1;
+    menuStateData.field_0xE0 = -1;
     *(int*)0x15EEB0 = 4;
-    D_0013D290.field_0xDC = -1;
+    menuStateData.field_0xDC = -1;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post", func_002089D0);

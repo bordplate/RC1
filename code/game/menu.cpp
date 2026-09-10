@@ -31,10 +31,10 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00206A90);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00206B10);
 
-extern "C" unsigned int D_0015FD64;
+extern unsigned int menuSelectionCount;
 
 int menu_isSelectionCountZero(void) {
-    return D_0015FD64 < 1;
+    return menuSelectionCount < 1;
 }
 
 extern u8 menuItemEnabled_16 __attribute__((section(".data")));
@@ -86,8 +86,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002073B8);
 // D_0013D3BD: menu item enabled-flag byte in the 0x13D394 per-item family;
 // the specific item is unconfirmed.
 extern u8 menuItemEnabled_41 __attribute__((section(".data")));
-// D_001413DC: menu state word; func_00207480 checks it for == 0xF. Unconfirmed.
-extern u32 menuState __attribute__((section(".data")));
+// Menu state word used by the map availability predicate.
+extern u32 menuSelectionState __attribute__((section(".data")));
 
 // func_00207480: menu predicate callback (jump table vram 0x19FF70, entry
 // 0x19FF90). Returns the D_0013D3BD flag for y < 0x101, else D_001413DC == 0xF.
@@ -99,7 +99,7 @@ int menu_isMapItemAvailable(int x, int y) {
     // body (lbu; sltu) in the fall-through with the beqz target on the
     // 3-instruction else; (y < 0x101) emits bnez and swaps the two blocks.
     if (y >= 0x101)
-        return (menuState ^ 0xF) < 1;
+        return (menuSelectionState ^ 0xF) < 1;
     return menuItemEnabled_41 != 0;
 }
 

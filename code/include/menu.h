@@ -1,7 +1,7 @@
 #ifndef RC1_MENU_H
 #define RC1_MENU_H
 
-struct MenuData_0013D290 {
+struct MenuState {
     char pad0[0x1C];
     int selected;
     char pad1[0xBC - 0x20];
@@ -13,6 +13,6 @@ struct MenuData_0013D290 {
     int pending;
 };
 
-extern "C" struct MenuData_0013D290 D_0013D290 __attribute__((section(".data")));
+extern MenuState menuStateData __attribute__((section(".data")));
 
 #endif
