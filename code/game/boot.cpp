@@ -14,7 +14,7 @@ struct LevelRoot {
 
 typedef void (*StartLevelPtr)(void);
 
-extern LevelRoot* DAT_0015EE4C __attribute__((section(".data")));
+extern LevelRoot* levelRoot __attribute__((section(".data")));
 
 void startlevel();
 StartLevelPtr ParseBin();
@@ -27,7 +27,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/boot", ParseBin__Fv);
 
 StartLevelPtr ParseBin() {
     void* entrypoint = nullptr;
-    u8* base = (u8*)DAT_0015EE4C + *(u32*)DAT_0015EE4C;
+    u8* base = (u8*)levelRoot + *(u32*)levelRoot;
     LevelLoad* chunk = (LevelLoad*)(base);
 
     while (true) {
