@@ -3,13 +3,13 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post", func_002088D0);
 
-extern "C" void func_00208980(void) {
+void menu_post_enableSubmenu(void) {
     if ((*(int*)0x15EEB4 ^ 1) & 1) {
         *(int*)0x15EEB0 = 3;
     }
 }
 
-extern "C" void func_002089A8(void) {
+void menu_post_selectNextPage(void) {
     D_0013D290.field_0xE0 = -1;
     *(int*)0x15EEB0 = 4;
     D_0013D290.field_0xDC = -1;
@@ -41,36 +41,36 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post", func_00208D60);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post", func_00208DD8);
 
-extern "C" void func_00208E68(void) {
+void menu_post_openInventory(void) {
     if (*(int*)0x15EEB4 & 0x40) {
         return;
     }
     *(int*)0x15EEB0 = 3;
 }
 
-extern "C" void func_00208E90(void) {
+void menu_post_openWeapons(void) {
     if (*(int*)0x15EEB4 & 0x40) {
         return;
     }
     *(int*)0x15EEB0 = 3;
 }
 
-extern "C" int D_0013D2AC __attribute__((section(".data")));
+extern int menu_postHasPendingSelection __attribute__((section(".data")));
 
-extern "C" void func_00208EB8(void) {
-    if (D_0013D2AC) {
+void menu_post_openGadgets(void) {
+    if (menu_postHasPendingSelection) {
         *(int*)0x15EEB0 = 3;
     }
 }
 
-extern "C" void func_00208ED8(void) {
+void menu_post_openMap(void) {
     if (*(int*)0x15EEB4 & 0x40) {
         return;
     }
     *(int*)0x15EEB0 = 3;
 }
 
-extern "C" void func_00208F00(void) {
+void menu_post_openMissions(void) {
     if (*(int*)0x15EEB4 & 0x40) {
         return;
     }

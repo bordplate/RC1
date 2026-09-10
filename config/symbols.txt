@@ -37,6 +37,7 @@ pauseSoundVolume = 0x0013E5A0;
 pauseMenuFlags = 0x0013CB04;
 pauseCurrentActionList = 0x001D5BF8;
 pauseDefaultActionList = 0x001D22F8;
+menu_postHasPendingSelection = 0x0013D2AC;
 func_00206978 = 0x00206978;
 func_002069A0 = 0x002069A0;
 func_002069B0 = 0x002069B0;
