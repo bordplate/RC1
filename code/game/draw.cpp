@@ -27,7 +27,8 @@ struct Camera {
 extern Camera currentCamera;
 extern Camera drawCamera;
 
-// C linkage: these VU math helpers are exported by their unmangled assembly names.
+// C linkage: these helpers are handwritten VU assembly in the generated
+// fast-function region, so their entry points are not cfront-mangled.
 extern "C" void draw_loadViewMatrix(void* a0);
 extern "C" void draw_transformMatrix(void* a0, void* a1, void* a2);
 extern "C" void draw_scaleVector(void* a0, void* a1, float f);

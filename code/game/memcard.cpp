@@ -12,7 +12,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_Update);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_MakeWholeSave);
 
-// C linkage: the memory-card library entry point is exported by an unmangled symbol.
+// C linkage: this memory-card routine is implemented in generated sce/lib.s
+// and memcard_Init calls its unmangled entry point at 0x001233F0.
 extern "C" int memcard_queryStatus(void);
 extern char memcardErrorMessage[];
 extern "C" void STUB_printf(const char* fmt, ...);
