@@ -33,15 +33,15 @@ extern "C" int SetPauseActionList(PauseActionMode* mode) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021A1E0);
 
-extern "C" int func_0021A308(void) {
+int pause_callbackNoopA(void) {
     return 0;
 }
 
-extern "C" int func_0021A310(void) {
+int pause_callbackNoopB(void) {
     return 0;
 }
 
-extern "C" int func_0021A318(int* p) {
+int pause_resetCallbackState(int* p) {
     p[0x11] = -1;
     return 0;
 }
@@ -58,7 +58,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021B7A8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021B858);
 
-extern "C" int func_0021BD98(void) {
+int pause_callbackNoopC(void) {
     return 0;
 }
 
@@ -78,24 +78,24 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021CA60);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021CA98);
 
-extern "C" int D_001A0318 __attribute__((section(".data")));
+extern int pauseMemoryCardState __attribute__((section(".data")));
 
-extern "C" int func_0021CAC8(void) {
-    D_001A0318 = -1;
+int pause_resetMemoryCardState(void) {
+    pauseMemoryCardState = -1;
     return 0;
 }
 
 extern "C" void func_00225AC0(int param_1);
 
-extern "C" int func_0021CAE0(void) {
+int pause_enableSoundOption(void) {
     func_00225AC0(1);
     return 0;
 }
 
-extern "C" int D_0013E5A0 __attribute__((section(".data")));
+extern int pauseSoundVolume __attribute__((section(".data")));
 
-extern "C" int func_0021CB00(void) {
-    D_0013E5A0 = *(int*)0x15EDF0 * 8 / 10;
+int pause_updateSoundVolume(void) {
+    pauseSoundVolume = *(int*)0x15EDF0 * 8 / 10;
     return 0;
 }
 
@@ -105,7 +105,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", DrawSoundMenu);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021D168);
 
-extern "C" int func_0021D1F0(void) {
+int pause_soundCallbackNoop(void) {
     return 0;
 }
 
@@ -123,7 +123,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021DDD0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021DDF8);
 
-extern "C" int func_0021DF28(void) {
+int pause_menuCallbackNoop(void) {
     return 0;
 }
 
@@ -151,7 +151,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021EA48);
 
 extern "C" int func_00225530(int);
 
-extern "C" int func_0021EAF0(int* p) {
+int pause_updateSelection(int* p) {
     p[0x11] = func_00225530(p[0x11]);
     return 0;
 }
@@ -206,19 +206,19 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_002215F8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_002216C0);
 
-extern "C" int func_002217F8(void) {
+int pause_endMenuCallback(void) {
     return 0;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00221800);
 
-extern "C" int D_0013CB04 __attribute__((section(".data")));
-extern "C" int* D_001D5BF8 __attribute__((section(".data")));
-extern "C" int D_001D22F8 __attribute__((section(".data")));
+extern int pauseMenuFlags __attribute__((section(".data")));
+extern int* pauseCurrentActionList __attribute__((section(".data")));
+extern int pauseDefaultActionList __attribute__((section(".data")));
 
-extern "C" int func_00221908(void) {
-    if (D_0013CB04 & 0x40) {
-        D_001D5BF8 = &D_001D22F8;
+int pause_selectDefaultActionList(void) {
+    if (pauseMenuFlags & 0x40) {
+        pauseCurrentActionList = &pauseDefaultActionList;
     }
     return 0;
 }
@@ -255,7 +255,7 @@ typedef struct {
     u32 field_50;
 } PauseMenuState;
 
-extern "C" int func_002223D8(PauseMenuState* menu) {
+int pause_resetMenuState(PauseMenuState* menu) {
     menu->field_40 = 0;
     menu->field_50 = 0;
     menu->field_3c = 0;
@@ -281,7 +281,7 @@ typedef struct {
     int f48;
 } PauseCallback;
 
-extern "C" int func_00222F58(PauseCallback *self) {
+int pause_updateCallback(PauseCallback* self) {
     self->f48 = func_00225CD8(self->f48);
     return 0;
 }
@@ -302,9 +302,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_002242B8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", LoadHandGadget);
 
-extern "C" void func_00224B60(void) {
+void pause_noopA(void) {
 }
-extern "C" void func_00224B68(void) {
+void pause_noopB(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00224B70);
@@ -331,7 +331,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_002256E8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00225A68);
 
-extern "C" void func_00225AB8(void) {
+void pause_noopC(void) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00225AC0);
