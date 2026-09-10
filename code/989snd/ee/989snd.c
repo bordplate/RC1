@@ -141,27 +141,29 @@ extern void func_00116078(void*);
 extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);
 
 void snd_PostMessage(void) {
-    int* p = snd_batchCommandBuffers[snd_batchIndex];
-    (*p)++;
+    int* commandBuffer = snd_batchCommandBuffers[snd_batchIndex];
+    (*commandBuffer)++;
     snd_FlushSoundCommands();
 }
 
 void snd_SendCurrentBatch(void) {
-    int next;
+    int nextIndex;
+
     snd_PrepareReturnBuffer(snd_batchReturnBuffers[snd_batchIndex],
-                           *snd_batchCommandBuffers[snd_batchIndex]);
+                             *snd_batchCommandBuffers[snd_batchIndex]);
     while (sceSifCheckStatRpc(&snd_rpcServer)) {
         func_00116078(&snd_batchCommand);
         FlushCache(0);
     }
-        sceSifCallRpc(&snd_rpcServer, 0x4D, 1, snd_batchCommandBuffers[snd_batchIndex],
+
+    sceSifCallRpc(&snd_rpcServer, 0x4D, 1, snd_batchCommandBuffers[snd_batchIndex],
                   0x1000 - snd_batchFreeBytes[snd_batchIndex],
                   snd_batchReturnBuffers[snd_batchIndex],
                   *snd_batchCommandBuffers[snd_batchIndex] * 4 + 8, 0, 0);
-    next = snd_batchIndex != 1;
-    snd_batchIndex = next;
-    *snd_batchCommandBuffers[next] = 0;
-    snd_batchFreeBytes[next] = 0xFFC;
+    nextIndex = snd_batchIndex != 1;
+    snd_batchIndex = nextIndex;
+    *snd_batchCommandBuffers[nextIndex] = 0;
+    snd_batchFreeBytes[nextIndex] = 0xFFC;
 }
 
 void snd_UnkFunction_0012eaf0(void) {
