@@ -17,6 +17,10 @@ priority. Keep any necessary exception local and explain why it exists.
   than presenting a guess as fact.
 - Do not restyle or refactor matching code without a concrete reason. Equivalent
   source can produce different EEGCC output.
+- Do not use magic numbers in any way. There should not be magic numbers in 
+  command, pointers, struct offsets, or similar. If a magic number is absolutely
+  necessary for matching decompilation, then it should be in a descriptive variable
+  or define. Exceptions apply to padding bytes and buffer sizes where intention is clear.
 
 ## Language And Toolchain
 
