@@ -167,24 +167,26 @@ void disableOcclusion(void) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6200);
 
-extern "C" int func_001F6200(char* param_1, int param_2, char* param_3);
+// C linkage: this still-assembly font helper at 0x001F6200 sums glyph widths;
+// the original call target is an unmangled entry point.
+extern "C" int fontMeasureString(char* param_1, int param_2, char* param_3);
 
 extern char fontSmallGlyphs[];
 
 int drawTextSmall(char* param_1, int param_2) {
-    return func_001F6200(param_1, param_2, fontSmallGlyphs);
+    return fontMeasureString(param_1, param_2, fontSmallGlyphs);
 }
 
 extern char fontMediumGlyphs[];
 
 int drawTextMedium(char* param_1, int param_2) {
-    return func_001F6200(param_1, param_2, fontMediumGlyphs);
+    return fontMeasureString(param_1, param_2, fontMediumGlyphs);
 }
 
 extern char fontLargeGlyphs[];
 
 int drawTextLarge(char* param_1, int param_2) {
-    return func_001F6200(param_1, param_2, fontLargeGlyphs);
+    return fontMeasureString(param_1, param_2, fontLargeGlyphs);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrint);
