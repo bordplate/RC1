@@ -119,8 +119,17 @@ evidence of C linkage.
 - Do not use either construct merely to make linking easier.
 
 ```cpp
-// C linkage: this SDK entry point is exported as the unmangled symbol FlushCache.
+// C linkage: the implementation is supplied by generated sce/lib.s, and the
+// original call target is the unmangled SDK symbol FlushCache.
 extern "C" void FlushCache(int mode);
+
+// C linkage: this helper is implemented as handwritten VU assembly in the
+// generated fast-function region; its entry point is not cfront-mangled.
+extern "C" void draw_transformVector(void* out, void* in, void* matrix);
+
+// C linkage: this memory-card routine is implemented in generated sce/lib.s;
+// memcard_Init calls its unmangled entry point at 0x001233F0.
+extern "C" int memcard_queryStatus(void);
 
 // Symbol override: the ELF uses an unmangled callback name despite C++ types.
 void RefreshPointLight(int index) asm("RefreshPointLight");
