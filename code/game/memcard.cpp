@@ -13,12 +13,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_Update);
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_MakeWholeSave);
 
 extern "C" int func_001233F0(void);
-extern char D_001E8360[];
+extern char memcardErrorMessage[];
 extern "C" void STUB_printf(const char* fmt, ...);
 
 extern "C" void memcard_Init(void) {
     if (func_001233F0() != 0)
-        STUB_printf(D_001E8360);
+        STUB_printf(memcardErrorMessage);
 }
 
 extern "C" int memcard_GetDataSize(int* data) {

@@ -12,13 +12,13 @@ typedef struct {
     u32 size;
 } DebugFontLoadInfo;
 
-extern "C" DebugFontLoadInfo D_00137B80 __attribute__((section(".data")));
-extern "C" u8 D_001AABC0[] __attribute__((section(".data")));
+extern DebugFontLoadInfo debugFontLoadInfo __attribute__((section(".data")));
+extern u8 debugFontBuffer[] __attribute__((section(".data")));
 
 extern "C" void LoadDebugFont(void) {
     u8 buf[0x18];
-    Load(D_001AABC0, D_00137B80.src, D_00137B80.size);
-    LoadPifAsPSMT8H(D_001AABC0, buf, *(u32*)0x15EE88 + 0xC0000, 0x3FFC00);
+    Load(debugFontBuffer, debugFontLoadInfo.src, debugFontLoadInfo.size);
+    LoadPifAsPSMT8H(debugFontBuffer, buf, *(u32*)0x15EE88 + 0xC0000, 0x3FFC00);
     *(u64*)0x15EEC8 = *(u64*)buf;
 }
 

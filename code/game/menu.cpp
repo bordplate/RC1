@@ -83,17 +83,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207300);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002073B8);
 
-// D_0013D3BD: menu item enabled-flag byte in the 0x13D394 per-item family;
-// the specific item is unconfirmed.
 extern u8 menuItemEnabled_41 __attribute__((section(".data")));
 // Menu state word used by the map availability predicate.
 extern u32 menuSelectionState __attribute__((section(".data")));
 
-// func_00207480: menu predicate callback (jump table vram 0x19FF70, entry
-// 0x19FF90). Returns the D_0013D3BD flag for y < 0x101, else D_001413DC == 0xF.
-// C linkage: emitted as the unmangled symbol the menu jump table references.
-// The specific menu item/state this predicate gates is unconfirmed, so the
-// address-based name is retained.
+// Menu predicate callback at jump table entry 0x19FF90.
 int menu_isMapItemAvailable(int x, int y) {
     // Negated condition is match-critical: EGC must keep the 2-instruction
     // body (lbu; sltu) in the fall-through with the beqz target on the
@@ -109,11 +103,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207508);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207580);
 
-// func_002075F8: menu predicate callback (jump table vram 0x19FF70, entry
-// 0x19FFA0). Returns
-// 1 only when x < 224 and y <= 38.0f; the gated menu item is unconfirmed, so
-// the address-based name is retained. C linkage: emitted as the unmangled
-// symbol the menu jump table references.
+// Menu predicate callback at jump table entry 0x19FFA0.
 // Match-sensitive: the used float is the 3rd float param — EGC packs float
 // args into 64-bit pairs (f12:f13, f14:f15), so the 3rd lands in $f14 as the
 // original expects. The asm nop is the mtc1 -> c.le.s FPU hazard.

@@ -20,14 +20,14 @@ typedef struct {
     u32 actionList;
 } PauseActionMode;
 
-extern "C" int D_001D4810[];
-extern "C" int D_001D4840[];
+extern int pauseActionListA[];
+extern int pauseActionListB[];
 
 extern "C" int SetPauseActionList(PauseActionMode* mode) {
     if (*(int *)0x15EE90 != 0)
-        mode->actionList = (u32)D_001D4810;
+        mode->actionList = (u32)pauseActionListA;
     else
-        mode->actionList = (u32)D_001D4840;
+        mode->actionList = (u32)pauseActionListB;
     return 0;
 }
 

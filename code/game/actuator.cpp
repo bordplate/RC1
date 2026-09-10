@@ -6,10 +6,10 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/actuator", actuator_CalcPower);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/actuator", func_001E9120);
 
-extern "C" int D_0015EE74;
+extern int textureCursor;
 
 void texResetCursor(void) {
-    D_0015EE74 = *(int *)0x15EE8C;
+    textureCursor = *(int *)0x15EE8C;
     *(int *)0x15EF20 = 0;
 }
 

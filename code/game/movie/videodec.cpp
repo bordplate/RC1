@@ -92,11 +92,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecMain__FP
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", decBs0__FP8VideoDec);
 
-extern char D_00161220[];
+extern char videoErrorMessage[];
 extern "C" void STUB_printf(const char* fmt, ...);
 
 int mpegError(struct sceMpeg* mpeg, struct sceMpegCbDataError* err, void* user) {
-    STUB_printf(D_00161220, *(int*)((char*)err + 4));
+    STUB_printf(videoErrorMessage, *(int*)((char*)err + 4));
     return 1;
 }
 

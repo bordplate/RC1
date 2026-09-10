@@ -8,10 +8,10 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pad", ProcessPadInput__FR3PADPUci
 
 struct PAD;
 
-extern PAD D_0013C940;
+extern PAD padState;
 
 void UpdatePad(PAD& self);
 
 void UpdatePad(void) {
-    UpdatePad(D_0013C940);
+    UpdatePad(padState);
 }

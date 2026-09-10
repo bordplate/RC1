@@ -16,11 +16,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", initAll__Fiii);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", termAll__Fv);
 
-extern char D_001611F8[];
+extern char movieErrorMessage[];
 extern "C" void STUB_printf(const char* fmt, ...);
 
 extern "C" void ErrMessage(const char* msg) {
-    STUB_printf(D_001611F8, msg);
+    STUB_printf(movieErrorMessage, msg);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", proceedAudio__Fv);

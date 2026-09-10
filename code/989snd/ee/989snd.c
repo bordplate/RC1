@@ -12,13 +12,13 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012DE60);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GotReturns);
 
-extern void* D_0015EC80;
-extern int D_0015EC84;
-extern int D_0015ECC4;
+extern void* snd_currentBuffer;
+extern int snd_currentBufferIndex;
+extern int snd_batchBusy;
 
 void snd_PrepareReturnBuffer(int* buf, int index) {
-    D_0015EC84 = index;
-    D_0015EC80 = buf;
+    snd_currentBufferIndex = index;
+    snd_currentBuffer = buf;
     buf[index + 1] = 0;
     *buf = 0;
 }
@@ -128,8 +128,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SendIOPCommandA
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SendIOPCommandNoWait);
 
 extern void FlushCache(int);
-extern int D_00153D20 __attribute__((section(".data")));
-extern int D_0015EBC0 __attribute__((section(".data")));
+extern int snd_batchCommand __attribute__((section(".data")));
+extern int snd_rpcServer __attribute__((section(".data")));
 extern int* snd_batchCommandBuffers[2];
 extern int snd_batchFreeBytes[2];
 extern int* snd_batchReturnBuffers[2];
@@ -148,11 +148,11 @@ void snd_SendCurrentBatch(void) {
     int next;
     snd_PrepareReturnBuffer(snd_batchReturnBuffers[snd_batchIndex],
                            *snd_batchCommandBuffers[snd_batchIndex]);
-    while (sceSifCheckStatRpc(&D_0015EBC0)) {
-        func_00116078(&D_00153D20);
+    while (sceSifCheckStatRpc(&snd_rpcServer)) {
+        func_00116078(&snd_batchCommand);
         FlushCache(0);
     }
-    sceSifCallRpc(&D_0015EBC0, 0x4D, 1, snd_batchCommandBuffers[snd_batchIndex],
+        sceSifCallRpc(&snd_rpcServer, 0x4D, 1, snd_batchCommandBuffers[snd_batchIndex],
                   0x1000 - snd_batchFreeBytes[snd_batchIndex],
                   snd_batchReturnBuffers[snd_batchIndex],
                   *snd_batchCommandBuffers[snd_batchIndex] * 4 + 8, 0, 0);
@@ -163,11 +163,11 @@ void snd_SendCurrentBatch(void) {
 }
 
 void snd_UnkFunction_0012eaf0(void) {
-    D_0015ECC4 = 1;
+    snd_batchBusy = 1;
 }
 
 void snd_UnkFunction_0012eb00(void) {
-    D_0015ECC4 = 0;
+    snd_batchBusy = 0;
     snd_FlushSoundCommands();
 }
 

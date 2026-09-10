@@ -10,13 +10,13 @@ typedef struct {
     u32 f110;
 } PauseScreenState;
 
-extern "C" PauseScreenState D_001D5BF0 __attribute__((section(".data")));
+extern PauseScreenState pauseScreenState __attribute__((section(".data")));
 
-extern "C" void func_00218F68(void)
+void pause_scheduleInput(void)
 {
-    register PauseScreenState* base asm("$3") = &D_001D5BF0;
+    register PauseScreenState* base asm("$3") = &pauseScreenState;
 
-    D_001D5BF0.f0 = 0x2D;
+    pauseScreenState.f0 = 0x2D;
 
     register u32 mode asm("$5") = 3;
 

@@ -49,17 +49,17 @@ typedef struct MusicState {
     s16 field_0x7A;
 } MusicState;
 
-extern MusicState D_001516D0 __attribute__((section(".data")));
+extern MusicState musicTransition __attribute__((section(".data")));
 
 void music_Pause(int param_1) {
     if (param_1 != 0) {
-        D_001516D0.field_0x5C = -0x8000;
-        D_001516D0.field_0x5E = 0;
+        musicTransition.field_0x5C = -0x8000;
+        musicTransition.field_0x5E = 0;
     }
-    D_001516D0.field_0x40 = -0x8000;
-    D_001516D0.field_0x42 = 0;
-    D_001516D0.field_0x78 = -0x8000;
-    D_001516D0.field_0x7A = 0;
+    musicTransition.field_0x40 = -0x8000;
+    musicTransition.field_0x42 = 0;
+    musicTransition.field_0x78 = -0x8000;
+    musicTransition.field_0x7A = 0;
 }
 
 class music {
@@ -68,9 +68,9 @@ public:
 };
 
 void music::Unpause() {
-    D_001516D0.field_0x40 = 4;
-    D_001516D0.field_0x78 = 4;
-    D_001516D0.field_0x5C = 4;
+    musicTransition.field_0x40 = 4;
+    musicTransition.field_0x78 = 4;
+    musicTransition.field_0x5C = 4;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/music", music_UpdateStream__FR13music_Playing);
