@@ -42,7 +42,10 @@ void stream_updateBufferState(int a0, long a1) {
     }
 }
 
-extern "C" void func_00215970(int param_1, int param_2, int param_3);
+// Symbol override: the still-assembly music dispatcher at 0x00215970 selects
+// and starts the stream path for a transition request.
+extern void music_startTransitionStream(int param_1, int param_2, int param_3)
+    asm("func_00215970");
 
 void stream_setBufferState(int param_1, long param_2) {
     int p = (int)param_2;
@@ -54,9 +57,9 @@ void stream_setBufferState(int param_1, long param_2) {
             }
         }
         else {
-            func_00215970(musicTransition.field_0x54,
-                          musicTransition.field_0x58,
-                          musicTransition.field_0x56);
+            music_startTransitionStream(musicTransition.field_0x54,
+                                         musicTransition.field_0x58,
+                                         musicTransition.field_0x56);
         }
     }
 }

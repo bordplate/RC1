@@ -135,6 +135,8 @@ extern int snd_batchFreeBytes[2];
 extern int* snd_batchReturnBuffers[2];
 extern int snd_batchIndex;
 extern int sceSifCheckStatRpc(void*);
+/* The generated SCE library provides this SIF RPC wrapper. Its exact SDK API
+ * identity is unresolved, so retain the address-based name in this C TU. */
 extern void func_00116078(void*);
 extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);
 
