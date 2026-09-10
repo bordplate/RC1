@@ -23,8 +23,10 @@ typedef struct {
 extern int pauseActionListA[];
 extern int pauseActionListB[];
 
+// C linkage: this callback is referenced by the original unmangled pause menu
+// action-list table.
 extern "C" int SetPauseActionList(PauseActionMode* mode) {
-    if (*(int *)0x15EE90 != 0)
+    if (*(int*)0x15EE90 != 0)
         mode->actionList = (u32)pauseActionListA;
     else
         mode->actionList = (u32)pauseActionListB;
@@ -88,7 +90,7 @@ int pause_resetMemoryCardState(void) {
 // Symbol override: the still-assembly pause sound-slot allocator at 0x00225AC0
 // fills the five-entry pause sound table, whose generated entry point is
 // unmangled and cannot be produced by natural C++ linkage.
-extern void pause_allocateSoundSlots(int param_1) asm("func_00225AC0");
+extern void pause_allocateSoundSlots(int slotCount) asm("func_00225AC0");
 
 int pause_enableSoundOption(void) {
     pause_allocateSoundSlots(1);
@@ -154,7 +156,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021EA48);
 
 // Symbol override: this still-assembly helper at 0x00225530 refreshes the
 // timestamp field of a pause callback's moby sub-object.
-extern int pause_refreshMobyTimestamp(int) asm("func_00225530");
+extern int pause_refreshMobyTimestamp(int timestamp) asm("func_00225530");
 
 int pause_updateSelection(int* p) {
     p[0x11] = pause_refreshMobyTimestamp(p[0x11]);
@@ -281,7 +283,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00222F18);
 
 // Symbol override: this still-assembly helper at 0x00225CD8 releases a pause
 // sound slot and stops its active music state when necessary.
-extern int pause_releaseSoundSlot(int param_1) asm("func_00225CD8");
+extern int pause_releaseSoundSlot(int slot) asm("func_00225CD8");
 
 typedef struct {
     int pad[18];
@@ -311,6 +313,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", LoadHandGadget);
 
 void pause_noopA(void) {
 }
+
 void pause_noopB(void) {
 }
 

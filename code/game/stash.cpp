@@ -1,7 +1,7 @@
 #include "common.h"
 
 // C linkage: the sound-system entry point is exported by an unmangled assembly symbol.
-extern "C" void initializeSoundSystem(int param_1);
+extern "C" void initializeSoundSystem(int mode);
 
 void stash_init(void) {
     initializeSoundSystem(0);
@@ -22,12 +22,14 @@ typedef struct {
 
 extern StashEntry16 stashEntries[64];
 
-int stash_getEntryValue(unsigned param_1) {
-    if (param_1 >= 0x40) {
+int stash_getEntryValue(unsigned entry) {
+    if (entry >= 0x40) {
         return -3;
     }
-    return stashEntries[param_1].f1;
+    return stashEntries[entry].f1;
 }
 
+// These padding instructions preserve the original boundary after the final
+// decompiled stash helper.
 asm("nop");
 asm("nop");

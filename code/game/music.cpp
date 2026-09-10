@@ -3,8 +3,10 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/music", func_00215390);
 
-void stream_updateCdStatus(int param_1);
+void stream_updateCdStatus(int error);
 
+// C linkage: the sound-library callback registration function is an unmangled
+// entry point supplied by generated assembly.
 extern "C" void snd_StreamSafeCdCallback(void (*callback)(int));
 
 void music_registerCdCallback(void) {
@@ -51,8 +53,8 @@ typedef struct MusicState {
 
 extern MusicState musicTransition __attribute__((section(".data")));
 
-void music_Pause(int param_1) {
-    if (param_1 != 0) {
+void music_Pause(int pauseStream) {
+    if (pauseStream != 0) {
         musicTransition.field_0x5C = -0x8000;
         musicTransition.field_0x5E = 0;
     }
@@ -64,6 +66,8 @@ void music_Pause(int param_1) {
 
 class music {
 public:
+    // Symbol override: the original free-style entry point is named with the
+    // legacy music_Unpause label rather than this class member's natural name.
     void Unpause() asm("music_Unpause__Fv");
 };
 

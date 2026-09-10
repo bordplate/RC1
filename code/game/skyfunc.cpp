@@ -1,5 +1,7 @@
 #include "common.h"
 
+// Assembly visibility is required for the adjacent generated sky-function
+// fragment, which references this legacy label.
 asm(".globl Label_0022AE54\n");
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/skyfunc", SkyFunc_UNK_FUN_0022AC30);

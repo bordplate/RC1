@@ -5,10 +5,11 @@ extern u8 backupCam[];
 extern u8 backupCamData[];
 extern u32 curCam __attribute__((section(".data")));
 
+// C linkage: this entry point is referenced by the original unmangled camera API.
 extern "C" void BackupCurrentCam(void) {
-    u8 *dst = backupCam;
+    u8* dst = backupCam;
     FastMemCopy(dst, (void*)curCam, 0xA0);
-    u8 *p = backupCamData;
+    u8* p = backupCamData;
     FastMemCopy(p, p - 0x500, 0x280);
     *(void**)(dst + 0x70) = p;
 }

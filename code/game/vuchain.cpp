@@ -6,11 +6,13 @@ extern int currentVuChain;
 extern int vuChainTable[];
 
 int* vuChain_getCurrent(void) {
-    int idx = *(int *)0x15ED84;
-    if (idx >= 19) idx = 0;
-    int* p = vuChainTable + idx;
-    currentVuChain = *p;
-    return p;
+    int index = *(int*)0x15ED84;
+    if (index >= 19) {
+        index = 0;
+    }
+    int* chain = vuChainTable + index;
+    currentVuChain = *chain;
+    return chain;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", VU1_initChain__Fv);

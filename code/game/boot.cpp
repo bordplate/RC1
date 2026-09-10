@@ -26,7 +26,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/boot", ParseBin__Fv);
 #if defined(SKIP_ASM) || defined(ALLOW_NONMATCHING)
 
 StartLevelPtr ParseBin() {
-    void* entrypoint = nullptr;
+    void* entrypoint = 0;
     u8* base = (u8*)levelRoot + *(u32*)levelRoot;
     LevelLoad* chunk = (LevelLoad*)(base);
 
@@ -35,7 +35,7 @@ StartLevelPtr ParseBin() {
         u32 len = chunk->len;
         u8* src = (u8*)chunk + 0x10;
 
-        if (entrypoint == nullptr) {
+        if (entrypoint == 0) {
             entrypoint = chunk->entry;
         } else if (entrypoint != chunk->entry) {
             break;
@@ -63,6 +63,7 @@ StartLevelPtr ParseBin() {
     }
 
 #ifndef SKIP_ASM
+    // These padding instructions preserve the original fallback function tail.
     asm("nop");
     asm("nop");
     asm("nop");

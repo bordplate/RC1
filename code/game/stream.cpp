@@ -22,10 +22,12 @@ typedef struct {
 
 extern MusicTransState musicTransition __attribute__((section(".data")));
 
+// C linkage: the sound-library status query is an unmangled generated entry
+// point called directly by the original stream callback.
 extern "C" int snd_StreamSafeCdGetError(void);
 
-void stream_updateCdStatus(int param_1) {
-    if (param_1 != 1) {
+void stream_updateCdStatus(int status) {
+    if (status != 1) {
         return;
     }
     musicTransition.field_0x08 = 0;
@@ -35,28 +37,27 @@ void stream_updateCdStatus(int param_1) {
     }
 }
 
-void stream_updateBufferState(int a0, long a1) {
-    int p = (int)a1;
-    if (p && a0 && *(s16*)(p + 0xA) == 2) {
+void stream_updateBufferState(int state, long buffer) {
+    int p = (int)buffer;
+    if (p && state && *(s16*)(p + 0xA) == 2) {
         *(s16*)(p + 0xA) = 3;
     }
 }
 
 // Symbol override: the still-assembly music dispatcher at 0x00215970 selects
 // and starts the stream path for a transition request.
-extern void music_startTransitionStream(int param_1, int param_2, int param_3)
+extern void music_startTransitionStream(int track, int mode, int transition)
     asm("func_00215970");
 
-void stream_setBufferState(int param_1, long param_2) {
-    int p = (int)param_2;
+void stream_setBufferState(int state, long buffer) {
+    int p = (int)buffer;
     if (p) {
-        *(int*)p = param_1;
-        if (param_1) {
+        *(int*)p = state;
+        if (state) {
             if (*(s16*)(p + 0xA) == 1) {
                 *(s16*)(p + 0xA) = 2;
             }
-        }
-        else {
+        } else {
             music_startTransitionStream(musicTransition.field_0x54,
                                          musicTransition.field_0x58,
                                          musicTransition.field_0x56);

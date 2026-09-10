@@ -18,6 +18,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", setD3_CHCR__FUi);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", setD4_CHCR__FUi);
 
+// C linkage: this DMA helper is called by generated movie code through its
+// original unmangled entry point.
 extern "C" void scTag2(u64* tag, u32 address, u32 id, u32 count) {
     // DMA tag: address in the upper word, tag ID at bit 28, QWC below it.
     *tag = ((u64)address << 32) | (((u64)id << 32) >> 4) | (u64)count;

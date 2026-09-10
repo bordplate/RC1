@@ -13,11 +13,13 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufCreate__FP5VoB
 
 void voBufDelete(VoBuf* self) {}
 
+// C linkage: this helper retains the original unmangled generated symbol.
 extern "C" void voBufReset__FP5VoBuf(VoBuf* self) {
     self->count = 0;
     self->head = 0;
 }
 
+// C linkage: this helper retains the original unmangled generated symbol.
 extern "C" int voBufIsFull__FP5VoBuf(VoBuf* self) {
     return self->count == self->capacity;
 }
@@ -31,6 +33,7 @@ void* voBufGetData(VoBuf* self) {
     return (void*)((char*)self->data + self->head * 0xD0000);
 }
 
+// C linkage: this helper is called through the original unmangled API.
 extern "C" int voBufIsEmpty(VoBuf* self) {
     return self->count == 0;
 }

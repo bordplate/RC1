@@ -12,8 +12,7 @@ typedef struct {
 
 extern PauseScreenState pauseScreenState __attribute__((section(".data")));
 
-void pause_scheduleInput(void)
-{
+void pause_scheduleInput(void) {
     register PauseScreenState* base asm("$3") = &pauseScreenState;
 
     pauseScreenState.f0 = 0x2D;

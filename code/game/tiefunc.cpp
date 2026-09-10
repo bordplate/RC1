@@ -7,6 +7,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/tiefunc", PatchTieGifs);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/tiefunc", func_00235840);
 
+// C linkage: the lighting routine is supplied by generated assembly at its
+// original unmangled entry point.
 extern "C" void LightTies(u16*);
 extern u16 tieLightData[];
 extern u16 tieLightData2[];

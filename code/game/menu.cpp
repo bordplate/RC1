@@ -1,6 +1,8 @@
 #include "common.h"
 #include "types.h"
 
+// C linkage: this callback is installed through the original unmangled menu
+// jump table entry.
 extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f);
 
 int menu_isClockwiseForItem(int x, int y) {

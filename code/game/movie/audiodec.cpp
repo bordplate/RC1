@@ -8,6 +8,7 @@ typedef struct _AudioDec {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecCreate__FP9_AudioDecPUci14sceMpegStrType);
 
+// C linkage: this sound-library routine is an unmangled generated entry point.
 extern "C" void snd_CloseMovieSound(void);
 
 int audioDecDelete(_AudioDec* self) {
@@ -25,12 +26,16 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecBeginPut
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecEndPut__FP9_AudioDeci);
 
+// C linkage: this decoder callback is referenced by the original unmangled
+// movie-decoder API.
 extern "C" int audioDecIsPageFull(_AudioDec* self) {
     return self->sentPos >= 0x1000;
 }
 
 void sendADPCM(_AudioDec* self);
 
+// C linkage: this decoder callback is referenced by the original unmangled
+// movie-decoder API.
 extern "C" void audioDecSend(_AudioDec* self) {
     if (*(int*)self) {
         sendADPCM(self);

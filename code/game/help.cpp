@@ -7,19 +7,21 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDC90);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_FindIndex);
 
+// C linkage: the matching helper remains supplied by generated assembly at its
+// original unmangled entry point.
 extern "C" int Help_FindIndex(int idx);
 
 struct HelpMsg {
-    char *text;
+    char* text;
     int id;
     int f8;
     int fC;
 };
 
-extern struct HelpMsg *HelpMsgs;
+extern struct HelpMsg* HelpMsgs;
 extern char s_Paradox_this_message_does_not[];
 
-char *msg_string(int idx) {
+char* msg_string(int idx) {
     int i = Help_FindIndex(idx);
     if (i >= 0)
         return HelpMsgs[i].text;

@@ -8,8 +8,8 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/space", func_0022E180);
 
 extern int spaceLoadPending;
 
-void space_beginLoad(int param_1) {
-    *(int*)0x15F600 = param_1;
+void space_beginLoad(int loadId) {
+    *(int*)0x15F600 = loadId;
     spaceLoadPending = 1;
     *(int*)0x15F618 = 1;
 }

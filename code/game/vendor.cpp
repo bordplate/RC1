@@ -26,6 +26,8 @@ void PutDrawBufferLarge();
 void InitViewContext();
 void UpdateViewContext();
 
+// C linkage: this vendor callback is referenced by its original unmangled
+// entry point.
 extern "C" void setupViewContext(void) {
     PutDrawBufferLarge();
     InitViewContext();

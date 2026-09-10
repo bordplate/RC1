@@ -1,6 +1,8 @@
 #include "common.h"
 #include "menu.h"
 
+// C linkage: this callback is installed through the original unmangled menu
+// jump table entry.
 extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
     register int x asm("$4") = a - c;
     asm volatile("" : "+r"(x));
@@ -20,6 +22,8 @@ extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_callbacks", func_00208840);
 
+// C linkage: this callback is installed through the original unmangled menu
+// jump table entry.
 extern "C" void menu_restoreSelection(void) {
     MenuState* menu = &menuStateData;
     *(int*)0x15EEB0 = 3;

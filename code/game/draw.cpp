@@ -2,6 +2,8 @@
 
 extern int drawTextureDmaState[20] __attribute__((section(".data")));
 
+// Symbol override: this recovered helper occupies an address-based generated
+// entry point whose original label is not naturally cfront-mangled.
 void draw_resetTextureDmaState(void) asm("func_001F0B88");
 
 void draw_resetTextureDmaState(void) {
@@ -183,24 +185,24 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F6200);
 
 // C linkage: this still-assembly font helper at 0x001F6200 sums glyph widths;
 // the original call target is an unmangled entry point.
-extern "C" int fontMeasureString(char* param_1, int param_2, char* param_3);
+extern "C" int fontMeasureString(char* text, int length, char* glyphs);
 
 extern char fontSmallGlyphs[];
 
-int drawTextSmall(char* param_1, int param_2) {
-    return fontMeasureString(param_1, param_2, fontSmallGlyphs);
+int drawTextSmall(char* text, int length) {
+    return fontMeasureString(text, length, fontSmallGlyphs);
 }
 
 extern char fontMediumGlyphs[];
 
-int drawTextMedium(char* param_1, int param_2) {
-    return fontMeasureString(param_1, param_2, fontMediumGlyphs);
+int drawTextMedium(char* text, int length) {
+    return fontMeasureString(text, length, fontMediumGlyphs);
 }
 
 extern char fontLargeGlyphs[];
 
-int drawTextLarge(char* param_1, int param_2) {
-    return fontMeasureString(param_1, param_2, fontLargeGlyphs);
+int drawTextLarge(char* text, int length) {
+    return fontMeasureString(text, length, fontLargeGlyphs);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", FontPrint);
@@ -254,7 +256,8 @@ typedef struct FontWindow {
     short offY;
 } FontWindow;
 
-extern "C" void FontSetWindow(FontWindow *f, short x, short y, short w, short h,
+// C linkage: this font API entry point retains the original unmangled name.
+extern "C" void FontSetWindow(FontWindow* f, short x, short y, short w, short h,
                               short textX, short textY, short lineH, int flags) {
     f->x = x;
     f->y = y;
