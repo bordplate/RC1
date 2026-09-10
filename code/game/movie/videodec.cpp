@@ -20,12 +20,16 @@ struct sceMpegCbDataError;
 
 typedef int (*videoDecCallback)(struct sceMpeg*, struct sceMpegCbData*, void*);
 
-extern "C" int func_0012AEC8(VideoDec* self, int a, int b,
+// C linkage: generated sce/lib.s implements the callback-table registration
+// routine called by videoDecSetStream at 0x0012AEC8.
+extern "C" int videoDecRegisterCallback(VideoDec* self, int a, int b,
     videoDecCallback cb, void* userdata);
 
 void viBufDelete(ViBuf* self);
 void viBufAddDMA(ViBuf* buf);
-extern "C" int func_0012B9E0(void* p);
+// C linkage: generated sce/lib.s supplies this deletion helper at 0x0012B9E0;
+// it ignores its argument and returns success.
+extern "C" int videoDecRelease(void* p);
 extern "C" void switchThread(void);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi);
@@ -33,7 +37,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023CBC8);
 
 int videoDecSetStream(VideoDec* self, int a, int b, videoDecCallback cb, void* userdata) {
-    func_0012AEC8(self, a, b, cb, userdata);
+    videoDecRegisterCallback(self, a, b, cb, userdata);
     return 1;
 }
 
@@ -51,7 +55,7 @@ void videoDecReset(VideoDec* self) {
 
 int videoDecDelete(VideoDec* self) {
     viBufDelete(&self->vibuf);
-    func_0012B9E0(self);
+    videoDecRelease(self);
     return 1;
 }
 
@@ -79,12 +83,14 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023CD00);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecFlush__FP8VideoDec);
 
-extern "C" unsigned int func_0012BA58(VideoDec* self);
+// C linkage: generated sce/lib.s implements this internal-buffer-empty test
+// at 0x0012BA58, used after the input buffer reaches zero.
+extern "C" unsigned int videoDecIsDecoderEmpty(VideoDec* self);
 
 int videoDecIsFlushed(VideoDec* self) {
     int ret = 0;
     if (videoDecInputCount(self) == 0)
-        ret = func_0012BA58(self) > 0;
+        ret = videoDecIsDecoderEmpty(self) > 0;
     return ret;
 }
 
