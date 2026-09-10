@@ -9,6 +9,24 @@ state autonomously. The agent must not decide that a function or the project
 matches by inspection. Compiler output, object/assembly diffs, and the final
 binary comparison are the oracles.
 
+## Scope And Change Boundaries
+
+These rules define the scope of an iteration; the selected-target workflow
+below must be read consistently with them.
+
+The selected function is the unit of investigation and mechanical verification,
+not an artificial limit on the files or symbols that may change. Decompilation
+often establishes shared data layouts, global meanings, linkage, prototypes, or
+names used by multiple functions. When that happens, update the shared
+declarations, all affected references, symbol configuration, linker aliases,
+and durable notes as part of the same coherent change.
+
+Keep unrelated cleanup out of the change. Before editing a related symbol,
+confirm its address, linkage, overlay/resident ownership, and affected callers
+or users. Rebuild every affected object and run the full parity check after
+cross-file changes. Never preserve a misleading name or layout merely to stay
+within the initially selected function.
+
 ## Runtime Layout And Overlays
 
 The boot ELF contains resident runtime code and the first `start` / main-menu
@@ -387,8 +405,10 @@ decomp_state/notes/vuchain_func_002335A0.md.
   assembly, caller, or data-layout research can be performed independently.
 - Use `explore` for quick read-only repository searches that do not require the
   RC1-specific research report.
-- Keep source edits and iteration in the primary agent. Do not have multiple
-  agents modify the same function concurrently.
+- Keep source edits and iteration in the primary agent. A subagent may research
+  related callers, callees, globals, and data layout needed to understand its
+  one assigned target, but must not make overlapping source edits with another
+  agent.
 - Use `decomp-verifier` after implementation for an independent mechanical
   object/assembly and full-ELF parity check before committing.
 - `expert` is a highly usage-restricted, one-shot GPT-6 Astra consultant for a
@@ -405,7 +425,10 @@ decomp_state/notes/vuchain_func_002335A0.md.
 - No new entry may be added to `decomp_state/blocked.json` until
   `last-resort-decompiler` has been tried on that exact target. Apply and test
   its concrete recommendations before deciding the target remains blocked.
-- Subagents must stay within the one function selected for the current attempt.
+- Each subagent is assigned one target function so its report and verification
+  remain focused. This does not prohibit the primary agent from making the
+  related cross-file declaration, global, struct, linkage, or alias changes
+  required by that target.
 
 For each selected function:
 
@@ -415,7 +438,9 @@ For each selected function:
    callers, callees, and nearby functions. Find out what the function does and give it a name accordingly.
 4. Read nearby source and relevant headers.
 5. Use `python3 tools/m2ctx/m2ctx.py <source-file>` when more context helps.
-6. Replace only the selected placeholder with compatible C/C++.
+6. Replace the selected placeholder with compatible C/C++, and update any
+   directly related declarations, shared definitions, references, or aliases
+   required by the implementation. Do not make unrelated cleanup changes.
 7. Compile and inspect compiler errors.
 8. Diff the candidate object/assembly against the original.
 9. Iterate with normal tools until the function matches or all ordinary routes
@@ -425,30 +450,39 @@ For each selected function:
 11. Only then, if it still does not match, record a concrete blocker including
     the last-resort result or failed invocation.
 12. Run the full build/parity check before treating progress as durable.
-13. Make sure the decompiled function adheres to STYLEGUIDE.md and then invoke
-      the `decomp-verifier` subagent to verify the quality of the decomp.
+13. Make sure the decompiled function and its related changes adhere to
+       STYLEGUIDE.md, then invoke the `decomp-verifier` subagent to verify the
+       quality of the decomp.
 14. Send the status push notification (see Mobile Status Notification).
 
 The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, 
 or even same behavior but with a different instruction. It must be a perfect match.
 
-You should rename unnamed functions and globals when it becomes apparent what 
-they do. As you learn more about the target and its datastructures,  you should 
-be renaming code that is already committed too. You may perform refactors across 
-the codebase to achieve this. The goal is readable code. Likewise, you should 
-avoid magic numbers by replacing them with appropriately named constants.
+You should rename unnamed functions and globals when it becomes apparent what
+they do. As you learn more about the project and its data structures, you may
+rename code that is already committed. Such a rename may and should update
+every affected file and user; do not limit it to the function currently under
+investigation. The goal is readable code. Likewise, avoid magic numbers by
+replacing them with appropriately named constants when the meaning is known.
 
-Prefer small leaf functions and one function at a time. Preserve old compiler
+Prefer small leaf functions and focused iterations. Preserve old compiler
 compatibility and existing project style. If repeated attempts fail, record the
- concrete blocker and continue elsewhere.
+concrete blocker and continue elsewhere. A focused iteration may include the
+related cross-file refactor needed to make the target understandable, correct,
+or linkable.
 
 For an experimental candidate that needs a temporary assembly fallback, retain
 the project's existing `INCLUDE_ASM` path while iterating. Only remove it after
 the candidate object or function assembly has been compared mechanically.
 
-In C++ files, avoid creating `extern "C"` prefixed functions with manualled mangled names and instead create them as pure C++ functions and let the compiler mangle the names like it should.
-Insomniac wrote most of the game using C++ without classes. If you `extern "C"` everything you might struggle to match the assembly of the original executable. Prefer to write functions in C++ unless there's clear evidence the function is a pure C function.
-Just because a symbol initially has an unmangled name doesn't mean it's not a C++ function, it often just means Splat, some tool, or another attempt at decompiling didn't give it a mangled name. Whenever you're writing a function in a .cpp file you should assume it's a C++ function unless there's strong proof otherwise from the original game binary.
+In C++ files, prefer natural C++ functions and let EEGCC produce the expected
+cfront-style name. Use `extern "C"` only when the original symbol is confirmed
+to use C linkage, such as a C/SDK routine or handwritten assembly entry point.
+When the source-side name should be descriptive but the required assembly
+target is an unmangled address-based symbol, use a documented `asm("...")`
+symbol override instead of pretending the declaration is C linkage. Insomniac
+wrote most of the game using C++ without classes, so an unmangled name alone is
+not proof of C linkage.
 A name such as `func_XXXXXX` is only Splat's placeholder for an unknown symbol; it is not evidence of C linkage. Likewise, `DAT_XXXXXX` and `D_XXXXXX` are address placeholders, not semantic names. Every decompiled unknown function or global must be investigated and renamed in source, with its verified address retained in `config/symbols.txt` or the linker alias file as needed. Update every source reference and the symbol configuration together. Only retain an address-based name when the symbol is still an `INCLUDE_ASM` placeholder or the investigation genuinely cannot establish a better name; in the latter case add the required explanatory comment from `STYLEGUIDE.md`. Shared structs and declarations are part of the refactor: when a function's accesses establish a field or global layout, correct the shared definition and update all affected users rather than preserving opaque pointer arithmetic to avoid touching neighboring code.
 
 Mangling correction (verified 2026-09-06): this EGC v2.73a build uses old
@@ -518,9 +552,12 @@ signature (see decomp_state/notes/videodec_videoDecSetStream.md).
 
 ## Commit Discipline
 
-Create one commit per successfully decompiled function. A function is not ready
-to commit merely because the whole ELF still matches while the assembly fallback
-remains active. Before committing, require all of the following:
+Prefer one commit per successfully decompiled function. A coherent shared-symbol
+or data-layout refactor may include the related functions, declarations,
+references, aliases, and notes in one commit when splitting it would leave the
+tree misleading or uncompilable. A function is not ready to commit merely
+because the whole ELF still matches while its assembly fallback remains active.
+Before committing, require all of the following:
 
 1. The replacement compiles.
 2. The candidate object or function assembly matches the original mechanically.
@@ -529,12 +566,13 @@ remains active. Before committing, require all of the following:
 4. The function's durable state or investigation note is updated if needed.
 
 Before each commit, inspect `git status`, `git diff`, and
-`git log --oneline -10`. Stage only the selected function's intended source and
-state files. Never stage generated assembly, build output, `userconfig.mk`,
-local tools, credentials, or unrelated existing changes. Use a concise commit
-message such as `decomp: match FunctionName`. If parity or the function-level
-diff fails, do not commit; record the concrete blocker and continue without
-claiming the function is matched.
+`git log --oneline -10`. Stage only the intended source, configuration, and
+state files for the coherent change. Never stage generated assembly, build
+output, `userconfig.mk`, local tools, credentials, or unrelated existing
+changes. Use a concise commit message such as `decomp: match FunctionName` or
+`style: rename shared symbols`. If parity or the function-level diff fails, do
+not commit; record the concrete blocker and continue without claiming the
+function is matched.
 
 Push `main` to `origin` when you've committed.
 
