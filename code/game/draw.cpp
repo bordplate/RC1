@@ -27,24 +27,25 @@ struct Camera {
 extern Camera currentCamera;
 extern Camera drawCamera;
 
-extern "C" void func_001F9FC8(void *a0);
-extern "C" void func_001FA378(void *a0, void *a1, void *a2);
-extern "C" void func_001F9A68(void *a0, void *a1, float f);
-extern "C" void func_001F9D20(void *a0, void *a1, void *a2);
+// C linkage: these VU math helpers are exported by their unmangled assembly names.
+extern "C" void draw_loadViewMatrix(void* a0);
+extern "C" void draw_transformMatrix(void* a0, void* a1, void* a2);
+extern "C" void draw_scaleVector(void* a0, void* a1, float f);
+extern "C" void draw_transformVector(void* a0, void* a1, void* a2);
 
 void projectWorldPoint(float* out, float* vec) {
     float v[16];
     float m[16];
     float s4[4];
     float r4[4];
-    func_001F9FC8(v);
+    draw_loadViewMatrix(v);
     v[12] = -currentCamera.f140 * 1024.0f;
     v[13] = -currentCamera.f144 * 1024.0f;
     v[14] = -currentCamera.f148 * 1024.0f;
-    func_001FA378(m, currentCamera.matrix, v);
-    func_001F9A68(s4, vec, 1024.0f);
+    draw_transformMatrix(m, currentCamera.matrix, v);
+    draw_scaleVector(s4, vec, 1024.0f);
     s4[3] = 1.0f;
-    func_001F9D20(r4, s4, m);
+    draw_transformVector(r4, s4, m);
     float scale = drawCamera.f00 / r4[3];
     out[2] = r4[2] * 0.0009765625f;
     r4[0] = r4[0] * scale + 2048.0f;

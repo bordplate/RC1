@@ -1,9 +1,10 @@
 #include "common.h"
 
-extern "C" void func_0011AB20(int param_1);
+// C linkage: the sound-system entry point is exported by an unmangled assembly symbol.
+extern "C" void initializeSoundSystem(int param_1);
 
 void stash_init(void) {
-    func_0011AB20(0);
+    initializeSoundSystem(0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stash", func_00232D00);

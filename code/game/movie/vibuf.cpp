@@ -1,9 +1,10 @@
 #include "common.h"
 #include "vibuf.h"
 
-extern "C" int func_00118980(int a);
-extern "C" int func_00118990(int a);
-extern "C" int func_001189B0(int a);
+// C linkage: these kernel exports are unmangled SDK entry points.
+extern "C" int CreateSema(int a);
+extern "C" int SignalSema(int a);
+extern "C" int WaitSema(int a);
 
 u32 getFIFOindex(ViBuf* self, void* v) {
     u32 i = ((self->blocks << 4) + self->tagBase + 0x10) & 0xFFFFFFF;
@@ -39,9 +40,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufRestartDMA__FP
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufDelete__FP5ViBuf);
 
 int viBufCount(ViBuf* self) {
-    func_001189B0(self->sema);
+    WaitSema(self->sema);
     int x = (self->field_0x10 << 11) + self->field_0x14;
-    func_00118990(self->sema);
+    SignalSema(self->sema);
     return x;
 }
 

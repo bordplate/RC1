@@ -12,12 +12,13 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_Update);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_MakeWholeSave);
 
-extern "C" int func_001233F0(void);
+// C linkage: the memory-card library entry point is exported by an unmangled symbol.
+extern "C" int memcard_queryStatus(void);
 extern char memcardErrorMessage[];
 extern "C" void STUB_printf(const char* fmt, ...);
 
 extern "C" void memcard_Init(void) {
-    if (func_001233F0() != 0)
+    if (memcard_queryStatus() != 0)
         STUB_printf(memcardErrorMessage);
 }
 

@@ -4,10 +4,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", func_0023A3B8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", readMpeg__FP8VideoDecP7ReadBufP7StrFile);
 
-extern "C" void func_001188C0(int);
+// C linkage: this kernel export is an unmangled SDK entry point.
+extern "C" void RotateThreadReadyQueue(int);
 
 extern "C" void switchThread() {
-    func_001188C0(1);
+    RotateThreadReadyQueue(1);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie", isAudioOK);
