@@ -1588,5 +1588,13 @@
     "size": 48,
     "matched_date": "2026-09-10",
     "note": "Pause menu sound-slot release callback (callback group 0x221A48/0x221A88/0x221AB8/0x221B50, registered in the data table at 0x1D265C). int pause_releaseStateSoundSlot(PauseSoundSlotState* state): state->f54 = pause_releaseSoundSlot(state->f54); return 0. Identical in shape to the matched pause_updateCallback (0x222F58, f48 object / save-data menu family) but operates on a different menu-state object whose sound slot is at offset 0x54 (struct PauseSoundSlotState {u8 pad[0x54]; u32 f54;}). The object's sound-slot field holds a slot index passed to the still-assembly pause_releaseSoundSlot (0x225CD8, func_00225CD8). C definition emits mangled pause_releaseStateSoundSlot__FP19PauseSoundSlotState placed at 0x221A88 purely by contiguous .text object layout (the C function sits exactly where the INCLUDE_ASM was, between func_00221A48 and func_00221AB8); config/linker_aliases.ld carries func_00221A88 = 0x00221A88 for the address-based symbol. Verified: decomp_probe 48/48 bytes; full build + cmp byte-for-byte pass; count 727->726. See notes/pause_post_func_00221A88.md."
+  },
+  "code/game/stream.cpp:3:func_002166E8": {
+    "name": "func_002166E8",
+    "source": "code/game/stream.cpp",
+    "vram": "0x002166E8",
+    "size": 64,
+    "matched_date": "2026-09-10",
+    "note": "Music-transition CD break. void stream_breakTransitionCd(): if (musicTransition.field_0x08 != 0) { snd_StreamSafeCdBreak(); musicTransition.field_0x0A = 1; }. field_0x08 (s16 at +8) is the transition CD status set by stream_updateCdStatus (0=ok, 2=CD error via snd_StreamSafeCdGetError); field_0x0A (u8 at +0xA) is the break-pending flag cleared later by the transition state machine FUN_00216290 after polling 0x12EE08(1). Four pause_post callers jal it by the address-based symbol, so the C definition uses an asm func_002166E8 symbol override (draw.cpp pattern). CODEGEN (key finding): the post-call constant store (field_0x0A = 1) must land in v1, not v0. This is controlled by the CALLEE return type: snd_StreamSafeCdBreak returns an int (active path li v0,1; inactive path forwards func_001216C8's return), so declaring it extern-C int (not void) keeps $v0 claimed across the call and EGC allocates the fresh constant to v1 (reusing the condition's register); a void declaration lets EGC reuse $v0 (the base %hi register), a 2-word diff at 0x216710/0x216714. This is the verified callee-prototype effect (cf. snd_SendCurrentBatch, AGENTS.md). Also added u8 field_0x0A to the shared MusicTransState (was inside pad_0x0A). Verified: decomp_probe 64/64 bytes; full build + cmp byte-for-byte pass; count 725->724. See notes/stream_func_002166E8.md."
   }
 }
