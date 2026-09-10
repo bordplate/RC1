@@ -1580,5 +1580,13 @@
     "size": 72,
     "matched_date": "2026-09-10",
     "note": "8-parameter wrapper, byte-identical twin of matched snd_PlaySoundVolPanPMPB (0x12E308) except IOP command 0x21 vs 0x11: buf[6]=a..f, snd_SendIOPCommandNoWait(0x21, 0x18, buf, g, h). Both callers (sound update at 0x22D61C and 0x21658C) pass (volume, flags, pan, ?, ?, ?, tablePtr, entityPtr) \u2014 g/h are the 7th/8th int args in t2/t3 per the verified EGC ABI. Standalone probe byte-identical (72/72 bytes, 18/18 words incl. move-v0-a3 / sw-t1-in-jal-delay-slot idiosyncrasies); linked-ELF function words compared equal; clean rebuild + cmp passes. See notes/989snd_snd_SetSoundParams_CB.md."
+  },
+  "code/game/pause_post.cpp:239:func_00221A88": {
+    "name": "func_00221A88",
+    "source": "code/game/pause_post.cpp",
+    "vram": "0x00221A88",
+    "size": 48,
+    "matched_date": "2026-09-10",
+    "note": "Pause menu sound-slot release callback (callback group 0x221A48/0x221A88/0x221AB8/0x221B50, registered in the data table at 0x1D265C). int pause_releaseStateSoundSlot(PauseSoundSlotState* state): state->f54 = pause_releaseSoundSlot(state->f54); return 0. Identical in shape to the matched pause_updateCallback (0x222F58, f48 object / save-data menu family) but operates on a different menu-state object whose sound slot is at offset 0x54 (struct PauseSoundSlotState {u8 pad[0x54]; u32 f54;}). The object's sound-slot field holds a slot index passed to the still-assembly pause_releaseSoundSlot (0x225CD8, func_00225CD8). C definition emits mangled pause_releaseStateSoundSlot__FP19PauseSoundSlotState placed at 0x221A88 purely by contiguous .text object layout (the C function sits exactly where the INCLUDE_ASM was, between func_00221A48 and func_00221AB8); config/linker_aliases.ld carries func_00221A88 = 0x00221A88 for the address-based symbol. Verified: decomp_probe 48/48 bytes; full build + cmp byte-for-byte pass; count 727->726. See notes/pause_post_func_00221A88.md."
   }
 }

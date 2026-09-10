@@ -236,7 +236,19 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00221968);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00221A48);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00221A88);
+// Symbol override: this still-assembly helper at 0x00225CD8 releases a pause
+// sound slot and stops its active music state when necessary.
+extern int pause_releaseSoundSlot(int slot) asm("func_00225CD8");
+
+typedef struct {
+    u8 pad[0x54];
+    u32 f54;
+} PauseSoundSlotState;
+
+int pause_releaseStateSoundSlot(PauseSoundSlotState* state) {
+    state->f54 = pause_releaseSoundSlot(state->f54);
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00221AB8);
 
@@ -280,10 +292,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", DrawEndScreenMenuMay
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00222D98);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00222F18);
-
-// Symbol override: this still-assembly helper at 0x00225CD8 releases a pause
-// sound slot and stops its active music state when necessary.
-extern int pause_releaseSoundSlot(int slot) asm("func_00225CD8");
 
 typedef struct {
     int pad[18];
