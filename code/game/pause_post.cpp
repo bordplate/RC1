@@ -85,10 +85,12 @@ int pause_resetMemoryCardState(void) {
     return 0;
 }
 
-extern "C" void func_00225AC0(int param_1);
+// C linkage: the still-assembly pause sound-slot allocator at 0x00225AC0
+// fills the five-entry pause sound table and has an unmangled entry point.
+extern "C" void pause_allocateSoundSlots(int param_1);
 
 int pause_enableSoundOption(void) {
-    func_00225AC0(1);
+    pause_allocateSoundSlots(1);
     return 0;
 }
 
