@@ -30,7 +30,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022DC38);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_StopAllSounds__Fv);
 
-extern "C" void func_0022DD78(int a, long b) {
+void sound_setBufferValue(int a, long b) {
     int c = (int)b;
     if (c)
         *(int*)c = a;
@@ -38,7 +38,7 @@ extern "C" void func_0022DD78(int a, long b) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022DD90);
 
-extern "C" void func_0022DDD8(int a, long b) {
+void sound_resetBufferState(int a, long b) {
     int c = (int)b;
     if (c == 0) return;
     *(int*)c = a;

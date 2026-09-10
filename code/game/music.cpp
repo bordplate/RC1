@@ -3,12 +3,12 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/music", func_00215390);
 
-extern "C" void func_00216950(int param_1);
+void stream_updateCdStatus(int param_1);
 
 extern "C" void snd_StreamSafeCdCallback(void (*callback)(int));
 
-extern "C" void func_00215420(void) {
-    snd_StreamSafeCdCallback(func_00216950);
+void music_registerCdCallback(void) {
+    snd_StreamSafeCdCallback(stream_updateCdStatus);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/music", func_00215440);
