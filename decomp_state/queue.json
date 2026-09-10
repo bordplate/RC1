@@ -2693,7 +2693,7 @@
     "line": 53,
     "asm": "code/_generated/nonmatchings/game/menu/func_002075F8.s",
     "name": "func_002075F8",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/menu.cpp:55:func_00207630",

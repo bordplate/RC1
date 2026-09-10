@@ -109,7 +109,21 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207508);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00207580);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002075F8);
+// func_002075F8: menu predicate callback (jump table vram 0x19FF70, entry
+// 0x19FFA0). Returns
+// 1 only when x < 224 and y <= 38.0f; the gated menu item is unconfirmed, so
+// the address-based name is retained. C linkage: emitted as the unmangled
+// symbol the menu jump table references.
+// Match-sensitive: the used float is the 3rd float param — EGC packs float
+// args into 64-bit pairs (f12:f13, f14:f15), so the 3rd lands in $f14 as the
+// original expects. The asm nop is the mtc1 -> c.le.s FPU hazard.
+extern "C" int func_002075F8(int x, float unused1, float unused2, float y) {
+    if (x >= 224)
+        return 0;
+    float threshold = 38.0f;
+    asm volatile("nop" : : "f"(threshold));
+    return y <= threshold;
+}
 
 extern u8 D_0013D3B8 __attribute__((section(".data")));
 

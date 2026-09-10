@@ -1556,5 +1556,13 @@
     "size": 44,
     "matched_date": "2026-09-10",
     "note": "Menu predicate callback (jump table vram 0x19FF70, entry 0x19FF90). int func(int x, int y): for y >= 0x101 returns (D_001413DC ^ 0xF) < 1 (i.e. D_001413DC == 0xF), else D_0013D3BD != 0. Both globals are in core.data, outside the gp window, so absolute lui/lw access sharing base lui 0x14 in the branch delay slot. Matched by writing the condition NEGATED (y >= 0x101) so EGC -fno-schedule-insns keeps the 2-instruction body (lbu D_0013D3BD; sltu) in the fall-through with the beqz target on the 3-instruction else (lw D_001413DC; xori; sltiu); the natural (y < 0x101) form emits bnez and swaps the two blocks. decomp_probe 44/44 bytes; clean build + full boot cmp pass; count 732->731."
+  },
+  "code/game/menu.cpp:120:func_002075F8": {
+    "name": "func_002075F8",
+    "source": "code/game/menu.cpp",
+    "vram": "0x002075F8",
+    "size": 52,
+    "matched_date": "2026-09-10",
+    "note": "Menu predicate callback (jump table vram 0x19FF70, entry 0x19FFA0). int func(int x, float, float, float y): returns 1 only when x < 224 and y <= 38.0f (0x42180000). The compared float is the THIRD float parameter: EGC 2.95.2 packs float args into 64-bit pairs (f12:f13, f14:f15), so the third float lands in $f14, the register the original reads (c.le.s $f14,$f0); a float in the 1st/2nd slot lands in f12/f13 and cannot match. asm volatile(\"nop\" : : \"f\"(threshold)) forces the mtc1 -> c.le.s EE COP1 hazard nop (EGC emits its own only after the compare -> bc1). The x < 224 gate (slti/beqz) hoists move v0,zero into the branch delay slot. First-probe match: decomp_probe 52/52 bytes; clean build + full boot cmp pass; count 731->730. See notes/menu_func_002075F8.md."
   }
 }
