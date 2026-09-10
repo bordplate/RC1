@@ -152,10 +152,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", DrawQuitGameMenu);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021EA48);
 
-extern "C" int func_00225530(int);
+// Symbol override: this still-assembly helper at 0x00225530 refreshes the
+// timestamp field of a pause callback's moby sub-object.
+extern int pause_refreshMobyTimestamp(int) asm("func_00225530");
 
 int pause_updateSelection(int* p) {
-    p[0x11] = func_00225530(p[0x11]);
+    p[0x11] = pause_refreshMobyTimestamp(p[0x11]);
     return 0;
 }
 
@@ -277,7 +279,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00222D98);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00222F18);
 
-extern "C" int func_00225CD8(int param_1);
+// Symbol override: this still-assembly helper at 0x00225CD8 releases a pause
+// sound slot and stops its active music state when necessary.
+extern int pause_releaseSoundSlot(int param_1) asm("func_00225CD8");
 
 typedef struct {
     int pad[18];
@@ -285,7 +289,7 @@ typedef struct {
 } PauseCallback;
 
 int pause_updateCallback(PauseCallback* self) {
-    self->f48 = func_00225CD8(self->f48);
+    self->f48 = pause_releaseSoundSlot(self->f48);
     return 0;
 }
 
