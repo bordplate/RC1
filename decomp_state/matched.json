@@ -1564,5 +1564,13 @@
     "size": 52,
     "matched_date": "2026-09-10",
     "note": "Menu predicate callback (jump table vram 0x19FF70, entry 0x19FFA0). int func(int x, float, float, float y): returns 1 only when x < 224 and y <= 38.0f (0x42180000). The compared float is the THIRD float parameter: EGC 2.95.2 packs float args into 64-bit pairs (f12:f13, f14:f15), so the third float lands in $f14, the register the original reads (c.le.s $f14,$f0); a float in the 1st/2nd slot lands in f12/f13 and cannot match. asm volatile(\"nop\" : : \"f\"(threshold)) forces the mtc1 -> c.le.s EE COP1 hazard nop (EGC emits its own only after the compare -> bc1). The x < 224 gate (slti/beqz) hoists move v0,zero into the branch delay slot. First-probe match: decomp_probe 52/52 bytes; clean build + full boot cmp pass; count 731->730. See notes/menu_func_002075F8.md."
+  },
+  "code/game/mobyutil.cpp:51:func_00214228": {
+    "name": "func_00214228",
+    "source": "code/game/mobyutil.cpp",
+    "vram": "0x00214228",
+    "size": 48,
+    "matched_date": "2026-09-10",
+    "note": "Twin of matched moby_getActiveObject (func_002141F8): byte-identical except the final load reads the +0x10 word of the per-moby variable block at MobyInstance+0x78 instead of +0x00, gated on the same 0x20 mode bit (u16 at +0x34). Replaced with C as moby_getSecondaryObject using the same three-nop asm trick and raw byte offsets (project MobyInstance/vec4 layout is 8 bytes short, see notes/mobyutil_func_002141F8.md). The still-INCLUDE_ASM caller func_00213920 references the original symbol, so config/linker_aliases.ld carries func_00214228 = 0x00214228 while the C definition emits mangled moby_getSecondaryObject__FP12MobyInstance placed at 0x214228 by object layout. Verified: the object's 12 words at the function slot are byte-identical to the original and full build + cmp passes."
   }
 }

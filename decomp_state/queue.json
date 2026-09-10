@@ -3645,7 +3645,7 @@
     "line": 51,
     "asm": "code/_generated/nonmatchings/game/mobyutil/func_00214228.s",
     "name": "func_00214228",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/mobyutil.cpp:53:func_00214258",

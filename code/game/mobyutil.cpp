@@ -61,7 +61,23 @@ void* moby_getActiveObject(struct MobyInstance* m) {
     return 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00214228);
+// Twin of moby_getActiveObject: reads the second pointer (word at +0x10) of
+// the per-moby variable block at MobyInstance+0x78, gated on the same 0x20
+// mode bit. The caller (func_00213920) writes a flag byte at +0x2E of the
+// returned object.
+void* moby_getSecondaryObject(struct MobyInstance* m) {
+    if (!m)
+        return 0;
+    int t = *(u16*)((char*)m + 0x34) & 0x20;
+    // Three nops: the EE assembler eats one for the beqz delay slot, leaving
+    // the original's two.
+    asm volatile("nop\n\t" "nop\n\t" "nop");
+    if (t) {
+        void* p = *(void**)((char*)m + 0x78);
+        return *(void**)((char*)p + 0x10);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00214258);
 
