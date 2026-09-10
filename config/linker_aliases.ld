@@ -150,7 +150,6 @@ draw_transformMatrix = 0x001FA378;
 draw_scaleVector = 0x001F9A68;
 draw_transformVector = 0x001F9D20;
 fontMeasureString = 0x001F6200;
-pause_allocateSoundSlots = 0x00225AC0;
 func_0011AB20 = 0x0011AB20;
 func_001233F0 = 0x001233F0;
 func_00118980 = 0x00118980;

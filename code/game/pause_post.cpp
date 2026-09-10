@@ -85,9 +85,10 @@ int pause_resetMemoryCardState(void) {
     return 0;
 }
 
-// C linkage: the still-assembly pause sound-slot allocator at 0x00225AC0
-// fills the five-entry pause sound table and has an unmangled entry point.
-extern "C" void pause_allocateSoundSlots(int param_1);
+// Symbol override: the still-assembly pause sound-slot allocator at 0x00225AC0
+// fills the five-entry pause sound table, whose generated entry point is
+// unmangled and cannot be produced by natural C++ linkage.
+extern void pause_allocateSoundSlots(int param_1) asm("func_00225AC0");
 
 int pause_enableSoundOption(void) {
     pause_allocateSoundSlots(1);
