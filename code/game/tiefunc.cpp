@@ -8,12 +8,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/tiefunc", PatchTieGifs);
 INCLUDE_ASM("code/_generated/nonmatchings/game/tiefunc", func_00235840);
 
 extern "C" void LightTies(u16*);
-extern "C" u16 D_001E3200[];
-extern "C" u16 D_001E4400[];
+extern u16 tieLightData[];
+extern u16 tieLightData2[];
 
-extern "C" void func_00235898(void) {
-    LightTies(D_001E3200);
-    LightTies(D_001E4400);
+void refreshTieLights(void) {
+    LightTies(tieLightData);
+    LightTies(tieLightData2);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/tiefunc", DrawTies_1);

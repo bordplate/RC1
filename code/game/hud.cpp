@@ -17,12 +17,12 @@ typedef struct {
     u32 heapEnd;
 } HudHeap;
 
-extern "C" int D_001940CC __attribute__((section(".data")));
-extern "C" HudHeap D_0019A3E8 __attribute__((section(".data")));
+extern int hudHeapBase __attribute__((section(".data")));
+extern HudHeap hudHeap __attribute__((section(".data")));
 
 void Hud_HeapReset(void) {
-    D_0019A3E8.heapEnd = D_001940CC + 0x64000;
-    D_0019A3E8.heapCursor = D_001940CC;
+    hudHeap.heapEnd = hudHeapBase + 0x64000;
+    hudHeap.heapCursor = hudHeapBase;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", Hud_HeapAlloc__FUiPcT1i);
@@ -43,11 +43,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF5E8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF6D8);
 
-extern "C" int D_0015F8F8;
+extern int hudMessageTimer;
 
-extern "C" void func_001FF768(void) {
-    if (D_0015F8F8 != 0) {
-        D_0015F8F8--;
+void hud_updateMessageTimer(void) {
+    if (hudMessageTimer != 0) {
+        hudMessageTimer--;
     }
 }
 

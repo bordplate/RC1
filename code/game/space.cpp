@@ -6,11 +6,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/space", func_0022DF40);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/space", func_0022E180);
 
-extern "C" int D_0015F5B0;
+extern int spaceLoadPending;
 
-extern "C" void func_0022E188(int param_1) {
+void space_beginLoad(int param_1) {
     *(int*)0x15F600 = param_1;
-    D_0015F5B0 = 1;
+    spaceLoadPending = 1;
     *(int*)0x15F618 = 1;
 }
 

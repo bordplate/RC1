@@ -6,7 +6,7 @@ typedef struct StrFile {
     u32 offset;
 } StrFile;
 
-extern "C" int func_0023BA48(StrFile* self, int offset, int frameCount) {
+int strFileBegin(StrFile* self, int offset, int frameCount) {
     self->offset = offset;
     self->frameCount = frameCount;
     return 1;

@@ -49,7 +49,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_002141E8);
 
 struct MobyInstance;
 
-extern "C" void* func_002141F8(struct MobyInstance *m) {
+void* moby_getActiveObject(struct MobyInstance* m) {
     if (!m)
         return 0;
     int t = *(u16*)((char*)m + 0x34) & 0x20;
