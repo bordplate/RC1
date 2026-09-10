@@ -3,7 +3,6 @@ _exit = 0x12d8e8;
 menu_pointIsClockwise = 0x00208818;
 menu_restoreSelection = 0x002088a8;
 D_00160F00 = 0x00160F00;
-D_0015FD64 = 0x0015FD64;
 menuItemEnabled_0 = 0x0013D394;
 menuItemEnabled_1 = 0x0013D395;
 menuItemEnabled_9 = 0x0013D39D;
@@ -31,7 +30,6 @@ menuItemEnabled_103 = 0x0013D3FB;
 menuItemEnabled_104 = 0x0013D3FC;
 menuItemEnabled_105 = 0x0013D3FD;
 menuItemEnabled_115 = 0x0013D407;
-menuState = 0x001413DC;
 menuStateData = 0x0013D290;
 menuSelectionCount = 0x0015FD64;
 menuSelectionState = 0x001413DC;
@@ -65,7 +63,6 @@ snd_batchBusy = 0x0015ECC4;
 snd_batchCommand = 0x00153D20;
 snd_rpcServer = 0x0015EBC0;
 mobyBackupBuffer = 0x001B2E80;
-padState = 0x0013C940;
 textureCursor = 0x0015EE74;
 pauseScreenState = 0x001D5BF0;
 memcardErrorMessage = 0x001E8360;
@@ -113,8 +110,6 @@ snd_batchCommandBuffers = 0x0015ECA0;
 snd_batchFreeBytes = 0x0015ECA8;
 snd_batchReturnBuffers = 0x0015ECB8;
 snd_batchIndex = 0x0015ECC0;
-D_0015EBC0 = 0x0015EBC0;
-D_00153D20 = 0x00153D20;
 sceSifCheckStatRpc = 0x0011B3B8;
 sceSifCallRpc = 0x0011B1C8;
 
@@ -240,7 +235,6 @@ Transition_FUN_001eb0a8 = 0x1eb0a8;
 Transition_LoadWad = 0x01ea830;
 Transition_DoTransition__Fv = 0x001eb798;
 
-DAT_0015EE4C = 0x15EE4C;
 
 // game/framebuf.cpp
 SetBackgroundColor__Fiii = 0x1fb280;
@@ -369,10 +363,7 @@ memcard_Save__Fii = 0x20b178;
 mc_gamedata = 0x1a04c0;
 mc_leveldata = 0x1a07c0;
 
-D_152078 = 0x152078;
 
-D_0015F8F8 = 0x15f8f8;
-D_0015F49C = 0x15f49c;
 
 // fonts.cpp //
 FontPrintWindow = 0x1f7090;
