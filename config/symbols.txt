@@ -3,6 +3,7 @@ _exit = 0x12d8e8;
 menu_pointIsClockwise = 0x00208818;
 menu_restoreSelection = 0x002088a8;
 D_00160F00 = 0x00160F00;
+drawTextureDmaState = 0x0018A2B0;
 menuItemEnabled_0 = 0x0013D394;
 menuItemEnabled_1 = 0x0013D395;
 menuItemEnabled_9 = 0x0013D39D;

@@ -1,6 +1,20 @@
 #include "common.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0B88);
+extern int drawTextureDmaState[20] __attribute__((section(".data")));
+
+void draw_resetTextureDmaState(void) asm("func_001F0B88");
+
+void draw_resetTextureDmaState(void) {
+    int value = 1;
+    int* state = drawTextureDmaState;
+    int count = 19;
+    state += count;
+    do {
+        *state = value;
+        count--;
+        state--;
+    } while (count >= 0);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0BC8);
 

@@ -29,6 +29,7 @@ menuState = 0x001413DC;
 menuStateData = 0x0013D290;
 menuSelectionCount = 0x0015FD64;
 menuSelectionState = 0x001413DC;
+drawTextureDmaState = 0x0018A2B0;
 func_00206978 = 0x00206978;
 func_002069A0 = 0x002069A0;
 func_002069B0 = 0x002069B0;
