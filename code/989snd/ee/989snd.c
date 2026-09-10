@@ -230,7 +230,26 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdSyn
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdBreak);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdGetError);
+// `volatile` keeps EGC from folding the out-of-window 0x137B00 base load into
+// the branch delay slot; without it the 14-word shape does not match.
+typedef struct {
+    int state;
+    int pad_04[3];
+    int error;
+} volatile SndCdStreamInfo;
+
+extern int snd_cdStreamActive;
+extern SndCdStreamInfo snd_cdStreamInfo;
+/* The generated SCE library provides this raw CD error/status getter. Its
+ * exact SDK API identity is unresolved, so retain the address-based name in
+ * this C TU. */
+extern int func_00121630(void);
+
+int snd_StreamSafeCdGetError(void) {
+    if (!snd_cdStreamActive)
+        return func_00121630();
+    return snd_cdStreamInfo.error;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdCallback);
 
