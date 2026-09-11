@@ -509,13 +509,15 @@ on the 64-bit GPR value, not just its low word. `slti ...,0xBE` compares with
 +190 (16-bit sign extension), not -66. See the scTag2 and menu threshold
 probes before diagnosing an optimization bug from these instructions.
 
-Verified flag scope (2026-09-06): the menu Splat segment is split at exact
-function boundaries so conflicting scheduler requirements stay local.
-`menu.cpp` (file 0x1078F8..0x109797) and `menu_post.cpp`
-(0x109850..0x109FAF) use `-fno-schedule-insns`; `menu_callbacks.cpp`
-(0x109798..0x10984F) uses `-fno-schedule-insns2`. This matches
-menu_pointIsClockwise and menu_restoreSelection while preserving every prior
-menu match and full boot parity. Sound-library and other files retain defaults.
+Verified flag scope (updated 2026-09-11): the menu Splat segment is split at
+exact function boundaries so conflicting compiler requirements stay local.
+`menu.cpp` and every `menu_post` TU use `-fno-schedule-insns`, while
+`menu_callbacks.cpp` uses `-fno-schedule-insns2`. The symbol-heavy
+`menu_post.cpp`, `menu_post_pages.cpp`, and `menu_post_pages_end.cpp` ranges
+also use `-mno-split-addresses`; `menu_post_mid.cpp` and
+`menu_post_gadgets.cpp` retain normal address splitting. This preserves every
+prior menu match and full boot parity. Sound-library and other files retain
+defaults.
 It does NOT establish the original build's flags. Revalidate future candidates
 with their owning TU's flag, and do not apply either scheduler flag globally.
 When adjacent functions require conflicting verified flags, prefer this Splat

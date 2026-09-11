@@ -1,5 +1,11 @@
 # func_00208E68 (vram 0x208E68, file 0x109DE8, 36 bytes) — MATCHED 2026-09-04
 
+2026-09-11 correction: the four callbacks now use the semantic
+`menuPostFlags` and `menuPostCallbackIndex` symbols. Exact function-boundary
+TUs give these callbacks `-mno-split-addresses`, which reproduces the original
+symbolic load and store. The constant-cast findings below apply under the
+previous flags and explain why the local compiler flag is required.
+
 Menu callback: `if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3;`.
 
 ## Identity / context

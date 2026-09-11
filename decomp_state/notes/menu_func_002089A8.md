@@ -1,11 +1,12 @@
 # func_002089A8 (vram 0x2089A8, file 0x109928, 36 bytes) — MATCHED 2026-09-04
 
-2026-09-06: this function moved to `menu_post.cpp`, which retains
-`-fno-schedule-insns` after the menu segment was split to isolate the adjacent
-post-RA scheduler requirement. The equivalent source order is E0, state, DC
-under that flag. Full boot cmp
-passes; the bytes below are unchanged. The older permutation explanation
-applies only to the previous default flags.
+2026-09-11 correction: this function now lives in `menu_post_mid.cpp`, which
+retains `-fno-schedule-insns` and normal address splitting. Its required
+constant-address cast uses `MENU_POST_CALLBACK_INDEX_ADDRESS`; a symbolic
+store changes the address register and store schedule. The equivalent source
+order is E0, state, DC under that flag. Full boot cmp passes; the bytes below
+are unchanged. The older permutation explanation applies only to the previous
+default flags.
 
 Menu callback over global struct at D_0013D290:
 

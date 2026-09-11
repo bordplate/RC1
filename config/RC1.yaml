@@ -147,6 +147,10 @@ segments:
     - [0x1078f8, cpp, game/menu]    # Just a guess, could be slightly later
     - [0x109798, cpp, game/menu_callbacks]
     - [0x109850, cpp, game/menu_post]
+    - [0x109928, cpp, game/menu_post_mid]
+    - [0x109de8, cpp, game/menu_post_pages]
+    - [0x109e38, cpp, game/menu_post_gadgets]
+    - [0x109e58, cpp, game/menu_post_pages_end]
     - [0x109fb0, cpp, game/memcard]
     - [0x10c340, asm, game/miscproc]
     - [0x10c8d0, asm, game/missionfunc] # Referenced in some map func stuff

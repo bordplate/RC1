@@ -56,8 +56,10 @@ python tools/decomp_probe.py decomp_state/probes/menu_threshold.cpp \
 
 The probe uses Makefile EEGCC/WINE/include/default flags, with experiment flags
 appended. It deliberately does NOT inherit production per-file overrides.
-`menu.cpp` and `menu_post.cpp` use `-fno-schedule-insns`, while the exact-boundary
-`menu_callbacks.cpp` slice uses `-fno-schedule-insns2`.
+`menu.cpp` and all `menu_post` slices use `-fno-schedule-insns`, while the
+exact-boundary `menu_callbacks.cpp` slice uses `-fno-schedule-insns2`.
+`menu_post.cpp`, `menu_post_pages.cpp`, and `menu_post_pages_end.cpp` also use
+`-mno-split-addresses`; the other two post-menu slices retain normal splitting.
 Compiler output remains under the experiment directory: candidate.s, .o,
 .elf, .log and .json, plus snapshots of the source and original reference.
 The log records commands and compiler/linker output. A failed rerun invalidates

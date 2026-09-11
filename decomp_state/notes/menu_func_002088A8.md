@@ -39,11 +39,15 @@ python tools/decomp_probe.py decomp_state/probes/menu_callback.cpp \
 ## Translation-Unit Isolation
 
 The original single `game/menu` Splat segment was split at exact function
-boundaries into three consecutive C++ segments:
+boundaries into consecutive C++ segments:
 
 - `menu.cpp`: file `0x1078F8..0x109797`, `-fno-schedule-insns`
 - `menu_callbacks.cpp`: file `0x109798..0x10984F`, `-fno-schedule-insns2`
-- `menu_post.cpp`: file `0x109850..0x109FAF`, `-fno-schedule-insns`
+- `menu_post.cpp`: file `0x109850..0x109927`, `-fno-schedule-insns -mno-split-addresses`
+- `menu_post_mid.cpp`: file `0x109928..0x109DE7`, `-fno-schedule-insns`
+- `menu_post_pages.cpp`: file `0x109DE8..0x109E37`, `-fno-schedule-insns -mno-split-addresses`
+- `menu_post_gadgets.cpp`: file `0x109E38..0x109E57`, `-fno-schedule-insns`
+- `menu_post_pages_end.cpp`: file `0x109E58..0x109FAF`, `-fno-schedule-insns -mno-split-addresses`
 
 Splat writes those objects consecutively in the linker script, so no padding
 or address changes are introduced. This is preferable to changing a large TU's

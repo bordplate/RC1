@@ -1,5 +1,11 @@
 # func_00208EB8 (vram 0x208EB8, file 0x109E38, 32 bytes) — MATCHED 2026-09-04
 
+2026-09-11 correction: this callback now lives in `menu_post_gadgets.cpp` and
+uses `MENU_POST_CALLBACK_INDEX_ADDRESS` for its required constant-address
+cast. A symbolic store remains nonmatching under this slice's normal address
+splitting, so the named constant keeps the verified scheduling without an
+unexplained address literal.
+
 Menu callback: `if (D_0013D2AC) *(int*)0x15EEB0 = 3;`.
 
 ## Identity / context
