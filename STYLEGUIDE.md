@@ -22,6 +22,35 @@ priority. Keep any necessary exception local and explain why it exists.
   necessary for matching decompilation, then it should be in a descriptive variable
   or define. Exceptions apply to padding bytes and buffer sizes where intention is clear.
 
+Static addresses are never allowed for pointers. You cannot assume a particular memory 
+layout because it defeats the purpose of a decompilation project.
+
+This is **NOT** allowed:
+```
+    if ((*(int*)0x15EEB4 ^ 1) & 1) {
+        *(int*)0x15EEB0 = 3;
+```
+
+Instead add the symbols to `symbols.txt`:
+```
+menuPostCallbackIndex = 0x0015EEB0;
+menuPostFlags = 0x0015EEB4;
+```
+
+And reference them by `extern`:
+```
+extern int menuPostCallbackIndex __attribute__((section(".data")));
+extern int menuPostFlags __attribute__((section(".data")));
+
+[...]
+    if ((*(int*)menuPostFlags ^ 1) & 1) {
+        *(int*)menuPostCallbackIndex = 3;
+```
+
+
+Violations of this style guide that already exist in the codebase are not excuses, 
+reasons, or precedence for further violations. 
+
 ## Language And Toolchain
 
 Game code under `code/game/` is generally C++. The sound library at
