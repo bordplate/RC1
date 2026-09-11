@@ -151,7 +151,27 @@ int pause_menuCallbackNoop(void) {
     return 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021DF30);
+typedef struct {
+    u8 pad[0x34];
+    u32 field_34;
+    float field_38;
+    u8 pad_3c[8];
+    u32 field_44;
+    u32 field_48;
+} PauseMenuEntry;
+
+// Symbol override: pause-menu callback at the address-based generated entry
+// point, referenced by the original function-pointer tables. Resets an entry:
+// clears field_34/44/48 and sets the field_38 angle to PI.
+int pause_resetMenuEntry(PauseMenuEntry* entry) asm("func_0021DF30");
+
+int pause_resetMenuEntry(PauseMenuEntry* entry) {
+    entry->field_34 = 0;
+    entry->field_38 = 3.14159265f;
+    entry->field_44 = 0;
+    entry->field_48 = 0;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021DF58);
 

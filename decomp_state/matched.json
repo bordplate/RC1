@@ -1630,5 +1630,16 @@
     "size": 56,
     "matched_date": "2026-09-11",
     "note": "Loads a help message set: node = (char*)helpMsgData + (int)helpOffsetTable[set]; stores the set's message count in HelpMsgCount (0x1996FC, renamed from Help) and the entry array base (node+8) in HelpMsgs. The two pointer globals helpMsgData (0x15EF60) / helpOffsetTable (0x15EF64) are named in symbols.txt; under -fno-schedule-insns -mno-split-addresses they compile to the original's single-register absolute lui/lw loads (a plain in-window extern would give GP-relative, and splitting enabled gives a regrouped two-register load). The count store keeps a $6-pinned page (0x1A0000 = HelpMsgCount's high-16, no real symbol) + $4-pinned count, with the offset from %%lo(HelpMsgCount); base-first order and node+8-before-store are required. Clean full boot parity passes. See notes/transition_func_001EAF50.md."
+  },
+  "code/game/pause_post.cpp:168:pause_resetMenuEntry": {
+    "name": "pause_resetMenuEntry",
+    "source": "code/game/pause_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause_post/func_0021DF30.s",
+    "vram": "0x0021DF30",
+    "file_offset": "0x11EEB0",
+    "size": 36,
+    "symbol": "func_0021DF30",
+    "matched_date": "2026-09-11",
+    "note": "Pause-menu reset callback (func-pointer tables 0x1CEF88/0x1D0E30/0x1D0EF0, grouped with func_0021DF58 and the ship-menu/moby callbacks). Clears field_34/44/48 and sets the field_38 angle to PI (0x40490FDB). Matched with the TU forced to -G0 (required so EGC inlines the 3-instr PI lui+ori+mtc1 instead of pooling it via lwc1, as -G8 does for lo16!=0 floats); int-store rotation [A,B,C]->[C,A,B] with source order [f34,f38,f44,f48] reproduces the original tail. Symbol kept as func_0021DF30 via the declare-then-define asm() idiom (EGC cfront rejects asm() on a definition). Full clean boot ELF matches. See notes/pause_func_0021DF30.md."
   }
 }
