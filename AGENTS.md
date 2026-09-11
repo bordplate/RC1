@@ -515,8 +515,11 @@ exact function boundaries so conflicting compiler requirements stay local.
 `menu_callbacks.cpp` uses `-fno-schedule-insns2`. The symbol-heavy
 `menu_post.cpp`, `menu_post_pages.cpp`, and `menu_post_pages_end.cpp` ranges
 also use `-mno-split-addresses`; `menu_post_mid.cpp` and
-`menu_post_gadgets.cpp` retain normal address splitting. This preserves every
-prior menu match and full boot parity. Sound-library and other files retain
+`menu_post_gadgets.cpp` retain normal address splitting. `transition.o` also
+uses `-fno-schedule-insns` (required by Help_LoadMsgs, which additionally
+needs a $6-pinned store page and $4-pinned count; see
+decomp_state/notes/transition_func_001EAF50.md). This preserves every prior
+menu match and full boot parity. Sound-library and other files retain
 defaults.
 It does NOT establish the original build's flags. Revalidate future candidates
 with their owning TU's flag, and do not apply either scheduler flag globally.
