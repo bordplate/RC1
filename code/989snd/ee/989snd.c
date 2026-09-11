@@ -239,11 +239,16 @@ typedef struct {
 } volatile SndCdStreamInfo;
 
 extern int snd_cdStreamActive;
+extern int snd_cdStatusCallback;
 extern SndCdStreamInfo snd_cdStreamInfo;
 /* The generated SCE library provides this raw CD error/status getter. Its
  * exact SDK API identity is unresolved, so retain the address-based name in
  * this C TU. */
 extern int func_00121630(void);
+/* The generated SCE library registers CD callbacks with the disc driver when
+ * no stream-safe session is active. Its exact SDK API identity is unresolved,
+ * so retain the address-based name in this C TU. */
+extern int func_00120678(int);
 
 int snd_StreamSafeCdGetError(void) {
     if (!snd_cdStreamActive)
@@ -251,7 +256,16 @@ int snd_StreamSafeCdGetError(void) {
     return snd_cdStreamInfo.error;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdCallback);
+int snd_StreamSafeCdCallback(int callback) {
+    int old;
+
+    if (!snd_cdStreamActive)
+        return func_00120678(callback);
+
+    old = snd_cdStatusCallback;
+    snd_cdStatusCallback = callback;
+    return old;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012EF58);
 

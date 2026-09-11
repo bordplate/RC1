@@ -62,6 +62,7 @@ snd_cdStreamInfo = 0x00137B00;
 snd_currentBuffer = 0x0015EC80;
 snd_currentBufferIndex = 0x0015EC84;
 snd_cdStreamActive = 0x0015EC8C;
+snd_cdStatusCallback = 0x0015EC90;
 snd_batchBusy = 0x0015ECC4;
 snd_batchCommand = 0x00153D20;
 snd_rpcServer = 0x0015EBC0;
