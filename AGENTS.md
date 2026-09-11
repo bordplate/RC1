@@ -370,11 +370,25 @@ epilogue word differences despite identical code before the call. Confirm
 CALLEE return types, not just the selected function's return type, before
 blaming allocator tie-breaks. See the snd_batch positive/negative probes.
 
-Verified address-splitting scope (2026-09-06): `-mno-split-addresses` with
-SYMBOLIC .data loads reproduces VU1_addDataRef's first 68 bytes, including all
-five self-based lui/lw sequences. It does not fix repeated constant-address
-casts, nor the final GP-relative store. No vuchain flag was enabled in the
-production build. See its updated blocker note.
+ Verified address-splitting scope (2026-09-06, extended 2026-09-11):
+ `-mno-split-addresses` with SYMBOLIC .data loads reproduces VU1_addDataRef's first
+ 68 bytes, including all five self-based lui/lw sequences. It does not fix repeated
+ constant-address casts, nor the final GP-relative store. No vuchain flag was enabled
+ in the production build. See its updated blocker note.
+ Confirmed 2026-09-11 (Help_LoadMsgs): the same flag is what turns a NAMED in-window
+ symbol into the original's single-register absolute load. A plain gp-window extern
+ compiles to a GP-relative load (wrong mode), and with address splitting ENABLED a
+ named symbol emits a two-register load (`lui $Y; lw $Z`, Y != Z) that the allocator
+ regroups; only with `-mno-split-addresses` does EGC emit a single pseudo
+ (`lw $reg, sym`) the assembler expands to a self-based `lui $reg; lw $reg`. Pair it
+ with the `.data` section attribute to force absolute loads for in-window globals,
+ and apply it per-TU (transition.o).
+
+You should make improvements to your tooling as you discover weaknesses or 
+flaws in them, or find ways to improve decompilation methodology by changing 
+them. You can make new tools or scripts, or change the existing ones. Commit
+changes to tools in separate commits from decompiled functions. This is allowed
+at any time in your workflow.
 
 Observation observed 2026-09-08 (s0-relative plain-extern stores + out-of-
 window address splitting): a plain `extern "C" int` global inside the gp
@@ -418,6 +432,7 @@ decomp_state/notes/vuchain_func_002335A0.md.
   original assembly/raw words, Ghidra and source evidence, object diffs, all
   meaningful attempted variants, and the unresolved question. Do not resume
   its task or ask follow-ups; mechanically test its recommendations locally.
+  You should use it before invoking the `last-resort-decompiler`.
 - `last-resort-decompiler` uses the usage-limited GPT-5.6 Sol model. Do not use
   it for routine targets or initial research. Invoke it only after the primary
   agent has exhausted normal source, assembly, Ghidra, compiler-probe, and
@@ -464,6 +479,12 @@ rename code that is already committed. Such a rename may and should update
 every affected file and user; do not limit it to the function currently under
 investigation. The goal is readable code. Likewise, avoid magic numbers by
 replacing them with appropriately named constants when the meaning is known.
+When a data address must be referenced but is not yet a symbol, define it in
+`config/symbols.txt` (a new `Name = 0xADDR;` line, then rerun `make split`) and
+reference the named symbol in source — do not hardcode the address as a cast.
+Insomniac did not hardcode data addresses; a bare magic address in source is a
+sign the underlying global should be named. (Only a genuine codegen artifact with
+no real symbol, such as EGC's high-16 split page, may stay a documented constant.)
 
 Prefer small leaf functions and focused iterations. Preserve old compiler
 compatibility and existing project style. If repeated attempts fail, record the
@@ -515,12 +536,13 @@ exact function boundaries so conflicting compiler requirements stay local.
 `menu_callbacks.cpp` uses `-fno-schedule-insns2`. The symbol-heavy
 `menu_post.cpp`, `menu_post_pages.cpp`, and `menu_post_pages_end.cpp` ranges
 also use `-mno-split-addresses`; `menu_post_mid.cpp` and
-`menu_post_gadgets.cpp` retain normal address splitting. `transition.o` also
-uses `-fno-schedule-insns` (required by Help_LoadMsgs, which additionally
-needs a $6-pinned store page and $4-pinned count; see
-decomp_state/notes/transition_func_001EAF50.md). This preserves every prior
-menu match and full boot parity. Sound-library and other files retain
-defaults.
+ `menu_post_gadgets.cpp` retain normal address splitting. `transition.o` uses
+ `-fno-schedule-insns -mno-split-addresses` (required by Help_LoadMsgs: the flag
+ turns its named in-window pointer globals into single-register absolute loads, and
+ the count store additionally needs a $6-pinned store page + $4-pinned count; see
+ decomp_state/notes/transition_func_001EAF50.md). This preserves every prior
+ menu match and full boot parity. Sound-library and other files retain
+ defaults.
 It does NOT establish the original build's flags. Revalidate future candidates
 with their owning TU's flag, and do not apply either scheduler flag globally.
 When adjacent functions require conflicting verified flags, prefer this Splat
@@ -614,4 +636,6 @@ record and continue; the notification is not part of the completion oracle.
 
 ## Closing notes
 
-Update this document as you learn about the project, and new and better strategies to progress with decompilation. 
+Update this document (AGENTS.md) as you learn about the project, and new and better 
+strategies to progress with decompilation. If a piece of documentation is outdate or
+inaccurate you should fix it and commit the change in its own commit. 

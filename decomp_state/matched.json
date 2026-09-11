@@ -1629,6 +1629,6 @@
     "vram": "0x001EAF50",
     "size": 56,
     "matched_date": "2026-09-11",
-    "note": "Loads a help message set: node = *(0x15EF60) + ((int*)*(0x15EF64))[set]; stores the set's message count at 0x1996FC (HelpMsgCount, renamed from Help) and the entry array base (node+8) in HelpMsgs. Matched with -fno-schedule-insns on transition.o plus a $6-pinned store page (zero-byte +r barrier) and a $4-pinned count; the indexed-array table form is required. ~95 natural C forms and 5 flag combos came within 5 words before last-resort escalation found the pinning route. Clean full boot parity passes. See notes/transition_func_001EAF50.md."
+    "note": "Loads a help message set: node = (char*)helpMsgData + (int)helpOffsetTable[set]; stores the set's message count in HelpMsgCount (0x1996FC, renamed from Help) and the entry array base (node+8) in HelpMsgs. The two pointer globals helpMsgData (0x15EF60) / helpOffsetTable (0x15EF64) are named in symbols.txt; under -fno-schedule-insns -mno-split-addresses they compile to the original's single-register absolute lui/lw loads (a plain in-window extern would give GP-relative, and splitting enabled gives a regrouped two-register load). The count store keeps a $6-pinned page (0x1A0000 = HelpMsgCount's high-16, no real symbol) + $4-pinned count, with the offset from %%lo(HelpMsgCount); base-first order and node+8-before-store are required. Clean full boot parity passes. See notes/transition_func_001EAF50.md."
   }
 }

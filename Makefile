@@ -47,8 +47,9 @@ COMMON_COMPILE_FLAGS = -G8 -O2 -ffast-math -fno-exceptions -Wa,-EL -Wa,-Icode/in
 
 # Verified against the full boot image; do not propagate into 989snd.
 $(OBJ_DIR)/game/menu.o $(OBJ_DIR)/game/menu_post_mid.o \
-    $(OBJ_DIR)/game/menu_post_gadgets.o $(OBJ_DIR)/game/transition.o: \
+    $(OBJ_DIR)/game/menu_post_gadgets.o: \
     PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
+$(OBJ_DIR)/game/transition.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns -mno-split-addresses
 $(OBJ_DIR)/game/menu_post.o $(OBJ_DIR)/game/menu_post_pages.o \
     $(OBJ_DIR)/game/menu_post_pages_end.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns -mno-split-addresses
 $(OBJ_DIR)/game/menu_callbacks.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns2
