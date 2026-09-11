@@ -1596,5 +1596,13 @@
     "size": 64,
     "matched_date": "2026-09-10",
     "note": "Music-transition CD break. void stream_breakTransitionCd(): if (musicTransition.field_0x08 != 0) { snd_StreamSafeCdBreak(); musicTransition.field_0x0A = 1; }. field_0x08 (s16 at +8) is the transition CD status set by stream_updateCdStatus (0=ok, 2=CD error via snd_StreamSafeCdGetError); field_0x0A (u8 at +0xA) is the break-pending flag cleared later by the transition state machine FUN_00216290 after polling 0x12EE08(1). Four pause_post callers jal it by the address-based symbol, so the C definition uses an asm func_002166E8 symbol override (draw.cpp pattern). CODEGEN (key finding): the post-call constant store (field_0x0A = 1) must land in v1, not v0. This is controlled by the CALLEE return type: snd_StreamSafeCdBreak returns an int (active path li v0,1; inactive path forwards func_001216C8's return), so declaring it extern-C int (not void) keeps $v0 claimed across the call and EGC allocates the fresh constant to v1 (reusing the condition's register); a void declaration lets EGC reuse $v0 (the base %hi register), a 2-word diff at 0x216710/0x216714. This is the verified callee-prototype effect (cf. snd_SendCurrentBatch, AGENTS.md). Also added u8 field_0x0A to the shared MusicTransState (was inside pad_0x0A). Verified: decomp_probe 64/64 bytes; full build + cmp byte-for-byte pass; count 725->724. See notes/stream_func_002166E8.md."
+  },
+  "code/game/movie/audiodec.cpp:40:audioDecReset__FP9_AudioDec": {
+    "name": "audioDecReset__FP9_AudioDec",
+    "source": "code/game/movie/audiodec.cpp",
+    "vram": "0x0023AD10",
+    "size": 68,
+    "matched_date": "2026-09-11",
+    "note": "Movie-audio reset: calls snd_ResetMovieSound (C-linkage, no-arg) then zeroes 8 _AudioDec int fields (0x00,0x30,0x38,0x3C,0x44,0x50=sentPos,0x58,0x5C). Extended the TU-local _AudioDec from 0x54 to its full observed 0x64 layout using generated sibling access (every int offset 0x00..0x60 named field_0xNN; pad only at unobserved 0x08-0x13,0x20-0x2F,0x54-0x57); sentPos stays at 0x50 and struct is pointer-only so the growth is safe. Key codegen: for 8 independent constant stores before the standard epilogue (no constant return), EGC emits them in right-rotation-by-1 of source order, so the matching source is the natural ascending offset order. decomp_probe 68/68, full boot parity passes. See notes/audiodec_audioDecReset__FP9_AudioDec.md."
   }
 }
