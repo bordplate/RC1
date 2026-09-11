@@ -1612,5 +1612,14 @@
     "size": 48,
     "matched_date": "2026-09-11",
     "note": "CD status callback register. Early-return form (if (!snd_cdStreamActive) return func_00120678(callback);) + block-leading 'int old' local: EGC puts the false path (jal) in the taken branch, true path on fall-through; old=slot load before the slot store puts sq a0 in the b delay slot and the single shared lq ra lands in the exit block. Plain if/else shapes emit bne with the true path taken (wrong direction); store-first or return-after-store duplicates the epilogue lq or copy-propagates the load away. int models param+slot (32-bit pointer ABI; a function-pointer shape also matches but warns). Slot 0x15EC90 consumed by IOP return handler at 0x12DE0C (lw then jr v0, a0=1). Adjacent 12-byte dead tail func_0012EF58 (2x addiu sp,sp,0x20, no function/xrefs in Ghidra) left as separate todo queue entry. decomp_probe 48/48, full boot parity passes, count 723->722. See notes/989snd_snd_StreamSafeCdCallback.md."
+  },
+  "code/game/pause_post.cpp:94:func_0021CA98": {
+    "name": "func_0021CA98",
+    "source": "code/game/pause_post.cpp",
+    "vram": "0x0021CA98",
+    "file_offset": "0x11DA18",
+    "size": 44,
+    "matched_date": "2026-09-11",
+    "note": "Pause-menu callback, direct sibling of matched SetPauseActionList (0x21A1B0). Selects one of two 13-entry sprite-index lists based on a dedicated flag and stores the chosen list pointer in the menu item's field at offset 0x34 (element 1 of the 7-entry pointer array at 0x30 that func_0021CA60 copies to D_00141EA0). int pause_selectSpriteList(PauseSpriteListMode* mode): mode->spriteList = (pauseSpriteListFlag != 0) ? (u32)pauseSpriteListA : (u32)pauseSpriteListB; return 0. Flag D_0013D4C2 (u8, out-of-gp-window -> section .data) is referenced ONLY by this function; the two lists D_001D06D0/D_001D0708 are flat u32[14] (13 x 16-bit indices 0x4F0D.. plus null) differing only in their last three entries. CODEGEN: the original branches beqz to the flag==0 path, so the matching C form is the (flag != 0) ? A : B ternary -- EGC emits beqz for the !=-0 form and bnez for the ==-0 form, and the ==-0 form gave a 3-byte branch-direction diff. C++ linkage; the mangled symbol lands at 0x21CA98 by contiguous .text layout, config/linker_aliases.ld carries func_0021CA98 = 0x21CA98 (referenced by name in generated data at 0x1D0800) plus the three semantic data names. Verified: decomp_probe 44/44 bytes; full build + cmp byte-for-byte pass; count 722->721. See notes/pause_post_func_0021CA98.md."
   }
 }

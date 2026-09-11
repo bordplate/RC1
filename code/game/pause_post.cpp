@@ -78,7 +78,26 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021C9C8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021CA60);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021CA98);
+// Pause menu callback: select one of two sprite-index lists based on a
+// dedicated flag and store the chosen list pointer in the menu item's field
+// at offset 0x34 (element 1 of the 7-entry pointer array that begins at
+// offset 0x30, which func_0021CA60 copies to D_00141EA0).
+typedef struct {
+    u8 pad[0x34];
+    u32 spriteList;
+} PauseSpriteListMode;
+
+extern u8 pauseSpriteListFlag __attribute__((section(".data")));
+extern int pauseSpriteListA[];
+extern int pauseSpriteListB[];
+
+int pause_selectSpriteList(PauseSpriteListMode* mode) {
+    // Match-critical: the != 0 direction makes EGC emit the original beqzl
+    // layout; the == 0 form emits bnez (a 3-byte branch-direction diff).
+    mode->spriteList =
+        (pauseSpriteListFlag != 0) ? (u32)pauseSpriteListA : (u32)pauseSpriteListB;
+    return 0;
+}
 
 extern int pauseMemoryCardState __attribute__((section(".data")));
 
