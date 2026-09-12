@@ -228,8 +228,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdRea
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdSync);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdBreak);
-
 // `volatile` keeps EGC from folding the out-of-window 0x137B00 base load into
 // the branch delay slot; without it the 14-word shape does not match.
 typedef struct {
@@ -249,6 +247,17 @@ extern int func_00121630(void);
  * no stream-safe session is active. Its exact SDK API identity is unresolved,
  * so retain the address-based name in this C TU. */
 extern int func_00120678(int);
+/* The generated SCE library breaks the active CD streaming read through the
+ * IOP. Its exact SDK API identity is unresolved, so retain the address-based
+ * name in this C TU. */
+extern int func_001216C8(void);
+
+int snd_StreamSafeCdBreak(void) {
+    if (!snd_cdStreamActive)
+        return func_001216C8();
+    snd_SendIOPCommandNoWait(0x37, 0, 0, 0, 0);
+    return 1;
+}
 
 int snd_StreamSafeCdGetError(void) {
     if (!snd_cdStreamActive)
