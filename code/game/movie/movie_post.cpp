@@ -14,5 +14,3 @@ extern "C" void STUB_printf(const char* fmt, ...);
 extern "C" void ErrMessage(const char* msg) {
     STUB_printf(movieErrorMessage, msg);
 }
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/movie_post", proceedAudio__Fv);

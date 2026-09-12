@@ -1716,5 +1716,13 @@
     "size": 64,
     "matched_date": "2026-09-12",
     "note": "Vsync callback (original ELF name; unused int arg, returns 0): frm_vsync_cnt(0x15ED48)+=1; D_0015ED50 = frm_clock_time(0x15ED40) + *(u32*)0x10000800. 0x10000800 is in the EE VU0 microprogram region (no ELF symbol; InitOnce zeroes it, DrawDebugProfiler reads it). Match requires permcb.o with -mno-split-addresses (named .data in-window globals become self-based lui/ld signed splits) AND a volatile constant-address cast for 0x10000800: EGC fuses every non-volatile form (cast, named .data sym, array/struct subscript, &sym) into one self-based pseudo load (lui+lwu, no zero-extend), while the original keeps the address as a live value (lui a1,0x1000; ori a1,a1,0x800) with a separate lw 0(a1) + dsll32/dsrl32 zero-extend; only volatile suppresses the fusion. A named volatile symbol still fuses (60 B). D_0015ED50/frm_clock_time semantics unconfirmed (written, not read, in boot image). Probe history v1-v9 in decomp_state/probes; v8 matched 64/64. Full build + cmp byte-for-byte; count 711->710. See notes/permcb_vsync_callback__Fi.md."
+  },
+  "code/game/movie/movie_post_audio.cpp:9:proceedAudio__Fv": {
+    "name": "proceedAudio__Fv",
+    "source": "code/game/movie/movie_post_audio.cpp",
+    "vram": "0x0023ABA0",
+    "size": 44,
+    "matched_date": "2026-09-12",
+    "note": "Audio-decoder callback (original unmangled movie-decoder API; no boot-image caller or pointer literal). Body: audioDecSend((_AudioDec*)(movieDecodeBuf + MOVIE_AUDIO_DEC_OFFSET)) i.e. send the movie _AudioDec state at offset 0xD9100 to the SPU. void return (original keeps the movieDecodeBuf base in v0 until the jal clobbers it). Matched on the first standalone probe with -mno-split-addresses: default flags give a 2-register movieDecodeBuf load (lui v0; lw v1,off(v0)) with the 0xD9100 lui scheduled first, while the flag yields the single self-based pseudo load (lui v0; lw v0,off(v0)) hoisted before the prologue as in the original. 0xD9100 materializes lui a0,0xD/ori a0,0x9100 straddling the 0x10 prologue (sq/lq ra at 0(sp)); the final addu a0,v0,a0 lands in the jal delay slot. Flag breaks ErrMessage's codegen, so a Splat boundary at 0x13BB20 puts it in its own TU movie_post_audio.cpp with PRIVATE_COMPILE_FLAGS=-mno-split-addresses (movie_mid/videodec_post pattern). Full build + cmp byte-for-byte; count 710->709. See notes/movie_post_audio_proceedAudio__Fv.md."
   }
 }

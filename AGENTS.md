@@ -585,9 +585,13 @@ also use `-mno-split-addresses`; `menu_post_mid.cpp` and
  decomp_state/notes/transition_func_001EAF50.md). The movie Splat segment is split
  the same way: `movie_mid.o` uses `-mno-split-addresses` (required by isAudioOK:
  the flag turns its named in-window `movieDecodeBuf` global into the single
- self-based absolute load the original hoists before the prologue), while
-  `movie.o` and `movie_post.o` retain normal address splitting (the flag breaks
-  ErrMessage's matched codegen). `permcb.o` uses `-mno-split-addresses`
+  self-based absolute load the original hoists before the prologue),
+  `movie_post_audio.o` uses `-mno-split-addresses` (required by
+  proceedAudio: the same self-based `movieDecodeBuf` load hoisted before the
+  0x10 prologue; the flag breaks ErrMessage's matched codegen, so a Splat
+  boundary at 0x13BB20 gives proceedAudio its own TU), while
+  `movie.o` and `movie_post.o` retain normal address splitting (the flag
+  breaks ErrMessage's matched codegen). `permcb.o` uses `-mno-split-addresses`
   (required by vsync_callback: its named in-window `frm_vsync_cnt` /
   `frm_clock_time` globals must become self-based `lui/ld` absolute loads; the
   flag is safe there because permcb.cpp holds only that one function). This

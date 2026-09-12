@@ -52,7 +52,8 @@ $(OBJ_DIR)/game/menu.o $(OBJ_DIR)/game/menu_post_mid.o \
 $(OBJ_DIR)/game/transition.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns -mno-split-addresses
 $(OBJ_DIR)/game/menu_post.o $(OBJ_DIR)/game/menu_post_pages.o \
     $(OBJ_DIR)/game/menu_post_pages_end.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns -mno-split-addresses
-$(OBJ_DIR)/game/movie/movie_mid.o $(OBJ_DIR)/game/movie/videodec_post.o: \
+$(OBJ_DIR)/game/movie/movie_mid.o $(OBJ_DIR)/game/movie/videodec_post.o \
+    $(OBJ_DIR)/game/movie/movie_post_audio.o: \
     PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 $(OBJ_DIR)/game/permcb.o: PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 $(OBJ_DIR)/game/menu_callbacks.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns2
