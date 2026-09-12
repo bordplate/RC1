@@ -1669,5 +1669,15 @@
     "size": 68,
     "matched_date": "2026-09-12",
     "note": "Play-sound buffer callback: passed by sound_update as the 8th arg (t3 callback slot) to snd_PlaySoundVolPanPMPB; sibling sound_resetBufferState is the equivalent callback for snd_SetSoundParams_CB. Args (int a, long b): b is the 64-bit pointer to the per-sound buffer-state record, a the value. int c=(int)b (sign-extended); if c==0 return; *(int*)c=a; if a!=0: advance the state byte *(u8*)(c+4) 1->2 only when it is 1, else leave it; if a==0: zero *(c+0x18), *(c+0x1C) and *(u8*)(c+4) (reset). Codegen (default flags): the matched C form is  if(a!=0){ if(*(u8*)(c+4)!=1)return; *(u8*)(c+4)=2; return;}  with the three zero-stores as the FALL-THROUGH tail -- this makes EGC emit the original beq a0,0,.Lzero (branch to the zeroing block on a==0) plus the fall-through transition. The inverted if(a==0){...;return;} form makes EGC emit an inverted bne a0,0 and a wrong store order (j ra with a store in the delay slot). The (c+4) byte must be typed u8 (unsigned) to emit lbu; a signed char emits lb. Symbol: descriptive C++ name (mangled sound_setBufferState__Fil) + linker alias func_0022DD90=0x22DD90 in config/linker_aliases.ld (consistent with the siblings), since sound_update.s references the address-name as a callback pointer."
+  },
+  "code/game/movie/readbuf.cpp:34:readBufBeginGet__FP7ReadBufPPUc": {
+    "name": "readBufBeginGet__FP7ReadBufPPUc",
+    "source": "code/game/movie/readbuf.cpp",
+    "asm": "code/_generated/nonmatchings/game/movie/readbuf/readBufBeginGet__FP7ReadBufPPUc.s",
+    "vram": "0x0023B9D8",
+    "file_offset": "0x13C958",
+    "size": 72,
+    "note": "Ring-buffer 'prepare to read' accessor: if count, *out = buf->data + ((putPos-count+capacity) % capacity); return count. data[0x50000] is the first member, so buf->data+x is the plain self base (a3) in the store, while the putPos/count/capacity loads share base a2 = self+0x50000 (lui 0x5; addu). Frameless leaf; signed div+mfhi remainder with the EGC div-by-zero guard (beq cap,zero,+8; break 0,7 in delay slot) identical to matched readBufEndPut; return reloads count (lw v0,4(a2)) in the jr ra delay slot because the guard-load copy was clobbered by the subu/addu/div chain. Matched on first probe attempt (72/72 bytes); full build + cmp clean. See decomp_state/notes/readbuf_readBufBeginGet__FP7ReadBufPPUc.md.",
+    "matched_date": "2026-09-12"
   }
 }

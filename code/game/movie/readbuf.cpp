@@ -31,7 +31,12 @@ void readBufEndPut(ReadBuf* buf, int n) {
     buf->count += m;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/readbuf", readBufBeginGet__FP7ReadBufPPUc);
+int readBufBeginGet(ReadBuf* buf, u8** out) {
+    if (buf->count) {
+        *out = buf->data + ((buf->putPos - buf->count) + buf->capacity) % buf->capacity;
+    }
+    return buf->count;
+}
 
 int readBufEndGet(ReadBuf* buf, int n) {
     int ret = (n < buf->count) ? n : buf->count;
