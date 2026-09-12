@@ -51,6 +51,7 @@ tieLightData = 0x001E3200;
 tieLightData2 = 0x001E4400;
 currentCamera = 0x00186F40;
 drawCamera = 0x0018CF10;
+lvlCamVtbl = 0x001E8C00;
 drawOcclusionEnabled = 0x0015F49C;
 fontSmallGlyphs = 0x001DF050;
 fontMediumGlyphs = 0x001DF3F0;

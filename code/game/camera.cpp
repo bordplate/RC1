@@ -30,7 +30,30 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBF10);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_ActivationCheckPriority);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_Exit__FP9UpdateCam);
+// 0xA0-byte camera state block (see UpdateAllCameras__Fi iteration and
+// BackupCurrentCam); per-level behavior is selected through lvlCamVtbl.
+struct UpdateCam {
+    char pad_00[0x8C];
+    short camType;
+    char pad_8E[0x12];
+};
+
+// One lvl.camvtbl entry (0x14 bytes), indexed by UpdateCam::camType; each
+// level overlay supplies its own table at the same address.
+struct UpdateCamVtbl {
+    int field_0x00;
+    int (*activationCheck)(UpdateCam*, UpdateCam*);
+    void (*runSetupToNewCam)(UpdateCam*);
+    void (*collWithHero)(UpdateCam*, float);
+    void (*exit)(UpdateCam*);
+};
+extern UpdateCamVtbl lvlCamVtbl[];
+
+void Camera_Exit(UpdateCam* cam) {
+    void (*fn)(UpdateCam*) = lvlCamVtbl[cam->camType].exit;
+    if (fn)
+        fn(cam);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", UpdateAllCameras__Fi);
 
