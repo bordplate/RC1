@@ -1679,5 +1679,15 @@
     "size": 72,
     "note": "Ring-buffer 'prepare to read' accessor: if count, *out = buf->data + ((putPos-count+capacity) % capacity); return count. data[0x50000] is the first member, so buf->data+x is the plain self base (a3) in the store, while the putPos/count/capacity loads share base a2 = self+0x50000 (lui 0x5; addu). Frameless leaf; signed div+mfhi remainder with the EGC div-by-zero guard (beq cap,zero,+8; break 0,7 in delay slot) identical to matched readBufEndPut; return reloads count (lw v0,4(a2)) in the jr ra delay slot because the guard-load copy was clobbered by the subu/addu/div chain. Matched on first probe attempt (72/72 bytes); full build + cmp clean. See decomp_state/notes/readbuf_readBufBeginGet__FP7ReadBufPPUc.md.",
     "matched_date": "2026-09-12"
+  },
+  "code/game/movie/movie_mid.cpp:16:isAudioOK": {
+    "name": "isAudioOK",
+    "original_name": "isAudioOK",
+    "source": "code/game/movie/movie_mid.cpp",
+    "vram": "0x0023A790",
+    "file_offset": "0x13B710",
+    "size": 44,
+    "matched_date": "2026-09-12",
+    "note": "Movie-API wrapper: returns audioDecIsPageFull on the _AudioDec state at movieDecodeBuf + 0xD9100 (MOVIE_AUDIO_DEC_OFFSET). movieDecodeBuf (0x16120C) is the movie decode buffer base, written by the movie playback entry point func_0023A3B8 (sw a3 at 0x23A3E4) and zeroed on its exit; sibling base at 0x161208. Buffer layout: +0xD9048 VideoDec, +0xD9090 ViBuf (=VideoDec+0x48), +0xD9100 AudioDec, +0xD9168 struct passed to func_0023D1F8. Sole caller (movie loop in func_0023A3B8, 0x23A654: jal; nop; beq v0,zero) consumes the int result. The 0x16120C load needs an absolute self-based lui/lw hoisted before the prologue with the value in v0: plain in-window extern gives one GPREL16 load (wrong), .data named symbol without the flag hoists but lands in v1 with interleaved order (wrong), constant cast gives v0 but prologue-first (wrong). Winning recipe: named symbol + section('.data') attribute + -mno-split-addresses on the TU -> single 'lw $2, sym' pseudo the assembler expands to self-based lui v0; lw v0, with the original interleaved-prologue schedule (same mechanism as transition.cpp Help_LoadMsgs). movie_mid.o carries -mno-split-addresses via PRIVATE_COMPILE_FLAGS; the movie Splat range was split (0x13b338/0x13b710/0x13b740) because the flag breaks ErrMessage's matched codegen in movie.cpp. _AudioDec typedef + MOVIE_AUDIO_DEC_OFFSET + audioDec prototypes moved to code/include/audiodec.h. Sibling proceedAudio__Fv (0x23ABA0, calls audioDecSend) is the identical 11-word shape minus the callee and is the natural next target. See decomp_state/notes/movie_isAudioOK.md."
   }
 }

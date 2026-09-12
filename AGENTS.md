@@ -380,9 +380,23 @@ blaming allocator tie-breaks. See the snd_batch positive/negative probes.
  compiles to a GP-relative load (wrong mode), and with address splitting ENABLED a
  named symbol emits a two-register load (`lui $Y; lw $Z`, Y != Z) that the allocator
  regroups; only with `-mno-split-addresses` does EGC emit a single pseudo
- (`lw $reg, sym`) the assembler expands to a self-based `lui $reg; lw $reg`. Pair it
- with the `.data` section attribute to force absolute loads for in-window globals,
- and apply it per-TU (transition.o).
+  (`lw $reg, sym`) the assembler expands to a self-based `lui $reg; lw $reg`. Pair it
+  with the `.data` section attribute to force absolute loads for in-window globals,
+  and apply it per-TU (transition.o).
+  Extension confirmed 2026-09-12 (isAudioOK, 0x23A790): the same named-symbol +
+  `.data` + `-mno-split-addresses` combination also resolves the pre-prologue
+  hoist / self-overwriting-load scheduling conflict. Under default splitting the
+  `.data` named symbol hoists the load before the prologue but lands the value in
+  v1 with the const-hi interleaved; a constant cast gives the value in v0 but
+  schedules the prologue first. The flag makes EGC emit the original schedule
+  exactly: hoisted `lui v0; lw v0,0(v0)` with the value in v0 and the arg add as
+  `addu a0,v0,a0`. Note the 2026-09-08 last-resort pass had tested
+  `-mno-split-addresses` but only against the constant-cast and plain-extern
+  forms — the named-`.data`-symbol form is what unlocks it. The flag can BREAK
+  other matched functions in the same TU (it changed ErrMessage's prologue
+  order), so when a TU mixes such functions use a Splat range split to give the
+  one needing the flag its own TU/PRIVATE_COMPILE_FLAGS (movie_mid.o). See
+  decomp_state/notes/movie_isAudioOK.md.
 
 You should make improvements to your tooling as you discover weaknesses or 
 flaws in them, or find ways to improve decompilation methodology by changing 
@@ -535,7 +549,7 @@ on the 64-bit GPR value, not just its low word. `slti ...,0xBE` compares with
 +190 (16-bit sign extension), not -66. See the scTag2 and menu threshold
 probes before diagnosing an optimization bug from these instructions.
 
-Verified flag scope (updated 2026-09-11): the menu Splat segment is split at
+Verified flag scope (updated 2026-09-12): the menu Splat segment is split at
 exact function boundaries so conflicting compiler requirements stay local.
 `menu.cpp` and every `menu_post` TU use `-fno-schedule-insns`, while
 `menu_callbacks.cpp` uses `-fno-schedule-insns2`. The symbol-heavy
@@ -545,7 +559,12 @@ also use `-mno-split-addresses`; `menu_post_mid.cpp` and
  `-fno-schedule-insns -mno-split-addresses` (required by Help_LoadMsgs: the flag
  turns its named in-window pointer globals into single-register absolute loads, and
  the count store additionally needs a $6-pinned store page + $4-pinned count; see
- decomp_state/notes/transition_func_001EAF50.md). This preserves every prior
+ decomp_state/notes/transition_func_001EAF50.md). The movie Splat segment is split
+ the same way: `movie_mid.o` uses `-mno-split-addresses` (required by isAudioOK:
+ the flag turns its named in-window `movieDecodeBuf` global into the single
+ self-based absolute load the original hoists before the prologue), while
+ `movie.o` and `movie_post.o` retain normal address splitting (the flag breaks
+ ErrMessage's matched codegen). This preserves every prior
  menu match and full boot parity. Sound-library and other files retain
  defaults.
 It does NOT establish the original build's flags. Revalidate future candidates

@@ -1,11 +1,4 @@
 {
-  "code/game/movie/movie.cpp:11:isAudioOK": {
-    "status": "blocked",
-    "date": "2026-09-08",
-    "vram": "0x0023A790",
-    "size": 44,
-    "note": "return audioDecIsPageFull((AudioDec*)((u8*)(base at 0x16120C) + 0xD9100)); base=*(int*)0x16120C. Original hoists the load pair (lui v0; lw v0,off(v0) self-overwrite, value in v0) AND the const-hi (lui a0) BEFORE the prologue, then ori a0 + sq ra after. EGC 2.95.2 ties the two needed properties to mutually-exclusive address kinds: the self-overwriting v0 load + `addu a0,v0,a0` comes ONLY from a CONSTANT-cast address (never hoisted; prologue always first, load last), while pre-prologue hoisting comes ONLY from a SYMBOL address (section .data), which forces the base reg stable across the HI16/LO16 reloc pair so the value lands in v1 and the const-hi interleaves before the lw. Plain in-window extern -> single GPREL lw (wrong). ~20 forms + flags (-fno-schedule-insns/2, -G0, both) + `register int base asm(\"$2\")` (matches words 4..11 exactly; 3-word prefix still v1-base + interleaved) all fail the prefix. last-resort GPT-5.6 Sol used: high confidence no ordinary form/flag emits the exact schedule. Same blocker as videodec_func_0023D0E0 and VU1_addDataRef (load-first + split prologue). proceedAudio__Fv (0x23ABA0) is a byte-identical twin (only jal target differs) and is blocked by the same issue. INCLUDE_ASM retained. See decomp_state/notes/movie_isAudioOK.md."
-  },
   "code/game/movie/videodec.cpp:41:func_0023D0E0": {
     "status": "blocked",
     "date": "2026-09-04",

@@ -12,15 +12,14 @@ decomp_state/matched.json for verification details.
 
 - switchThread (0x23A770, 0x1C): `jal func_001188C0` with a0=1 set in the
   delay slot (`func_001188C0(1);`, return discarded; sp -0x10/ra save is the
-  standard call frame). func_001188C0 needs identification first.
-- isAudioOK (0x23A790, 0x2C): loads `*D_0016120C` (global, used all over the
-  movie code as a base pointer — e.g. DAT_0016120c + 0xd9xxx offsets in
-  mpegError/readMpeg), adds constant 0xD9100 to it, and calls
-  audioDecIsPageFull (matched) with the sum; returns its result. In C:
-  `return audioDecIsPageFull((void*)(*(uintptr_t*)D_0016120C + 0xD9100));`
-  shape — exact register/constant-split behavior to verify against EGC
-  (lui/ori pair for the 0xD9100 constant is emitted by EGC as li-style
-  lui+ori, watch delay-slot placement of addiu sp/-0x10).
+  standard call frame). func_001188C0 needs identification first. (Still in
+  movie.cpp after the 2026-09-12 range split.)
+- isAudioOK (0x23A790, 0x2C): MATCHED 2026-09-12, now in movie_mid.cpp — see
+  decomp_state/notes/movie_isAudioOK.md. Original investigation: loads
+  `*D_0016120C` (global, used all over the movie code as a base pointer —
+  e.g. DAT_0016120c + 0xd9xxx offsets in mpegError/readMpeg), adds constant
+  0xD9100 to it, and calls audioDecIsPageFull (matched) with the sum; returns
+  its result.
 
 ## Data layout note
 

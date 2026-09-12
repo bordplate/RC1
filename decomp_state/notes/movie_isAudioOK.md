@@ -1,4 +1,4 @@
-# isAudioOK (vram 0x23A790, file 0x13B710, 44 bytes / 11 words) — BLOCKED 2026-09-08
+# isAudioOK (vram 0x23A790, file 0x13B710, 44 bytes / 11 words) — MATCHED 2026-09-12
 
 Free C function in code/game/movie/movie.cpp (line 11, currently INCLUDE_ASM).
 Unmangled symbol `isAudioOK`, `int isAudioOK(void)`.
@@ -94,8 +94,52 @@ source form; it recorded the same unresolved 3-word prefix mismatch.
 
 ## Verdict
 
-BLOCKED. EGC 2.95.2 ties the self-overwriting v0 load (constant address) and the
-pre-prologue hoist (symbol address) to mutually exclusive address kinds. Needs a
-different compiler/flag not yet identified in this project. `proceedAudio__Fv`
-is blocked by the identical issue (same 11 words, only the jal target differs).
-Both INCLUDE_ASM placeholders are retained to preserve parity.
+BLOCKED (superseded — see Resolution below). EGC 2.95.2 ties the self-
+overwriting v0 load (constant address) and the pre-prologue hoist (symbol
+address) to mutually exclusive address kinds. Needs a different compiler/flag
+not yet identified in this project. `proceedAudio__Fv` is blocked by the
+identical issue (same 11 words, only the jal target differs). Both INCLUDE_ASM
+placeholders are retained to preserve parity.
+
+## Resolution (2026-09-12) — MATCHED
+
+The missing ingredient was the interaction between `-mno-split-addresses` and
+the section('.data') attribute on a NAMED symbol (already documented for
+transition.cpp / Help_LoadMsgs: the flag turns the named in-window symbol into
+a single `lw $reg, sym` pseudo-instruction that the assembler expands to a
+self-based `lui $reg; lw $reg,0($reg)`). Under default address splitting the
+.data symbol form hoists but lands the value in v1 with the const-hi
+interleaved (as recorded above); with `-mno-split-addresses` the same source
+emits exactly the original schedule:
+
+    extern u8* movieDecodeBuf __attribute__((section(".data")));
+    extern "C" int isAudioOK() {
+        return audioDecIsPageFull((_AudioDec*)(movieDecodeBuf + MOVIE_AUDIO_DEC_OFFSET));
+    }
+
+with `movieDecodeBuf = 0x0016120C` in config/symbols.txt and
+`movie_mid.o: PRIVATE_COMPILE_FLAGS = -mno-split-addresses` in the Makefile.
+The u8* type and the int return are both codegen-identical to the int-global /
+void-return forms (verified by probe: same 11 words, same three relocs
+HI16/LO16 movieDecodeBuf + R_MIPS_26 audioDecIsPageFull); u8* + int are the
+semantically correct choices (caller consumes the result; the global is a
+buffer base).
+
+TU split: `-mno-split-addresses` breaks ErrMessage's matched codegen (prologue
+order + a nop in the jal delay slot), so the movie Splat range was split at
+function boundaries into movie (0x13b338: func_0023A3B8, readMpeg,
+switchThread), movie_mid (0x13b710: isAudioOK only, carries the flag), and
+movie_post (0x13b740: initAll__Fiii, termAll__Fv, proceedAudio__Fv,
+ErrMessage; default flags).
+
+Shared declarations moved to code/include/audiodec.h: the _AudioDec typedef,
+`#define MOVIE_AUDIO_DEC_OFFSET 0xD9100`, and the extern "C" prototypes for
+audioDecIsPageFull / audioDecSend.
+
+Correction to the 2026-09-08 analysis: the last-resort agent did test
+-mno-split-addresses, but only against the constant-cast and plain-extern
+forms; the winning combination (named .data symbol + the flag) was not in the
+search space. proceedAudio__Fv (0x23ABA0) is NOT blocked — it is the same
+11-word shape calling audioDecSend and is ready for the same recipe (it still
+lives in movie_post.cpp, which keeps default flags, so it needs its own range
+carve-out or a flag-carrying TU).

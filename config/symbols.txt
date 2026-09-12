@@ -75,6 +75,7 @@ pauseScreenState = 0x001D5BF0;
 memcardErrorMessage = 0x001E8360;
 videoErrorMessage = 0x00161220;
 movieErrorMessage = 0x001611F8;
+movieDecodeBuf = 0x0016120C;
 frameBufferColor = 0x00152078;
 debugFontLoadInfo = 0x00137B80;
 debugFontBuffer = 0x001AABC0;

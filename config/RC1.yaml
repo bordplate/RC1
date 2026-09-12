@@ -181,6 +181,8 @@ segments:
     - [0x1389f0, cpp, game/update]   # 00237a70
     - [0x139290, cpp, game/vendor]
     - [0x13b338, cpp, game/movie/movie]
+    - [0x13b710, cpp, game/movie/movie_mid]
+    - [0x13b740, cpp, game/movie/movie_post]
     - [0x13bb50, cpp, game/movie/audiodec]
     - [0x13c190, cpp, game/movie/disp]
     - [0x13c570, cpp, game/movie/read]
