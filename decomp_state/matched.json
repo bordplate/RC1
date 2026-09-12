@@ -1699,5 +1699,14 @@
     "size": 48,
     "matched_date": "2026-09-12",
     "note": "Video-decoder callback (table slot 3) installed by videoDecCreate at 0x23CB54. Restarts the movie video ViBuf DMA: viBufRestartDMA((ViBuf*)(movieDecodeBuf + MOVIE_VIBUF_OFFSET)) where MOVIE_VIBUF_OFFSET=0xD9090; ignores its callback args and returns 1. Original hoists the movieDecodeBuf absolute load (lui v0; lw v0) BEFORE the 0x10 prologue, which EGC only reproduces with -mno-split-addresses (single self-based pseudo load). A plain extern or constant-cast base schedules the prologue first (wrong), so this TU needs the flag. The flag breaks mpegError (0x23D080, same file) which loads the videoErrorMessage global and needs the lui/sq/addiu interleave, so a Splat range split puts mpegRestartVideoDMA (+func_0023D140) in videodec_post.cpp with -mno-split-addresses while videodec.cpp keeps defaults. movieDecodeBuf + MOVIE_VIBUF_OFFSET declaration moved to include/audiodec.h (shared with movie_mid.cpp). Sibling callback mpegNodata (slot 1) uses the same 0xD9090 offset via a constant cast."
+  },
+  "code/game/tiefunc.cpp:20:UpdateTieTextures__Fv": {
+    "name": "UpdateTieTextures__Fv",
+    "original_name": "func_00235840",
+    "source": "code/game/tiefunc.cpp",
+    "vram": "0x00235840",
+    "size": 84,
+    "matched_date": "2026-09-12",
+    "note": "Active-tie texture update, called by the main draw path right after refreshTieLights (0x235898). Body: PatchTieGifs(); FastMemCopy(D_001E3000,D_001E4200,0x200); FastMemCopy(D_001E2A00,D_001E3E00,0x400); PatchTieGifs(); which patches the tie GIFs, stages new structure (D_001E3000) and palette (D_001E2A00) data, then patches again. Renamed from func_00235840 to UpdateTieTextures (C++ __Fv); old name kept resolvable via func_00235840=0x235840 in config/linker_aliases.ld for the still-assembly DrawDebugProfiler caller. Matched on the first standalone probe with default flags: each FastMemCopy pointer arg is a plain out-of-window lui %hi/addiu %lo symbol load with the size constant hoisted into the jal delay slot; the two zero-arg PatchTieGifs calls are plain jal/nop. D_001E3000/D_001E2A00/D_001E4200/D_001E3E00 remain linker-symbol names (shared with still-assembly PatchTieGifs). Clean build + cmp byte-for-byte; count 712->711. See notes/tiefunc_UpdateTieTextures.md."
   }
 }
