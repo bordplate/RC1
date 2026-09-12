@@ -3365,7 +3365,7 @@
     "line": 113,
     "asm": "code/_generated/nonmatchings/game/mobyfunc/ProcessMobyAnimData__Fv.s",
     "name": "ProcessMobyAnimData__Fv",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/mobyfunc.cpp:115:InitMobyClassDists__Fv",

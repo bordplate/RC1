@@ -98,7 +98,27 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CFD0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D060);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", ProcessMobyAnimData__Fv);
+// C linkage: MobyAnimProc is a handwritten assembly entry point in
+// game/mobyproc; its symbol is not cfront-mangled.
+extern "C" void MobyAnimProc(int p1, int p2);
+
+// 0x800-byte VU1 moby animation data buffer; the first 0x80 bytes are also
+// DMA'd as a VU1 header by the handwritten lighting pass at 0x234F98. The
+// data producer is not decompiled yet, so the address name is retained.
+extern u8 D_00165500[];
+
+// VU1 swap-chain slot offset maintained by VU1_initChain / VU1_swapChain
+// (equals the D_0015F638 value minus 0x2000); the writers are unmatched, so
+// the address name is retained.
+extern int D_0015F63C;
+
+void ProcessMobyAnimData() {
+    FlushCache(0);
+    FastMemCopy((void*)0x70003800, D_00165500, 0x800);
+    // Constant cast required: a named scalar at 0x15F638 would compile to a
+    // GPREL16 load, but the original uses an absolute lui/lw.
+    MobyAnimProc(*(int*)0x15F638, D_0015F63C);
+}
 
 void InitMobyClassDists() {
     FastMemSet((void*)0x70003A00, 0x40000000, 0x380);

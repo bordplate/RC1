@@ -1748,5 +1748,13 @@
     "size": 72,
     "matched_date": "2026-09-12",
     "note": "Sibling of func_00215300: counts the nonzero (active) bytes of the 0x20-byte flag pool at 0x13D408 (D_0013D408) and clamps the total to [0, 0x1E]. Identical structure and codegen (default flags, unsigned char pool, asm label for the unmangled symbol); only the pool address, byte count (0x20), and cap (0x1E) differ. See notes/mobyutil_func_00215300.md."
+  },
+  "code/game/mobyfunc.cpp:115:ProcessMobyAnimData__Fv": {
+    "name": "ProcessMobyAnimData__Fv",
+    "source": "code/game/mobyfunc.cpp",
+    "vram": "0x0020D1A8",
+    "size": 68,
+    "matched_date": "2026-09-13",
+    "note": "Stages VU1 moby animation data: FlushCache(0); FastMemCopy(0x70003800 [DMC], D_00165500 [0x800-byte RAM buffer], 0x800); MobyAnimProc(*(int*)0x15F638, D_0015F63C), MobyAnimProc being the handwritten unmangled entry point in game/mobyproc.s. Codegen: FastMemCopy p2 must be the NAMED array extern (a constant cast swaps the a0/a1 setup order); MobyAnimProc arg1 must be the constant cast (a named scalar would be GPREL16, original is an absolute self-based lui/lw); arg2 is the plain in-window scalar extern (GPREL16 load in the jal delay slot). MobyAnimProc must be declared (int,int) - (int*,int*) trips EGC's int-to-pointer error. Confirms plain array externs get absolute %hi/%lo while in-window scalar externs get GPREL16. D_0015F63C/D_00165500 added to config/symbols.txt. See notes/mobyfunc_ProcessMobyAnimData__Fv.md."
   }
 }
