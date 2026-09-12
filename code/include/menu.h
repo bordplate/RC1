@@ -23,6 +23,8 @@ extern int menu_postHasPendingSelection __attribute__((section(".data")));
 #define MENU_POST_PAGE_OPEN_BLOCKED_FLAG 0x40
 #define MENU_POST_SELECT_NEXT_PAGE_CALLBACK 3
 #define MENU_POST_PROCESS_PAGE_SELECTION_CALLBACK 4
+#define MENU_POST_PENDING_PAGE_RESOLVED 3
+#define MENU_POST_OPEN_PAGE_CALLBACK 8
 #define MENU_POST_UNSET_PAGE_INDEX -1
 
 #endif

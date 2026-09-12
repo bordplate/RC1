@@ -27,6 +27,7 @@ menuItemEnabled_105 = 0x0013D3FD;
 menuItemEnabled_115 = 0x0013D407;
 menuState = 0x001413DC;
 menuStateData = 0x0013D290;
+menuPostCallbackIndexGp = 0x0015EEB0;
 menuSelectionCount = 0x0015FD64;
 menuSelectionState = 0x001413DC;
 drawTextureDmaState = 0x0018A2B0;
