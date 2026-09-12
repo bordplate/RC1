@@ -427,6 +427,26 @@ undefined_syms_auto.txt). Inside the gp window the opposite holds: casts are
 needed to force absolute lui/lw (see the menu-family notes). Full record:
 decomp_state/notes/vuchain_func_002335A0.md.
 
+Observation observed 2026-09-13 (array externs are absolute; in-window scalar
+externs are GPREL16): EGC's default addressing mode depends on the declared
+KIND of the extern, not just the address. A plain array extern
+(`extern u8 D_00165500[];`) emits absolute `R_MIPS_HI16/LO16` relocs
+(signed split) whether or not the address is inside the gp window, while a
+plain in-window scalar extern (`extern int D_0015F63C;`) emits the
+s0-relative GPREL16 access (2026-09-08 observation above). So: original
+shows absolute `%hi/%lo` (or self-based `lui/lw`) for an in-window global =>
+named array extern (or constant cast); original shows GPREL16 => plain
+scalar extern. Confirmed in ProcessMobyAnimData__Fv (0x20D1A8), which needs
+all three forms in one body: named array for the FastMemCopy source
+(0x165500 — a constant cast there swaps the a0/a1 setup order and breaks
+the match), constant cast for MobyAnimProc arg1 (0x15F638 — a named scalar
+would be GPREL16, the original is an absolute signed split), and plain
+scalar for arg2 (0x15F63C, GPREL16 `lw a1,-30148(gp)` in the jal delay
+slot). Related: this EGC build makes int-to-pointer conversion at a call
+site an ERROR ("passing `int' to argument 1 of ... lacks a cast"), so a
+handwritten entry point taking ints must be declared with `int` params,
+not pointers (see decomp_state/notes/mobyfunc_ProcessMobyAnimData__Fv.md).
+
 ### Subagent Delegation
 
 - Use `decomp-researcher` before implementing an unfamiliar target when Ghidra,
