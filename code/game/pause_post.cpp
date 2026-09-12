@@ -143,7 +143,33 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021D4A8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021D948);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021DDD0);
+// One 0xC-byte record as the pause sprite lists are walked (the consumers
+// stride the packed lists by 0xC): the sprite id at +0x00 plus the per-entry
+// action tag at +0x02 consumed by the 0x21ABF8 select handler and the
+// 0x21B1C8 drawer (tag 0 draws the entry dimmed, no action).
+typedef struct {
+    u16 spriteId;
+    u16 actionTag;
+    u8 pad_04[8];
+} PauseSpriteEntry;
+
+// Action tags this callback can select, keyed on pauseSpriteTagByte: 0 draws
+// the entry dimmed with no action; 3 makes the select handler set the
+// next-sprite state from the entry's +0x04 field.
+#define PAUSE_SPRITE_ACTION_NONE 0
+#define PAUSE_SPRITE_ACTION_NEXT 3
+
+// Pause-menu item callback: sets the first sprite-list entry's action tag to
+// PAUSE_SPRITE_ACTION_NEXT, or to PAUSE_SPRITE_ACTION_NONE while the shared
+// state byte equals 1.
+extern u8 pauseSpriteTagByte __attribute__((section(".data")));
+
+int pause_setFirstSpriteTag(PauseSpriteListMode* mode) {
+    PauseSpriteEntry* first = (PauseSpriteEntry*)mode->spriteList;
+    first->actionTag = (pauseSpriteTagByte == 1) ? PAUSE_SPRITE_ACTION_NONE
+                                                 : PAUSE_SPRITE_ACTION_NEXT;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021DDF8);
 

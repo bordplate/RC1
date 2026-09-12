@@ -1651,5 +1651,14 @@
     "size": 44,
     "matched_date": "2026-09-12",
     "note": "Menu-post callback 7 (fp table 0x1A0438): pendingPage=field_0xDC; selected=0 (unconditional, bgez delay slot); if pendingPage<0: field_0xE0=0, field_0xDC=3; menuPostCallbackIndex=8 (GP-relative). Two codegen keys: (a) the 0x15EEB0 store is GPREL16 sw v0,-0x7d50(gp) - a plain extern is required, and a plain redeclaration does NOT override menu.h's section(\".data\") attribute (probed), so a new plain linker alias menuPostCallbackIndexGp (config/linker_aliases.ld, same object) was added; (b) the condition value must go through a local (int pendingPage) to get the original base=a0/value=v1 allocation - direct access gives base=v1/value=v0. Return ignored by dispatcher (8 in v0 is residue). Data-table reference renamed via symbols.txt entry menu_post_preparePageOpen__Fv=0x00208AF8 (regenerated data .s uses .word menu_post_preparePageOpen__Fv). Verified: slice 0x109A78..0x109AA4 words 1400023C 90D24424 DC00838C 04006104 1C0080AC 03000224 E00080AC DC0082AC 08000224 0800E003 B08282AF 00000000 byte-identical; full make + cmp passes; count 719 -> 718. See notes/menu_post_mid_func_00208AF8.md."
+  },
+  "code/game/pause_post.cpp:151:pause_setFirstSpriteTag": {
+    "name": "pause_setFirstSpriteTag",
+    "original_name": "func_0021DDD0",
+    "source": "code/game/pause_post.cpp",
+    "vram": "0x0021DDD0",
+    "size": 40,
+    "matched_date": "2026-09-12",
+    "note": "Pause-menu item callback (third callback of the shared 0x21ABF8/0x21B1C8/0x21DDD0 triple in the static item table at 0x1CE588). Loads the item's spriteList pointer (offset 0x34) and writes the first sprite entry's action tag (u16 at +0x02 of the 0xC-strided record; high half of the first list word, zero in ROM) to 3 (PAUSE_SPRITE_ACTION_NEXT), or 0 (dimmed/no-action) while the shared byte pauseSpriteTagByte (0x1413F4) equals 1; returns 0. Codegen: EGC reproduces the original lui v0; lw a1,34(a0); lbu a0; li v1,1 allocation only when the byte is a NAMED out-of-window symbol (section(\".data\") + linker alias at 0x1413F4); the constant-cast (*(u8*)0x1413F4) form reorders lbu-first and swaps the v0/v1/a0/a1 roles (8 of 10 words differ). func_0021DDD0 is data-table-referenced only (no code xref); alias added in config/linker_aliases.ld."
   }
 }
