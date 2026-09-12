@@ -129,6 +129,46 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215248);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215290);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215300);
+// Per-entity "is active" flag pools, zeroed at boot and populated at runtime.
+// The two counters below each count the nonzero (active) bytes of one pool and
+// clamp the total to a display maximum. The pools' entity domains are only
+// labelled by runtime-loaded strings, so the Splat address names are retained.
+extern "C" unsigned char D_0013E520[];
+extern "C" unsigned char D_0013D408[];
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215348);
+// Counts the active entries in the 0x25-byte pool at 0x13E520, clamped to
+// [0, 0xA]. Unmangled symbol (callers jal func_00215300 directly), so an asm
+// label -- not an extern "C" assumption -- produces it. The pool's entity
+// domain is runtime-loaded, so the address name is kept.
+int func_00215300(void) asm("func_00215300");
+int func_00215300(void) {
+    int i;
+    int n = 0;
+    for (i = 0; i < 0x25; i++) {
+        if (D_0013E520[i])
+            n++;
+    }
+    if (n < 0)
+        n = 0;
+    if (n > 0xA)
+        n = 0xA;
+    return n;
+}
+
+// Sibling of func_00215300: counts the active entries in the 0x20-byte pool
+// at 0x13D408, clamped to [0, 0x1E]. Same unmangled-symbol asm-label handling;
+// the pool's entity domain is runtime-loaded, so the address name is kept.
+int func_00215348(void) asm("func_00215348");
+int func_00215348(void) {
+    int i;
+    int n = 0;
+    for (i = 0; i < 0x20; i++) {
+        if (D_0013D408[i])
+            n++;
+    }
+    if (n < 0)
+        n = 0;
+    if (n > 0x1E)
+        n = 0x1E;
+    return n;
+}

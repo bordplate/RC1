@@ -1732,5 +1732,21 @@
     "size": 68,
     "matched_date": "2026-09-12",
     "note": "Per-level camera-type vtable dispatch: fn = lvlCamVtbl[cam->camType].exit (lvl.camvtbl @0x1E8C00, 0x14-byte entries, boot-level entry all-null); if (fn) fn(cam). cam->camType is the signed short at UpdateCam+0x8C; UpdateCam is 0xA0 bytes. Called at the top of UpdateAllCameras__Fi (0x1EC420) with curCam (0x1870C0). C definition must sit in source between the Camera_ActivationCheckPriority and UpdateAllCameras__Fi INCLUDE_ASMs to keep camera.o .text in address order (a top-of-file placement shifted the whole object by 0x44). See notes/camera_Camera_Exit__FP9UpdateCam.md for the 5-slot vtable layout established for the sibling dispatchers."
+  },
+  "code/game/mobyutil.cpp:143:func_00215300": {
+    "name": "func_00215300",
+    "source": "code/game/mobyutil.cpp",
+    "vram": "0x00215300",
+    "size": 72,
+    "matched_date": "2026-09-12",
+    "note": "Counts the nonzero (active) bytes of the 0x25-byte flag pool at 0x13E520 (D_0013E520) and clamps the total to [0, 0xA]; returns int. Unmangled symbol (callers jal func_00215300 from pause_post/mobyutil), so declared with an asm(\"func_00215300\") label rather than assuming C linkage. The pool is zeroed at boot and filled at runtime; its entity-domain label strings are runtime-loaded, so the Splat address names are kept for the function and pool. Body: for(i=0;i<0x25;i++) if(pool[i]) n++; n=max(n,0); n=min(n,0xA); return n. EGC -G8 -O2 (default flags, no private) reproduces it exactly: count+1 is precomputed (addiu a0,a2,1) before the lbu, the conditional increment is the movn in the bnez delay slot, and the max/min tail lowers to li v1,-1/slt/movz (max) + li v0,cap/slti/movn (min) with the final movn in the jr delay slot. The pool must be unsigned char (lbu, not lb). Full build + cmp byte-for-byte; count 708->706 (with sibling func_00215348). See notes/mobyutil_func_00215300.md."
+  },
+  "code/game/mobyutil.cpp:161:func_00215348": {
+    "name": "func_00215348",
+    "source": "code/game/mobyutil.cpp",
+    "vram": "0x00215348",
+    "size": 72,
+    "matched_date": "2026-09-12",
+    "note": "Sibling of func_00215300: counts the nonzero (active) bytes of the 0x20-byte flag pool at 0x13D408 (D_0013D408) and clamps the total to [0, 0x1E]. Identical structure and codegen (default flags, unsigned char pool, asm label for the unmangled symbol); only the pool address, byte count (0x20), and cap (0x1E) differ. See notes/mobyutil_func_00215300.md."
   }
 }
