@@ -549,6 +549,29 @@ on the 64-bit GPR value, not just its low word. `slti ...,0xBE` compares with
 +190 (16-bit sign extension), not -66. See the scTag2 and menu threshold
 probes before diagnosing an optimization bug from these instructions.
 
+EE 64-bit load/store opcodes (verified 2026-09-12, vsync_callback): the R5900
+reassigns the 64-bit LD/ST major opcodes, so when grepping raw instruction
+words (not objdump) for 64-bit accesses use `ld`=0x37, `sd`=0x3F, `lq`=0x1E,
+`sq`=0x1F — NOT the ISA-32 values `ld`=0x2F / `sd`=0xAF / `lq`=0x2E /
+`sq`=0x2F. A 64-bit load is `opcode<<26 | base<<21 | rt<<16 | offset` with
+opcode 0x37; a 64-bit store the same with 0x3F. The project objdump (BFD
+2.9-ee) already disassembles these correctly, so this only matters when
+scanning raw ELF bytes for absolute/GP-relative data references.
+
+Observation (2026-09-12, vsync_callback, 0x12F1C8): to reproduce an
+OUT-OF-GP-WINDOW hardware-mapped constant read that the original keeps as a
+LIVE VALUE — `lui r,HI; ori r,r,LO` scheduled apart from a separate
+`lw v,0(r)` + explicit `dsll32/dsrl32` zero-extend — the C form must be a
+**volatile constant-address cast**: `*(volatile unsigned int*)0xADDR`. EGC
+fuses every non-volatile form (plain constant cast, named `.data` symbol,
+array/struct subscript over a named base, `&sym`) into a single self-based
+pseudo load (`lwu $r, 0xADDR`) that expands to `lui/lwu` and drops the
+zero-extend, so none match. `volatile` suppresses that fusion. This pairs with
+`-mno-split-addresses` (named in-window `.data` globals become self-based
+`lui/ld` signed splits). A NAMED volatile symbol still fuses (60 B vs 64).
+See decomp_state/notes/permcb_vsync_callback__Fi.md (permcb.o now uses
+`-mno-split-addresses`).
+
 Verified flag scope (updated 2026-09-12): the menu Splat segment is split at
 exact function boundaries so conflicting compiler requirements stay local.
 `menu.cpp` and every `menu_post` TU use `-fno-schedule-insns`, while
@@ -563,10 +586,13 @@ also use `-mno-split-addresses`; `menu_post_mid.cpp` and
  the same way: `movie_mid.o` uses `-mno-split-addresses` (required by isAudioOK:
  the flag turns its named in-window `movieDecodeBuf` global into the single
  self-based absolute load the original hoists before the prologue), while
- `movie.o` and `movie_post.o` retain normal address splitting (the flag breaks
- ErrMessage's matched codegen). This preserves every prior
- menu match and full boot parity. Sound-library and other files retain
- defaults.
+  `movie.o` and `movie_post.o` retain normal address splitting (the flag breaks
+  ErrMessage's matched codegen). `permcb.o` uses `-mno-split-addresses`
+  (required by vsync_callback: its named in-window `frm_vsync_cnt` /
+  `frm_clock_time` globals must become self-based `lui/ld` absolute loads; the
+  flag is safe there because permcb.cpp holds only that one function). This
+  preserves every prior menu match and full boot parity. Sound-library and
+  other files retain defaults.
 It does NOT establish the original build's flags. Revalidate future candidates
 with their owning TU's flag, and do not apply either scheduler flag globally.
 When adjacent functions require conflicting verified flags, prefer this Splat
