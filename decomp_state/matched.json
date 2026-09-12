@@ -1689,5 +1689,15 @@
     "size": 44,
     "matched_date": "2026-09-12",
     "note": "Movie-API wrapper: returns audioDecIsPageFull on the _AudioDec state at movieDecodeBuf + 0xD9100 (MOVIE_AUDIO_DEC_OFFSET). movieDecodeBuf (0x16120C) is the movie decode buffer base, written by the movie playback entry point func_0023A3B8 (sw a3 at 0x23A3E4) and zeroed on its exit; sibling base at 0x161208. Buffer layout: +0xD9048 VideoDec, +0xD9090 ViBuf (=VideoDec+0x48), +0xD9100 AudioDec, +0xD9168 struct passed to func_0023D1F8. Sole caller (movie loop in func_0023A3B8, 0x23A654: jal; nop; beq v0,zero) consumes the int result. The 0x16120C load needs an absolute self-based lui/lw hoisted before the prologue with the value in v0: plain in-window extern gives one GPREL16 load (wrong), .data named symbol without the flag hoists but lands in v1 with interleaved order (wrong), constant cast gives v0 but prologue-first (wrong). Winning recipe: named symbol + section('.data') attribute + -mno-split-addresses on the TU -> single 'lw $2, sym' pseudo the assembler expands to self-based lui v0; lw v0, with the original interleaved-prologue schedule (same mechanism as transition.cpp Help_LoadMsgs). movie_mid.o carries -mno-split-addresses via PRIVATE_COMPILE_FLAGS; the movie Splat range was split (0x13b338/0x13b710/0x13b740) because the flag breaks ErrMessage's matched codegen in movie.cpp. _AudioDec typedef + MOVIE_AUDIO_DEC_OFFSET + audioDec prototypes moved to code/include/audiodec.h. Sibling proceedAudio__Fv (0x23ABA0, calls audioDecSend) is the identical 11-word shape minus the callee and is the natural next target. See decomp_state/notes/movie_isAudioOK.md."
+  },
+  "code/game/movie/videodec_post.cpp:12:mpegRestartVideoDMA": {
+    "name": "mpegRestartVideoDMA",
+    "original_name": "func_0023D110",
+    "source": "code/game/movie/videodec_post.cpp",
+    "vram": "0x0023D110",
+    "file_offset": "0x13E090",
+    "size": 48,
+    "matched_date": "2026-09-12",
+    "note": "Video-decoder callback (table slot 3) installed by videoDecCreate at 0x23CB54. Restarts the movie video ViBuf DMA: viBufRestartDMA((ViBuf*)(movieDecodeBuf + MOVIE_VIBUF_OFFSET)) where MOVIE_VIBUF_OFFSET=0xD9090; ignores its callback args and returns 1. Original hoists the movieDecodeBuf absolute load (lui v0; lw v0) BEFORE the 0x10 prologue, which EGC only reproduces with -mno-split-addresses (single self-based pseudo load). A plain extern or constant-cast base schedules the prologue first (wrong), so this TU needs the flag. The flag breaks mpegError (0x23D080, same file) which loads the videoErrorMessage global and needs the lui/sq/addiu interleave, so a Splat range split puts mpegRestartVideoDMA (+func_0023D140) in videodec_post.cpp with -mno-split-addresses while videodec.cpp keeps defaults. movieDecodeBuf + MOVIE_VIBUF_OFFSET declaration moved to include/audiodec.h (shared with movie_mid.cpp). Sibling callback mpegNodata (slot 1) uses the same 0xD9090 offset via a constant cast."
   }
 }

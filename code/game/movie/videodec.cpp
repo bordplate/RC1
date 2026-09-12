@@ -119,7 +119,3 @@ int mpegNodata(struct sceMpeg* mpeg, struct sceMpegCbData* cbData, void* user) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023D0E0);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023D110);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023D140);

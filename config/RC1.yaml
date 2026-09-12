@@ -190,6 +190,7 @@ segments:
     - [0x13c9c8, cpp, game/movie/strfile]
     - [0x13ca78, cpp, game/movie/vibuf]
     - [0x13da48, cpp, game/movie/videodec]
+    - [0x13e090, cpp, game/movie/videodec_post]
     - [0x13e110, cpp, game/movie/vobuf]
 
   - [0x13e2e0, databin, overlays]

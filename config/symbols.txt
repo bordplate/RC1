@@ -517,6 +517,7 @@ videoDecGetState = 0x023cc80;
 decBs0__FP8VideoDec = 0x23cec8;
 mpegError__FP7sceMpegP18sceMpegCbDataErrorPv = 0x23d080;
 mpegNodata__FP7sceMpegP13sceMpegCbDataPv = 0x023d0a8;
+mpegRestartVideoDMA__Fv = 0x23d110;
 videoDecMain__FPv = 0x023ce28;
 videoDecSetState__FP8VideoDecUi = 0x23cc88;
 videoDecInputCount__FP8VideoDec = 0x023cce0;

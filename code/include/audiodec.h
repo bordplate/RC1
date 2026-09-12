@@ -31,6 +31,19 @@ typedef struct _AudioDec {
     int field_0x60;
 } _AudioDec;
 
+// movieDecodeBuf holds the movie decode buffer base, written by the movie
+// playback entry point (func_0023A3B8) and zeroed on its exit. It sits
+// inside the gp window, so a plain extern would compile to a single
+// GPREL16 load; the original uses an absolute self-based lui/lw, which the
+// .data section attribute forces. The consuming TUs (movie_mid, videodec_post)
+// compile with -mno-split-addresses so the load stays a single pseudo
+// instruction and the prologue schedules around it as in the original.
+extern u8* movieDecodeBuf __attribute__((section(".data")));
+
+// Offset of the movie video ViBuf inside the movie decode buffer (the
+// movieDecodeBuf base).
+#define MOVIE_VIBUF_OFFSET 0xD9090
+
 // Offset of the _AudioDec state inside the movie decode buffer (the
 // movieDecodeBuf base).
 #define MOVIE_AUDIO_DEC_OFFSET 0xD9100
