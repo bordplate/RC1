@@ -1,4 +1,5 @@
 #include "common.h"
+#include "types.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022C5A8);
 
@@ -36,7 +37,19 @@ void sound_setBufferValue(int a, long b) {
         *(int*)c = a;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022DD90);
+void sound_setBufferState(int a, long b) {
+    int c = (int)b;
+    if (c == 0) return;
+    *(int*)c = a;
+    if (a != 0) {
+        if (*(u8*)(c + 4) != 1) return;
+        *(u8*)(c + 4) = 2;
+        return;
+    }
+    *(int*)(c + 0x18) = 0;
+    *(int*)(c + 0x1C) = 0;
+    *(u8*)(c + 4) = 0;
+}
 
 void sound_resetBufferState(int a, long b) {
     int c = (int)b;

@@ -1660,5 +1660,14 @@
     "size": 40,
     "matched_date": "2026-09-12",
     "note": "Pause-menu item callback (third callback of the shared 0x21ABF8/0x21B1C8/0x21DDD0 triple in the static item table at 0x1CE588). Loads the item's spriteList pointer (offset 0x34) and writes the first sprite entry's action tag (u16 at +0x02 of the 0xC-strided record; high half of the first list word, zero in ROM) to 3 (PAUSE_SPRITE_ACTION_NEXT), or 0 (dimmed/no-action) while the shared byte pauseSpriteTagByte (0x1413F4) equals 1; returns 0. Codegen: EGC reproduces the original lui v0; lw a1,34(a0); lbu a0; li v1,1 allocation only when the byte is a NAMED out-of-window symbol (section(\".data\") + linker alias at 0x1413F4); the constant-cast (*(u8*)0x1413F4) form reorders lbu-first and swaps the v0/v1/a0/a1 roles (8 of 10 words differ). func_0021DDD0 is data-table-referenced only (no code xref); alias added in config/linker_aliases.ld."
+  },
+  "code/game/sound.cpp:40:sound_setBufferState": {
+    "name": "sound_setBufferState",
+    "original_name": "func_0022DD90",
+    "source": "code/game/sound.cpp",
+    "vram": "0x0022DD90",
+    "size": 68,
+    "matched_date": "2026-09-12",
+    "note": "Play-sound buffer callback: passed by sound_update as the 8th arg (t3 callback slot) to snd_PlaySoundVolPanPMPB; sibling sound_resetBufferState is the equivalent callback for snd_SetSoundParams_CB. Args (int a, long b): b is the 64-bit pointer to the per-sound buffer-state record, a the value. int c=(int)b (sign-extended); if c==0 return; *(int*)c=a; if a!=0: advance the state byte *(u8*)(c+4) 1->2 only when it is 1, else leave it; if a==0: zero *(c+0x18), *(c+0x1C) and *(u8*)(c+4) (reset). Codegen (default flags): the matched C form is  if(a!=0){ if(*(u8*)(c+4)!=1)return; *(u8*)(c+4)=2; return;}  with the three zero-stores as the FALL-THROUGH tail -- this makes EGC emit the original beq a0,0,.Lzero (branch to the zeroing block on a==0) plus the fall-through transition. The inverted if(a==0){...;return;} form makes EGC emit an inverted bne a0,0 and a wrong store order (j ra with a store in the delay slot). The (c+4) byte must be typed u8 (unsigned) to emit lbu; a signed char emits lb. Symbol: descriptive C++ name (mangled sound_setBufferState__Fil) + linker alias func_0022DD90=0x22DD90 in config/linker_aliases.ld (consistent with the siblings), since sound_update.s references the address-name as a callback pointer."
   }
 }
