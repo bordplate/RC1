@@ -1708,5 +1708,13 @@
     "size": 84,
     "matched_date": "2026-09-12",
     "note": "Active-tie texture update, called by the main draw path right after refreshTieLights (0x235898). Body: PatchTieGifs(); FastMemCopy(D_001E3000,D_001E4200,0x200); FastMemCopy(D_001E2A00,D_001E3E00,0x400); PatchTieGifs(); which patches the tie GIFs, stages new structure (D_001E3000) and palette (D_001E2A00) data, then patches again. Renamed from func_00235840 to UpdateTieTextures (C++ __Fv); old name kept resolvable via func_00235840=0x235840 in config/linker_aliases.ld for the still-assembly DrawDebugProfiler caller. Matched on the first standalone probe with default flags: each FastMemCopy pointer arg is a plain out-of-window lui %hi/addiu %lo symbol load with the size constant hoisted into the jal delay slot; the two zero-arg PatchTieGifs calls are plain jal/nop. D_001E3000/D_001E2A00/D_001E4200/D_001E3E00 remain linker-symbol names (shared with still-assembly PatchTieGifs). Clean build + cmp byte-for-byte; count 712->711. See notes/tiefunc_UpdateTieTextures.md."
+  },
+  "code/game/permcb.cpp:17:vsync_callback__Fi": {
+    "name": "vsync_callback__Fi",
+    "source": "code/game/permcb.cpp",
+    "vram": "0x0012F1C8",
+    "size": 64,
+    "matched_date": "2026-09-12",
+    "note": "Vsync callback (original ELF name; unused int arg, returns 0): frm_vsync_cnt(0x15ED48)+=1; D_0015ED50 = frm_clock_time(0x15ED40) + *(u32*)0x10000800. 0x10000800 is in the EE VU0 microprogram region (no ELF symbol; InitOnce zeroes it, DrawDebugProfiler reads it). Match requires permcb.o with -mno-split-addresses (named .data in-window globals become self-based lui/ld signed splits) AND a volatile constant-address cast for 0x10000800: EGC fuses every non-volatile form (cast, named .data sym, array/struct subscript, &sym) into one self-based pseudo load (lui+lwu, no zero-extend), while the original keeps the address as a live value (lui a1,0x1000; ori a1,a1,0x800) with a separate lw 0(a1) + dsll32/dsrl32 zero-extend; only volatile suppresses the fusion. A named volatile symbol still fuses (60 B). D_0015ED50/frm_clock_time semantics unconfirmed (written, not read, in boot image). Probe history v1-v9 in decomp_state/probes; v8 matched 64/64. Full build + cmp byte-for-byte; count 711->710. See notes/permcb_vsync_callback__Fi.md."
   }
 }
