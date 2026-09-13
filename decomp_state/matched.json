@@ -1782,5 +1782,13 @@
     "size": 76,
     "matched_date": "2026-09-13",
     "note": "VU1 chain bump allocator: writes a 16-byte data-reference record [0x30000000|tag, dataRef, 0, 0] at *vu1ChainHead (0x160F00, renamed from D_00160F00; the draw subsystem appends packets through the same head) and advances the head 4 words. Codegen: the head needs a DOUBLE-VOLATILE .data pointer declaration + -mno-split-addresses (vuchain.o PRIVATE_COMPILE_FLAGS) to emit the five separate self-based lui/lw loads in the original v1,v0,v1,a0,v0 pattern (plain/single-volatile CSEs the later loads; constant casts hoist a shared base); the final head update needs a plain same-address alias (vu1ChainHeadStore, linker_aliases.ld) for the GPREL delay-slot store (the .data name would store absolute). The 4-byte dead-store tail func_00233880 (sw v0 to vu1ChainTail 0x162C20) is not regeneratable with the matched body and is retained as INCLUDE_ASM, blocked. See notes/vuchain_VU1_addDataRef__FPvi.md."
+  },
+  "code/game/movie/vobuf.cpp:18:voBufCreate__FP5VoBufP6VoDataP5VoTagi": {
+    "name": "voBufCreate__FP5VoBufP6VoDataP5VoTagi",
+    "source": "code/game/movie/vobuf.cpp",
+    "vram": "0x0023D190",
+    "size": 76,
+    "matched_date": "2026-09-13",
+    "note": "VoBuf init: stores count=0,data,tags,capacity,head in order, then zeroes the leading word of each of size tag slots spaced 0x138C0 bytes apart. Slot address must be integer add `offset + (u32)self->tags` (offset as rs) to match `addu v0,a1,v0`; pointer arithmetic canonicalizes to tags-as-rs and mismatches one word. VoData/VoTag declared empty (pointer-only) for the cfront mangled name. See decomp_state/notes/vobuf_voBufCreate__FP5VoBufP6VoDataP5VoTagi.md."
   }
 }

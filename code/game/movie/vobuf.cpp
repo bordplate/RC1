@@ -9,7 +9,33 @@ typedef struct VoBuf {
     u32 capacity;
 } VoBuf;
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vobuf", voBufCreate__FP5VoBufP6VoDataP5VoTagi);
+// Referenced by pointer only; full layouts not yet determined.
+typedef struct VoData {
+} VoData;
+typedef struct VoTag {
+} VoTag;
+
+// Each tag slot occupies this many bytes; only the leading word is initialized.
+#define VO_TAG_SLOT_STRIDE 0x138C0
+
+void voBufCreate(VoBuf* self, VoData* data, VoTag* tags, int size) {
+    self->count = 0;
+    self->data = data;
+    self->tags = tags;
+    self->capacity = size;
+    self->head = 0;
+    if (size > 0) {
+        int offset = 0;
+        int i = size;
+        while (i) {
+            // Integer add keeps the byte offset as the addu base (rs), matching
+            // the original; pointer arithmetic would reorder the operands.
+            *(u32*)((u8*)(offset + (u32)self->tags)) = 0;
+            offset += VO_TAG_SLOT_STRIDE;
+            i--;
+        }
+    }
+}
 
 void voBufDelete(VoBuf* self) {}
 
