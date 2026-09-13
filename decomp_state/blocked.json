@@ -17,8 +17,8 @@
   },
   "code/game/vuchain.cpp:17:func_00233880": {
     "status": "blocked",
-    "date": "2026-09-05",
-    "note": "NOT a function: 4-byte unreachable dead-code tail of VU1_addDataRef__FPvi (sw v0,-16352(gp)=D_00162C20 at 0x233880, write-only global). Blocked together with its parent VU1_addDataRef__FPvi, which is itself blocked (self-based non-hoisted load pattern not reproducible by local EGC). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
+    "date": "2026-09-13",
+    "note": "NOT a function: 4-byte unreachable fragment `sw v0,-0x3FE0($28)` (GPREL store of v0 to vu1ChainTail 0x162C20) at 0x233880, the EGC dead-store tail of the now-matched VU1_addDataRef__FPvi (0x233830, fc74a0b). Exact layout: jr ra; sw head(0x160F00) in the jr delay slot (ALIVE); nop (.align pad); sw tail (DEAD); nop. Unreachable (no jal/j target, Ghidra has no function there). Last-resort GPT-5.6 Sol invoked 2026-09-13: no C route remains \u2014 EGC deletes statements written after a return; two reachable stores before the return land before/in the delay slot (not past the alignment nop); pointer-return forms fire a tail store but break the matched body allocation (load #4 v0 vs a0, extra move); an 80-byte parent cannot match because its 80th word would occupy the 0x23387C alignment nop. Reproducing the fragment needs explicit assembly or a different compiler artifact. Orphan INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
   },
   "code/989snd/ee/989snd.c:93:func_0012EC00": {
     "status": "blocked",
