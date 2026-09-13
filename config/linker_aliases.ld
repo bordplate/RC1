@@ -132,6 +132,7 @@ func_00232CE0 = 0x00232CE0;
 func_00233038 = 0x00233038;
 currentVuChain = 0x00160F0C;
 vuChainTable = 0x001DDFB8;
+vu1ChainHeadStore = 0x00160F00;
 musicTransition = 0x001516D0;
 streamState = 0x0013C940;
 func_002335A0 = 0x002335A0;

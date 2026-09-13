@@ -1773,5 +1773,14 @@
     "size": 56,
     "matched_date": "2026-09-13",
     "note": "Pause-menu callback (function-pointer table slot 0x1D2264) forwarding two element ranges to the shared list drawer func_001FD748 (still INCLUDE_ASM in help.cpp). Struct tail at 0x18/0x1C/0x20/0x24 = base1/base2/count1/count2; call is drawer(base1, base1+count1, base2, base2+count2); returns constant 2. The callee computes (end-start)*0x10, so the counts are 0x10-byte element counts, not byte lengths. Unmangled table symbol, so defined with an asm(\"func_00221930\") label; the callee prototype uses an asm(\"func_001FD748\") label (its ELF symbol is the unmangled address placeholder) and is void with four int args. Plain u32 fields keep base+count a raw addu (no pointer scaling). decomp_probe.py matched all 56 bytes on the first attempt (default -G8 -O2, --define func_001FD748=0x001FD748); full build + cmp byte-for-byte. Count 704->703. See notes/pause_post_func_00221930.md."
+  },
+  "code/game/vuchain.cpp:15:VU1_addDataRef__FPvi": {
+    "name": "VU1_addDataRef__FPvi",
+    "original_name": "VU1_addDataRef__FPvi",
+    "source": "code/game/vuchain.cpp",
+    "vram": "0x00233830",
+    "size": 76,
+    "matched_date": "2026-09-13",
+    "note": "VU1 chain bump allocator: writes a 16-byte data-reference record [0x30000000|tag, dataRef, 0, 0] at *vu1ChainHead (0x160F00, renamed from D_00160F00; the draw subsystem appends packets through the same head) and advances the head 4 words. Codegen: the head needs a DOUBLE-VOLATILE .data pointer declaration + -mno-split-addresses (vuchain.o PRIVATE_COMPILE_FLAGS) to emit the five separate self-based lui/lw loads in the original v1,v0,v1,a0,v0 pattern (plain/single-volatile CSEs the later loads; constant casts hoist a shared base); the final head update needs a plain same-address alias (vu1ChainHeadStore, linker_aliases.ld) for the GPREL delay-slot store (the .data name would store absolute). The 4-byte dead-store tail func_00233880 (sw v0 to vu1ChainTail 0x162C20) is not regeneratable with the matched body and is retained as INCLUDE_ASM, blocked. See notes/vuchain_VU1_addDataRef__FPvi.md."
   }
 }
