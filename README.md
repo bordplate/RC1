@@ -1,7 +1,7 @@
 # Ratchet & Clank 1 decompilation
 
 > [!NOTE]
-> Most/all of the recent changes are automated AI slop. I set up an autonomous loop running Qwen3.8-27b to automatically attempt to decompile functions. Before committing it's required to verify that the resulting compilation matches the original game binary byte-for-byte. The code is produces varies greatly in quality, but is rarely better than mediocre. I slopped a project explorer overview for real-time stats where you can explorer the project status at [chat.bordplate.no](https://chat.bordplate.no). 
+> Most/all of the recent changes are automated AI slop. I set up an autonomous loop running Qwen3.8-27b to automatically attempt to decompile functions. Before committing it's required to verify that the resulting compilation matches the original game binary byte-for-byte. The code it produces varies greatly in quality, but is rarely better than mediocre. I slopped a project explorer overview for real-time stats where you can explorer the project status at [chat.bordplate.no](https://chat.bordplate.no). 
 
 > [!CAUTION]
 > **This project does not have active developers or maintainers.** It is provided as an initial project structure for someone wanting to pick up RC1 decompilation. The project is currently mostly empty, but builds a byte-for-byte matching binary. 
