@@ -103,5 +103,10 @@
     "vram": "0x001F21A8",
     "size": 4,
     "note": "Dead tail of func_001F2070, not a function: unreachable 4-byte fragment (sw $zero,0x1B0($v0)) 8-aligned right after the parent's jr ra/addiu epilogue (nop at +4, nop at +4 after). Nothing jumps to it; Ghidra has no function/xrefs there. The store reuses v0=0x190000 (stale %hi of D_0018CF10 loaded at 0x1F2120 for the divisor); target 0x1901B0 = D_0018CF10+0x32A0, zeroed .data, no symbol. 12+ C forms probed with the project EGC (field f1B0/f12A0/f32A0 same or separate struct type, int/float, separate symbol at 0x1901B0, int array, constant-address cast, double store, page-anchor D_00190000 representation, -fno-schedule-insns/2 variants, source-order permutations): EGC either emits a base fixup (addiu) or a second lui so the store becomes a 2-instruction LIVE store before the jr (316B), or uses at/v1 as base; it never emits a post-epilogue dead store from a 256B-frame function. Parent func_001F2070 matched 308/308 without the store statement; this INCLUDE_ASM supplies the 8 bytes (nop/sw/nop via .align 3 boundaries) and keeps full boot parity. last-resort GPT-5.6 Sol invoked 2026-09-09: confirmed no pure C form exists (the intermediate v0=0x190000 has no corresponding C pointer value; EGC terminates after the jr delay slot for all tested forms) and recommended retaining the orphan. See decomp_state/notes/draw_func_001F2070.md."
+  },
+  "code/game/hud.cpp:4:Hud_GetIconIndex__Fi": {
+    "status": "blocked",
+    "date": "2026-09-13",
+    "note": "Icon-table linear search (u16 code, 0xffff-terminated) returning entry index. Register-pinned C (last-resort Test 1) reproduces every real instruction and exact register allocation, but local cc1 2.9-ee-991111b/r4 packs the loop's bne 8 bytes earlier than the original, omitting the two nops at 0x1FEE6C/0x1FEE70 (68B vs 76B). Original scheduler leaves two empty slots between the in-block beq and bne; no C form, attribute, or flag (-O1/-fno-schedule-insns[2]/-fno-strength-reduce/-fno-thread-jumps/-G0, asm barrier) makes the local scheduler reserve them. 17 forms + last-resort tested. See decomp_state/notes/hud_Hud_GetIconIndex__Fi.md."
   }
 }
