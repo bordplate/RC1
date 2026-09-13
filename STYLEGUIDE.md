@@ -21,8 +21,7 @@ priority. Keep any necessary exception local and explain why it exists.
   command, pointers, struct offsets, or similar. If a magic number is absolutely
   necessary for matching decompilation, then it should be in a descriptive variable
   or define. Exceptions apply to padding bytes and buffer sizes where intention is clear.
-
-Static addresses are never allowed for pointers. You cannot assume a particular memory 
+- Static addresses are **never** allowed for pointers. You cannot assume a particular memory 
 layout because it defeats the purpose of a decompilation project.
 
 This is **NOT** allowed:

@@ -434,18 +434,43 @@ KIND of the extern, not just the address. A plain array extern
 (signed split) whether or not the address is inside the gp window, while a
 plain in-window scalar extern (`extern int D_0015F63C;`) emits the
 s0-relative GPREL16 access (2026-09-08 observation above). So: original
-shows absolute `%hi/%lo` (or self-based `lui/lw`) for an in-window global =>
-named array extern (or constant cast); original shows GPREL16 => plain
-scalar extern. Confirmed in ProcessMobyAnimData__Fv (0x20D1A8), which needs
-all three forms in one body: named array for the FastMemCopy source
-(0x165500 — a constant cast there swaps the a0/a1 setup order and breaks
-the match), constant cast for MobyAnimProc arg1 (0x15F638 — a named scalar
-would be GPREL16, the original is an absolute signed split), and plain
-scalar for arg2 (0x15F63C, GPREL16 `lw a1,-30148(gp)` in the jal delay
-slot). Related: this EGC build makes int-to-pointer conversion at a call
-site an ERROR ("passing `int' to argument 1 of ... lacks a cast"), so a
-handwritten entry point taking ints must be declared with `int` params,
-not pointers (see decomp_state/notes/mobyfunc_ProcessMobyAnimData__Fv.md).
+shows absolute `%hi/%lo` for an in-window global whose ADDRESS is passed
+=> named array extern; original shows GPREL16 for a VALUE => plain scalar
+extern (pointer-typed scalars behave the same). Confirmed in
+ProcessMobyAnimData__Fv (0x20D1A8), which needs all three forms in one
+body: named array for the FastMemCopy source (0x165500 — a constant cast
+there swaps the a0/a1 setup order and breaks the match), a
+constant-address load for MobyAnimProc arg1 (0x15F638), and plain scalar
+for arg2 (0x15F63C, GPREL16 `lw a1,-30148(gp)` in the jal delay slot).
+Related: this EGC build makes int-to-pointer conversion at a call
+site an ERROR ("passing `int' to argument 1 of ... lacks a cast"), so
+declare handwritten entry points with the parameter types the arguments
+actually are.
+
+Extension observed 2026-09-13 (in-window VALUE loads cannot use named
+symbols; the self-based load needs a constant): a named-symbol VALUE LOAD
+of an in-window address (scalar or array, `.data` or not, `volatile` or
+not, pointer- or int-typed, even with an asm-pinned register local)
+compiles to a TWO-REGISTER load with the base in $v0 (`lui v0,%hi;
+lw a0,%lo(v0)`) that also reschedules any independent GPREL16 load out of
+the delay slot — a 3-word diff when the original uses a SELF-BASED
+`lui a0; lw a0` pair. Only a constant-address load (cast) emits the
+self-based pseudo. `-mno-split-addresses` does turn the named load into
+the correct self-based pseudo, but it fuses the other arguments' array
+address into a single `la` pseudo that then schedules AFTER constant
+setups, flipping that call's arg-setup order in-function — so the flag
+cannot fix a function that needs BOTH a self-based named-symbol value load
+and the pre-flag array-arg order (no combination of scheduler flags,
+-O1/-O0, section attributes, or declaration kinds escapes it; all
+probe-verified, incl. expert and last-resort recommendations). The
+ProcessMobyAnimData solution: express the address as a documented enum
+constant (MOBY_ANIM_CHAIN_ADDRESS = the D_0015F638 linker symbol, pinned
+in symbols.txt for the generated asm) with a codegen-exception comment.
+Likewise DMC destination constants (0x70003xxx) have no original symbol
+and naming one also changes codegen (probe: 5-word diff), so they remain
+documented casts like the 0x70003A00 siblings. See
+decomp_state/notes/mobyfunc_ProcessMobyAnimData__Fv.md for the full
+probe matrix.
 
 ### Subagent Delegation
 
