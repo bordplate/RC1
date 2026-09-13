@@ -973,7 +973,7 @@
     "line": 50,
     "asm": "code/_generated/nonmatchings/game/draw/ResetGsRegistersPr__Fv.s",
     "name": "ResetGsRegistersPr__Fv",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/draw.cpp:52:DrawDebugProfiler",

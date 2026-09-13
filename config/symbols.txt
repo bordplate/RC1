@@ -335,6 +335,7 @@ SetPalMode__Fi = 0x1f34e8;
 NTSCProgressive = 0x015ed80;
 ResetGsRegisters__Fv = 0x01f3868;
 ResetGsRegistersPr__Fv = 0x1f3958;
+gsDisplaySettings = 0x151788;
 SetupGifPaging__Fi = 0x1f4280;
 DoGifPaging__Fv = 0x1f4398;
 GetEffectTex__Fii = 0x1f44b8;

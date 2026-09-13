@@ -1,4 +1,5 @@
 #include "common.h"
+#include "types.h"
 
 extern int drawTextureDmaState[20] __attribute__((section(".data")));
 
@@ -115,7 +116,43 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", ResetDrawGlobals);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", ResetGsRegisters__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", ResetGsRegistersPr__Fv);
+// The EE maps the GS (Graphics Synthesizer) register window at 0x12000000;
+// these are the display-control registers ResetGsRegistersPr resets.
+#define GS_PMODE 0x12000000
+#define GS_SMODE2 0x12000020
+#define GS_DISPFB1 0x12000070
+#define GS_DISPLAY1 0x12000080
+#define GS_DISPFB2 0x12000090
+#define GS_DISPLAY2 0x120000A0
+#define GS_EXTWRITE 0x120000D0
+#define GS_BGCOLOR 0x120000E0
+
+// PMODE reset value: fixed-point 255, alpha and color shading enabled,
+// polygon (PT0) primitives.
+#define GS_PMODE_POLY 0xFFA1
+
+struct GsDisplaySettings {
+    u64 smode2;
+    u64 dispfb;
+    u64 display;
+};
+
+// Zero-initialized GS display settings read by ResetGsRegistersPr; the boot
+// image never writes them, so their writer (likely level code) is unconfirmed.
+extern struct GsDisplaySettings gsDisplaySettings;
+
+void ResetGsRegistersPr() {
+    // Volatile constant-address casts: plain casts let EGC fold the stores to
+    // a shared 0x1200 base register, which the original does not do.
+    *(volatile u64*)GS_BGCOLOR = 0;
+    *(volatile u64*)GS_PMODE = GS_PMODE_POLY;
+    *(volatile u64*)GS_SMODE2 = gsDisplaySettings.smode2;
+    *(volatile u64*)GS_DISPFB1 = gsDisplaySettings.dispfb;
+    *(volatile u64*)GS_DISPFB2 = gsDisplaySettings.dispfb;
+    *(volatile u64*)GS_DISPLAY1 = gsDisplaySettings.display;
+    *(volatile u64*)GS_DISPLAY2 = gsDisplaySettings.display;
+    *(volatile u64*)GS_EXTWRITE = 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DrawDebugProfiler);
 

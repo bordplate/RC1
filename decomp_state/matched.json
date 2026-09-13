@@ -1790,5 +1790,13 @@
     "size": 76,
     "matched_date": "2026-09-13",
     "note": "VoBuf init: stores count=0,data,tags,capacity,head in order, then zeroes the leading word of each of size tag slots spaced 0x138C0 bytes apart. Slot address must be integer add `offset + (u32)self->tags` (offset as rs) to match `addu v0,a1,v0`; pointer arithmetic canonicalizes to tags-as-rs and mismatches one word. VoData/VoTag declared empty (pointer-only) for the cfront mangled name. See decomp_state/notes/vobuf_voBufCreate__FP5VoBufP6VoDataP5VoTagi.md."
+  },
+  "code/game/draw.cpp:50:ResetGsRegistersPr__Fv": {
+    "name": "ResetGsRegistersPr__Fv",
+    "source": "code/game/draw.cpp",
+    "vram": "0x1F3958",
+    "size": 120,
+    "matched_date": "2026-09-13",
+    "note": "Resets the GS display registers (EE-mapped at 0x12000000): BGCOLOR=0, PMODE=0xFFA1, then SMODE2/DISPFB1/DISPFB2/DISPLAY1/DISPLAY2 from the zero-initialized 24-byte gsDisplaySettings global (0x151788, renamed from D_00151788), EXTWRITE=0. All eight 64-bit GS stores require VOLATILE constant-address casts: a plain (u64*) cast lets EGC fold the stores onto a shared 'lui at,0x1200' base (sd imm(at), 24 instr) instead of the original per-address lui+ori into v0/a0/a1/a2/v1/t0 (30 instr); the 0x12000000/0x120000A0 pair still CSEs its lui. Register names follow the EER Ghidra extension GS map (mmio.sinc, 8-byte slots). Probe draw_resetGsRegsPr_v3.cpp matches 120/120 bytes; full boot cmp passes. See decomp_state/notes/draw_ResetGsRegistersPr__Fv.md."
   }
 }
