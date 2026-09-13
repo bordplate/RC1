@@ -125,22 +125,50 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215130);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_002151D8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215248);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215290);
-
 // Per-entity "is active" flag pools, zeroed at boot and populated at runtime.
-// The two counters below each count the nonzero (active) bytes of one pool and
+// The counters below each count the nonzero (active) bytes of one pool and
 // clamp the total to a display maximum. The pools' entity domains are only
 // labelled by runtime-loaded strings, so the Splat address names are retained.
 extern "C" unsigned char D_0013E520[];
 extern "C" unsigned char D_0013D408[];
 
-// Counts the active entries in the 0x25-byte pool at 0x13E520, clamped to
-// [0, 0xA]. Unmangled symbol (callers jal func_00215300 directly), so an asm
-// label -- not an extern "C" assumption -- produces it. The pool's entity
-// domain is runtime-loaded, so the address name is kept.
+// Unmangled symbols (callers jal the address labels directly), so asm
+// labels -- not extern "C" assumptions -- produce them.
+int func_00215290(void) asm("func_00215290");
 int func_00215300(void) asm("func_00215300");
+
+enum {
+    // Maximum active slots the 0x14BEC0 pool reports (the cap applied inside
+    // func_00215290 and here).
+    MOBY_POOL_MAX_SLOTS = 0x28,
+    // Slots of the 0x14BEC0 pool consumed by each active 0x13E520 entry.
+    MOBY_POOL_SLOTS_PER_ENTRY = 4,
+};
+
+// Free capacity of the 0x14BEC0 moby condition pool: its active slots minus
+// the slots consumed by the active 0x13E520 entries, clamped to
+// [0, MOBY_POOL_MAX_SLOTS]. The 0x216C48 state machine uses it as a
+// slot-index cap and the 0x21EB20 debug HUD displays it. Same
+// unmangled-symbol asm-label handling.
+int moby_freeVarSlots(void) asm("func_00215248");
+int moby_freeVarSlots(void) {
+    int n = func_00215290() - MOBY_POOL_SLOTS_PER_ENTRY * func_00215300();
+    if (n < 0)
+        n = 0;
+    if (n > MOBY_POOL_MAX_SLOTS)
+        n = MOBY_POOL_MAX_SLOTS;
+    return n;
+}
+
+// Counts the active entries in the first 0x38 bytes of the 0x14BEC0 pool,
+// clamped to [0, 0x28]; the value feeds moby_freeVarSlots and the 0x21EB20
+// debug HUD. The pool's entity domain is runtime-loaded, so the address
+// name is kept.
+INCLUDE_ASM("code/_generated/nonmatchings/game/mobyutil", func_00215290);
+
+// Counts the active entries in the 0x25-byte pool at 0x13E520, clamped to
+// [0, 0xA]. The pool's entity domain is runtime-loaded, so the address name
+// is kept.
 int func_00215300(void) {
     int i;
     int n = 0;

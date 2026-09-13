@@ -1749,6 +1749,14 @@
     "matched_date": "2026-09-12",
     "note": "Sibling of func_00215300: counts the nonzero (active) bytes of the 0x20-byte flag pool at 0x13D408 (D_0013D408) and clamps the total to [0, 0x1E]. Identical structure and codegen (default flags, unsigned char pool, asm label for the unmangled symbol); only the pool address, byte count (0x20), and cap (0x1E) differ. See notes/mobyutil_func_00215300.md."
   },
+  "code/game/mobyutil.cpp:154:moby_freeVarSlots": {
+    "name": "moby_freeVarSlots",
+    "source": "code/game/mobyutil.cpp",
+    "vram": "0x00215248",
+    "size": 72,
+    "matched_date": "2026-09-13",
+    "note": "Free-capacity calculator: n = func_00215290() - 4*func_00215300(); n = max(n,0); n = min(n,0x28); return n. func_00215290 (still INCLUDE_ASM) counts the active bytes of the first 0x38 bytes of pool 0x14BEC0 clamped to [0,0x28]; func_00215300 counts pool 0x13E520 clamped to [0,0xA]; each active 0x13E520 entry consumes 4 of the 0x28 slots. Used as a slot-index cap by the 0x216C48 moby state machine (cases 4/5) and displayed by the 0x21EB20 debug HUD. Unmangled symbol, so defined with an asm(\"func_00215248\") label. Pools' entity domains are runtime-loaded, so their address names are retained. EGC -G8 -O2 (default mobyutil.o flags) matched on the first attempt: first jal's delay slot holds sq s0,0(sp), second jal's delay slot holds move s0,v0, 4* lowers to sll v0,2, subu keeps the result in s0, and the clamp tail reuses the sibling's li/slt/movz + li/slti/movn shape (lq ra hoisted, 0x20 frame, ra at 0x10(sp), s0 at 0(sp)). Full build + cmp byte-for-byte; count 705->704. See notes/mobyutil_func_00215248.md."
+  },
   "code/game/mobyfunc.cpp:115:ProcessMobyAnimData__Fv": {
     "name": "ProcessMobyAnimData__Fv",
     "source": "code/game/mobyfunc.cpp",
