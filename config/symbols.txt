@@ -59,6 +59,7 @@ fontLargeGlyphs = 0x001DF790;
 stashEntries = 0x001DD1D8;
 levelRoot = 0x0015EE4C;
 currentVuChain = 0x00160F0C;
+D_0015F638 = 0x0015F638;
 D_0015F63C = 0x0015F63C;
 vuChainTable = 0x001DDFB8;
 musicTransition = 0x001516D0;
