@@ -295,7 +295,35 @@ int pause_selectDefaultActionList(void) {
     return 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00221930);
+// The shared list drawer at 0x001FD748 (still assembly, defined in help.cpp)
+// renders two element ranges as a 19-slot list, highlighting the current
+// entry. It takes each range as a (start, end) pair and scales the element
+// counts by 0x10. Its ELF symbol is the unmangled address placeholder
+// func_001FD748, so an asm label -- not C++ mangling -- produces it.
+extern void help_drawRangeList(int start1, int end1, int start2, int end2)
+    asm("func_001FD748");
+
+// Pause-menu callback invoked through the function-pointer table at 0x1D2264.
+// The menu object carries two element ranges: range 1 is base1/count1 and
+// range 2 is base2/count2. Each is converted to a (start, end) pair and
+// forwarded to the list drawer.
+typedef struct {
+    u8 pad[0x18];
+    u32 base1;
+    u32 base2;
+    u32 count1;
+    u32 count2;
+} PauseRangeList;
+
+// Symbol override: the function-pointer table references the unmangled
+// address symbol func_00221930, so an asm label -- not an extern "C"
+// assumption or C++ mangling -- produces it.
+int pause_drawRangeList(PauseRangeList* list) asm("func_00221930");
+int pause_drawRangeList(PauseRangeList* list) {
+    help_drawRangeList(list->base1, list->base1 + list->count1,
+                       list->base2, list->base2 + list->count2);
+    return 2;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_00221968);
 

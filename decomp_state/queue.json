@@ -5424,12 +5424,12 @@
     "status": "todo"
   },
   {
-    "id": "code/game/pause.cpp:175:func_00221930",
-    "source": "code/game/pause.cpp",
-    "line": 175,
-    "asm": "code/_generated/nonmatchings/game/pause/func_00221930.s",
-    "name": "func_00221930",
-    "status": "todo"
+    "id": "code/game/pause_post.cpp:320:pause_drawRangeList",
+    "source": "code/game/pause_post.cpp",
+    "line": 320,
+    "asm": "code/_generated/nonmatchings/game/pause_post/func_00221930.s",
+    "name": "pause_drawRangeList",
+    "status": "matched"
   },
   {
     "id": "code/game/pause.cpp:177:func_00221968",

@@ -1764,5 +1764,14 @@
     "size": 68,
     "matched_date": "2026-09-13",
     "note": "Stages VU1 moby animation data: FlushCache(0); FastMemCopy(0x70003800 [DMC], D_00165500 [0x800-byte RAM buffer], 0x800); MobyAnimProc(*(int**)MOBY_ANIM_CHAIN_ADDRESS, D_0015F63C), MobyAnimProc being the handwritten unmangled entry point in game/mobyproc.s whose true signature is (int*, int*) - it dereferences arg1 as a chain head. Codegen: FastMemCopy p2 must be the NAMED array extern (a constant cast swaps the a0/a1 setup order); arg2 is the plain in-window scalar extern (GPREL16 load in the jal delay slot); arg1 is a CODEGEN EXCEPTION - the 0x15F638 load must be a constant-address load (self-based lui a0/lw a0); every named-symbol form of D_0015F638 (scalar/array/.data/volatile, with/without -mno-split-addresses, asm register pin, pointer types) was probed and fails (two-register v0-based load, and the flag flips the FastMemCopy arg order in-function); the address is expressed as the documented MOBY_ANIM_CHAIN_ADDRESS enum constant (= linker symbol D_0015F638, pinned in symbols.txt for the generated VU1_swapChain asm). The 0x70003800 DMC destination stays a documented cast: no original symbol exists at 0x70003xxx and naming it (probed) changes EGC's constant materialization/arg order (5-word diff), matching the 0x70003A00 sibling casts. Expert and last-resort GPT-5.6 Sol escalations recorded. See notes/mobyfunc_ProcessMobyAnimData__Fv.md."
+  },
+  "code/game/pause_post.cpp:320:pause_drawRangeList": {
+    "name": "pause_drawRangeList",
+    "original_name": "func_00221930",
+    "source": "code/game/pause_post.cpp",
+    "vram": "0x00221930",
+    "size": 56,
+    "matched_date": "2026-09-13",
+    "note": "Pause-menu callback (function-pointer table slot 0x1D2264) forwarding two element ranges to the shared list drawer func_001FD748 (still INCLUDE_ASM in help.cpp). Struct tail at 0x18/0x1C/0x20/0x24 = base1/base2/count1/count2; call is drawer(base1, base1+count1, base2, base2+count2); returns constant 2. The callee computes (end-start)*0x10, so the counts are 0x10-byte element counts, not byte lengths. Unmangled table symbol, so defined with an asm(\"func_00221930\") label; the callee prototype uses an asm(\"func_001FD748\") label (its ELF symbol is the unmangled address placeholder) and is void with four int args. Plain u32 fields keep base+count a raw addu (no pointer scaling). decomp_probe.py matched all 56 bytes on the first attempt (default -G8 -O2, --define func_001FD748=0x001FD748); full build + cmp byte-for-byte. Count 704->703. See notes/pause_post_func_00221930.md."
   }
 }
