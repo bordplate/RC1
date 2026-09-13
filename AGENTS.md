@@ -470,7 +470,48 @@ Likewise DMC destination constants (0x70003xxx) have no original symbol
 and naming one also changes codegen (probe: 5-word diff), so they remain
 documented casts like the 0x70003A00 siblings. See
 decomp_state/notes/mobyfunc_ProcessMobyAnimData__Fv.md for the full
-probe matrix.
+ probe matrix.
+
+Observation observed 2026-09-13 (double-volatile .data pointer +
+-mno-split-addresses = repeated self-based loads, VU1_addDataRef): when the
+original re-reads the same in-window pointer global before EACH store —
+`lui r,%hi; lw r,%lo(r); sw X,off(r)` repeated N times, unhoisted, no shared
+base — the form that reproduces it at default -O2 is a DOUBLE-VOLATILE `.data`
+pointer plus -mno-split-addresses on the TU:
+`extern volatile u32* volatile head __attribute__((section(".data")));`
+subscripted per statement. The pointer's volatility defeats CSE of the pointer
+value: a plain `.data` named symbol CSEs the later loads into the first
+(60 B vs the 76 B original), a constant-address cast hoists a shared base
+register (single-instr loads), and a plain in-window scalar extern gives
+one-instr GPREL loads; a volatile pointer (single or double) makes EGC emit a
+fresh self-based `lui r; lw r` per access with the original's register
+pattern (v1, v0, v1, a0, v0 for VU1_addDataRef's five accesses). Note this complements, not
+contradicts, the 2026-09-13 in-window VALUE-load extension: that failure was
+a CALLING function whose other array argument fused into one `la` under the
+flag; a call-free store loop has nothing to reorder. The final store through
+the `.data` name is ABSOLUTE (`lui at; sw r,0(at)`); when the original stores
+GPREL (`sw r,off(s0)` in the `jr` delay slot) instead, declare a plain
+same-address alias and store through it — symbols.txt rejects duplicate VRAM
+addresses, so the alias goes in config/linker_aliases.ld. vuchain.o now uses
+-mno-split-addresses. Matched VU1_addDataRef__FPvi (0x233830) byte-for-byte;
+the same family (VU1_gsRegsNormal, VU1_addGSregister, func_00233C28, and the
+PutDrawBuffer* packet appenders sharing head 0x160F00) should start from this
+form. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md.
+
+Extension observed 2026-09-13 (dead-tail placement, func_00233880): in the
+store-tail family the dead fragment sits after the `jr`'s delay slot AND the
+following `.align` nop: `[jr ra; sw A (delay slot, ALIVE); nop (alignment);
+sw B (dead); nop]`. The intervening alignment nop means an 80-byte parent C
+function can NEVER reproduce the layout — its 80th word would occupy the nop's
+slot; only the orphan INCLUDE_ASM (4 B + pad) fits. EGC also deletes source
+statements written after a `return`, and every probed two-store form (void
+read-back, chained/nested assignment, pointer return with two stores of a
+local) lands the second store in the delay slot or before the `jr`, while the
+pointer-return forms break the matched body allocation (load register shifts
+plus a `move v0,v1`). So these tails are not regeneratable from C; retain the
+orphan and block it (last-resort GPT-5.6 Sol confirmed 2026-09-13). The
+help_msg_string case (dead store after a `addiu sp` epilogue delay slot) is
+the same rule with a longer epilogue in between.
 
 ### Subagent Delegation
 

@@ -26,14 +26,15 @@ void VU1_addDataRef(void* dataRef, s32 tag) {
 
 Two declaration kinds at one address are required, verified by probe:
 
-1. Body loads/stores need the DOUBLE-VOLATILE `.data` pointer. A plain or
-   single-volatile named `.data` symbol lets EGC common-subexpression-eliminate
-   the four later head loads into the first (60-byte output); constant-address
-   casts hoist the constant into a shared base register (single-instr loads);
-   plain in-window externs give one-instr GPREL loads. Only
-   `volatile u32* volatile` + `.data` + `-mno-split-addresses` emits the five
-   separate self-based `lui r; lw r` loads, in the original register pattern
-   (v1, v0, v1, a0, v0), at the project-default -O2.
+1. Body loads/stores need a VOLATILE `.data` pointer. A plain named `.data`
+   symbol lets EGC common-subexpression-eliminate the four later head loads
+   into the first (60-byte output); constant-address casts hoist the constant
+   into a shared base register (single-instr loads); plain in-window externs
+   give one-instr GPREL loads (60-byte output). A volatile pointer (single or
+   double) + `.data` + `-mno-split-addresses` emits the five separate
+   self-based `lui r; lw r` loads in the original register pattern
+   (v1, v0, v1, a0, v0) at the project-default -O2; the committed form is
+   double-volatile (probeHD, byte-verified).
 2. The final head update must be a GPREL store (`sw v0, -0x5D00(s0)` in the
    `jr ra` delay slot). Storing through the `.data` name emits an absolute
    `lui at; sw r,0(at)` pair instead, so a plain same-address alias
