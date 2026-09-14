@@ -704,12 +704,12 @@
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:28:func_001EC868",
+    "id": "code/game/camera.cpp:91:Camera_commitPendingTransform__Fv",
     "source": "code/game/camera.cpp",
-    "line": 28,
-    "asm": "code/_generated/nonmatchings/game/camera/func_001EC868.s",
-    "name": "func_001EC868",
-    "status": "todo"
+    "line": 91,
+    "asm": "code/_generated/matchings/game/camera/Camera_commitPendingTransform__Fv.s",
+    "name": "Camera_commitPendingTransform__Fv",
+    "status": "matched"
   },
   {
     "id": "code/game/camera.cpp:29:func_001EC8A0",

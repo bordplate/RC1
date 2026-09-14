@@ -193,6 +193,8 @@ UpdateAllCameras__Fi = 0x1ec420;
 Camera_runSetupToNewCam__FP9UpdateCam = 0x1ebec8;
 Camera_handleCollWithHero__FiP9UpdateCam = 0x1ebe68;
 GameCamera = 0x187194;
+Camera_commitPendingTransform__Fv = 0x1ec868;
+camTransState = 0x1871b0;
 
 // mobyfunc
 DeleteMoby = 0x20c828;

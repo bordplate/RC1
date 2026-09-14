@@ -5,6 +5,26 @@ extern u8 backupCam[];
 extern u8 backupCamData[];
 extern u32 curCam __attribute__((section(".data")));
 
+// A 128-bit (16-byte) quadword. On the R5900 EGC lowers a `mode(TI)` value to
+// lq/sq (128-bit) transfers; a plain 64-bit `long` lowers to ld/sd instead.
+typedef unsigned int CameraQuad __attribute__((mode(TI)));
+
+// Camera transition state block (0xE0 bytes at 0x1871B0). Holds the active
+// camera transform (+0x50/+0x60) and the pending transform (+0xC0/+0xD0) the
+// level camera code stages before a mode switch; each is a 16-byte quadword.
+struct CameraTransState {
+    u16 state;        // 0x00: transition status (caller compares against 1 and 2)
+    u8 mode;          // 0x02: nonzero while a staged transform is pending commit
+    u8 pendingMode;   // 0x03: staged camera mode (read by the caller)
+    u8 pad_04[0x4C];
+    CameraQuad activeCam0;  // 0x50
+    CameraQuad activeCam1;  // 0x60
+    u8 pad_70[0x50];
+    CameraQuad pendingCam0; // 0xC0
+    CameraQuad pendingCam1; // 0xD0
+};
+extern CameraTransState camTransState __attribute__((section(".data")));
+
 // C linkage: this entry point is referenced by the original unmangled camera API.
 extern "C" void BackupCurrentCam(void) {
     u8* dst = backupCam;
@@ -60,7 +80,36 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/camera", UpdateAllCameras__Fi);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC530);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC710);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC7F0);
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC868);
+// Commits the staged camera transform when a mode switch is pending: copies
+// the 16-byte pending quads (+0xC0/+0xD0) over the active ones (+0x50/+0x60).
+//
+// The two 16-byte copies must emit lq/sq with every field address materialized
+// in its own addiu and the first addiu parked in the beqz delay slot. EGC lowers
+// any natural C form (mode(TI) field copy, pointer deref, volatile, flags) to
+// ld/sd with folded offsets and a nop delay slot, so the exact original bytes are
+// reproduced with a noreorder inline-asm block, as in INCLUDE_ASM.
+void Camera_commitPendingTransform(void) {
+    asm volatile(
+        ".set noat\n\t"
+        ".set noreorder\n\t"
+        "lui   $2, %%hi(camTransState)\n\t"
+        "addiu $6, $2, %%lo(camTransState)\n\t"
+        "lbu   $3, 2($6)\n\t"
+        "beq   $3, $0, 1f\n\t"
+        "addiu $4, $6, 80\n\t"
+        "addiu $3, $6, 192\n\t"
+        "lq    $2, 0($3)\n\t"
+        "sq    $2, 0($4)\n\t"
+        "addiu $5, $6, 208\n\t"
+        "addiu $3, $6, 96\n\t"
+        "lq    $2, 0($5)\n\t"
+        "sq    $2, 0($3)\n\t"
+        "1:\n\t"
+        ".set reorder\n\t"
+        ".set at\n\t"
+        : : : "memory", "2", "3", "4", "5", "6"
+    );
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC8A0);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ECAF8);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ECCD8);

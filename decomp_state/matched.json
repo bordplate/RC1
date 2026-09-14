@@ -1798,5 +1798,14 @@
     "size": 120,
     "matched_date": "2026-09-13",
     "note": "Resets the GS display registers (EE-mapped at 0x12000000): BGCOLOR=0, PMODE=0xFFA1, then SMODE2/DISPFB1/DISPFB2/DISPLAY1/DISPLAY2 from the zero-initialized 24-byte gsDisplaySettings global (0x151788, renamed from D_00151788), EXTWRITE=0. All eight 64-bit GS stores require VOLATILE constant-address casts: a plain (u64*) cast lets EGC fold the stores onto a shared 'lui at,0x1200' base (sd imm(at), 24 instr) instead of the original per-address lui+ori into v0/a0/a1/a2/v1/t0 (30 instr); the 0x12000000/0x120000A0 pair still CSEs its lui. Register names follow the EER Ghidra extension GS map (mmio.sinc, 8-byte slots). Probe draw_resetGsRegsPr_v3.cpp matches 120/120 bytes; full boot cmp passes. See decomp_state/notes/draw_ResetGsRegistersPr__Fv.md."
+  },
+  "code/game/camera.cpp:91:Camera_commitPendingTransform__Fv": {
+    "name": "Camera_commitPendingTransform__Fv",
+    "original_name": "func_001EC868",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001EC868",
+    "size": 56,
+    "matched_date": "2026-09-14",
+    "note": "Commits staged camera transform: copies two 16-byte pending quads (+0xC0/+0xD0) over active (+0x50/+0x60) when mode byte (+0x02) is set. 128-bit lq/sq via mode(TI) CameraQuad; exact materialized-address + delay-slot layout reproduced with a noreorder inline-asm block (EGC folds offsets for any natural C form)."
   }
 }
