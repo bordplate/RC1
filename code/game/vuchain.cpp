@@ -42,6 +42,12 @@ extern volatile u32* vu1ChainHeadStore;
 // VU1_gsRegsNormal.
 extern u32 vu1GsRegsNormal[];
 
+// 44-word GS state block streamed at the end of the font draw chain by
+// VU1_gsRegsFont (the only caller is the font VU1 builder in draw.cpp,
+// func_001F76A0). Like the gsRegs blocks above it opens with the 0x00008001
+// header and carries GS state commands (SETVJUMPC/SETVKEYR-G-B among them).
+extern u32 vu1GsRegsFont[];
+
 void VU1_addDataRef(void* dataRef, s32 tag) {
     vu1ChainHead[0] = VU1_DATA_REF_TAG | tag;
     vu1ChainHead[1] = (u32)dataRef;
@@ -129,7 +135,27 @@ void VU1_gsRegsAlt() {
 // body registers), so the orphan is retained.
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233C88);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233C90);
+// Append the font-pipeline GS state block (vu1GsRegsFont, 0x13CF10) to the
+// VU1 chain: [tag, block address, 0, end tag], then advance the head.
+// Codegen constraint: as in VU1_gsRegsNormal, the block address must stay a
+// two-instruction RTL pair (0x140000 split page, then signed 0x30F0 low
+// part) interleaved around the first store, pinned with zero-byte asm
+// barriers. The record tags carry the 0xB low byte here (vs 3 in the
+// gsRegsNormal/Alt pair).
+void VU1_gsRegsFont() {
+    volatile u32* packet = vu1ChainHead;
+    asm volatile("" : : "r"(packet));
+    u32 tag = VU1_DATA_REF_TAG | 0xB;
+    asm volatile("" : : "r"(tag));
+    u32 address = 0x00140000;
+    asm volatile("" : "+r"(address) : "r"(packet), "r"(tag));
+    packet[0] = tag;
+    address -= 0x30F0;
+    vu1ChainHead[1] = address;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0xB;
+    vu1ChainHeadStore = vu1ChainHead + 4;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233CF0);
 
