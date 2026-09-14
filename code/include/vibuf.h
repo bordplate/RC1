@@ -22,8 +22,7 @@ typedef struct ViBuf {
     u32 ipuCtrl;
     u32 sema;
     u32 dmaFlag;
-    u32 field_0x48;
-    u32 field_0x4c;
+    u64 field_0x48;
     u32 tags;
     u32 tagCount;
     u32 tagHead;

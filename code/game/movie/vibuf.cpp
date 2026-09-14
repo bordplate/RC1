@@ -31,7 +31,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufReset__FP5ViBu
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufBeginPut__FP5ViBufPPUcPiT1T2);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufEndPut__FP5ViBufi);
+void viBufEndPut(ViBuf* self, int i) {
+    WaitSema(self->sema);
+    self->field_0x14 += i;
+    self->field_0x48 += i;
+    SignalSema(self->sema);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufAddDMA__FP5ViBuf);
 

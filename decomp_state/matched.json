@@ -1815,5 +1815,13 @@
     "size": 128,
     "matched_date": "2026-09-14",
     "note": "Per-frame moby draw pass: DrawMobysSetup, and if the D_0018A2D8 gate is set, InitMobyClassDists then MobyProc(*(0x15FF18), *(0x15FF14), -1, 1) whose return is stored to D_0015FF14 unconditionally (the store sits in the second beqz delay slot); STUB_printf(vuChainOverflowMessage, 0x1E8400, new symbol) only when vu1ChainHead (0x160F00) > 0x160F08. Then DrawMobysCleanUp. Codegen: D_0018A2D8 must be an array extern (absolute lui v0/lw v1); the four in-window value loads need constant-address casts (self-based lui/lw); the D_0015FF14 store needs a plain scalar extern (GPREL16 sw v0,-27884(gp)); head-vs-limit written as head > limit so the slt operand order matches. All 32 words match; full boot parity passes. See notes/mobyfunc_DrawMobys.md."
+  },
+  "code/game/movie/vibuf.cpp:34:viBufEndPut__FP5ViBufi": {
+    "name": "viBufEndPut__FP5ViBufi",
+    "source": "code/game/movie/vibuf.cpp",
+    "vram": "0x0023BF18",
+    "size": 84,
+    "matched_date": "2026-09-14",
+    "note": "ViBuf FIFO end-put: WaitSema(self->sema), advance self->field_0x14 (u32) and self->field_0x48 (u64) by i, then SignalSema(self->sema). The original performs a 64-bit load/modify/store (ld/daddu/sd) at offset 0x48, so that struct field is a single u64; it was previously mis-declared as field_0x48/field_0x4c (two u32) in vibuf.h and is now merged. 0x30 frame saves s0=self, s1=i; the u32 field_0x14 store lands before SignalSema and the u64 field_0x48 store lands in SignalSema's delay slot. All 21 words match and full boot parity passes."
   }
 }
