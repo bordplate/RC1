@@ -599,6 +599,7 @@ VU1_sendChain__Fv = 0x02336a0;
 VU1_swapChain__Fv = 0x0233630;
 VU1_initChain__Fv = 0x02335d0;
 VU1_setScissor__Fiiii = 0x233a40;
+vu1GsRegsNormal = 0x001de3c0;
 
 // actuator.cpp
 texResetCursor__Fv = 0x1e9128;

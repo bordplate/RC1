@@ -35,6 +35,12 @@ extern volatile u32* vu1ChainHeadStore;
 
 // VIF packet tag for a VU1 data-reference record (VIF code 0x30).
 #define VU1_DATA_REF_TAG 0x30000000
+// VIF end-of-record tag for a VU1 data-reference packet (VIF code 0x50).
+#define VU1_DATA_REF_END_TAG 0x50000000
+
+// 12-word GS register state block loaded into the VU1 stream by
+// VU1_gsRegsNormal.
+extern u32 vu1GsRegsNormal[];
 
 void VU1_addDataRef(void* dataRef, s32 tag) {
     vu1ChainHead[0] = VU1_DATA_REF_TAG | tag;
@@ -65,7 +71,30 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233B60);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", VU1_texFlush__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", VU1_gsRegsNormal__Fv);
+// Append a VU1 packet that streams the normal GS register state block
+// (vu1GsRegsNormal, 0x1DE3C0) to the VU1: [tag, block address, 0, end tag],
+// then advance the chain head.
+// Codegen constraint: the original interleaves the block address as two
+// instructions (0x1E0000 split page, then signed 0x1C40 low part) around the
+// first store. EGC folds a plain constant to an unsigned split, and a
+// vu1GsRegsNormal reference becomes one unsplittable `la` under this TU's
+// -mno-split-addresses. The zero-byte asm barriers pin the RTL order (head
+// load, tag, address high) and keep the address as a two-instruction RTL pair,
+// reproducing the original byte for byte.
+void VU1_gsRegsNormal() {
+    volatile u32* packet = vu1ChainHead;
+    asm volatile("" : : "r"(packet));
+    u32 tag = VU1_DATA_REF_TAG | 3;
+    asm volatile("" : : "r"(tag));
+    u32 address = 0x001E0000;
+    asm volatile("" : "+r"(address) : "r"(packet), "r"(tag));
+    packet[0] = tag;
+    address -= 0x1C40;
+    vu1ChainHead[1] = address;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 3;
+    vu1ChainHeadStore = vu1ChainHead + 4;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233C28);
 
