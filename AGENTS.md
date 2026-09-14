@@ -513,6 +513,43 @@ orphan and block it (last-resort GPT-5.6 Sol confirmed 2026-09-13). The
 help_msg_string case (dead store after a `addiu sp` epilogue delay slot) is
 the same rule with a longer epilogue in between.
 
+Observation observed 2026-09-14 (zero-byte asm barriers force an interleaved
+signed constant split, VU1_gsRegsNormal__Fv): when the original interleaves
+a constant's hi/lo pair around an independent store
+(`[head-load][tag hi][tag lo][addr hi = 0x1E0000][store0][addr lo = addiu
+-0x1C40]`), no pure-C form reproduces it under `-mno-split-addresses`: a raw
+constant FOLDS to one unsigned split (`li 0x1D; ori 0xE3C0`), and a named
+symbol becomes one unsplittable `la` pseudo. The matching form keeps the hi
+and lo as SEPARATE RTL instructions and pins their schedule with zero-byte
+`asm volatile` barriers (they emit no machine instruction):
+
+```cpp
+volatile u32* packet = vu1ChainHead;
+asm volatile("" : : "r"(packet));   // pin head load before the tag RTL
+u32 tag = VU1_DATA_REF_TAG | 3;
+asm volatile("" : : "r"(tag));      // pin tag hi/lo before the addr hi
+u32 address = 0x001E0000;           // hi split page (genuine artifact)
+asm volatile("" : "+r"(address) : "r"(packet), "r"(tag));
+packet[0] = tag;                    // store0 lands between hi and lo
+address -= 0x1C40;                  // negative-immediate addiu = SIGNED lo
+```
+
+Mechanics (probe-verified): the `"+r"(address)` barrier defeats constant
+folding of the initializer+subtraction, so the lo becomes `addiu r,-0x1C40`
+(signed) instead of `ori r,0xE3C0` (unsigned); the input-only barriers
+(`"" : : "r"(x)`) act as CSE + pre-RA-scheduling barriers — without them CSE
+hoists the tag constant ahead of the head load and the scheduler swaps
+`tag lo`/`addr hi`. Use the input-only form: `"+r"(packet)` pins the value in
+a register and shifts the head load a0→v1 (12-word diff). Note EGC does NOT
+constant-fold expressions containing data-SYMBOL addresses (only pure-constant
+expressions fold), so `(u32)(sym + k) & 0xFFFF0000` stays runtime RTL (24-word
+diff). The 0x1E0000 split page and 0x1C40 low part are documented codegen
+constants; the real data symbol (vu1GsRegsNormal = 0x1DE3C0) stays named in
+symbols.txt. Matched VU1_gsRegsNormal__Fv (0x233BC8) byte-for-byte; the family
+siblings func_00233C28 (data 0x1DE3F0, needs the same signed split) and
+func_00233C90 (data 0x13CF10) should start from this form. See
+decomp_state/notes/vuchain_VU1_gsRegsNormal__Fv.md.
+
 ### Subagent Delegation
 
 - Use `decomp-researcher` before implementing an unfamiliar target when Ghidra,
