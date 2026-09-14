@@ -96,8 +96,37 @@ void VU1_gsRegsNormal() {
     vu1ChainHeadStore = vu1ChainHead + 4;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233C28);
+// Variant of the VU1 GS register state block (0x1DE3F0, 12 words; differs
+// from vu1GsRegsNormal only in word 4) streamed by VU1_gsRegsAlt.
+extern u32 vu1GsRegsAlt[];
 
+// Append a VU1 packet that streams the alternate GS register state block
+// (vu1GsRegsAlt, 0x1DE3F0) to the VU1: [tag, block address, 0, end tag],
+// then advance the chain head. The draw pipeline sends this before draw
+// batches and follows some with VU1_gsRegsNormal to restore the normal state.
+// Codegen constraint: as in VU1_gsRegsNormal, the block address must stay a
+// two-instruction RTL pair (0x1E0000 split page, then signed 0x1C10 low part)
+// interleaved around the first store, pinned with zero-byte asm barriers.
+void VU1_gsRegsAlt() {
+    volatile u32* packet = vu1ChainHead;
+    asm volatile("" : : "r"(packet));
+    u32 tag = VU1_DATA_REF_TAG | 3;
+    asm volatile("" : : "r"(tag));
+    u32 address = 0x001E0000;
+    asm volatile("" : "+r"(address) : "r"(packet), "r"(tag));
+    packet[0] = tag;
+    address -= 0x1C10;
+    vu1ChainHead[1] = address;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 3;
+    volatile u32* newHead = vu1ChainHead + 4;
+    vu1ChainHeadStore = newHead;
+}
+
+// Dead tail of VU1_gsRegsAlt: EGC emits this store after the `jr $ra` of the
+// matched function above (unreachable); no source form regenerates it without
+// changing the matched body (a return-value form fires it but reallocates the
+// body registers), so the orphan is retained.
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233C88);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233C90);

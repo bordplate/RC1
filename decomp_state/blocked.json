@@ -108,5 +108,10 @@
     "status": "blocked",
     "date": "2026-09-13",
     "note": "Icon-table linear search (u16 code, 0xffff-terminated) returning entry index. Register-pinned C (last-resort Test 1) reproduces every real instruction and exact register allocation, but local cc1 2.9-ee-991111b/r4 packs the loop's bne 8 bytes earlier than the original, omitting the two nops at 0x1FEE6C/0x1FEE70 (68B vs 76B). Original scheduler leaves two empty slots between the in-block beq and bne; no C form, attribute, or flag (-O1/-fno-schedule-insns[2]/-fno-strength-reduce/-fno-thread-jumps/-G0, asm barrier) makes the local scheduler reserve them. 17 forms + last-resort tested. See decomp_state/notes/hud_Hud_GetIconIndex__Fi.md."
+  },
+  "code/game/vuchain.cpp:39:func_00233C88": {
+    "status": "blocked",
+    "date": "2026-09-14",
+    "note": "NOT a function: 4-byte unreachable fragment `sw $2,-0x3FE0($28)` (GPREL store of v0 to vu1ChainTail 0x162C20) at 0x233C88, the EGC dead-store tail of the now-matched VU1_gsRegsAlt__Fv (0x233C28). Exact layout: jr ra; sw head(0x160F00) in the jr delay slot (ALIVE); nop (.align pad); sw tail (DEAD); nop. Unreachable (no jal/j target, Ghidra has no function there). Probed with full builds 2026-09-14: the void two-store form (vu1ChainHeadStore = newHead; vu1ChainTail = newHead;) keeps BOTH stores alive (sw tail before the jr, sw store in the delay slot) - no dead tail; the return-value form (return newHead;) fires the dead tail but reserves v0 across the body, moving the tag v0->a1 and the block address v1->v0 with an extra move v0,v1 (10-word body diff). Last-resort GPT-5.6 Sol invoked 2026-09-14 on this exact target: no C route remains - a store immediately after jr is the executed delay slot, not dead; the required tail sits after jr; <delay-slot store>; .align nop, where source scheduling cannot place a reachable side effect; statements after a return are deleted. Identical instruction word and GPREL target to the blocked func_00233880 (VU1_addDataRef's tail). Orphan INCLUDE_ASM retained deliberately to supply the 8 bytes (its .align 3 supplies the 0x233C84 pad). See notes/vuchain_VU1_gsRegsAlt__Fv.md."
   }
 }

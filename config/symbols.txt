@@ -597,12 +597,14 @@ VU1_addGSregister__FUiUlb = 0x0233980;
 DMAC_VIF1_Enable__Fv = 0x0233d00;
 DMAC_VIF1_Disable__Fv = 0x0233d90;
 VU1_gsRegsNormal__Fv = 0x00233bc8;
+VU1_gsRegsAlt__Fv = 0x00233c28;
 VU1_texFlush__Fv = 0x233b68;
 VU1_sendChain__Fv = 0x02336a0;
 VU1_swapChain__Fv = 0x0233630;
 VU1_initChain__Fv = 0x02335d0;
 VU1_setScissor__Fiiii = 0x233a40;
 vu1GsRegsNormal = 0x001de3c0;
+vu1GsRegsAlt = 0x001de3f0;
 
 // actuator.cpp
 texResetCursor__Fv = 0x1e9128;
