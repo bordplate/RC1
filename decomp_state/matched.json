@@ -1807,5 +1807,13 @@
     "size": 56,
     "matched_date": "2026-09-14",
     "note": "Commits staged camera transform: copies two 16-byte pending quads (+0xC0/+0xD0) over active (+0x50/+0x60) when mode byte (+0x02) is set. 128-bit lq/sq via mode(TI) CameraQuad; exact materialized-address + delay-slot layout reproduced with a noreorder inline-asm block (EGC folds offsets for any natural C form)."
+  },
+  "code/game/mobyfunc.cpp:185:DrawMobys": {
+    "name": "DrawMobys",
+    "source": "code/game/mobyfunc.cpp",
+    "vram": "0x0020D460",
+    "size": 128,
+    "matched_date": "2026-09-14",
+    "note": "Per-frame moby draw pass: DrawMobysSetup, and if the D_0018A2D8 gate is set, InitMobyClassDists then MobyProc(*(0x15FF18), *(0x15FF14), -1, 1) whose return is stored to D_0015FF14 unconditionally (the store sits in the second beqz delay slot); STUB_printf(vuChainOverflowMessage, 0x1E8400, new symbol) only when vu1ChainHead (0x160F00) > 0x160F08. Then DrawMobysCleanUp. Codegen: D_0018A2D8 must be an array extern (absolute lui v0/lw v1); the four in-window value loads need constant-address casts (self-based lui/lw); the D_0015FF14 store needs a plain scalar extern (GPREL16 sw v0,-27884(gp)); head-vs-limit written as head > limit so the slt operand order matches. All 32 words match; full boot parity passes. See notes/mobyfunc_DrawMobys.md."
   }
 }

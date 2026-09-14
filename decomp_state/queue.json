@@ -3416,14 +3416,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/mobyfunc.cpp:127:DrawMobys",
-    "source": "code/game/mobyfunc.cpp",
-    "line": 127,
-    "asm": "code/_generated/nonmatchings/game/mobyfunc/DrawMobys.s",
-    "name": "DrawMobys",
-    "status": "todo"
-  },
-  {
     "id": "code/game/mobyfunc.cpp:129:func_0020D4E0",
     "source": "code/game/mobyfunc.cpp",
     "line": 129,

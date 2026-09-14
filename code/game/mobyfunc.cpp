@@ -152,7 +152,49 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobyList);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobysCleanUp);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobys);
+// Per-frame moby processing gate; only read here in the boot ELF (the writer
+// is level code, initial .data value 0), so the address name is retained.
+// Declared as an array so the value load is an absolute lui v0/lw v1 pair as
+// in the original; a scalar extern would be GPREL16 (invalid out of window).
+extern int D_0018A2D8[];
+// Moby animation chain head: DrawMobysSetup copies the D_0015F638 chain head
+// here and MobyProc's return value is stored back here.
+extern int D_0015FF14;
+// C linkage: MobyProc is a handwritten assembly entry point referenced by the
+// generated assembly in this file; the linker pins it at 0x00211808.
+extern "C" int MobyProc(int, int, int, int);
+extern char vuChainOverflowMessage[];
+// C linkage: this diagnostic entry point is supplied by generated sce/lib.s.
+extern "C" void STUB_printf(const char* fmt, ...);
+void DrawMobysSetup();
+// C linkage: the original symbol is unmangled in the boot ELF.
+extern "C" void DrawMobysCleanUp();
+
+// EGC codegen exception: the value loads at these in-window addresses must be
+// constant-address casts. Named references (scalar GPREL16 or two-register
+// base-$v0 loads) do not reproduce the original's self-based `lui r;
+// lw r,off(r)` pairs (see notes/mobyfunc_ProcessMobyAnimData__Fv.md). The
+// addresses are the linker symbols D_0015FF14 / D_0015FF18 (build/data/
+// lit.lit4.s), vu1ChainHead (0x160F00) and its limit slot 0x160F08.
+enum {
+    MOBY_ANIM_HEAD_ADDR = 0x0015FF14,
+    MOBY_ANIM_DATA_ADDR = 0x0015FF18,
+    VU1_CHAIN_HEAD_ADDR = 0x00160F00,
+    VU1_CHAIN_LIMIT_ADDR = 0x00160F08,
+};
+
+// C linkage: the original symbol is unmangled.
+extern "C" void DrawMobys() {
+    DrawMobysSetup();
+    if (D_0018A2D8[0] != 0) {
+        InitMobyClassDists();
+        int ret = MobyProc(*(int*)MOBY_ANIM_DATA_ADDR, *(int*)MOBY_ANIM_HEAD_ADDR, -1, 1);
+        D_0015FF14 = ret;
+        if (*(int*)VU1_CHAIN_HEAD_ADDR > *(int*)VU1_CHAIN_LIMIT_ADDR)
+            STUB_printf(vuChainOverflowMessage);
+    }
+    DrawMobysCleanUp();
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D4E0);
 
