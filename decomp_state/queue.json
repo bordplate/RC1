@@ -4437,7 +4437,7 @@
     "line": 41,
     "asm": "code/_generated/nonmatchings/game/movie/videodec/func_0023D0E0.s",
     "name": "func_0023D0E0",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/movie/videodec.cpp:43:func_0023D110",

@@ -117,5 +117,3 @@ int mpegNodata(struct sceMpeg* mpeg, struct sceMpegCbData* cbData, void* user) {
     viBufAddDMA((ViBuf*)(*(int*)0x16120C + 0xD9090));
     return 1;
 }
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", func_0023D0E0);
