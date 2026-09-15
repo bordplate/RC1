@@ -36,6 +36,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_00206B10);
 extern unsigned int menuSelectionCount;
 
 int menu_isSelectionCountZero(void) {
+    // ps2eeas (single pass) expands the memory-symbol load to an absolute
+    // lui/lw pair unless `.extern menuSelectionCount, 4` precedes it; EGC
+    // emits that declaration at the end of the file, so seed it here to
+    // keep the original GPREL16 load.
+    asm volatile(".extern menuSelectionCount, 4");
     return menuSelectionCount < 1;
 }
 

@@ -80,11 +80,12 @@ Production C/C++ defaults and default probes use EEGCC 2.95.2 SN 2.73a with SN
 verifies the assembler using pinned archive/binary SHA-256 hashes; make also
 installs it if missing. Do not pass GNU's `-Wa,-EL -Wa,-Icode/include` to SN.
 Standalone `.s` files still use the GNU cross-assembler. A clean split/build
-and full boot ELF comparison pass with six explicit GNU compatibility TUs:
-989snd.c, draw.cpp, hud.cpp, menu.cpp, mobyutil.cpp, and movie/vobuf.cpp.
-An all-SN build grows resident code into .core_data and changes existing
-game matches; retain the per-TU assembler overrides until source migrations
-pass full parity. Existing INCLUDE_ASM blocks are supported by SN.
+and full boot ELF comparison pass with five explicit GNU compatibility TUs:
+989snd.c, draw.cpp, hud.cpp, mobyutil.cpp, and movie/vobuf.cpp.
+An all-SN build of the unmigrated source grows resident code into
+.core_data and changes existing game matches; retain the per-TU assembler
+overrides until source migrations pass full parity. Existing INCLUDE_ASM
+blocks are supported by SN.
 `tools/run_ee_compiler.py` serializes compiler-driver invocations: concurrent
 Wine/SN compiles intermittently fail to open the shared labels.inc. Native
 cross-assembly remains parallel; the wrapper preserves compiler exit status.
@@ -97,6 +98,19 @@ aliases, or no-split workarounds, read
 `decomp_state/notes/symbolic_address_pipeline.md` and
 `decomp_state/notes/sn_toolchain_assemblers.md`. The two VU research probes
 still fail; do not assume every scheduling problem is solved.
+
+ps2eeas is single-pass with memory symbols (probe-verified 2026-09-15): a
+`lw/sw r,sym` reference expands to a single GPREL16 access only when an
+`.extern sym,N` declaration already appeared earlier in the file, or the
+reference sits inside a `.set noreorder`/`.set nomacro` region; otherwise it
+emits an absolute self-based `lui/lw` pair. EGC emits all `.extern`
+declarations at the end of the file, so plain in-window loads that are not
+inside one of EGC's branch/jal blocks expand absolute under SN. Fix for such
+a load: seed the declaration in-function with
+`asm volatile(".extern sym, N");` before the reference (duplicate
+end-of-file `.extern` is accepted by both assemblers). menu.cpp migrated to
+SN this way (menu_isSelectionCountZero__Fv); see
+decomp_state/notes/sn_toolchain_assemblers.md.
 
 The compiler classifies small data by declaration size/section, not eventual
 RAM address. Extern-only `.sdata` declarations did not force the historical

@@ -98,12 +98,16 @@ tests require a completed JSON diff with the expected number of differences.
 
 For symbolic global loads/stores, first read `notes/symbolic_address_pipeline.md`.
 Production defaults and default probes use SN `ps2eeas` 1.8.19.316 through
-`-snas`. Six current TUs retain explicit GNU assembly overrides; consult the
+`-snas`. Five current TUs retain explicit GNU assembly overrides; consult the
 Makefile and `notes/sn_toolchain_assemblers.md` when reproducing those functions.
 Ordinary scalar externs reproduce the absolute-load/GP-delay-slot combinations
 in DrawMobys and ProcessMobyAnimData. The compiler sees declaration sizes and
 sections, not eventual RAM addresses. Inspect assembly expansion before trying
 literal addresses, aliases, or `-mno-split-addresses` scheduling workarounds.
+ps2eeas expands a memory-symbol load to GPREL16 only if `.extern sym,N`
+preceded it in the file or the reference is inside a noreorder/nomacro block;
+otherwise it emits an absolute lui/lw pair (see that note for the menu.cpp
+`.extern` seeding fix).
 Use `--assembler=gnu` with decomp_probe.py for explicit GNU comparison controls.
 Command-line overrides applied to production require a forced rebuild.
 `make setup-snas` installs/verifies the required SN binary.

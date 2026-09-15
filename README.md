@@ -107,9 +107,9 @@ python3 tools/install_sn_assembler.py --archive /path/to/ee-gcc2.95.2-273a.tar.g
 Do not pass the GNU assembler options `-Wa,-EL -Wa,-Icode/include` to SN.
 Standalone `.s` files still use the configured GNU cross-assembler; the cross
 linker and binary conversion tools are unchanged. Both C/C++ assembly includes
-and a full boot-image build have been verified with this pipeline. Six existing
+and a full boot-image build have been verified with this pipeline. Five existing
 translation units retain GNU assembly for byte-for-byte compatibility:
-`989snd.c`, `draw.cpp`, `hud.cpp`, `menu.cpp`, `mobyutil.cpp`, and `movie/vobuf.cpp`.
+`989snd.c`, `draw.cpp`, `hud.cpp`, `mobyutil.cpp`, and `movie/vobuf.cpp`.
 Their overrides are explicit in the Makefile; probes default to SN.
 Compiler drivers are serialized to avoid intermittent shared-include open
 failures in the legacy Wine/SN tools; native cross-assembly can run in parallel.

@@ -3,7 +3,7 @@
 ## Verified pipeline
 
 C/C++ compilation defaults to EEGCC 2.95.2 SN 2.73a with SN `ps2eeas` 1.8.19.316,
-selected with `-snas`. Six compatibility TUs retain GNU assembly; the verified
+selected with `-snas`. Five compatibility TUs retain GNU assembly; the verified
 production build uses those explicit overrides and passes full-image parity.
 See [sn_toolchain_assemblers.md](sn_toolchain_assemblers.md) for installation,
 archive fingerprints, version comparisons, and reproduction commands.
@@ -52,6 +52,18 @@ pairs while retaining the single GP-relative store in the branch delay slot.
 The SAME global is loaded absolutely and stored GP-relatively. A uniform
 `.data` declaration or an address-cast macro does not explain both accesses.
 
+The verified mechanism is ps2eeas's single-pass expansion: a memory-symbol
+reference becomes a GPREL16 access only when `.extern NAME, N` already
+appeared earlier in the file OR the reference is inside a
+`.set noreorder`/`.set nomacro` region (here, the branch-delay-slot block
+around the store); otherwise it is an absolute self-based `lui/lw` pair.
+EGC emits all `.extern` declarations at the end of the file, so the four
+out-of-block loads see no prior declaration and expand absolute, while the
+in-block store expands GPREL. See
+[sn_toolchain_assemblers.md](sn_toolchain_assemblers.md) for the probe matrix
+and the menu.cpp `.extern`-seeding fix that forces an out-of-block load to
+GPREL.
+
 For ProcessMobyAnimData, the array address for FastMemCopy remains compiler-
 split and schedulable, the first scalar MobyAnimProc argument is expanded to
 an absolute load, and the second remains GP-relative in the call delay slot.
@@ -72,8 +84,10 @@ insufficient for the original probes:
   because its delay-slot load expands too. Neither is a solution.
 - `.sdata` externs alone do not establish that SN will choose GP addressing.
   The historical GP/RPC unit controls explicitly retain GNU assembly, as do
-  their production TUs. Original GP instructions outside delay slots need
-  further source/declaration research before migrating those TUs to SN.
+  their production TUs. GP references outside delay slots CAN be forced with
+  an in-function `asm volatile(".extern sym, N");` seed before the reference
+  (menu.cpp, 2026-09-15); the remaining production TUs still need that
+  per-function treatment before migration.
 - The symbolic volatile-pointer VU1_addDataRef probe is 84 B versus 76 B with
   SN, and VU1_gsRegsNormal is 100 B versus 92 B. These source forms still need
   work; the assembler switch does not solve every VU scheduling issue.
@@ -85,9 +99,12 @@ insufficient for the original probes:
 `tools/research_symbolic_addresses.py` explicitly compiles with GNU assembly
 and separately tests a reference-independent expansion model. It recognizes
 small `.extern` symbols, expands unsplit memory macros outside `.set noreorder`
-to absolute pairs, and leaves noreorder/already-split accesses alone. The
-three positive controls match and the two VU controls fail. This model is
-retained as a reproducible experiment; production uses the authentic SN binary.
+to absolute pairs, and leaves noreorder/already-split accesses alone — a
+two-pass approximation of the single-pass rule above that is exact for these
+controls because EGC's `.extern` declarations sit at the end of the file.
+The three positive controls match and the two VU controls fail. This model is
+retained as a reproducible experiment; production uses the authentic SN
+binary.
 
 ```sh
 source .venv/bin/activate

@@ -2,9 +2,9 @@
 
 User requested downloading and testing decomp.me's five SN compiler builds.
 Research and integration were performed without subagents. Production C/C++
-compilation defaults to `-snas` with SN 1.8.19.316; six translation units retain
-GNU assembly for existing-source compatibility. Probes default to SN. The
-full rebuild and boot ELF `cmp` pass; 688 nonmatching remain.
+compilation defaults to `-snas` with SN 1.8.19.316; five translation units
+retain GNU assembly for existing-source compatibility. Probes default to SN.
+The full rebuild and boot ELF `cmp` pass; 688 nonmatching remain.
 
 ## Finding
 
@@ -119,20 +119,19 @@ lock when the process exits.
 
 The default flags are `-G8 -O2 -ffast-math -fno-exceptions -snas`. SN rejects
 the previous `-Wa,-EL -Wa,-Icode/include` flags, so these replace `-snas` only
-for explicit GNU comparisons and the six compatibility TUs below. Existing
+for explicit GNU comparisons and the five compatibility TUs below. Existing
 per-TU optimization flags remain in place. Standalone `.s` files continue
 through the GNU cross assembler, and linking/binary conversion are unchanged.
 
-An all-SN build does not match existing source. It grows `.core_text` by 64
-bytes into `.core_data` and also changes game functions. Full parity requires
-the explicit assembler overrides listed here.
+An all-SN build of the unmigrated source does not match. It grows `.core_text`
+into `.core_data` and also changes game functions. Full parity requires the
+explicit assembler overrides listed here.
 
 | GNU compatibility TU | Measured function changes with SN (GNU → SN bytes) |
 | --- | --- |
 | 989snd/ee/989snd.c | snd_SendCurrentBatch 276 → 304; snd_PrepareReturnBuffer 28 → 36; snd_PostMessage 56 → 64; several other scalar-access helpers grow |
 | game/draw.cpp | draw_resetTextureDmaState (func_001F0B88) 60 → 48 |
 | game/hud.cpp | hud_updateMessageTimer 24 → 32 |
-| game/menu.cpp | menu_isSelectionCountZero 12 → 16 |
 | game/mobyutil.cpp | moby_getActiveObject / moby_getSecondaryObject each 48 → 52 |
 | game/movie/vobuf.cpp | voBufCreate 76 → 72 |
 
@@ -141,6 +140,39 @@ SN. These are compatibility settings for current source forms, not proof
 of which assembler Insomniac used for each original TU. Future migrations
 can remove an override after correcting source/declarations and verifying
 the affected function(s) plus full binary parity. No generated words are patched.
+
+## menu.cpp migrated to SN (2026-09-15)
+
+`game/menu.cpp` now compiles and assembles with SN; its GNU override was
+removed from the Makefile. A per-function diff of the SN object linked into
+the boot image (validated 65/65 on the then-GNU build) showed exactly one
+mismatch: `menu_isSelectionCountZero__Fv` (0x206b78), 14 differing bytes out
+of the whole 1.38 MB image. Its 4-byte plain in-window extern load expanded
+to an absolute `lui/lw` pair under SN instead of the original single
+GPREL16 `lw v0,-28316(gp)`. The SN form is 16 code bytes versus GNU's 12 +
+4 alignment nops, so `menu.o`'s `.text` size is unchanged (0x1ea0) and no
+layout shifts.
+
+**ps2eeas single-pass memory-symbol rule** (probe-verified with hand-written
+`.s`, SN 1.8.19.316, `-G8`): a memory-symbol reference (`lw/sw r,sym`)
+expands to a single GPREL16 access when EITHER
+- the reference sits inside a `.set noreorder`/`.set nomacro` region, OR
+- an `.extern sym, N` declaration already appeared earlier in the file.
+Otherwise it expands to an absolute self-based `lui/lw` pair (HI16/LO16),
+regardless of any later `.extern`. EGC emits all `.extern` declarations at
+the end of the file, so every memory-symbol reference not inside one of EGC's
+noreorder/nomacro blocks (branches, `jal` delay slots) expands absolute under
+SN. That is why `DrawMobys`'s tail store (inside a noreorder block) matched
+under SN while `menu_isSelectionCountZero`'s load (a plain first
+instruction) did not.
+
+Fix (`menu_isSelectionCountZero__Fv`): seed the declaration inside the
+function with `asm volatile(".extern menuSelectionCount, 4");` before the
+return statement. SN accepts the duplicate end-of-file `.extern` EGC still
+emits, GNU as accepts it too, and both assemblers then produce the original
+`lw; jr ra; sltiu` shape. Verified under both assemblers: the GNU `menu.o`
+was re-verified after the edit, and the SN `menu.o` links to a byte-for-byte
+boot ELF. No generated words are patched.
 
 Verification: `make clean && make split && make -j2`, followed by
 `cmp build/boot_elf.elf assets/boot_elf.elf`, passes with these defaults.
