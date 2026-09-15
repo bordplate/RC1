@@ -1859,5 +1859,14 @@
     "size": 60,
     "matched_date": "2026-09-15",
     "note": "VAG buffer state callback passed by music_StartTrack to snd_PlayVAGStreamByLocEx_CB. The state store is unconditional inside if(p) (it lands in the beqz-state delay slot, so it must NOT be nested in if(state) - nesting it is a 2-word diff); nonzero state promotes flag VAG_BUFFER_FLAG_QUEUED(1) to READY(8) with an explicit return that EGC compiles to the terminating jr $ra (no explicit return emits a forward b out instead); zero state resets the flag to 0. No frame (call-free). asm label func_00216B28 for the address-based callback reference. See notes/stream_func_00216B28.md."
+  },
+  "code/game/vuchain.cpp:84:VU1_texFlush__Fv": {
+    "name": "VU1_texFlush__Fv",
+    "original_name": "VU1_texFlush__Fv",
+    "source": "code/game/vuchain.cpp",
+    "vram": "0x00233B68",
+    "size": 92,
+    "matched_date": "2026-09-15",
+    "note": "VU1 packet appender streaming the texture-flush GS state block (vu1GsRegsTexFlush, 0x1DEE00, 12 words, renamed from D_001DEE00): [0x30000003, 0x1DEE00, 0, 0x50000003] at vu1ChainHead, head+4 stored via the GPREL alias vu1ChainHeadStore in the jr delay slot. Byte-identical to VU1_gsRegsNormal except the address low word (addiu -0x1200 vs -0x1C40). Same double-volatile .data head + -mno-split-addresses + zero-byte asm-barrier pinned 0x1E0000/-0x1200 signed split as the gsRegs family. 7 callers, all texture/geometry draw builders (SetupGifPaging, DrawTfrag, DmaTieTextures, moby/shrub/sky/vendor). See notes/vuchain_VU1_texFlush__Fv.md."
   }
 }

@@ -1,0 +1,25 @@
+glabel VU1_texFlush__Fv
+    /* 134AE8 00233B68 1600043C */  lui        $4, %hi(vu1ChainHead)
+    /* 134AEC 00233B6C 000F848C */  lw         $4, %lo(vu1ChainHead)($4)
+    /* 134AF0 00233B70 0030023C */  lui        $2, (0x30000003 >> 16)
+    /* 134AF4 00233B74 03004234 */  ori        $2, $2, (0x30000003 & 0xFFFF)
+    /* 134AF8 00233B78 1E00033C */  lui        $3, %hi(D_001DEE00)
+    /* 134AFC 00233B7C 000082AC */  sw         $2, 0x0($4)
+    /* 134B00 00233B80 00EE6324 */  addiu      $3, $3, %lo(D_001DEE00)
+    /* 134B04 00233B84 0050043C */  lui        $4, (0x50000003 >> 16)
+    /* 134B08 00233B88 1600053C */  lui        $5, %hi(vu1ChainHead)
+    /* 134B0C 00233B8C 000FA58C */  lw         $5, %lo(vu1ChainHead)($5)
+    /* 134B10 00233B90 03008434 */  ori        $4, $4, (0x50000003 & 0xFFFF)
+    /* 134B14 00233B94 0400A3AC */  sw         $3, 0x4($5)
+    /* 134B18 00233B98 1600023C */  lui        $2, %hi(vu1ChainHead)
+    /* 134B1C 00233B9C 000F428C */  lw         $2, %lo(vu1ChainHead)($2)
+    /* 134B20 00233BA0 080040AC */  sw         $0, 0x8($2)
+    /* 134B24 00233BA4 1600033C */  lui        $3, %hi(vu1ChainHead)
+    /* 134B28 00233BA8 000F638C */  lw         $3, %lo(vu1ChainHead)($3)
+    /* 134B2C 00233BAC 0C0064AC */  sw         $4, 0xC($3)
+    /* 134B30 00233BB0 1600023C */  lui        $2, %hi(vu1ChainHead)
+    /* 134B34 00233BB4 000F428C */  lw         $2, %lo(vu1ChainHead)($2)
+    /* 134B38 00233BB8 10004224 */  addiu      $2, $2, 0x10
+    /* 134B3C 00233BBC 0800E003 */  jr         $31
+    /* 134B40 00233BC0 00A382AF */   sw        $2, -0x5D00($28)
+endlabel VU1_texFlush__Fv
