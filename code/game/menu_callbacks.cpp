@@ -26,7 +26,10 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/menu_callbacks", func_00208840);
 // jump table entry.
 extern "C" void menu_restoreSelection(void) {
     MenuState* menu = &menuStateData;
-    *(int*)0x15EEB0 = 3;
+    // Constant-address cast required: a symbolic store through
+    // menuPostCallbackIndex schedules the high-16 split separately (base $a1)
+    // and cannot reproduce the original interleaved li v1 / lui at / sw v1.
+    *(int*)MENU_POST_CALLBACK_INDEX_ADDRESS = 3;
     register int selected asm("$4");
     selected = menu->saved;
     menu->selected = selected;

@@ -67,3 +67,30 @@ Makefile's top-level header dependencies.
 - `make clean && make split && make -j2` passes.
 - `cmp build/boot_elf.elf assets/boot_elf.elf` passes.
 - Nonmatching count changed from 762 to 761.
+
+## 2026-09-16 refactor check: named store is not achievable
+
+The refactor entry `menu_callbacks_menu_restoreSelection__Fv` proposed storing
+through the named `menuPostCallbackIndex` symbol and dropping the
+`MENU_POST_CALLBACK_INDEX_ADDRESS` define. Probed under the current SN
+pipeline with the TU's flags and every nearby variant; none match:
+
+| form | result |
+| --- | --- |
+| `menuPostCallbackIndex = 3;` (`-fno-schedule-insns2`) | EGC emits `lui $5,%hi(...)` as a separately scheduled RTL (hoisted to the top, base `$a1` instead of `$at`); 5-word schedule diff |
+| same + `-mno-split-addresses` | the `menuStateData` base becomes an unsplittable `la` pseudo, so `li v1,3` can no longer interleave between the base's `lui`/`addiu`; store pseudo expands in place after the `lw` |
+| `-fno-schedule-insns` (pass 1 off) | hi-split lands in `$v0` at the very top; base registers swapped |
+| `-fno-schedule-insns -fno-schedule-insns2` (unscheduled) | base fully computed before the index hi; tail store order flipped |
+| `*(int*)&menuPostCallbackIndex = 3;` | folds to the same symbol-store RTL as the plain named store |
+| `*(int*)menuPostCallbackIndex = 3;` (STYLEGUIDE literal) | miscompiles: loads the symbol's VALUE and stores 3 through it |
+
+The original interleaves `li v1,3` between the `menuStateData` base's
+`lui`/`addiu` and keeps the store as an in-place `lui at,0x16; sw v1,-0x1150(at)`
+pair; only the constant-address cast pseudo (`sw $3,1437360`, expanded by
+ps2eeas in place) reproduces that. The cast is therefore a required codegen
+artifact here, the same menu-family pattern as 0x208E68/90/ED8/F00/EB8 (see
+menu_func_00208E68.md). The sibling 0x2089A8 (menu_post_selectNextPage) and
+0x208EB8 (menu_post_openGadgets) were re-probed the same way and need the cast
+too, so `MENU_POST_CALLBACK_INDEX_ADDRESS` stays and now names the literal in
+this function as well (was a bare `0x15EEB0` cast).
+`make clean && make split && make -j2` + `cmp` pass after the change.
