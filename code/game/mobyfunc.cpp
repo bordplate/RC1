@@ -159,7 +159,17 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DrawMobysCleanUp);
 extern int D_0018A2D8[];
 // Moby animation chain head: DrawMobysSetup copies the D_0015F638 chain head
 // here and MobyProc's return value is stored back here.
-extern int D_0015FF14;
+extern int mobyAnimHead;
+// Base of the 0x100-byte MobyInstance array; InitMobyInstance derives the
+// instance index as (instance - base) >> 8 and MobyProc indexes it the same
+// way. The boot-ELF writers are level code, so this value is only read here.
+extern int mobyInstanceBase;
+// Same object as vu1ChainHead (vuchain.cpp), declared plain so the head
+// value is read as an int for the overflow check below.
+extern int vu1ChainHead;
+// VU1 chain overflow limit for this frame's moby packets; DrawMobysSetup
+// writes D_0015F63C - 0x10000 here before the check.
+extern int vu1ChainLimit;
 // C linkage: MobyProc is a handwritten assembly entry point referenced by the
 // generated assembly in this file; the linker pins it at 0x00211808.
 extern "C" int MobyProc(int, int, int, int);
@@ -170,27 +180,14 @@ void DrawMobysSetup();
 // C linkage: the original symbol is unmangled in the boot ELF.
 extern "C" void DrawMobysCleanUp();
 
-// EGC codegen exception: the value loads at these in-window addresses must be
-// constant-address casts. Named references (scalar GPREL16 or two-register
-// base-$v0 loads) do not reproduce the original's self-based `lui r;
-// lw r,off(r)` pairs (see notes/mobyfunc_ProcessMobyAnimData__Fv.md). The
-// addresses are the linker symbols D_0015FF14 / D_0015FF18 (build/data/
-// lit.lit4.s), vu1ChainHead (0x160F00) and its limit slot 0x160F08.
-enum {
-    MOBY_ANIM_HEAD_ADDR = 0x0015FF14,
-    MOBY_ANIM_DATA_ADDR = 0x0015FF18,
-    VU1_CHAIN_HEAD_ADDR = 0x00160F00,
-    VU1_CHAIN_LIMIT_ADDR = 0x00160F08,
-};
-
 // C linkage: the original symbol is unmangled.
 extern "C" void DrawMobys() {
     DrawMobysSetup();
     if (D_0018A2D8[0] != 0) {
         InitMobyClassDists();
-        int ret = MobyProc(*(int*)MOBY_ANIM_DATA_ADDR, *(int*)MOBY_ANIM_HEAD_ADDR, -1, 1);
-        D_0015FF14 = ret;
-        if (*(int*)VU1_CHAIN_HEAD_ADDR > *(int*)VU1_CHAIN_LIMIT_ADDR)
+        int ret = MobyProc(mobyInstanceBase, mobyAnimHead, -1, 1);
+        mobyAnimHead = ret;
+        if (vu1ChainHead > vu1ChainLimit)
             STUB_printf(vuChainOverflowMessage);
     }
     DrawMobysCleanUp();

@@ -1,15 +1,5 @@
 [
   {
-    "id": "mobyfunc_DrawMobys",
-    "file": "code/game/mobyfunc.cpp",
-    "function": "DrawMobys",
-    "addresses": ["0x0015FF14", "0x0015FF18", "0x00160F00", "0x00160F08"],
-    "category": "sn-symbolic-migration",
-    "description": "Uses an anonymous enum of raw addresses (MOBY_ANIM_HEAD_ADDR, MOBY_ANIM_DATA_ADDR, VU1_CHAIN_HEAD_ADDR, VU1_CHAIN_LIMIT_ADDR) plus constant-address casts to reproduce GNU-era load shapes. The verified SN symbolic form (named externs, no casts) matches byte-for-byte, so the enum and the 'EGC codegen exception' comment are obsolete under the current SN pipeline. Replace with named references; add symbols.txt entries for 0x0015FF14/0x0015FF18 and the 0x00160F08 limit slot (vu1ChainHead = 0x00160F00 already exists). Verify with the per-function diff and full parity before committing.",
-    "evidence": "decomp_state/probes/symbolic_addresses/draw.cpp; decomp_state/notes/sn_toolchain_assemblers.md",
-    "status": "open"
-  },
-  {
     "id": "mobyfunc_ProcessMobyAnimData__Fv",
     "file": "code/game/mobyfunc.cpp",
     "function": "ProcessMobyAnimData__Fv",
