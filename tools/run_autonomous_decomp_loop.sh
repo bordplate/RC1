@@ -100,7 +100,7 @@ if [[ "${1:-}" == "--check-only" ]]; then
     exit 0
 fi
 
-prompt='Continue the autonomous RC1 matching decompilation. Review AGENTS.md and existing decomp_state notes, select exactly one useful function, use Ghidra MCP and local build/diff tools, make progress, verify the function mechanically, run the full build/parity check, commit only that verified function and its intended state note, and update notes. Do not commit a function unless its object/assembly output matches and cmp build/boot_elf.elf assets/boot_elf.elf passes.'
+prompt='Continue the autonomous RC1 matching decompilation. Review AGENTS.md and existing decomp_state notes. Select exactly one target in the AGENTS.md priority order: the first open entry in decomp_state/refactor.json (apply its documented parity-preserving refactor and clear the entry when verified) before falling back to the next nonmatching INCLUDE_ASM in decomp_state/queue.json. If you encounter code that violates STYLEGUIDE.md or the code-formatting rules (hardcoded data addresses, magic numbers, stale workarounds), record it in decomp_state/refactor.json. Use Ghidra MCP and local build/diff tools, make progress, verify the target mechanically, run the full build/parity check, commit only that verified target and its intended state note, and update notes. Do not commit a function unless its object/assembly output matches and cmp build/boot_elf.elf assets/boot_elf.elf passes.'
 iteration=0
 
 while true; do
