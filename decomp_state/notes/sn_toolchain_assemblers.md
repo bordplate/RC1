@@ -174,6 +174,19 @@ emits, GNU as accepts it too, and both assemblers then produce the original
 was re-verified after the edit, and the SN `menu.o` links to a byte-for-byte
 boot ELF. No generated words are patched.
 
+The per-function diff used for this (and for future TU migrations) is
+`tools/tu_assembler_diff.py`: compile the TU with the candidate assembler
+(`make probe ASSEMBLER=snas PROBE_SOURCE=... PROBE_OUT=...`), swap the
+object into `build/`, run the link step, then diff the linked candidate
+against the original:
+
+```sh
+python3 tools/tu_assembler_diff.py build/code/game/menu.o build/boot_elf.elf
+```
+
+It exits non-zero while any function differs, printing the differing word
+offsets per function.
+
 Verification: `make clean && make split && make -j2`, followed by
 `cmp build/boot_elf.elf assets/boot_elf.elf`, passes with these defaults.
 This covers existing INCLUDE_ASM blocks, section layout, and all existing

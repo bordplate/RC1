@@ -110,7 +110,9 @@ a load: seed the declaration in-function with
 `asm volatile(".extern sym, N");` before the reference (duplicate
 end-of-file `.extern` is accepted by both assemblers). menu.cpp migrated to
 SN this way (menu_isSelectionCountZero__Fv); see
-decomp_state/notes/sn_toolchain_assemblers.md.
+decomp_state/notes/sn_toolchain_assemblers.md. To enumerate which functions
+in a TU mismatch under a candidate assembler, use
+`tools/tu_assembler_diff.py <obj> <linked-candidate-elf>`.
 
 The compiler classifies small data by declaration size/section, not eventual
 RAM address. Extern-only `.sdata` declarations did not force the historical
