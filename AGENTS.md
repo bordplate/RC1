@@ -384,8 +384,49 @@ stack args (see decomp_state/notes/989snd_snd_PlaySoundVolPanPMPB.md).
 - `queue.json` contains the enumerated targets.
 - `matched.json` may record durable matched-function notes.
 - `blocked.json` maps target IDs to concrete blocker notes.
+- `refactor.json` contains already-matched functions that still need
+  refactoring (see the Refactor Registry section).
 - `attempts/` stores optional per-attempt records.
 - `notes/` stores investigation and strategy notes.
+
+## Refactor Registry
+
+`decomp_state/refactor.json` is a list of entries for code that already
+matches the boot ELF but does not yet follow STYLEGUIDE.md or this
+document's code-formatting instructions. Each entry is a JSON object:
+
+```json
+{
+  "id": "filestem_FunctionName",
+  "file": "code/path.cpp",
+  "function": "mangledOrFunctionName",
+  "addresses": ["0x15F600"],
+  "category": "hardcoded-data-address | sn-symbolic-migration | style",
+  "description": "what is wrong and what the fix must preserve",
+  "evidence": "notes/probes/symbols referenced",
+  "status": "open"
+}
+```
+
+Add an entry whenever you encounter, decompile, or touch a function that
+violates the style rules — in particular:
+
+- hardcoded/static data addresses (constant-address casts, address-holding
+  enums or `#define`s) where the global should be named in
+  `config/symbols.txt`;
+- magic numbers that should be named constants;
+- address-based placeholder names (`D_XXXXXX`, `func_XXXXXX`) that the
+  investigation has resolved to a real name;
+- GNU-era workarounds that the current SN pipeline no longer needs (stale
+  "EGC codegen exception" comments, obsolete enum casts);
+- any other formatting deviation from STYLEGUIDE.md.
+
+If a function already has an open entry, update that entry instead of
+duplicating it. Fixing the function and committing the verified refactor
+clears the entry (remove it or set `"status": "done"` with a date). Do not
+keep a refactor entry for a function whose deviation is a documented,
+required codegen artifact (e.g. an EGC high-16 split page) — those stay as
+documented constants with an explanatory comment.
 
 The status tool enumerates source files directly, so stale queue entries cannot
 make the project appear complete. Every blocked target must have a non-empty
@@ -576,9 +617,28 @@ decomp_state/notes/vuchain_VU1_gsRegsNormal__Fv.md.
   related cross-file declaration, global, struct, linkage, or alias changes
   required by that target.
 
+## Target Selection
+
+Select targets in this priority order:
+
+1. `decomp_state/refactor.json` (first `open` entry): the refactor is already
+   scoped, the function already matches, and the change is a controlled
+   parity-preserving edit. Apply the entry's described change, rebuild the
+   affected object(s), run the per-function diff (`tools/tu_assembler_diff.py`
+   or the generated-assembly comparison) and the full boot ELF comparison,
+   then clear the entry and commit.
+2. `decomp_state/queue.json` (next nonmatching `INCLUDE_ASM`): a fresh
+   decompilation following the Function Workflow below.
+
+Only pick a new `queue.json` function while `refactor.json` has no open
+entries. A refactor entry that turns out to be unsafe under the current
+pipeline (the named form cannot match) is not a blocker for the project:
+record why in the entry, restore the original source, and move on.
+
 For each selected function:
 
-1. Find its nonmatching `INCLUDE_ASM` placeholder.
+1. Locate the target in source: its nonmatching `INCLUDE_ASM` placeholder for
+   a queue function, or the existing C/C++ body for a refactor entry.
 2. Read the corresponding generated assembly.
 3. Use headless Ghidra MCP for decompiler output, signature, xrefs, globals,
    callers, callees, and nearby functions. Find out what the function does and give it a name accordingly.
@@ -597,8 +657,11 @@ For each selected function:
     the last-resort result or failed invocation.
 12. Run the full build/parity check before treating progress as durable.
 13. Make sure the decompiled function and its related changes adhere to
-       STYLEGUIDE.md, then invoke the `decomp-verifier` subagent to verify the
-       quality of the decomp.
+       STYLEGUIDE.md. If any touched code (or newly discovered code) violates
+       the style or formatting rules, add or update the corresponding
+       `decomp_state/refactor.json` entry (see Refactor Registry) instead of
+       leaving it or deferring it to an unnamed TODO. Then invoke the
+       `decomp-verifier` subagent to verify the quality of the decomp.
 14. Send the status push notification (see Mobile Status Notification).
 
 The resulting binary MUST match byte-for-byte. You can not just match intent, behavior, 

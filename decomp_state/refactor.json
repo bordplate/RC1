@@ -1,0 +1,132 @@
+[
+  {
+    "id": "mobyfunc_DrawMobys",
+    "file": "code/game/mobyfunc.cpp",
+    "function": "DrawMobys",
+    "addresses": ["0x0015FF14", "0x0015FF18", "0x00160F00", "0x00160F08"],
+    "category": "sn-symbolic-migration",
+    "description": "Uses an anonymous enum of raw addresses (MOBY_ANIM_HEAD_ADDR, MOBY_ANIM_DATA_ADDR, VU1_CHAIN_HEAD_ADDR, VU1_CHAIN_LIMIT_ADDR) plus constant-address casts to reproduce GNU-era load shapes. The verified SN symbolic form (named externs, no casts) matches byte-for-byte, so the enum and the 'EGC codegen exception' comment are obsolete under the current SN pipeline. Replace with named references; add symbols.txt entries for 0x0015FF14/0x0015FF18 and the 0x00160F08 limit slot (vu1ChainHead = 0x00160F00 already exists). Verify with the per-function diff and full parity before committing.",
+    "evidence": "decomp_state/probes/symbolic_addresses/draw.cpp; decomp_state/notes/sn_toolchain_assemblers.md",
+    "status": "open"
+  },
+  {
+    "id": "mobyfunc_ProcessMobyAnimData__Fv",
+    "file": "code/game/mobyfunc.cpp",
+    "function": "ProcessMobyAnimData__Fv",
+    "addresses": ["0x0015F638"],
+    "category": "sn-symbolic-migration",
+    "description": "Uses enum { MOBY_ANIM_CHAIN_ADDRESS = 0x0015F638 } and a *(int**) cast because a named load mis-allocated under GNU assembly. The verified SN symbolic form (extern int* D_0015F638; passed directly to MobyAnimProc) matches byte-for-byte, making the enum and the 'EGC codegen exception' comment obsolete under the current SN pipeline. Replace the cast with the named pointer (D_0015F638 is already in symbols.txt; D_0015F63C is already declared). The 0x70003800 DMC destination stays a documented hardware constant. Verify with the per-function diff and full parity before committing.",
+    "evidence": "decomp_state/probes/symbolic_addresses/process.cpp; decomp_state/notes/sn_toolchain_assemblers.md",
+    "status": "open"
+  },
+  {
+    "id": "menu_callbacks_menu_restoreSelection__Fv",
+    "file": "code/game/menu_callbacks.cpp",
+    "function": "menu_restoreSelection__Fv",
+    "addresses": ["0x15EEB0"],
+    "category": "hardcoded-data-address",
+    "description": "menu.h:21 defines MENU_POST_CALLBACK_INDEX_ADDRESS 0x15EEB0 (unused) and this function stores through *(int*)0x15EEB0 = 3; instead of the existing named symbol menuPostCallbackIndex (menu.h, .data section). Sibling menu TUs already use the named symbol, and menu_post_mid.cpp needed a GP alias (menuPostCallbackIndexGp) for the same address, so the TU's -fno-schedule-insns2 flag must be respected when switching. Replace the cast with the named store, drop the #define, and verify parity for the whole menu segment.",
+    "evidence": "config/symbols.txt (menuPostCallbackIndex = 0x0015EEB0); code/game/menu_post_mid.cpp:22-37",
+    "status": "open"
+  },
+  {
+    "id": "movie_disp_endDisplay__Fv",
+    "file": "code/game/movie/disp.cpp",
+    "function": "endDisplay__Fv",
+    "addresses": ["0x1611E0"],
+    "category": "hardcoded-data-address",
+    "description": "Zeroes *(int*)0x1611E0 through a raw constant-address cast; the global has no symbol yet. Identify its meaning (movie display/decode state flag written by startDisplay__Fi family), add a named symbol in config/symbols.txt, and store through it while preserving the original store shape (this function historically needed the constant-cast form; re-verify under the current SN pipeline).",
+    "evidence": "code/game/movie/disp.cpp:12",
+    "status": "open"
+  },
+  {
+    "id": "movie_videodec_mpegNodata",
+    "file": "code/game/movie/videodec.cpp",
+    "function": "mpegNodata",
+    "addresses": ["0x16120C"],
+    "category": "hardcoded-data-address",
+    "description": "Reads *(int*)0x16120C + 0xD9090 through a raw cast even though movieDecodeBuf = 0x0016120C already exists in symbols.txt and is used by the movie_mid/movie_post_audio TUs. Load through the named symbol (check the TU's address-splitting flag: -mno-split-addresses TUs expect the named form), keep the 0xD9090 offset arithmetic explicit, and verify parity.",
+    "evidence": "config/symbols.txt (movieDecodeBuf = 0x0016120C); decomp_state/notes/movie_isAudioOK.md",
+    "status": "open"
+  },
+  {
+    "id": "bloaders_LoadDebugFont__Fv",
+    "file": "code/game/bloaders.cpp",
+    "function": "LoadDebugFont__Fv",
+    "addresses": ["0x15EE88", "0x15EEC8"],
+    "category": "hardcoded-data-address",
+    "description": "Reads *(u32*)0x15EE88 (PifAsPSMT8H destination base) and writes *(u64*)0x15EEC8 through raw constant-address casts; neither address has a symbol. Name both globals in config/symbols.txt, reference them symbolically, and verify the load/store shapes survive (the u64 store is a quadword through the pointer, so keep the same declaration width).",
+    "evidence": "code/game/bloaders.cpp:25-26",
+    "status": "open"
+  },
+  {
+    "id": "space_space_beginLoad__Fi",
+    "file": "code/game/space.cpp",
+    "function": "space_beginLoad__Fi",
+    "addresses": ["0x15F600", "0x15F618"],
+    "category": "hardcoded-data-address",
+    "description": "Stores the load id and a pending flag through *(int*)0x15F600 / *(int*)0x15F618 raw casts; neither address has a symbol. The adjacent named symbol spaceLoadPending covers the third store. Identify the two globals (space-load bookkeeping), name them in config/symbols.txt, and verify the constant-store tail shape (see the EGC constant-store permutation notes).",
+    "evidence": "code/game/space.cpp:12-14",
+    "status": "open"
+  },
+  {
+    "id": "draw_AddDrawCallback__Fuu",
+    "file": "code/game/draw.cpp",
+    "function": "AddDrawCallback__Fuu",
+    "addresses": ["0x15F464"],
+    "category": "hardcoded-data-address",
+    "description": "Loads/stores the callback-list counter through *(int*)0x15F464 raw casts although drawCallbackCount = 0x0015F464 exists in symbols.txt; the in-source comment explains the cast as a GNU-era two-register-load workaround. draw.o is still one of the five GNU compatibility TUs, so either refactor under GNU and verify, or fold this into the draw.cpp SN migration and use the named symbol. Keep the three-counter family (0x15F464/68/6C) consistently named.",
+    "evidence": "config/symbols.txt (drawCallbackCount = 0x0015F464); code/game/draw.cpp:170-174",
+    "status": "open"
+  },
+  {
+    "id": "actuator_texResetCursor__Fv",
+    "file": "code/game/actuator.cpp",
+    "function": "texResetCursor__Fv",
+    "addresses": ["0x15EE8C", "0x15EF20"],
+    "category": "hardcoded-data-address",
+    "description": "textureCursor = *(int*)0x15EE8C; and *(int*)0x15EF20 = 0; use raw constant-address casts; neither address has a symbol. Name both globals in config/symbols.txt (the texture-cursor source slot and the cursor-reset flag), reference them, and verify the two-store tail shape under the TU's current flags.",
+    "evidence": "code/game/actuator.cpp:12-13",
+    "status": "open"
+  },
+  {
+    "id": "pause_post_SetPauseActionList",
+    "file": "code/game/pause_post.cpp",
+    "function": "SetPauseActionList",
+    "addresses": ["0x15EE90"],
+    "category": "hardcoded-data-address",
+    "description": "Selects between pauseActionListA/pauseActionListB via if (*(int*)0x15EE90 != 0); the gate global has no symbol. Identify it (pause action-list mode selector), name it in config/symbols.txt, and verify the conditional store shapes match.",
+    "evidence": "code/game/pause_post.cpp:29",
+    "status": "open"
+  },
+  {
+    "id": "pause_post_pause_updateSoundVolume__Fv",
+    "file": "code/game/pause_post.cpp",
+    "function": "pause_updateSoundVolume__Fv",
+    "addresses": ["0x15EDF0"],
+    "category": "hardcoded-data-address",
+    "description": "pauseSoundVolume = *(int*)0x15EDF0 * 8 / 10; reads the raw menu sound option through a constant-address cast; 0x15EDF0 has no symbol. Name the global in config/symbols.txt and verify the load/scale/store sequence matches.",
+    "evidence": "code/game/pause_post.cpp:122",
+    "status": "open"
+  },
+  {
+    "id": "pause_sched_pause_scheduleInput__Fv",
+    "file": "code/game/pause_sched.cpp",
+    "function": "pause_scheduleInput__Fv",
+    "addresses": ["0x15F604"],
+    "category": "hardcoded-data-address",
+    "description": "Stores the pinned mode value through *(u32*)0x15F604 = mode; although GameMode = 0x15f604 already exists in symbols.txt (currently unused by source). Store through the named symbol while preserving the register-pinned ($5) constant-store shape, and drop the raw cast.",
+    "evidence": "config/symbols.txt (GameMode = 0x15f604); code/game/pause_sched.cpp:23",
+    "status": "open"
+  },
+  {
+    "id": "vuchain_vuChain_getCurrent__Fv",
+    "file": "code/game/vuchain.cpp",
+    "function": "vuChain_getCurrent__Fv",
+    "addresses": ["0x15ED84"],
+    "category": "hardcoded-data-address",
+    "description": "Reads the VU chain table index through int index = *(int*)0x15ED84; a raw constant-address cast with no symbol. vuchain.o already uses -mno-split-addresses and the rest of the file is fully symbolic, so name the index global in config/symbols.txt, load it symbolically, and verify (the TU flag may make the named form the natural match).",
+    "evidence": "code/game/vuchain.cpp:10",
+    "status": "open"
+  }
+]
