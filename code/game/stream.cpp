@@ -85,7 +85,34 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216A80);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216AD0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216B28);
+// VAG track buffer flag states (s16 at +0xA of the buffer): queued for
+// playback, promoted to ready once the sound system reports the buffer
+// active.
+#define VAG_BUFFER_FLAG_QUEUED 1
+#define VAG_BUFFER_FLAG_READY 8
+
+// VAG buffer state callback passed to snd_PlayVAGStreamByLocEx_CB by
+// music_StartTrack: the sound system reports each track buffer's state.
+// The state is always recorded on the buffer; a nonzero state promotes a
+// queued buffer to ready, a cleared state resets the flag to 0.
+// Symbol override: music_StartTrack (still assembly) loads the callback by
+// its address-based generated label.
+void stream_setVagBufferState(int state, long buffer) asm("func_00216B28");
+
+void stream_setVagBufferState(int state, long buffer) {
+    int p = (int)buffer;
+    if (p) {
+        *(int*)p = state;
+        if (state) {
+            if (*(s16*)(p + 0xA) == VAG_BUFFER_FLAG_QUEUED) {
+                *(s16*)(p + 0xA) = VAG_BUFFER_FLAG_READY;
+                return;
+            }
+        } else {
+            *(s16*)(p + 0xA) = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216B68);
 

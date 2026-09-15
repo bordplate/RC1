@@ -1850,5 +1850,14 @@
     "size": 48,
     "matched_date": "2026-09-15",
     "note": "Video-decoder callback that stops the movie video ViBuf DMA, stop counterpart of mpegRestartVideoDMA. Needs -mno-split-addresses (moved to videodec_post.cpp via Splat boundary at 0x13e060) so the movieDecodeBuf load stays a single self-based pseudo hoisted before the prologue. asm label func_0023D0E0 for unmangled symbol."
+  },
+  "code/game/stream.cpp:25:func_00216B28": {
+    "name": "stream_setVagBufferState",
+    "original_name": "func_00216B28",
+    "source": "code/game/stream.cpp",
+    "vram": "0x00216B28",
+    "size": 60,
+    "matched_date": "2026-09-15",
+    "note": "VAG buffer state callback passed by music_StartTrack to snd_PlayVAGStreamByLocEx_CB. The state store is unconditional inside if(p) (it lands in the beqz-state delay slot, so it must NOT be nested in if(state) - nesting it is a 2-word diff); nonzero state promotes flag VAG_BUFFER_FLAG_QUEUED(1) to READY(8) with an explicit return that EGC compiles to the terminating jr $ra (no explicit return emits a forward b out instead); zero state resets the flag to 0. No frame (call-free). asm label func_00216B28 for the address-based callback reference. See notes/stream_func_00216B28.md."
   }
 }

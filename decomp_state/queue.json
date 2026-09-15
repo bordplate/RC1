@@ -6493,7 +6493,7 @@
     "line": 25,
     "asm": "code/_generated/nonmatchings/game/stream/func_00216B28.s",
     "name": "func_00216B28",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/stream.cpp:27:func_00216B68",
