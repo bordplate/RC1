@@ -1,15 +1,5 @@
 [
   {
-    "id": "mobyfunc_ProcessMobyAnimData__Fv",
-    "file": "code/game/mobyfunc.cpp",
-    "function": "ProcessMobyAnimData__Fv",
-    "addresses": ["0x0015F638"],
-    "category": "sn-symbolic-migration",
-    "description": "Uses enum { MOBY_ANIM_CHAIN_ADDRESS = 0x0015F638 } and a *(int**) cast because a named load mis-allocated under GNU assembly. The verified SN symbolic form (extern int* D_0015F638; passed directly to MobyAnimProc) matches byte-for-byte, making the enum and the 'EGC codegen exception' comment obsolete under the current SN pipeline. Replace the cast with the named pointer (D_0015F638 is already in symbols.txt; D_0015F63C is already declared). The 0x70003800 DMC destination stays a documented hardware constant. Verify with the per-function diff and full parity before committing.",
-    "evidence": "decomp_state/probes/symbolic_addresses/process.cpp; decomp_state/notes/sn_toolchain_assemblers.md",
-    "status": "open"
-  },
-  {
     "id": "menu_callbacks_menu_restoreSelection__Fv",
     "file": "code/game/menu_callbacks.cpp",
     "function": "menu_restoreSelection__Fv",

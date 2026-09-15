@@ -2,9 +2,12 @@
 
 The production 2.73a compiler with SN assembly (`-snas`) reproduces all 68
 bytes from ordinary scalar symbols. Both FastMemCopy argument order and the
-MobyAnimProc delay-slot load are preserved. The existing game source still
-uses its GNU-era constant-address workaround; both forms have been tested.
-See `symbolic_address_pipeline.md` for the assembler comparison.
+MobyAnimProc delay-slot load are preserved. As of 2026-09-15 the production
+source uses the verified symbolic form (`extern int* D_0015F638;` /
+`extern int* D_0015F63C;` passed directly to MobyAnimProc); the GNU-era
+`MOBY_ANIM_CHAIN_ADDRESS` enum and constant-address cast were removed after
+the clean-build `cmp` passed. See `symbolic_address_pipeline.md` for the
+assembler comparison.
 
 ## What it does
 
@@ -93,10 +96,11 @@ GPREL16 load hoisted from the delay slot up to 0x20D1D4):
   prototype was kept regardless because it is the true signature (see
   What it does).
 
-These experiments did not find a matching symbolic form with GNU as.
-The existing MOBY_ANIM_CHAIN_ADDRESS enum records that implementation's
-workaround. SN assembly reproduces both constraints from ordinary symbols;
-the GNU results do not establish a need for numeric RAM addresses.
+These experiments did not find a matching symbolic form with GNU as; the
+GNU-era workaround was the MOBY_ANIM_CHAIN_ADDRESS enum (removed 2026-09-15
+when the SN symbolic form moved into the production source). SN assembly
+reproduces both constraints from ordinary symbols; the GNU results do not
+establish a need for numeric RAM addresses.
 
 ## Verification
 
@@ -108,3 +112,11 @@ the GNU results do not establish a need for numeric RAM addresses.
 - Clean full `make clean && make split && make -j4` + `cmp
   build/boot_elf.elf assets/boot_elf.elf`: identical (decomp-verifier
   PASS, 2026-09-13). Count 706 -> 705.
+- Refactor (2026-09-15): production source switched from the
+  `MOBY_ANIM_CHAIN_ADDRESS` enum + `*(int**)` cast to `extern int*
+  D_0015F638;` passed directly to MobyAnimProc. Object relocs confirm the
+  original shape: R_MIPS_HI16/LO16 on D_0015F638 (self-based `lui a0;
+  lw a0`) and R_MIPS_GPREL16 on D_0015F63C in the jal delay slot. Clean
+  `make clean && make split && make -j2` + `cmp`: identical. The
+  decomp-verifier subagent could not run (usage limit reached); the
+  mechanical checks above were performed in the primary session instead.

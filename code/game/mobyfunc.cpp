@@ -108,28 +108,21 @@ extern "C" void MobyAnimProc(int* p1, int* p2);
 // data producer is not decompiled yet, so the address name is retained.
 extern u8 D_00165500[];
 
+// VU1 moby animation chain head cell; the writer (VU1_swapChain) is
+// unmatched, so the address name is retained.
+extern int* D_0015F638;
+
 // VU1 swap-chain slot pointer maintained by VU1_initChain / VU1_swapChain
 // (equals the chain head pointer minus 0x2000); the writers are unmatched,
 // so the address name is retained.
 extern int* D_0015F63C;
-
-// EGC codegen exception: loading the D_0015F638 symbol in any named form
-// (scalar or array, with or without .data, with or without
-// -mno-split-addresses) makes EGC allocate a separate base register and
-// reschedules the GPREL16 load, a 3-word diff against the original's
-// self-based `lui a0; lw a0` pair; -mno-split-addresses additionally flips
-// the FastMemCopy argument setup order in this function. Only a
-// constant-address load reproduces the original; the address is the linker
-// symbol D_0015F638 (see notes/mobyfunc_ProcessMobyAnimData__Fv.md for the
-// full probe record and the expert/last-resort escalations).
-enum { MOBY_ANIM_CHAIN_ADDRESS = 0x0015F638 };
 
 void ProcessMobyAnimData() {
     FlushCache(0);
     // 0x70003800 is a DMC destination constant with no original symbol; a
     // named symbol changes EGC's lui/ori setup order and breaks the match.
     FastMemCopy((void*)0x70003800, D_00165500, 0x800);
-    MobyAnimProc(*(int**)MOBY_ANIM_CHAIN_ADDRESS, D_0015F63C);
+    MobyAnimProc(D_0015F638, D_0015F63C);
 }
 
 void InitMobyClassDists() {
