@@ -1,4 +1,4 @@
-extern "C" unsigned int D_0015FD64;
+extern "C" unsigned int menuSelectionCount;
 extern "C" int gp_control(void) {
-    return D_0015FD64 < 1;
+    return menuSelectionCount < 1;
 }

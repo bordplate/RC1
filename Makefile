@@ -18,7 +18,9 @@ else
 	WINE := wine
 endif
 
-EEGCC = $(WINE) tools/cc/bin/ee-gcc.exe
+# Legacy SN/Wine includes can fail to open under concurrent compiler drivers.
+# Serialize the driver, while native cross-assembly stays parallel.
+EEGCC = python3 tools/run_ee_compiler.py $(WINE) tools/cc/bin/ee-gcc.exe
 CROSS = mipsel-linux-gnu
 #CROSS = mips64r5900el-ps2-elf
 
@@ -43,7 +45,25 @@ OBJS = $(SRC_S:code/%.s=$(OBJ_DIR)/%.o) \
 
 PRODG_DIR = tools/cc
 
-COMMON_COMPILE_FLAGS = -G8 -O2 -ffast-math -fno-exceptions -Wa,-EL -Wa,-Icode/include
+# SN handles symbolic memory macros differently from GNU as. The compiler
+# driver selects ps2eeas with -snas; GNU's -Wa,-EL/-I options are not accepted.
+SN_AS = $(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ps2eeas.exe
+ASSEMBLER ?= snas
+ifeq ($(ASSEMBLER),snas)
+ASSEMBLER_FLAGS = -snas
+else ifeq ($(ASSEMBLER),gnu)
+ASSEMBLER_FLAGS = -Wa,-EL -Wa,-Icode/include
+else
+$(error ASSEMBLER must be snas or gnu)
+endif
+COMMON_COMPILE_FLAGS = -G8 -O2 -ffast-math -fno-exceptions $(ASSEMBLER_FLAGS)
+
+.PHONY: setup-snas
+setup-snas:
+	python3 tools/install_sn_assembler.py --dest $(SN_AS)
+
+$(SN_AS):
+	python3 tools/install_sn_assembler.py --dest $@
 
 # Verified against the full boot image; do not propagate into 989snd.
 $(OBJ_DIR)/game/menu.o $(OBJ_DIR)/game/menu_post_mid.o \
@@ -63,9 +83,17 @@ $(OBJ_DIR)/game/menu_callbacks.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns2
 $(OBJ_DIR)/game/pause_sched.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
 $(OBJ_DIR)/game/pause_post.o: PRIVATE_COMPILE_FLAGS = -G0
 
+# Existing source forms in these TUs rely on GNU macro expansion/scheduling.
+# Keep their assembler local until each source migration passes full parity.
+# See decomp_state/notes/sn_toolchain_assemblers.md for measured differences.
+$(OBJ_DIR)/989snd/ee/989snd.o $(OBJ_DIR)/game/draw.o \
+    $(OBJ_DIR)/game/hud.o $(OBJ_DIR)/game/menu.o \
+    $(OBJ_DIR)/game/mobyutil.o $(OBJ_DIR)/game/movie/vobuf.o: \
+    ASSEMBLER_FLAGS = -Wa,-EL -Wa,-Icode/include
+
 # Isolated experiments, never linked into the game. PROBE_FLAGS are appended.
 .PHONY: probe
-probe:
+probe: $(SN_AS)
 	@test -n "$(PROBE_SOURCE)" -a -n "$(PROBE_OUT)" || (echo 'Set PROBE_SOURCE and PROBE_OUT (without extension)'; exit 1)
 	@mkdir -p $(dir $(PROBE_OUT))
 	$(EEGCC) -S $(COMMON_COMPILE_FLAGS) $(PROBE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $(PROBE_SOURCE) -o $(PROBE_OUT).s
@@ -74,7 +102,7 @@ probe:
 all: $(TARGET)
 
 # Flag/header changes must not silently reuse objects from an older experiment.
-$(SRC_CPP:code/%.cpp=$(OBJ_DIR)/%.o) $(SRC_C:code/%.c=$(OBJ_DIR)/%.o): Makefile $(wildcard userconfig.mk code/include/*.h)
+$(SRC_CPP:code/%.cpp=$(OBJ_DIR)/%.o) $(SRC_C:code/%.c=$(OBJ_DIR)/%.o): Makefile tools/run_ee_compiler.py $(SN_AS) $(wildcard userconfig.mk code/include/*.h)
 
 .SECONDEXPANSION:
 

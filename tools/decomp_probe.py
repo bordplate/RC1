@@ -33,6 +33,8 @@ def main():
     parser.add_argument("reference", type=Path, help="generated original .s")
     parser.add_argument("symbol", help="candidate's linker symbol (check nm for C++)")
     parser.add_argument("--flags", default="", help="extra flags, e.g. --flags=-fno-schedule-insns")
+    parser.add_argument("--assembler", choices=("snas", "gnu"),
+                        help="override Makefile assembler for a comparison control")
     parser.add_argument("--define", action="append", default=[], metavar="NAME=ADDRESS",
                         help="verified experiment-only symbol address (repeatable)")
     parser.add_argument("--out", type=Path, required=True, help="experiment output directory")
@@ -57,8 +59,11 @@ def main():
     if original[offset:offset + len(expected)] != expected:
         parser.error("reference bytes disagree with original boot image")
     with base.with_suffix(".log").open("w") as log:
-        run(["make", "--no-print-directory", "probe", f"PROBE_SOURCE={args.source.resolve()}",
-             f"PROBE_OUT={base}", f"PROBE_FLAGS={args.flags}"], log)
+        command = ["make", "--no-print-directory", "probe", f"PROBE_SOURCE={args.source.resolve()}",
+                   f"PROBE_OUT={base}", f"PROBE_FLAGS={args.flags}"]
+        if args.assembler:
+            command.append(f"ASSEMBLER={args.assembler}")
+        run(command, log)
     symbols = {}
     for path in [ROOT / "config/symbols.txt", ROOT / "build/undefined_syms_auto.txt", ROOT / "build/undefined_funcs_auto.txt"]:
         for name, value in re.findall(r"^\s*(\w+)\s*=\s*(0x[0-9a-fA-F]+)\s*;", path.read_text(), re.M):
@@ -113,7 +118,7 @@ def main():
         if old != new:
             differences.append({"address": hex(address + index), "original": old.hex(), "candidate": new.hex()})
     result = {"source": str(args.source), "reference": str(args.reference), "symbol": args.symbol,
-              "flags": args.flags, "definitions": args.define,
+              "flags": args.flags, "assembler": args.assembler or "Makefile default", "definitions": args.define,
               "original_size": len(expected), "candidate_size": size,
               "source_sha256": hashlib.sha256(args.source.read_bytes()).hexdigest(),
               "original_sha256": hashlib.sha256(original).hexdigest(),

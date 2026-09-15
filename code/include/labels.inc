@@ -1,8 +1,8 @@
 # This file is used by the original compiler/assembler.
 # Defines the expected assembly macros.
 #
-# Compatibility notes (verified against both tools/cc/ee/bin/as.exe =
-# Ps2EeAs 1.9.25 and GNU as 2.9-ee):
+# Compatibility notes (verified with SN ps2eeas 1.8.19.316 in
+# tools/cc/lib/gcc-lib/ee/2.95.2/ and GNU as 2.9-ee):
 # - Labels are defined with `.equ label, .` instead of a `label:` line:
 #   Ps2EeAs mangles a macro argument that is the entire label
 #   (`\label:` assembles as the literal symbol `.label`).
