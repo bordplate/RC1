@@ -1851,6 +1851,15 @@
     "matched_date": "2026-09-15",
     "note": "Video-decoder callback that stops the movie video ViBuf DMA, stop counterpart of mpegRestartVideoDMA. Needs -mno-split-addresses (moved to videodec_post.cpp via Splat boundary at 0x13e060) so the movieDecodeBuf load stays a single self-based pseudo hoisted before the prologue. asm label func_0023D0E0 for unmangled symbol."
   },
+  "code/game/stream.cpp:84:func_00216A80": {
+    "name": "stream_setTransitionVagBufferState",
+    "original_name": "func_00216A80",
+    "source": "code/game/stream.cpp",
+    "vram": "0x00216A80",
+    "size": 76,
+    "matched_date": "2026-09-15",
+    "note": "VAG buffer state callback for a music transition (sibling of stream_setVagBufferState 0x216B28). Records state on the buffer; a nonzero state on a QUEUED(1) buffer promotes the flag to 4, a cleared state resets it to 0. GOTCHA: the flag store is UNCONDITIONAL once old==1 - in the original it sits in the DELAY SLOT of the '+0x10' beqz (beqz is not branch-likely, so it runs on both outcomes); only the musicTransition.field_0x20 = old store (in the jr delay slot) is gated on +0x10 nonzero. Nesting the flag store under the +0x10 test is a 4-byte miss (EGC then hoists the f10 load into the bne delay slot and loads the global base into v1 before the flag store). field_0x20 (= D_001516F0, musicTransition+0x20) is a new s16 field added to MusicTransState by splitting the pad. No frame (call-free). asm label func_00216A80 for the address-based callback reference. See notes/stream_func_00216A80.md."
+  },
   "code/game/stream.cpp:25:func_00216B28": {
     "name": "stream_setVagBufferState",
     "original_name": "func_00216B28",

@@ -5,7 +5,9 @@ typedef struct {
     u8 pad_0x08[0x08];
     s16 field_0x08;
     u8 field_0x0A;
-    u8 pad_0x0B[0x49];
+    u8 pad_0x0B[0x15];
+    s16 field_0x20;
+    u8 pad_0x22[0x32];
     s16 field_0x54;
     s16 field_0x56;
     s16 field_0x58;
@@ -79,17 +81,49 @@ void stream_setBufferState(int state, long buffer) {
     }
 }
 
+// VAG track-buffer field offsets (the buffer is a raw pointer the sound
+// system passes to each state callback): the flag at +0xA and an associated
+// entry at +0x10.
+#define VAG_BUFFER_OFF_FLAG 0xA
+#define VAG_BUFFER_OFF_0x10 0x10
+// VAG track buffer flag states (s16 at VAG_BUFFER_OFF_FLAG): which track path
+// owns the buffer - queued for playback, transition/start-body, or ready once
+// the sound system reports the buffer active.
+#define VAG_BUFFER_FLAG_QUEUED 1
+#define VAG_BUFFER_FLAG_TRANSITION 4
+#define VAG_BUFFER_FLAG_READY 8
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216A20);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216A80);
+// VAG buffer state callback for a music transition: the sound system reports
+// each track buffer's state. A nonzero state on a queued buffer promotes its
+// flag to VAG_BUFFER_FLAG_TRANSITION and, when the buffer carries a nonzero
+// entry (VAG_BUFFER_OFF_0x10), raises the transition's field_0x20; a cleared
+// state resets the flag to 0.
+// Symbol override: the still-assembly music dispatcher loads the callback by
+// its address-based generated label.
+void stream_setTransitionVagBufferState(int state, long buffer)
+    asm("func_00216A80");
+
+void stream_setTransitionVagBufferState(int state, long buffer) {
+    int p = (int)buffer;
+    if (p) {
+        *(int*)p = state;
+        if (state) {
+            s16 old = *(s16*)(p + VAG_BUFFER_OFF_FLAG);
+            if (old == VAG_BUFFER_FLAG_QUEUED) {
+                *(s16*)(p + VAG_BUFFER_OFF_FLAG) = VAG_BUFFER_FLAG_TRANSITION;
+                if (*(s16*)(p + VAG_BUFFER_OFF_0x10)) {
+                    musicTransition.field_0x20 = old;
+                }
+            }
+        } else {
+            *(s16*)(p + VAG_BUFFER_OFF_FLAG) = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216AD0);
-
-// VAG track buffer flag states (s16 at +0xA of the buffer): queued for
-// playback, promoted to ready once the sound system reports the buffer
-// active.
-#define VAG_BUFFER_FLAG_QUEUED 1
-#define VAG_BUFFER_FLAG_READY 8
 
 // VAG buffer state callback passed to snd_PlayVAGStreamByLocEx_CB by
 // music_StartTrack: the sound system reports each track buffer's state.
