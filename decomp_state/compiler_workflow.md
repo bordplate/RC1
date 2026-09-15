@@ -87,12 +87,26 @@ RPC positive/negative controls too:
 python -m unittest discover -s tools -p 'test_decomp_*.py'
 ```
 
-This now includes actual compiler/linker integration tests, not just Python
-unit tests. It requires the local toolchain, original asset, and a completed
+This includes SN symbolic-address and scheduling controls plus historical GNU
+GP/RPC controls. The latter use `--assembler=gnu` explicitly, matching their
+production TU compatibility overrides. Probe symbols use the current config names.
+The suite requires the local toolchain, original asset, and a completed
 split. A compilation error cannot count as a successful negative control;
 tests require a completed JSON diff with the expected number of differences.
 
 ## Diagnose The First Difference
+
+For symbolic global loads/stores, first read `notes/symbolic_address_pipeline.md`.
+Production defaults and default probes use SN `ps2eeas` 1.8.19.316 through
+`-snas`. Six current TUs retain explicit GNU assembly overrides; consult the
+Makefile and `notes/sn_toolchain_assemblers.md` when reproducing those functions.
+Ordinary scalar externs reproduce the absolute-load/GP-delay-slot combinations
+in DrawMobys and ProcessMobyAnimData. The compiler sees declaration sizes and
+sections, not eventual RAM addresses. Inspect assembly expansion before trying
+literal addresses, aliases, or `-mno-split-addresses` scheduling workarounds.
+Use `--assembler=gnu` with decomp_probe.py for explicit GNU comparison controls.
+Command-line overrides applied to production require a forced rebuild.
+`make setup-snas` installs/verifies the required SN binary.
 
 1. Check semantics before code generation. Decode instruction words as LE.
    `dsll32` means shift by 32+sa; `dsrl32` means shift right by 32+sa.
@@ -135,11 +149,12 @@ Get supported options from the actual local executables, not modern GCC docs:
 env WINEPREFIX="$PWD/tools/wineprefix" WINEDEBUG=-all tools/wine/bin/wine \
   tools/cc/lib/gcc-lib/ee/2.95.2/cc1plus.exe --help
 env WINEPREFIX="$PWD/tools/wineprefix" WINEDEBUG=-all tools/wine/bin/wine \
-  tools/cc/ee/bin/as.exe --help
+  tools/cc/lib/gcc-lib/ee/2.95.2/ps2eeas.exe --help
 ```
 
 Local versions: driver 2.9-ee-991111b/r4, C++ 2.95.2 SN BUILD v2.73a,
-assembler 2.9-ee-991111b. If an RTL dump is needed, use a standalone probe
+assembler SN 1.8.19.316 by default (GNU 2.9-ee-991111b for compatibility TUs).
+If an RTL dump is needed, use a standalone probe
 with `-da` (or selected `-d` passes); keep dump files out of game source.
 The build's `-v` output shows the actual driver, cc1plus and assembler commands.
 

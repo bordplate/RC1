@@ -1,5 +1,10 @@
 # DrawMobys (0x20D460, 0x80) — MATCHED 2026-09-14
 
+Ordinary symbolic scalar C++ matches all 128 bytes with the production
+2.73a compiler and SN assembler (`-snas`). The current game source retains
+its older numeric-address implementation, which also passes full-image parity.
+See `symbolic_address_pipeline.md` for the symbolic probe and relocation tests.
+
 Per-frame moby draw pass. It sets up the frame, and — if a global gate is set —
 reinitializes the moby class distance tables, advances the moby animation chain
 through the handwritten `MobyProc`, and reports a VU1-chain overflow if the chain
@@ -38,20 +43,17 @@ DrawMobysCleanUp();
   limit at `0x160F08`; on overflow a message is printed (see
   notes/vuchain_VU1_addDataRef__FPvi.md for the chain-head family).
 
-## Codegen (default flags, mobyfunc.o)
+## Codegen
 
-Four in-window VALUE loads must be constant-address casts. Named references
-(scalar → GPREL16, array → two-register base-$v0) do not reproduce the
-original's self-based `lui r; lw r,off(r)` pairs. Expressed as an `enum`
-constant per the ProcessMobyAnimData precedent (see
-notes/mobyfunc_ProcessMobyAnimData__Fv.md); the addresses are the linker
-symbols `D_0015FF14` / `D_0015FF18` (build/data/lit.lit4.s), `vu1ChainHead`
-(0x160F00) and its limit slot 0x160F08.
+SN expands ordinary scalar extern loads into the original self-based
+`lui r; lw r,off(r)` pairs for `D_0015FF14`, `D_0015FF18`, `vu1ChainHead`
+(0x160F00), and its limit slot 0x160F08. GNU as instead relaxes these extern
+loads to GP-relative instructions; numeric-address loads were used to work
+around that behavior in the existing source. They are not required by SN.
 
-The one store (`D_0015FF14 = ret`) is the opposite case: it needs a plain
-scalar `extern int` so EGC emits the GPREL16 `sw v0,-27884(gp)` the original
-uses in the `beqz` delay slot (a constant-cast store would be absolute
-`lui at; sw`).
+The same plain scalar extern also gives the original GPREL16 store
+`sw v0,-27884(gp)` in the `beqz` delay slot. SN handles both access forms
+without aliases or separate numeric load expressions.
 
 The head-vs-limit test is written `head > limit` (head first) so EGC's `slt`
 operand order (`slt v1,v1,a0` with head in $a0) matches; `limit < head` emits

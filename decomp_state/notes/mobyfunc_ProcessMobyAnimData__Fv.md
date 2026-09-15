@@ -1,5 +1,11 @@
 # ProcessMobyAnimData__Fv (0x0020D1A8, file 0x10E128, 0x44 bytes)
 
+The production 2.73a compiler with SN assembly (`-snas`) reproduces all 68
+bytes from ordinary scalar symbols. Both FastMemCopy argument order and the
+MobyAnimProc delay-slot load are preserved. The existing game source still
+uses its GNU-era constant-address workaround; both forms have been tested.
+See `symbolic_address_pipeline.md` for the assembler comparison.
+
 ## What it does
 
 Stages the VU1 moby animation data for the next frame:
@@ -25,7 +31,7 @@ MobyAnimProc(*(int**)MOBY_ANIM_CHAIN_ADDRESS, D_0015F63C);`
   D_0015F63C keeps its address name with an explanatory comment.
 - D_0015F638 (the chain head pointer cell, .lit, written by
   VU1_swapChain) is referenced via the MOBY_ANIM_CHAIN_ADDRESS constant
-  — see the codegen exception below. D_0015F638 is still pinned in
+  in the existing source. D_0015F638 is pinned in
   config/symbols.txt because the generated nonmatching asm
   (VU1_swapChain__Fv.s) references it by name.
 - 0x70003800 is a genuine DMC constant, matching the 0x70003A00 sibling
@@ -36,8 +42,8 @@ MobyAnimProc(*(int**)MOBY_ANIM_CHAIN_ADDRESS, D_0015F63C);`
 
 ## Codegen
 
-Three different address forms are required for the three data
-references:
+The symbolic probe uses an array for the buffer and scalar pointer externs
+for both MobyAnimProc arguments:
 
 - FastMemCopy p2 (D_00165500) must be the NAMED array extern
   `extern u8 D_00165500[];`. A constant cast `(u8*)0x165500` makes EGC
@@ -49,15 +55,14 @@ references:
   (declared `extern int* D_0015F63C;` — the value is a pointer), which
   gives the original GPREL16 load `lw a1,-30148(gp)` in the MobyAnimProc
   jal delay slot.
-- MobyAnimProc arg1 must be a CONSTANT-ADDRESS load of 0x15F638
-  (self-based `lui a0,0x16; lw a0,-2504(a0)`). MOBY_ANIM_CHAIN_ADDRESS is
-  the documented constant form of that address (the linker symbol
-  D_0015F638).
+- MobyAnimProc arg1 uses plain `extern int* D_0015F638;`. SN expands its
+  load to self-based `lui a0,0x16; lw a0,-2504(a0)` while leaving the second
+  argument GP-relative in the delay slot. No address-splitting flag is needed.
 
-### Codegen exception for 0x15F638 (full probe record, 2026-09-13)
+### GNU assembler source experiments (2026-09-13)
 
 A user review rejected the original `*(int*)0x15F638` literal cast, so
-every named-symbol form was probed (tools/decomp_probe.py, default flags
+the following named-symbol forms were probed (tools/decomp_probe.py, GNU flags
 unless noted; all results below are 3-word diffs at 0x20D1D0/D4/DC unless
 stated otherwise — base register $v0 instead of $a0, with the D_0015F63C
 GPREL16 load hoisted from the delay slot up to 0x20D1D4):
@@ -88,11 +93,10 @@ GPREL16 load hoisted from the delay slot up to 0x20D1D4):
   prototype was kept regardless because it is the true signature (see
   What it does).
 
-Conclusion: no named-symbol form or flag combination reproduces the
-original self-based load while keeping the FastMemCopy argument order in
-the same function; the constant-address load is the only matching form.
-The address is named via the MOBY_ANIM_CHAIN_ADDRESS enum constant with
-this explanation rather than a bare literal.
+These experiments did not find a matching symbolic form with GNU as.
+The existing MOBY_ANIM_CHAIN_ADDRESS enum records that implementation's
+workaround. SN assembly reproduces both constraints from ordinary symbols;
+the GNU results do not establish a need for numeric RAM addresses.
 
 ## Verification
 

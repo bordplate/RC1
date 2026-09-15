@@ -74,6 +74,36 @@ decomp_state/notes/snd_PrepareReturnBuffer.md).
 
 ## Local Toolchain
 
+Production C/C++ defaults and default probes use EEGCC 2.95.2 SN 2.73a with SN
+`ps2eeas.exe` 1.8.19.316, selected by `-snas`. Common flags are
+`-G8 -O2 -ffast-math -fno-exceptions -snas`. `make setup-snas` installs or
+verifies the assembler using pinned archive/binary SHA-256 hashes; make also
+installs it if missing. Do not pass GNU's `-Wa,-EL -Wa,-Icode/include` to SN.
+Standalone `.s` files still use the GNU cross-assembler. A clean split/build
+and full boot ELF comparison pass with six explicit GNU compatibility TUs:
+989snd.c, draw.cpp, hud.cpp, menu.cpp, mobyutil.cpp, and movie/vobuf.cpp.
+An all-SN build grows resident code into .core_data and changes existing
+game matches; retain the per-TU assembler overrides until source migrations
+pass full parity. Existing INCLUDE_ASM blocks are supported by SN.
+`tools/run_ee_compiler.py` serializes compiler-driver invocations: concurrent
+Wine/SN compiles intermittently fail to open the shared labels.inc. Native
+cross-assembly remains parallel; the wrapper preserves compiler exit status.
+
+Ordinary symbolic DrawMobys, ProcessMobyAnimData, and menu callback probes
+match exact original bytes. The same compiler assembly also matches with SN
+1.9.6.516 and 1.9.25.758, isolating the difference from GNU assembly. No
+postprocessor is used. Before RAM-address literals, enums, defines, load/store
+aliases, or no-split workarounds, read
+`decomp_state/notes/symbolic_address_pipeline.md` and
+`decomp_state/notes/sn_toolchain_assemblers.md`. The two VU research probes
+still fail; do not assume every scheduling problem is solved.
+
+The compiler classifies small data by declaration size/section, not eventual
+RAM address. Extern-only `.sdata` declarations did not force the historical
+GP controls to match with SN. Historical GP/RPC compiler controls use
+`--assembler=gnu` explicitly, matching their production TU overrides. All
+other default probes use SN. `$28` is GP; `$s0` is register 16.
+
 Before retrying a blocked function, follow `decomp_state/compiler_workflow.md`.
 It provides executable isolated probes, known-good/known-bad controls, and a
 decision tree. Historical blocker notes are hypotheses, not ground truth:
@@ -404,73 +434,23 @@ them. You can make new tools or scripts, or change the existing ones. Commit
 changes to tools in separate commits from decompiled functions. This is allowed
 at any time in your workflow.
 
-Observation observed 2026-09-08 (s0-relative plain-extern stores + out-of-
-window address splitting): a plain `extern "C" int` global inside the gp
-window compiles to an **s0-relative** GPREL16 access — `sw/lw r,
-addr-0x166C00 (s0)` — NOT gp-relative. Splat prints the base as `$28` and
-objdump mislabels it `(gp)`; decode the word (rs field) to tell them apart.
-The GPREL16 relocation fills the offset exactly as for gp, so a plain
-extern matches whenever the original shows the s0 base (the original text
-contains 764 such accesses; confirmed in matched functions incl.
-texResetCursor__Fv, space_func_0022E188, and func_002335A0). When hunting
-the target global, compute `target = gp + signed(imm)` — printed labels and
-guessed D_ names have both misled (func_002335A0's store is D_00160F0C, not
-D_00160F24; Splat's -0x5CF4 label was the only correct field). For
-OUT-OF-WINDOW addresses the split convention depends on how the address is
-written: a constant cast `(T *)0xADDR` with low16 >= 0x8000 emits an UNSIGNED
-split (`lui 0x1D; ori 0xDFB8` for 0x1DDFB8), while a symbol reference emits
-`%hi/%lo` relocs that the assembler resolves as a SIGNED split
-(`lui 0x1E; addiu -0x2048`). Match the original's convention: signed split in
-the original => declare a real symbol (e.g. `extern "C" int D_001DDFB8[]`;
-such addresses are assigned in build/SCUS_971.99.ld even when absent from
-undefined_syms_auto.txt). Inside the gp window the opposite holds: casts are
-needed to force absolute lui/lw (see the menu-family notes). Full record:
-decomp_state/notes/vuchain_func_002335A0.md.
+GP-relative instructions use register 28 and `target = gp + signed(imm)`.
+For example func_002335A0 stores to D_00160F0C, not D_00160F24. Absolute
+symbol references use signed `%hi/%lo` splits, while a numeric constant with
+low16 >= 0x8000 can use an unsigned `lui/ori` split. Name real data symbols;
+SN can produce absolute self-based loads even for GP-window scalar externs.
+See decomp_state/notes/vuchain_func_002335A0.md for the original split example.
 
-Observation observed 2026-09-13 (array externs are absolute; in-window scalar
-externs are GPREL16): EGC's default addressing mode depends on the declared
-KIND of the extern, not just the address. A plain array extern
-(`extern u8 D_00165500[];`) emits absolute `R_MIPS_HI16/LO16` relocs
-(signed split) whether or not the address is inside the gp window, while a
-plain in-window scalar extern (`extern int D_0015F63C;`) emits the
-s0-relative GPREL16 access (2026-09-08 observation above). So: original
-shows absolute `%hi/%lo` for an in-window global whose ADDRESS is passed
-=> named array extern; original shows GPREL16 for a VALUE => plain scalar
-extern (pointer-typed scalars behave the same). Confirmed in
-ProcessMobyAnimData__Fv (0x20D1A8), which needs all three forms in one
-body: named array for the FastMemCopy source (0x165500 — a constant cast
-there swaps the a0/a1 setup order and breaks the match), a
-constant-address load for MobyAnimProc arg1 (0x15F638), and plain scalar
-for arg2 (0x15F63C, GPREL16 `lw a1,-30148(gp)` in the jal delay slot).
-Related: this EGC build makes int-to-pointer conversion at a call
-site an ERROR ("passing `int' to argument 1 of ... lacks a cast"), so
-declare handwritten entry points with the parameter types the arguments
-actually are.
-
-Extension observed 2026-09-13 (in-window VALUE loads cannot use named
-symbols; the self-based load needs a constant): a named-symbol VALUE LOAD
-of an in-window address (scalar or array, `.data` or not, `volatile` or
-not, pointer- or int-typed, even with an asm-pinned register local)
-compiles to a TWO-REGISTER load with the base in $v0 (`lui v0,%hi;
-lw a0,%lo(v0)`) that also reschedules any independent GPREL16 load out of
-the delay slot — a 3-word diff when the original uses a SELF-BASED
-`lui a0; lw a0` pair. Only a constant-address load (cast) emits the
-self-based pseudo. `-mno-split-addresses` does turn the named load into
-the correct self-based pseudo, but it fuses the other arguments' array
-address into a single `la` pseudo that then schedules AFTER constant
-setups, flipping that call's arg-setup order in-function — so the flag
-cannot fix a function that needs BOTH a self-based named-symbol value load
-and the pre-flag array-arg order (no combination of scheduler flags,
--O1/-O0, section attributes, or declaration kinds escapes it; all
-probe-verified, incl. expert and last-resort recommendations). The
-ProcessMobyAnimData solution: express the address as a documented enum
-constant (MOBY_ANIM_CHAIN_ADDRESS = the D_0015F638 linker symbol, pinned
-in symbols.txt for the generated asm) with a codegen-exception comment.
-Likewise DMC destination constants (0x70003xxx) have no original symbol
-and naming one also changes codegen (probe: 5-word diff), so they remain
-documented casts like the 0x70003A00 siblings. See
-decomp_state/notes/mobyfunc_ProcessMobyAnimData__Fv.md for the full
- probe matrix.
+ProcessMobyAnimData's verified symbolic form uses a named array for the
+FastMemCopy source (D_00165500) and plain pointer scalar externs for both
+MobyAnimProc arguments (D_0015F638 and D_0015F63C). Under SN, arg1 expands
+to a self-based absolute load and arg2 remains GP-relative in the call delay
+slot, without changing the array-address setup order. The existing source's
+MOBY_ANIM_CHAIN_ADDRESS enum is a GNU-era workaround, not a requirement of
+the current pipeline. The 0x70003xxx DMC destinations remain documented
+hardware-region constants. Declare callees with the actual pointer types:
+this EEGCC rejects implicit int-to-pointer conversions at calls. See
+decomp_state/notes/mobyfunc_ProcessMobyAnimData__Fv.md.
 
 Observation observed 2026-09-13 (double-volatile .data pointer +
 -mno-split-addresses = repeated self-based loads, VU1_addDataRef): when the
@@ -482,15 +462,13 @@ pointer plus -mno-split-addresses on the TU:
 subscripted per statement. The pointer's volatility defeats CSE of the pointer
 value: a plain `.data` named symbol CSEs the later loads into the first
 (60 B vs the 76 B original), a constant-address cast hoists a shared base
-register (single-instr loads), and a plain in-window scalar extern gives
+register (single-instr loads), and with GNU assembly a plain scalar extern gave
 one-instr GPREL loads; a volatile pointer (single or double) makes EGC emit a
 fresh self-based `lui r; lw r` per access with the original's register
-pattern (v1, v0, v1, a0, v0 for VU1_addDataRef's five accesses). Note this complements, not
-contradicts, the 2026-09-13 in-window VALUE-load extension: that failure was
-a CALLING function whose other array argument fused into one `la` under the
-flag; a call-free store loop has nothing to reorder. The final store through
+pattern (v1, v0, v1, a0, v0 for VU1_addDataRef's five accesses). A call-free
+store loop has no array-argument setup for the flag to reorder. The final store through
 the `.data` name is ABSOLUTE (`lui at; sw r,0(at)`); when the original stores
-GPREL (`sw r,off(s0)` in the `jr` delay slot) instead, declare a plain
+GPREL (`sw r,off(gp)` in the `jr` delay slot) instead, the existing match uses a plain
 same-address alias and store through it — symbols.txt rejects duplicate VRAM
 addresses, so the alias goes in config/linker_aliases.ld. vuchain.o now uses
 -mno-split-addresses. Matched VU1_addDataRef__FPvi (0x233830) byte-for-byte;

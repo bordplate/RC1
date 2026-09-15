@@ -90,7 +90,29 @@ Download the SCE compilers to `tools/`:
 ```sh
 curl -o tools/ee-gcc2.95.2-SN-v2.73a.tar.gz https://bordplate.no/ee-gcc2.95.2-SN-v2.73a.tar.gz
 tar -xzf tools/ee-gcc2.95.2-SN-v2.73a.tar.gz -C tools/
+make setup-snas
 ```
+
+The C/C++ pipeline defaults to EEGCC **2.95.2 SN 2.73a** with the SN assembler
+**ps2eeas 1.8.19.316**, selected by `-snas`. `make setup-snas` downloads the
+2.73a archive from decomp.me, verifies the archive and assembler SHA-256 hashes,
+and installs only `tools/cc/lib/gcc-lib/ee/2.95.2/ps2eeas.exe`. A normal build
+also installs it if missing. Existing compiler binaries and headers are retained.
+For an offline installation, run:
+
+```sh
+python3 tools/install_sn_assembler.py --archive /path/to/ee-gcc2.95.2-273a.tar.gz
+```
+
+Do not pass the GNU assembler options `-Wa,-EL -Wa,-Icode/include` to SN.
+Standalone `.s` files still use the configured GNU cross-assembler; the cross
+linker and binary conversion tools are unchanged. Both C/C++ assembly includes
+and a full boot-image build have been verified with this pipeline. Six existing
+translation units retain GNU assembly for byte-for-byte compatibility:
+`989snd.c`, `draw.cpp`, `hud.cpp`, `menu.cpp`, `mobyutil.cpp`, and `movie/vobuf.cpp`.
+Their overrides are explicit in the Makefile; probes default to SN.
+Compiler drivers are serialized to avoid intermittent shared-include open
+failures in the legacy Wine/SN tools; native cross-assembly can run in parallel.
 
 There are multiple variations of the MIPS compiler that can work, you might have to change the `CROSS` variable in the `Makefile` from `mipsel-linux-gnu` to e.g. `mips-linux-gnu`.
 
@@ -154,13 +176,16 @@ python -m pip install -r requirements.txt --user
 ```
 
 ## Decompiling
-Use [decomp.me](https://decomp.me/) with the EE GCC 2.95.2 (SN BUILD v2.73a) compiler to try to match your decomp with the original assembly for the relevant function. You can generate the necessary context with the following command:
+Use [decomp.me](https://decomp.me/) with the EE GCC 2.95.2 (SN BUILD v2.73a) compiler and `-snas` to try to match your decomp with the original assembly for the relevant function. The default project flags are `-G8 -O2 -ffast-math -fno-exceptions -snas`; check the Makefile for translation-unit-specific flags. You can generate the necessary context with the following command:
 ```sh
 python tools/m2ctx/m2ctx.py <file containing function you're decompiling>
 ```
 This will generate a `ctx.c` file the current directory that you can use as context in decomp.me.  
 
-I'm not sure it's the exact same compiler Insomniac used for RC1, and I have done no research on it. It's the same compiler used for the Sly1 decomp, and Sly1 came out around the same time as RC1.
+The exact original toolchain release is not uniquely established. This compiler
+and SN assembler reproduce symbolic-address probes that fail with the bundled
+GNU assembler, and the production build matches the original boot image.
+See `decomp_state/notes/sn_toolchain_assemblers.md` for the tested version matrix.
 
 ### Comparing compiled binary
 The compiles binary should match the original game's binary byte for byte. You can compare them with checksums or something like:
