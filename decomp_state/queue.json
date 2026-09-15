@@ -1016,14 +1016,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/draw.cpp:62:func_001F4600",
-    "source": "code/game/draw.cpp",
-    "line": 62,
-    "asm": "code/_generated/nonmatchings/game/draw/func_001F4600.s",
-    "name": "func_001F4600",
-    "status": "todo"
-  },
-  {
     "id": "code/game/draw.cpp:64:func_001F4650",
     "source": "code/game/draw.cpp",
     "line": 64,

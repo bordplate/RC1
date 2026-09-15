@@ -164,7 +164,26 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", DoGifPaging__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", GetEffectTex__Fii);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F4600);
+// Each per-draw-phase callback list holds up to this many (func, arg) pairs.
+#define DRAW_CALLBACK_MAX 0x40
+
+// drawCallbackCount (0x15F464) is one of three per-draw-phase callback-list
+// counters (0x15F464/0x15F468/0x15F46C, all zeroed by ResetDrawGlobals). It is
+// in-window, so a constant-address cast is required to reproduce the original's
+// self-based absolute load/store; a named .data symbol emits a two-register
+// load instead, which does not match. The symbol is kept in symbols.txt for the
+// generated assembly of the sibling functions.
+extern u32 drawCallbackFuncs[];
+extern u32 drawCallbackArgs[];
+
+void AddDrawCallback(u32 func, u32 arg) {
+    int idx = *(int*)0x15F464;
+    if (idx < DRAW_CALLBACK_MAX) {
+        drawCallbackFuncs[idx] = func;
+        drawCallbackArgs[idx] = arg;
+        *(int*)0x15F464 = idx + 1;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F4650);
 
