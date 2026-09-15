@@ -209,7 +209,37 @@ int menu_isItemEnabled_77(void) {
     return menuItemEnabled_77 != 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu", func_002079D8);
+// func_002079D8: menu item availability predicate (jump table vram 0x19FF70,
+// entry 0x1A0010). Returns 1 when the 2nd int arg is >= the int gate or the
+// 3rd float arg is >= the float threshold; otherwise 0. The exact menu item
+// and the meaning of the int and float args are unconfirmed (the
+// availability-predicate dispatcher has not been identified), so the
+// address-based name is retained and the two immediates are named by role.
+// C linkage: emitted as the unmangled symbol the menu jump table references.
+#define MENU_ITEM_AVAILABLE_INT_GATE 321
+// Match-sensitive: the used float is the 3rd float param — EGC packs float
+// args into 64-bit pairs (f12:f13, f14:f15), so the 3rd lands in $f14 as the
+// original expects. The asm nop is the mtc1 -> c.le.s FPU hazard. The empty
+// then-branch keeps the c.le.s result live on the COP1 likely branch so EGC
+// emits the original's bc1fl (a plain `if (height <= value) result = 0;`
+// form emits the inverted bc1tl).
+extern "C" int func_002079D8(int unused0, int gate, float unused1, float unused2, float value) {
+    int result = 1;
+
+    if (gate < MENU_ITEM_AVAILABLE_INT_GATE) {
+        // The float threshold must be a local (not a literal) so EGC loads
+        // it into $f0 via lui/mtc1, matching the original's constant setup.
+        float threshold = 63.5f;
+        asm volatile("nop" : : "f"(threshold));
+
+        if (threshold <= value) {
+        } else {
+            result = 0;
+        }
+    }
+
+    return result;
+}
 
 int menu_alwaysAvailable_1(void) {
     return 1;

@@ -1,10 +1,28 @@
-# func_002079D8 — INVESTIGATED (likely blocked, not yet in blocked.json)
+# func_002079D8 — MATCHED (byte-for-byte)
 
 VRAM 0x002079D8, 48 bytes (12 insns). Source: `code/game/menu.cpp`
-(Splat segment `menu`, `-fno-schedule-insns`). Still INCLUDE_ASM.
+(Splat segment `menu`, `-fno-schedule-insns`).
 
-Menu predicate callback, function-pointer table vram 0x1A0000 (index 4,
-entry 0x1A0010). No direct `jal`/`j` — called only via the table.
+Menu item availability predicate, function-pointer table vram 0x19FF70
+(entry 0x1A0010). No direct `jal`/`j` — called only via the table. The
+availability-predicate dispatcher has not been identified, so the exact
+menu item and the meaning of the int/float args are unconfirmed; the
+address-based name is retained (a batch rename can follow once the
+dispatcher is known).
+
+## Semantics
+
+```
+return (b >= 321) || (63.5f <= e);
+```
+
+where `b` is the 2nd int arg and `e` is the 3rd float arg.
+
+Signature is `(int, int, float, float, float)`: the gate int is `$a1`
+(2nd) and the compared float is `$f14` (3rd — EGC packs float args into
+64-bit pairs `f12:f13, f14:f15`, so the 3rd lands in `$f14`). The 1st int
+and the 1st/2nd floats are unused; they exist only to push the used args
+into the right registers.
 
 ## Exact original 12 insns (objdump ground truth)
 ```
@@ -14,41 +32,53 @@ entry 0x1A0010). No direct `jal`/`j` — called only via the table.
 0x2079E4  lui    $1, 0x427e         ; 63.5f
 0x2079E8  mtc1   $1, $f0
 0x2079EC  nop                        ; COP1 hazard
-0x2079F0  c.le.s $f0, $f14          ; C1.F = (63.5 <= y)
+0x2079F0  c.le.s $f0, $f14          ; C1 = (63.5 <= e)
 0x2079F4  nop
-0x2079F8  bc1f   .L                  ; C1.F==0 (y<63.5) -> .L  [delay: move v0,0]
+0x2079F8  bc1fl  .L                  ; likely branch (0x45020001)
 0x2079FC  move   $2, $0
 0x207A00  jr     $ra                ; .L
 0x207A04  nop
 ```
 
-## Semantics: the float test is DEAD
-Trace (both `move v0,0` delay slots execute unconditionally):
-- `b >= 321`  -> return 1
-- `b < 321, y < 63.5`  -> return 0
-- `b < 321, y >= 63.5` -> return 0   (v0 clobbered by bc1f delay slot)
+## Correction to the earlier "dead float test" reading
 
-So the function is effectively `return b >= 321;`. The `c.le.s`/`bc1f`
-float comparison does not affect the result. Confirmed by tracing concrete
-values (b=100,y=100 -> 0; b=100,y=10 -> 0; b=400 -> 1).
+The prior version of this note concluded the float test was dead
+(effectively `return b >= 321`) and that the local EGC DCE'd it. That was
+WRONG: `bc1fl` is a LIKELY branch — it has NO delay slot. The `move v0,0`
+at 0x2079FC is the branch's not-taken path, not a delay slot, so the float
+comparison is live and changes the result. (The `nop` at 0x2079F4 is the
+`c.le.s` delay slot; the `nop` at 0x2079EC is the `mtc1` hazard slot.)
 
-## Why it likely does not match with local EGC 2.95.2
-Local EGC **DCE's** the dead float comparison in every C form tried:
-- `if (b>=0x141) return 1; if (y<t) return 0; return 0;`  -> 40 bytes (test removed)
-- `... if (y<t) return 0; else return 0;`                 -> 40 bytes
-- `... return (y<t) ? 0 : 0;`                              -> 40 bytes
-- `... return (int)(y<t) & 0;`                             -> 40 bytes
-- `volatile float threshold`                               -> 56 bytes (adds swc1/lwc1 the original lacks)
+## Why the flat C form failed, and the matching form
 
-Insomniac's compiler evidently kept the dead float test; the local EGC
-2.9-ee-991111 eliminates it. No C form reproduces a dead float test.
+The local EGC, given the flat form `if (threshold <= value) result = 0;`
+(or any `if (cond) r = K;` / nested / De Morgan / ternary variant, at
+-O1/-O2, with/without -ffast-math, -fno-schedule-insns/2), emits the
+inverted COP1 likely branch `bc1tl` (0x45030001) where the original has
+`bc1fl` (0x45020001) — a one-bit (T/F) difference on an otherwise
+byte-identical 12-insn body. No flag or comparison-operator variation
+flips it.
 
-## ABI note (reusable)
-`slti $5` (2nd int -> a1) and `c.le.s $f0,$f14` (float in f14). Under packed
-EGC the f14 float is the **3rd** float param, so the signature is
-`(int, int, float, float, float)` using the 2nd int and 3rd float. This
-register analysis is solid; the blocker is the dead-code DCE, not the ABI.
+The matching form (from `last-resort-decompiler`, GPT-5.6 Sol) uses an
+empty then-branch so the `c.le.s` result stays live on the likely branch:
 
-## Next step before recording a blocker
-Per AGENTS.md, `last-resort-decompiler` must be invoked on this exact target
-before adding it to `decomp_state/blocked.json`. Not yet done.
+```cpp
+int result = 1;
+if (gate < 321) {
+    float threshold = 63.5f;
+    asm volatile("nop" : : "f"(threshold));
+    if (threshold <= value) {
+    } else {
+        result = 0;
+    }
+}
+return result;
+```
+
+This compiles byte-for-byte to the original 48 bytes (verified against
+`assets/boot_elf.elf` at file offset 0x108958 and in the built `menu.o`).
+The `asm volatile("nop" : : "f"(threshold))` is the mtc1 -> c.le.s FPU
+hazard (same idiom as the matched siblings `menu_isItemAvailable*Height`).
+
+last-resort GPT-5.6 Sol used: confirmed the empty-then-branch form and the
+`(b >= 321) || (63.5f <= e)` semantics; verified locally byte-for-byte.

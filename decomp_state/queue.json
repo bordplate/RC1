@@ -2842,10 +2842,10 @@
   {
     "id": "code/game/menu.cpp:91:func_002079D8",
     "source": "code/game/menu.cpp",
-    "line": 91,
+    "line": 224,
     "asm": "code/_generated/nonmatchings/game/menu/func_002079D8.s",
     "name": "func_002079D8",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/menu.cpp:93:func_00207A08",
