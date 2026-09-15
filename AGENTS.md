@@ -290,10 +290,25 @@ Load-side extension (2026-09-04): in the same menu family, a plain global
 LOAD in the condition (`if (D_0015EEB4 & 0x40) return;`) allocates the
 address base to $v1 (`lui v1; lw v0,off(v1)`), while the original reuses
 $v0 for base and value (`lui v0,0x16; lw v0,-4428(v0)`). Casting the load
-address too — `if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3;` —
+ address too — `if (*(int*)0x15EEB4 & 0x40) return; *(int*)0x15EEB0 = 3;` —
  reproduces the original byte-for-byte, so this family needs constant-cast
  accesses on BOTH sides (see decomp_state/notes/menu_func_00208E68.md; the
  byte-identical clone family func_00208E68/90/ED8/F00 is fully matched).
+ Store-side extension (2026-09-16, menu_restoreSelection 0x2088A8): the
+ CONSTANT-CAST store is also required for the NON-branch stores in this
+ family (menu_restoreSelection 0x2088A8 and menu_post_selectNextPage
+ 0x2089A8), not just the branch-delay ones. A named `.data`-section store
+ (`menuPostCallbackIndex = N;`) makes EGC emit the high-16 split as a
+ SEPARATELY SCHEDULED `lui $a1,%hi` load (hoisted, base `$a1` instead of
+ `$at`); under `-mno-split-addresses` the sibling base becomes an unsplittable
+ `la` pseudo, which stops the original's interleaved `li v1,N` from sitting
+ between the base's `lui`/`addiu`. `*(int*)&sym` folds to the same symbol
+ RTL, and `*(int*)sym` (the STYLEGUIDE literal) miscompiles to a load-then
+ indirect-store. Only the constant-address cast pseudo (`sw r,0xADDR`,
+ expanded in place by ps2eeas to `lui at; sw r,%lo(at)`) reproduces the
+ original. So `MENU_POST_CALLBACK_INDEX_ADDRESS` stays for all three stores.
+ Do not re-attempt the named-store refactor for these three (see
+ decomp_state/notes/menu_func_002088A8.md, 2026-09-16 table).
 
 Observation observed 2026-09-05 (EGC dead-code tails — ~46 "phantom functions"):
 the original binary contains ~46 unreachable 4-byte fragments that spimdis splits
