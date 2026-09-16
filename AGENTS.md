@@ -784,9 +784,16 @@ also use `-mno-split-addresses`; `menu_post_mid.cpp` and
   `movie_post_audio.o` uses `-mno-split-addresses` (required by
   proceedAudio: the same self-based `movieDecodeBuf` load hoisted before the
   0x10 prologue; the flag breaks ErrMessage's matched codegen, so a Splat
-  boundary at 0x13BB20 gives proceedAudio its own TU), while
-   `movie.o` and `movie_post.o` retain normal address splitting (the flag
-   breaks ErrMessage's matched codegen). `movie/disp.o` uses
+   boundary at 0x13BB20 gives proceedAudio its own TU), while
+    `movie.o` and `movie_post.o` retain normal address splitting (the flag
+    breaks ErrMessage's matched codegen). `videodec_nodata.o` (the videodec
+    Splat segment split at 0x13E028, 2026-09-16) uses `-mno-split-addresses`
+    (required by mpegNodata: its named in-window `movieDecodeBuf` load must
+    stay a single self-based pseudo, and the leading no-arg `switchThread`
+    call keeps the prologue-first schedule; the flag breaks the sibling
+    mpegError's matched prologue schedule, whose `videoErrorMessage` address
+    setup reorders around `sq $ra`, so mpegError and the rest of videodec.cpp
+    keep default splitting in `videodec.o`). `movie/disp.o` uses
    `-mno-split-addresses` (required by endDisplay__Fv: its named in-window
    `movieDisplayActive` store must stay a single unsplittable pseudo that
    ps2eeas expands in place to the original `lui at / sw zero` pair; without
