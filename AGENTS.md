@@ -767,7 +767,7 @@ zero-extend, so none match. `volatile` suppresses that fusion. This pairs with
 See decomp_state/notes/permcb_vsync_callback__Fi.md (permcb.o now uses
 `-mno-split-addresses`).
 
-Verified flag scope (updated 2026-09-12): the menu Splat segment is split at
+Verified flag scope (updated 2026-09-16): the menu Splat segment is split at
 exact function boundaries so conflicting compiler requirements stay local.
 `menu.cpp` and every `menu_post` TU use `-fno-schedule-insns`, while
 `menu_callbacks.cpp` uses `-fno-schedule-insns2`. The symbol-heavy
@@ -785,8 +785,14 @@ also use `-mno-split-addresses`; `menu_post_mid.cpp` and
   proceedAudio: the same self-based `movieDecodeBuf` load hoisted before the
   0x10 prologue; the flag breaks ErrMessage's matched codegen, so a Splat
   boundary at 0x13BB20 gives proceedAudio its own TU), while
-  `movie.o` and `movie_post.o` retain normal address splitting (the flag
-  breaks ErrMessage's matched codegen). `permcb.o` uses `-mno-split-addresses`
+   `movie.o` and `movie_post.o` retain normal address splitting (the flag
+   breaks ErrMessage's matched codegen). `movie/disp.o` uses
+   `-mno-split-addresses` (required by endDisplay__Fv: its named in-window
+   `movieDisplayActive` store must stay a single unsplittable pseudo that
+   ps2eeas expands in place to the original `lui at / sw zero` pair; without
+   the flag EGC splits the lui/sw and schedules the store into the `jr` delay
+   slot; the flag is safe there because disp.cpp's only compiled function is
+   endDisplay). `permcb.o` uses `-mno-split-addresses`
   (required by vsync_callback: its named in-window `frm_vsync_cnt` /
   `frm_clock_time` globals must become self-based `lui/ld` absolute loads; the
   flag is safe there because permcb.cpp holds only that one function). This
