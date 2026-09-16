@@ -86,6 +86,7 @@ textureCursor = 0x0015EE74;
 pauseScreenState = 0x001D5BF0;
 memcardErrorMessage = 0x001E8360;
 videoErrorMessage = 0x00161220;
+movieDisplayActive = 0x001611E0;
 movieErrorMessage = 0x001611F8;
 vuChainOverflowMessage = 0x001E8400;
 movieDecodeBuf = 0x0016120C;

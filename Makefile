@@ -75,6 +75,11 @@ $(OBJ_DIR)/game/menu_post.o $(OBJ_DIR)/game/menu_post_pages.o \
 $(OBJ_DIR)/game/movie/movie_mid.o $(OBJ_DIR)/game/movie/videodec_post.o \
     $(OBJ_DIR)/game/movie/movie_post_audio.o: \
     PRIVATE_COMPILE_FLAGS = -mno-split-addresses
+# endDisplay__Fv stores the named in-window movieDisplayActive flag; the flag
+# keeps the store a single unsplittable pseudo that ps2eeas expands in place
+# to the original's lui at / sw zero pair (a plain named store lets EGC
+# schedule the split apart and move the store into the jr delay slot).
+$(OBJ_DIR)/game/movie/disp.o: PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 $(OBJ_DIR)/game/permcb.o: PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 # VU1 chain functions reload the head pointer before every packet store; the
 # flag turns the named in-window head global into self-based absolute loads.

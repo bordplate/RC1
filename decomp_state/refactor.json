@@ -16,9 +16,10 @@
     "function": "endDisplay__Fv",
     "addresses": ["0x1611E0"],
     "category": "hardcoded-data-address",
-    "description": "Zeroes *(int*)0x1611E0 through a raw constant-address cast; the global has no symbol yet. Identify its meaning (movie display/decode state flag written by startDisplay__Fi family), add a named symbol in config/symbols.txt, and store through it while preserving the original store shape (this function historically needed the constant-cast form; re-verify under the current SN pipeline).",
-    "evidence": "code/game/movie/disp.cpp:12",
-    "status": "open"
+    "description": "RESOLVED 2026-09-16: 0x1611E0 is the movie display active flag — startDisplay__Fi (0x23B590) sets it to 1 after waiting for the display hardware state (func_00122298 query), vblankHandler (0x23B3D8) gates its frame counting on it, and endDisplay__Fv (0x23B5E0) clears it; all three callers/users are in movie/disp.cpp. Named movieDisplayActive in config/symbols.txt and stored through it with a .data section extern. The plain named store let EGC schedule its lui/sw split apart (base $v0, store moved into the jr delay slot); with -mno-split-addresses on disp.o the store stays one unsplittable pseudo that ps2eeas expands in place to the original lui at / sw zero / jr / nop. Object diff 5/5 match; full clean build + cmp pass.",
+    "evidence": "code/game/movie/disp.cpp; config/symbols.txt (movieDisplayActive = 0x001611E0); Makefile (disp.o PRIVATE_COMPILE_FLAGS); decomp_state/notes/menu_func_002088A8.md (same in-place cast-pseudo mechanism)",
+    "status": "done",
+    "resolved": "2026-09-16"
   },
   {
     "id": "movie_videodec_mpegNodata",
