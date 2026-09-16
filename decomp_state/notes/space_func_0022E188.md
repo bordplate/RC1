@@ -39,6 +39,51 @@ extern "C" void func_0022E188(int param_1) {
 }
 ```
 
+## Refactor 2026-09-16 (renamed + globals named)
+
+The function is now `space_beginLoad(int loadId)` (void) and all three
+stores use named globals:
+
+```cpp
+extern int spaceLoadPending;      // 0x0015F5B0 (previously D_0015F5B0)
+extern int spaceLoadId;           // 0x0015F600
+extern int spaceLoadInProgress;   // 0x0015F618
+
+void space_beginLoad(int loadId) {
+    spaceLoadId = loadId;
+    spaceLoadPending = 1;
+    spaceLoadInProgress = 1;
+}
+```
+
+Meaning (from xref sweep + Ghidra):
+
+- `spaceLoadId` (0x15F600): the space id to load. Written here and by the
+  two other transition entry points (0x1E9A84, 0x21E870); read by
+  DoSpaceTransition (0x231FF0), which tests `< 8`, uses it to select the
+  per-space scene setup, and copies it to 0x15EDC4 (current space) before
+  calling the level init.
+- `spaceLoadInProgress` (0x15F618): set together with the id; the 0x230EE8
+  dispatcher routes on it (nonzero -> the case-4 per-frame update path),
+  the per-frame space update (func_0022F778) re-asserts it, and the level
+  init func_00230F60 clears it. Every other writer stores 0 or 1.
+
+Codegen: `spaceLoadId` / `spaceLoadInProgress` must stay PLAIN externs.
+The `.data` section attribute makes EGC emit each address as two
+schedulable `lui` instructions (bases $3/$5, hoisted ahead of both
+stores — a 6-word body with the wrong base registers). A plain extern
+makes EGC emit one `sw r, sym` pseudo per store, which ps2eeas expands
+IN PLACE (the reference precedes the end-of-file `.extern`) to the
+original's `lui at / sw` pair. The gp store stays GPREL16 because EGC
+emits it inside its `.set noreorder`/`.set nomacro` region. Statement
+order `spaceLoadId; spaceLoadPending; spaceLoadInProgress` is the
+verified scheduling order (finding 3 above).
+
+Verification: object diff shows only the pending HI16/LO16/GPREL16
+relocation fields differing from the original; the 28-byte slice at file
+offset 0x12F108 is byte-identical after linking; full build +
+`cmp build/boot_elf.elf assets/boot_elf.elf` pass.
+
 ## Codegen findings (IMPORTANT)
 
 1. **Return type drives the constant register.** For an `int`-returning

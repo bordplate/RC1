@@ -7,11 +7,22 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/space", func_0022DF40);
 INCLUDE_ASM("code/_generated/nonmatchings/game/space", func_0022E180);
 
 extern int spaceLoadPending;
+// Match-sensitive: these stay PLAIN externs (no .data section attribute).
+// EGC emits one store pseudo per access, and ps2eeas — which sees each
+// reference before the end-of-file .extern — expands it in place to the
+// original's lui at / sw pair. A .data attribute makes EGC split each
+// address into two schedulable lui instructions, which reorders the stores
+// and changes the base registers.
+//
+// Space id requested by space_beginLoad; consumed by DoSpaceTransition.
+extern int spaceLoadId;
+// Set when a space load is requested, cleared by the level init.
+extern int spaceLoadInProgress;
 
 void space_beginLoad(int loadId) {
-    *(int*)0x15F600 = loadId;
+    spaceLoadId = loadId;
     spaceLoadPending = 1;
-    *(int*)0x15F618 = 1;
+    spaceLoadInProgress = 1;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/space", func_0022E1A8);

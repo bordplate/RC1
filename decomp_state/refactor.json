@@ -49,9 +49,10 @@
     "function": "space_beginLoad__Fi",
     "addresses": ["0x15F600", "0x15F618"],
     "category": "hardcoded-data-address",
-    "description": "Stores the load id and a pending flag through *(int*)0x15F600 / *(int*)0x15F618 raw casts; neither address has a symbol. The adjacent named symbol spaceLoadPending covers the third store. Identify the two globals (space-load bookkeeping), name them in config/symbols.txt, and verify the constant-store tail shape (see the EGC constant-store permutation notes).",
-    "evidence": "code/game/space.cpp:12-14",
-    "status": "open"
+    "description": "DONE 2026-09-16: named spaceLoadId (0x15F600, the space id requested by space_beginLoad, consumed by DoSpaceTransition which tests it < 8) and spaceLoadInProgress (0x15F618, set together with the id, routed on by the 0x230EE8 dispatcher, cleared by level init 0x230F60; every other writer stores 0 or 1). Both stay PLAIN externs: the .data form makes EGC split each address into two schedulable lui instructions (bases $3/$5, both lui's hoisted ahead of the stores — 6-word body, wrong registers) that cannot match the original, while the plain-extern store pseudo is expanded in place by ps2eeas (the reference precedes the end-of-file .extern) to exactly the original's per-store lui at / sw a0, lui at / sw v0 pairs with the gp store in the jr delay slot. Source order kept cast600; gp5B0; cast618 per the verified scheduling note. Object diff: only the pending HI16/LO16/GPREL16 relocation fields differ; 28-byte function slice at file 0x12F108 byte-identical; full build + cmp pass.",
+    "evidence": "decomp_state/notes/space_func_0022E188.md (2026-09-16 refactor section); code/game/space.cpp; config/symbols.txt (spaceLoadId, spaceLoadInProgress)",
+    "status": "done",
+    "resolved": "2026-09-16"
   },
   {
     "id": "draw_AddDrawCallback__Fuu",
