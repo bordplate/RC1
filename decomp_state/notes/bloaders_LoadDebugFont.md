@@ -36,11 +36,17 @@ Globals:
   `lui v0,%hi; addiu v0,%lo` base in the original (0x137B80 + 8/12).
 - `D_001AABC0` (.data, zero at boot): the debug-font destination buffer, passed
   by ADDRESS to both calls (see codegen finding below).
-- `D_0015EE88` (core.lit): base used as `*(u32*)0x15EE88 + 0xC0000` (third arg of
-  LoadPifAsPSMT8H). In-window, so constant-cast for the original's absolute
-  `lui v1,0x16; lw v1,-4472(v1)`.
-- `D_0015EEC8` (core.lit): receives the first 8 bytes of the PIF header
-  (`ld v0,0(sp); lui at,0x16; sd v0,-4408(at)`).
+- `frameBufferBase` (core.lit, 0x15EE88): the GS frame buffer base, set to
+  0x1B0000 or 0x1E0000 by the resolution-setup function at 0x1F34E8
+  (mode select at 0x15ED80) and read as `>> 13` into MSOP commands
+  (`FUN_00233980(0x4e, base >> 13 | 0x1000000)`) by 0x1E9AB8, 0x22B928, and
+  0x200B10 callers. Used here as `frameBufferBase + 0xC0000` (third arg of
+  LoadPifAsPSMT8H, a 16.8 draw-packet field). Original access is the absolute
+  self-based `lui v1,0x16; lw v1,-4472(v1)`.
+- `debugFontPifHeader` (core.lit, 0x15EEC8): receives the first quadword of
+  the debug font PIF header (`ld v0,0(sp); lui at,0x16; sd v0,-4408(at)`).
+  Written only by LoadDebugFont in the boot ELF; no boot-ELF reader (raw
+  LE-byte scan found no other reference; likely consumed by overlay code).
 
 ## Codegen findings (the s0 question)
 
@@ -96,6 +102,29 @@ last-resort-decompiler (GPT-5.6 Sol) tested the dead volatile-local variant
 (first diff at 0x1E9338: frame -0x50) and confirmed the dead-tail probes
 (t1-t10) show no post-delay-slot dead code from this EGC; verdict: retain the
 orphan INCLUDE_ASM, which supplies the 8 bytes and keeps parity.
+
+## 2026-09-16 refactor: both globals named symbolically
+
+The constant-address casts are gone; `frameBufferBase` (u32) and
+`debugFontPifHeader` (u64) are named in `config/symbols.txt` and referenced
+through PLAIN externs (no `.data` section attribute).
+
+- With `__attribute__((section(".data")))` the load comes out as a SPLIT
+  `lui v1,%hi; lw a2,0(v1)` pair (value into a2) and the store as
+  `ld v1,0(sp); lui v0; lq ra; lq s0; sd v1,0(v0)` — base hoisted into v0,
+  value in v1; 16-word diff vs the original.
+- Plain externs: EGC classifies the symbol GPREL and emits ONE pseudo per
+  access; ps2eeas sees each reference before the end-of-file `.extern` and
+  expands it in place to the original's self-based absolute
+  `lui v1,0x16; lw v1,-4472(v1)` / `lui at,0x16; sd v0,-4408(at)` (HI16/LO16
+  relocs, carry form). This is the documented ps2eeas late-`.extern` behavior
+  (see AGENTS.md, sn_toolchain_assemblers note). No flag change was needed;
+  bloaders.o keeps default flags (a `-mno-split-addresses` whole-TU flag would
+  instead break the prologue, whose `sq ra,48(sp)` interleaves the
+  debugFontLoadInfo base's lui/addiu split).
+- Object diff: 27/27 words match apart from the 10 pending-relocation fields
+  (4 HI16/LO16 symbol pairs + 2 jal R_MIPS_26), all resolving to the original
+  words. `make clean && make split && make -j2` + `cmp` byte-for-byte.
 
 ## Verification
 
