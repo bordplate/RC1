@@ -1,5 +1,4 @@
 #include "common.h"
-#include "menu.h"
 
 // C linkage: this callback is installed through the original unmangled menu
 // jump table entry.
@@ -22,16 +21,8 @@ extern "C" int menu_pointIsClockwise(int a, int b, int c, int d, int e, int f) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_callbacks", func_00208840);
 
-// C linkage: this callback is installed through the original unmangled menu
-// jump table entry.
-extern "C" void menu_restoreSelection(void) {
-    MenuState* menu = &menuStateData;
-    // Constant-address cast required: a symbolic store through
-    // menuPostCallbackIndex schedules the high-16 split separately (base $a1)
-    // and cannot reproduce the original interleaved li v1 / lui at / sw v1.
-    *(int*)MENU_POST_CALLBACK_INDEX_ADDRESS = 3;
-    register int selected asm("$4");
-    selected = menu->saved;
-    menu->selected = selected;
-    menu->pending = 0;
-}
+// Blocked: the menuPostCallbackIndex store only matches as a constant-address
+// cast, and static data addresses are not allowed in source (overlay
+// compatibility). The generated assembly references the symbol, so the
+// fallback is overlay-safe. See decomp_state/notes/menu_func_002088A8.md.
+INCLUDE_ASM("code/_generated/nonmatchings/game/menu_callbacks", menu_restoreSelection);

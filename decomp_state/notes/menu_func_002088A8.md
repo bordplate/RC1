@@ -94,3 +94,27 @@ menu_func_00208E68.md). The sibling 0x2089A8 (menu_post_selectNextPage) and
 too, so `MENU_POST_CALLBACK_INDEX_ADDRESS` stays and now names the literal in
 this function as well (was a bare `0x15EEB0` cast).
 `make clean && make split && make -j2` + `cmp` pass after the change.
+
+## 2026-09-16 superseded: reverted to INCLUDE_ASM and blocked
+
+Project policy changed: static data addresses are forbidden in source because
+they break the overlay system (level overlays have their own data segments;
+only linker-resolved symbols are relocatable). A function that can only match
+through a constant-address cast must therefore be reverted to `INCLUDE_ASM`
+(the generated `.s` references the named symbol and is overlay-safe) and
+recorded in `blocked.json`.
+
+Applied here: the C body was replaced with
+`INCLUDE_ASM("code/_generated/nonmatchings/game/menu_callbacks", menu_restoreSelection);`
+and the now-unused `#include "menu.h"` removed from menu_callbacks.cpp.
+`make split` re-classifies the function as nonmatching; the nonmatching count
+goes 688 -> 689. Escalations on this exact target: `expert` (GPT-6 Astra) and
+`last-resort-decompiler` (GPT-5.6 Sol) were both invoked with full dossiers
+and failed with "The usage limit has been reached" (quota); recorded per
+AGENTS.md. Full clean build + `cmp build/boot_elf.elf assets/boot_elf.elf`
+pass after the revert.
+
+The sibling 0x2089A8 (menu_post_selectNextPage) and 0x208EB8
+(menu_post_openGadgets) still carry the same required cast through
+`MENU_POST_CALLBACK_INDEX_ADDRESS` and will need the same treatment under the
+new policy.

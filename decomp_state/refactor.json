@@ -1,16 +1,5 @@
 [
   {
-    "id": "menu_callbacks_menu_restoreSelection__Fv",
-    "file": "code/game/menu_callbacks.cpp",
-    "function": "menu_restoreSelection__Fv",
-    "addresses": ["0x15EEB0"],
-    "category": "hardcoded-data-address",
-    "description": "RESOLVED 2026-09-16 as a documented, required codegen artifact: probed the named menuPostCallbackIndex store under the TU's -fno-schedule-insns2 and every nearby variant (-mno-split-addresses, -fno-schedule-insns, both scheduler passes off, *(int*)&sym, *(int*)sym). None reproduce the original, which interleaves li v1,3 between the menuStateData base's lui/addiu and keeps the store as an in-place lui at / sw v1,%lo(at) pair that only the constant-address cast pseudo emits. The cast is retained, now through the MENU_POST_CALLBACK_INDEX_ADDRESS define (still used by the sibling 0x2089A8 and 0x208EB8 stores, so the define stays). Source restored to the matching cast form with an explanatory comment; full clean build + cmp pass.",
-    "evidence": "decomp_state/notes/menu_func_002088A8.md (2026-09-16 refactor check table); code/game/menu_callbacks.cpp; config/symbols.txt (menuPostCallbackIndex = 0x0015EEB0)",
-    "status": "done",
-    "resolved": "2026-09-16"
-  },
-  {
     "id": "movie_disp_endDisplay__Fv",
     "file": "code/game/movie/disp.cpp",
     "function": "endDisplay__Fv",

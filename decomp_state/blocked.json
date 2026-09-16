@@ -1,4 +1,9 @@
 {
+  "code/game/menu_callbacks.cpp:28:menu_restoreSelection": {
+    "status": "blocked",
+    "date": "2026-09-16",
+    "note": "The menuPostCallbackIndex (0x15EEB0) store only matches as a constant-address cast: the original interleaves 'li v1,3' between the menuStateData base's lui/addiu and keeps the store as an in-place 'lui at; sw v1,%lo(at)' pair that only ps2eeas's in-place expansion of a constant-address store pseudo emits. Every symbolic form was probed and fails (plain .data store, *(int*)&sym, -mno-split-addresses, -fno-schedule-insns, both scheduler passes off): EGC emits the high-16 split as a separately scheduled load (base $a1) or makes the base an unsplittable la that forbids the interleave. See notes/menu_func_002088A8.md (2026-09-16 table). Static data addresses are forbidden in source (overlay-system compatibility), so the C form was reverted to INCLUDE_ASM; the generated asm references the named symbol and is overlay-safe. Siblings 0x2089A8 and 0x208EB8 share this blocker and still use the MENU_POST_CALLBACK_INDEX_ADDRESS define. Escalations invoked 2026-09-16 on this exact target: expert (GPT-6 Astra) and last-resort-decompiler (GPT-5.6 Sol) both failed with 'The usage limit has been reached' (quota); recorded per AGENTS.md."
+  },
   "code/game/movie/videodec.cpp:41:func_0023D0E0": {
     "status": "blocked",
     "date": "2026-09-04",
