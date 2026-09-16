@@ -167,12 +167,14 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", GetEffectTex__Fii);
 // Each per-draw-phase callback list holds up to this many (func, arg) pairs.
 #define DRAW_CALLBACK_MAX 0x40
 
-// drawCallbackCount (0x15F464) is one of three per-draw-phase callback-list
-// counters (0x15F464/0x15F468/0x15F46C, all zeroed by ResetDrawGlobals). It is
-// in-window, so a constant-address cast is required to reproduce the original's
-// self-based absolute load/store; a named .data symbol emits a two-register
-// load instead, which does not match. The symbol is kept in symbols.txt for the
-// generated assembly of the sibling functions.
+// drawCallbackCount (0x15F464) is one of the per-draw-phase callback-list
+// counters zeroed by ResetDrawGlobals. It is in the GP window, so a
+// constant-address cast is required to reproduce the original's self-based
+// absolute access under this TU's GNU assembler (a plain extern emits one
+// GPREL16, a .data symbol a two-register load). The named extern matches under
+// the SN assembler, but draw.o must stay a GNU-compat TU; see
+// decomp_state/notes/draw_AddDrawCallback__FUiUi.md. The symbol is kept in
+// symbols.txt for the sibling functions' generated assembly.
 extern u32 drawCallbackFuncs[];
 extern u32 drawCallbackArgs[];
 
