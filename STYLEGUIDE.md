@@ -47,6 +47,13 @@ extern int menuPostFlags __attribute__((section(".data")));
 ```
 
 
+Static data addresses are forbidden in source, not just discouraged: level
+overlays have their own data segments, and only linker-resolved symbols
+relocate correctly. A function that can only match through a constant-address
+cast therefore stays `INCLUDE_ASM` (the generated assembly references the
+named symbol) and is recorded in `decomp_state/blocked.json` — the cast must
+not be introduced or retained to make the match.
+
 Violations of this style guide that already exist in the codebase are not excuses, 
 reasons, or precedence for further violations. 
 
@@ -197,6 +204,9 @@ Use short factual comments for uncertain layouts, for example:
   signedness, and prototypes when they affect output.
 - Use explicit register variables, `volatile`, inline assembly barriers, or
   constant-address casts only after a comparison proves they are needed.
+- A constant-address cast to a DATA address may be used during a probe but
+  must never be the committed form: if it is the only form that matches, keep
+  the function as `INCLUDE_ASM` and record a `blocked.json` entry instead.
 - Add a short comment above a non-obvious matching construct explaining the
   compiler constraint.
 - Keep compiler flags at translation-unit scope. Prefer an exact Splat boundary
