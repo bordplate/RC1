@@ -82,9 +82,10 @@
     "function": "pause_scheduleInput__Fv",
     "addresses": ["0x15F604"],
     "category": "hardcoded-data-address",
-    "description": "Stores the pinned mode value through *(u32*)0x15F604 = mode; although GameMode = 0x15f604 already exists in symbols.txt (currently unused by source). Store through the named symbol while preserving the register-pinned ($5) constant-store shape, and drop the raw cast.",
-    "evidence": "config/symbols.txt (GameMode = 0x15f604); code/game/pause_sched.cpp:23",
-    "status": "open"
+    "description": "DONE 2026-09-16: the store now goes through the named GameMode symbol (already in symbols.txt at 0x15f604) as GameMode = mode; with a plain u32 extern (no .data attribute) and the existing $5-pinned mode local. EGC emits one store pseudo that ps2eeas expands in place to the original's lui at / sw a1 pair (same mechanism as space_beginLoad and texResetCursor); object relocs are R_MIPS_HI16/LO16 on GameMode at 0x18/0x1c, linked bytes 3c010016 / ac25f604 identical. Full build + cmp pass; count unchanged at 689.",
+    "evidence": "code/game/pause_sched.cpp; config/symbols.txt (GameMode = 0x15f604); decomp_state/notes/space_func_0022E188.md (plain-extern store pseudo mechanism)",
+    "status": "done",
+    "resolved": "2026-09-16"
   },
   {
     "id": "vuchain_vuChain_getCurrent__Fv",

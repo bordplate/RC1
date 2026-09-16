@@ -12,6 +12,12 @@ typedef struct {
 
 extern PauseScreenState pauseScreenState __attribute__((section(".data")));
 
+// Match-sensitive: plain extern (no .data section attribute). EGC emits one
+// store pseudo that ps2eeas expands in place to the original's
+// lui at / sw pair.
+// Pinned pause/game mode; pause_scheduleInput forces it to 3.
+extern u32 GameMode;
+
 void pause_scheduleInput(void) {
     register PauseScreenState* base asm("$3") = &pauseScreenState;
 
@@ -20,7 +26,7 @@ void pause_scheduleInput(void) {
     register u32 mode asm("$5") = 3;
 
     base->f110 = 0;
-    *(u32*)0x15F604 = mode;
+    GameMode = mode;
     base->fC = 0;
     base->f10 = 0;
 }
