@@ -93,8 +93,9 @@
     "function": "vuChain_getCurrent__Fv",
     "addresses": ["0x15ED84"],
     "category": "hardcoded-data-address",
-    "description": "Reads the VU chain table index through int index = *(int*)0x15ED84; a raw constant-address cast with no symbol. vuchain.o already uses -mno-split-addresses and the rest of the file is fully symbolic, so name the index global in config/symbols.txt, load it symbolically, and verify (the TU flag may make the named form the natural match).",
-    "evidence": "code/game/vuchain.cpp:10",
-    "status": "open"
+    "description": "RESOLVED 2026-09-16: 0x15ED84 is the index (0..18) of the currently selected VU chain in vuChainTable (set by level start 0x20B178 from its parameter, reset to 0 by 0x209370, copied from spaceLoadId by level init 0x231FF0, and compared against 10/13 by the scene update 0x22F778). Named currentVuChainIndex in config/symbols.txt and loaded through a plain extern: under vuchain.o's -mno-split-addresses + default -G8 EGC emits one bare 'lw v0, currentVuChainIndex' pseudo with no earlier .extern, so ps2eeas expands it in place to the original self-based lui v0,0x16 / lw v0,-0x127c(v0), while the currentVuChain store inside EGC's noreorder block stays GPREL16. The clamp threshold 19 is now VU_CHAIN_TABLE_SIZE (the table holds exactly 19 non-null entries, 0x1DDFB8..0x1DE003, followed by 0). Verifier word-for-word pass on a clean rebuild; full build + cmp pass.",
+    "evidence": "code/game/vuchain.cpp; config/symbols.txt (currentVuChainIndex = 0x0015ED84); Makefile (vuchain.o -mno-split-addresses); decomp_state/notes/sn_toolchain_assemblers.md (bare-pseudo in-place expansion)",
+    "status": "done",
+    "resolved": "2026-09-16"
   }
 ]

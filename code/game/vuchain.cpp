@@ -4,11 +4,16 @@
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", VU0_loadMicroProgram__FPl);
 
 extern int currentVuChain;
+// Index (0..18) of the currently selected VU chain in vuChainTable.
+extern int currentVuChainIndex;
 extern int vuChainTable[];
 
+// Number of entries in vuChainTable.
+#define VU_CHAIN_TABLE_SIZE 19
+
 int* vuChain_getCurrent(void) {
-    int index = *(int*)0x15ED84;
-    if (index >= 19) {
+    int index = currentVuChainIndex;
+    if (index >= VU_CHAIN_TABLE_SIZE) {
         index = 0;
     }
     int* chain = vuChainTable + index;
