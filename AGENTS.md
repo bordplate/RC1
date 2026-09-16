@@ -530,6 +530,25 @@ low16 >= 0x8000 can use an unsigned `lui/ori` split. Name real data symbols;
 SN can produce absolute self-based loads even for GP-window scalar externs.
 See decomp_state/notes/vuchain_func_002335A0.md for the original split example.
 
+Observation observed 2026-09-16 (the -G8 small-data bare-pseudo load,
+pause_updateSoundVolume 0x21CB00): whether a plain NAMED scalar extern in the
+GP window compiles to a GP-relative access or an absolute self-based load
+depends on the `-G` small-data threshold relative to the declared size. Under
+the project-default `-G8`, EGC classifies a <=8-byte int extern as
+small-data-local and emits ONE bare pseudo `lw r, sym` with NO `.extern`
+declaration (EGC emits no `.extern` at all in C++ mode); ps2eeas then expands
+it in place (no preceding `.extern`, outside noreorder) into the self-based
+absolute `lui r,%hi(sym); lw r,%lo(sym)(r)`. Under `-G0`/`-G2` the same
+declaration compiles to a 2-register split load (base in a second register,
+independent instructions scheduled into the gap) — 5 word diffs in
+pause_updateSoundVolume. So a GP-window global whose original load is
+self-based absolute (NOT GPREL16) matches with a plain named extern in a
+default-`-G8` TU — no constant-address cast, no section attribute needed.
+When the owning TU is pinned `-G0` for a sibling (pause_post.o needs -G0 for
+pause_resetMenuEntry's PI inlining), isolate the function into its own
+default-flags TU via a Splat boundary split (pause_post_soundvol.o). See
+decomp_state/notes/pause_func_0021CB00.md.
+
 ProcessMobyAnimData's verified symbolic form uses a named array for the
 FastMemCopy source (D_00165500) and plain pointer scalar externs for both
 MobyAnimProc arguments (D_0015F638 and D_0015F63C). Under SN, arg1 expands

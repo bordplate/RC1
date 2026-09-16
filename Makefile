@@ -88,6 +88,7 @@ $(OBJ_DIR)/game/vuchain.o: PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 $(OBJ_DIR)/game/menu_callbacks.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns2
 $(OBJ_DIR)/game/pause_sched.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
 $(OBJ_DIR)/game/pause_post.o: PRIVATE_COMPILE_FLAGS = -G0
+$(OBJ_DIR)/game/pause_post2.o: PRIVATE_COMPILE_FLAGS = -G0
 
 # Existing source forms in these TUs rely on GNU macro expansion/scheduling.
 # Keep their assembler local until each source migration passes full parity.

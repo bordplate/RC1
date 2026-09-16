@@ -1491,14 +1491,16 @@
     "note": "Pause-screen entry state writer: f0=0x2D, f110=0, GameMode(0x15F604)=3, fC=0, f10=0 (D_001D5BF0, 0x114-byte struct, absolute HI16/LO16). Needs -fno-schedule-insns (source-order stores; default hoists GameMode to pos 2) plus register bindings base->asm(\"$3\") (forces base_hi into $a0) and mode->asm(\"$5\") (GM via $at). pause.o can't take the flag (breaks func_0021A318 + func@0x2223D8), so the pause Splat segment was split into pause/pause_sched/pause_post at 0x119ee8/0x119f18; pause_sched.o gets the flag. probe 44/44, full clean build + cmp identical, count 740->739. See notes/pause_func_00218F68.md."
   },
   "code/game/pause_post.cpp:97:func_0021CB00": {
-    "name": "func_0021CB00",
-    "source": "code/game/pause_post.cpp",
-    "asm": "code/_generated/nonmatchings/game/pause_post/func_0021CB00.s",
+    "name": "pause_updateSoundVolume",
+    "original_name": "func_0021CB00",
+    "symbol": "func_0021CB00",
+    "source": "code/game/pause_post_soundvol.cpp",
+    "asm": "code/_generated/matchings/game/pause_post_soundvol/func_0021CB00.s",
     "vram": "0x0021CB00",
     "file_offset": "0x11DA80",
     "size": 48,
     "matched_date": "2026-09-08",
-    "note": "Stores D_0015EDF0*8/10 to D_0013E5A0 and returns zero. A constant-address input load is required for the original self-based v1 lui/lw and scheduling; the output is symbolic .data for matching HI16/LO16 relocations. All 48 bytes and the full clean boot ELF match. See notes/pause_func_0021CB00.md."
+    "note": "Copies the raw music-volume option musicVolumeRaw (0x15EDF0, GP window, u32 0..1024) scaled by 8/10 into pauseSoundVolume (0x13E5A0, .data) and returns 0; Ghidra shows no code xref (data-table leaf in the 0x1D1584 item table). MATCHING FORM (refactored 2026-09-16, was constant-address cast): plain 'extern int musicVolumeRaw;' + 'extern int pauseSoundVolume __attribute__((section(\".data\"))): pauseSoundVolume = musicVolumeRaw * 8 / 10; return 0;'. Under the project-default -G8 small-data classification EGC emits one bare 'lw v1, musicVolumeRaw' pseudo (no .extern is emitted in C++ mode) which ps2eeas expands in place to the original self-based absolute load lui v1,0x16; lw v1,-0x1210(v1); the store keeps the hoisted lui a1,0x14 + delay-slot sw. The old TU was pinned -G0 for pause_resetMenuEntry (PI inlining), and under -G0/-G2 the plain declaration gives a 2-register split load with 5 word diffs, so the function sits in its own default-flags TU code/game/pause_post_soundvol.cpp (Splat boundary split at file 0x11DA80/0x11DAB0; head pause_post.cpp and tail pause_post2.cpp keep -G0). Full clean build + cmp byte-for-byte; count 689. See notes/pause_func_0021CB00.md."
   },
   "code/game/actuator.cpp:11:texResetCursor__Fv": {
     "name": "texResetCursor__Fv",
@@ -1583,7 +1585,7 @@
   },
   "code/game/pause_post.cpp:239:func_00221A88": {
     "name": "func_00221A88",
-    "source": "code/game/pause_post.cpp",
+    "source": "code/game/pause_post2.cpp",
     "vram": "0x00221A88",
     "size": 48,
     "matched_date": "2026-09-10",
@@ -1633,8 +1635,8 @@
   },
   "code/game/pause_post.cpp:168:pause_resetMenuEntry": {
     "name": "pause_resetMenuEntry",
-    "source": "code/game/pause_post.cpp",
-    "asm": "code/_generated/nonmatchings/game/pause_post/func_0021DF30.s",
+    "source": "code/game/pause_post2.cpp",
+    "asm": "code/_generated/nonmatchings/game/pause_post2/func_0021DF30.s",
     "vram": "0x0021DF30",
     "file_offset": "0x11EEB0",
     "size": 36,
@@ -1655,7 +1657,7 @@
   "code/game/pause_post.cpp:151:pause_setFirstSpriteTag": {
     "name": "pause_setFirstSpriteTag",
     "original_name": "func_0021DDD0",
-    "source": "code/game/pause_post.cpp",
+    "source": "code/game/pause_post2.cpp",
     "vram": "0x0021DDD0",
     "size": 40,
     "matched_date": "2026-09-12",
@@ -1768,7 +1770,7 @@
   "code/game/pause_post.cpp:320:pause_drawRangeList": {
     "name": "pause_drawRangeList",
     "original_name": "func_00221930",
-    "source": "code/game/pause_post.cpp",
+    "source": "code/game/pause_post2.cpp",
     "vram": "0x00221930",
     "size": 56,
     "matched_date": "2026-09-13",

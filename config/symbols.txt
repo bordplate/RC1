@@ -39,6 +39,7 @@ menuPostCallbackIndex = 0x0015EEB0;
 menuPostFlags = 0x0015EEB4;
 pauseMemoryCardState = 0x001A0318;
 pauseSoundVolume = 0x0013E5A0;
+musicVolumeRaw = 0x0015EDF0;
 pauseMenuFlags = 0x0013CB04;
 pauseCurrentActionList = 0x001D5BF8;
 pauseDefaultActionList = 0x001D22F8;

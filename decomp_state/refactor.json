@@ -71,9 +71,10 @@
     "function": "pause_updateSoundVolume__Fv",
     "addresses": ["0x15EDF0"],
     "category": "hardcoded-data-address",
-    "description": "pauseSoundVolume = *(int*)0x15EDF0 * 8 / 10; reads the raw menu sound option through a constant-address cast; 0x15EDF0 has no symbol. Name the global in config/symbols.txt and verify the load/scale/store sequence matches.",
-    "evidence": "code/game/pause_post.cpp:122",
-    "status": "open"
+    "description": "RESOLVED 2026-09-16: 0x15EDF0 is musicVolumeRaw (raw music-volume option 0..1024, GP window). Under the project-default -G8 small-data classification EGC emits ONE bare 'lw v1, musicVolumeRaw' pseudo for a plain scalar extern (EGC emits no .extern in C++ mode), which ps2eeas expands in place to the original self-based absolute lui v1,0x16 / lw v1,-0x1210(v1); the .data output store splits normally. Under the -G0 the old TU used (required by pause_resetMenuEntry's PI inlining) the same declaration compiles to a 2-register split load with 5 word diffs, so the function was isolated into its own default-flags TU code/game/pause_post_soundvol.cpp via a Splat boundary split at file offsets 0x11DA80/0x11DAB0 (pause_post.cpp = head, pause_post2.cpp = tail, both keep -G0). Full clean build + cmp byte-for-byte pass; count unchanged at 689.",
+    "evidence": "code/game/pause_post_soundvol.cpp; code/include/pause.h; config/symbols.txt (musicVolumeRaw = 0x0015EDF0); config/RC1.yaml (3-way pause split); Makefile (pause_post.o / pause_post2.o -G0); decomp_state/notes/pause_func_0021CB00.md",
+    "status": "done",
+    "resolved": "2026-09-16"
   },
   {
     "id": "pause_sched_pause_scheduleInput__Fv",
