@@ -143,6 +143,21 @@ snd_batchReturnBuffers = 0x0015ECB8;
 snd_batchIndex = 0x0015ECC0;
 sceSifCheckStatRpc = 0x0011B3B8;
 sceSifCallRpc = 0x0011B1C8;
+snd_commandBuffer1 = 0x00133280;
+snd_commandBuffer2 = 0x00134280;
+snd_streamBuffer1 = 0x00135280;
+snd_streamBuffer2 = 0x00136280;
+snd_returnBuffer1 = 0x00137280;
+snd_returnBuffer2 = 0x001376C0;
+snd_streamBuffers = 0x0015ECB0;
+snd_cdRpcServer = 0x0015EBE8;
+snd_cdCallbackPending = 0x0015ECC8;
+snd_cdCallbackFn = 0x0015ECD0;
+snd_cdCallbackData = 0x0015ECD8;
+snd_cdCallbackArg = 0x0015ED00;
+snd_SifBindRpcErrorString = 0x00153C50;
+snd_989SndSourceFile = 0x00153C78;
+
 
 __main = 0x011dcc8;
 main = 0x12d9d8;
