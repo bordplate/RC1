@@ -28,13 +28,10 @@ extern "C" int videoDecRegisterCallback(VideoDec* self, int a, int b,
     videoDecCallback cb, void* userdata);
 
 void viBufDelete(ViBuf* self);
-void viBufAddDMA(ViBuf* buf);
 // C linkage: generated sce/lib.s supplies this deletion helper at 0x0012B9E0;
 // it ignores its argument and returns success.
 // C linkage: generated sce/lib.s supplies this unmangled deletion helper.
 extern "C" int videoDecRelease(void* p);
-// C linkage: this kernel routine is an unmangled generated entry point.
-extern "C" void switchThread(void);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/videodec", videoDecCreate__FP8VideoDecPUciPUxT3iP9TimeStampi);
 
@@ -109,11 +106,5 @@ extern "C" void STUB_printf(const char* fmt, ...);
 
 int mpegError(struct sceMpeg* mpeg, struct sceMpegCbDataError* err, void* user) {
     STUB_printf(videoErrorMessage, *(int*)((char*)err + 4));
-    return 1;
-}
-
-int mpegNodata(struct sceMpeg* mpeg, struct sceMpegCbData* cbData, void* user) {
-    switchThread();
-    viBufAddDMA((ViBuf*)(*(int*)0x16120C + 0xD9090));
     return 1;
 }

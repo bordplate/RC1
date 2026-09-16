@@ -23,13 +23,14 @@
   },
   {
     "id": "movie_videodec_mpegNodata",
-    "file": "code/game/movie/videodec.cpp",
+    "file": "code/game/movie/videodec_nodata.cpp",
     "function": "mpegNodata",
     "addresses": ["0x16120C"],
     "category": "hardcoded-data-address",
-    "description": "Reads *(int*)0x16120C + 0xD9090 through a raw cast even though movieDecodeBuf = 0x0016120C already exists in symbols.txt and is used by the movie_mid/movie_post_audio TUs. Load through the named symbol (check the TU's address-splitting flag: -mno-split-addresses TUs expect the named form), keep the 0xD9090 offset arithmetic explicit, and verify parity.",
-    "evidence": "config/symbols.txt (movieDecodeBuf = 0x0016120C); decomp_state/notes/movie_isAudioOK.md",
-    "status": "open"
+    "description": "DONE 2026-09-16: mpegNodata now loads through the named movieDecodeBuf symbol with MOVIE_VIBUF_OFFSET. The named .data form only reproduces the original's single self-based lui/lw under -mno-split-addresses; adding the flag to videodec.o broke the sibling mpegError prologue schedule (its videoErrorMessage address setup reordered around sq ra), so the videodec Splat segment was split at 0x13e028 into videodec_nodata.cpp, which carries -mno-split-addresses; videodec.o keeps default splitting. Function objdump 14/14 words identical; clean build + cmp pass.",
+    "evidence": "code/game/movie/videodec_nodata.cpp; config/RC1.yaml (0x13e028 boundary); Makefile (videodec_nodata.o PRIVATE_COMPILE_FLAGS); decomp_state/notes/videodec_mpegNodata__FP7sceMpegP13sceMpegCbDataPv.md",
+    "status": "done",
+    "resolved": "2026-09-16"
   },
   {
     "id": "bloaders_LoadDebugFont__Fv",

@@ -73,7 +73,8 @@ $(OBJ_DIR)/game/transition.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns -mno-s
 $(OBJ_DIR)/game/menu_post.o $(OBJ_DIR)/game/menu_post_pages.o \
     $(OBJ_DIR)/game/menu_post_pages_end.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns -mno-split-addresses
 $(OBJ_DIR)/game/movie/movie_mid.o $(OBJ_DIR)/game/movie/videodec_post.o \
-    $(OBJ_DIR)/game/movie/movie_post_audio.o: \
+    $(OBJ_DIR)/game/movie/movie_post_audio.o \
+    $(OBJ_DIR)/game/movie/videodec_nodata.o: \
     PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 # endDisplay__Fv stores the named in-window movieDisplayActive flag; the flag
 # keeps the store a single unsplittable pseudo that ps2eeas expands in place
