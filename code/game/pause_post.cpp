@@ -23,10 +23,21 @@ typedef struct {
 extern int pauseActionListA[];
 extern int pauseActionListB[];
 
+// Set once in InitOnce__Fv from the memory-card save-info sector read at boot:
+// (sector[0x33] != 'N'). Also selects the memcard_Update save-data size
+// (0x3C00 when set, 0x3C04 when clear).
+extern int pauseActionListMode;
+
 // C linkage: this callback is referenced by the original unmangled pause menu
 // action-list table.
 extern "C" int SetPauseActionList(PauseActionMode* mode) {
-    if (*(int*)0x15EE90 != 0)
+    // EGC's named -G0 load allocates a separate base register (lui $v1;
+    // lw $v0, off($v1)); the original reuses one register (lui $v0;
+    // lw $v0, off($v0)). A bare lw pseudo makes ps2eeas expand the pair
+    // in place self-based (no .extern precedes the reference).
+    int listMode;
+    asm volatile("lw %0, pauseActionListMode" : "=r"(listMode));
+    if (listMode != 0)
         mode->actionList = (u32)pauseActionListA;
     else
         mode->actionList = (u32)pauseActionListB;

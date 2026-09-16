@@ -12,14 +12,21 @@ typedef struct {
     u32 actionList;
 } PauseActionMode;
 
-extern "C" int D_001D4810[];
-extern "C" int D_001D4840[];
+extern int pauseActionListA[];
+extern int pauseActionListB[];
+extern int pauseActionListMode;
 
 extern "C" int SetPauseActionList(PauseActionMode* mode) {
-    if (*(int *)0x15EE90 != 0)
-        mode->actionList = (u32)D_001D4810;
+    // EGC's named -G0 load allocates a separate base register (lui $v1;
+    // lw $v0, off($v1)); the original reuses one register (lui $v0;
+    // lw $v0, off($v0)). A bare lw pseudo makes ps2eeas expand the pair
+    // in place self-based (no .extern precedes the reference).
+    int listMode;
+    asm volatile("lw %0, pauseActionListMode" : "=r"(listMode));
+    if (listMode != 0)
+        mode->actionList = (u32)pauseActionListA;
     else
-        mode->actionList = (u32)D_001D4840;
+        mode->actionList = (u32)pauseActionListB;
     return 0;
 }
 ```
@@ -61,10 +68,35 @@ read by `memcard_Update` (0x2093d8) to pick save size 0x3C04 vs 0x3C00.
    condition as `if (flag != 0) A; else B;` makes EGC emit the original
    `beq ==0` layout exactly (v2 → v3: 5 diffs → 0).
 3. **Flag load base register.** 0x15EE90 is inside the gp window; a plain
-   `extern int` symbol load gave `lui v1; lw v0,off(v1)` (base in v1), while
-   the original reuses v0 for base and value (`lui v0; lw v0,off(v0)`).
-   The constant-address cast `*(int *)0x15EE90` reproduces the original
-   (same fix as the menu 0x208E68 family).
+   `extern int` symbol load gives `lui v1; lw v0,off(v1)` (base in v1), while
+   the original reuses v0 for base and value (`lui v0; lw v0,off(v0)`). The
+   constant-address cast `*(int *)0x15EE90` also reproduced the original, but
+   is forbidden as a committed form (2026-09-16 owner policy).
+
+## SN-pipeline refactor (2026-09-16)
+
+Named the gate global `pauseActionListMode` (config/symbols.txt) and replaced
+the cast. Probed variants (tools/decomp_probe.py, `-G0` = pause_post.o's
+PRIVATE_COMPILE_FLAGS) against the 44-byte original:
+
+| form | result |
+| --- | --- |
+| `extern int` plain, default split | 2-word diff: `lui $v1; lw $v0,off($v1)` (base reg) |
+| `extern int` + `section(".data")` | same 2-word diff |
+| `extern volatile int` | same 2-word diff |
+| `-G0 -mno-split-addresses` (TU flag) | load fixed (self-based pseudo), but 10-word diff: the flag also makes the list `la` pseudo unsplittable, so EGC drops the delay-slot `lui listB` hoist, emits `beq` (opcode 4) instead of `beql` (opcode 20), nops the delay slot, and moves the stores apart — the original schedule needs SPLIT list lui/addiu, conflicting with the unsplittable load |
+| `asm volatile("lw %0, pauseActionListMode" : "=r"(v))` | **exact 44-byte match** |
+
+Mechanics: EGC emits the bare `lw $v0, pauseActionListMode` pseudo for the asm
+output operand (register chosen by the same allocation as the plain load, v0
+here). ps2eeas is single-pass and, with no preceding `.extern` (EGC emits
+`.extern` only for small-data symbols, and `-G0` has none) and the reference
+outside a noreorder block, expands it in place to the self-based `lui $v0,
+%hi; lw $v0, %lo($v0)` pair — the original's words. The rest of the function
+keeps the default-split RTL, so the `beql` + delay-slot `lui listB` +
+`b`/`addiu listA` schedule is unchanged. Precedent for load/store-bearing asm
+with a symbol: transition.cpp (HelpMsgCount store). Final probe:
+`decomp_state/probes/pause_setPauseActionList_v1_final.cpp`.
 
 ## Verification
 
@@ -76,6 +108,10 @@ read by `memcard_Update` (0x2093d8) to pick save size 0x3C04 vs 0x3C00.
   assets/boot_elf.elf` byte-identical; 11/11 words objdump-verified against
   the reference; no stale `func_0021A1B0` references anywhere.
 - Count 750 → 749.
+- 2026-09-16 refactor to the named symbol: probe matched all 44 bytes;
+  incremental `make -j2` + `cmp build/boot_elf.elf assets/boot_elf.elf`
+  byte-identical; `decomp_status` count unchanged (function was already
+  matched, no INCLUDE_ASM removed).
 
 Iteration probes: `pause_func_0021A1B0.cpp` (v1, literal if/else — movz diff),
 `_v2.cpp` (symbol tables, 5-word diff: base reg + polarity), `_v3.cpp` (cast +

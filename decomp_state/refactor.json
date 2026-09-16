@@ -66,16 +66,6 @@
     "resolved": "2026-09-16"
   },
   {
-    "id": "pause_post_SetPauseActionList",
-    "file": "code/game/pause_post.cpp",
-    "function": "SetPauseActionList",
-    "addresses": ["0x15EE90"],
-    "category": "hardcoded-data-address",
-    "description": "Selects between pauseActionListA/pauseActionListB via if (*(int*)0x15EE90 != 0); the gate global has no symbol. Identify it (pause action-list mode selector), name it in config/symbols.txt, and verify the conditional store shapes match.",
-    "evidence": "code/game/pause_post.cpp:29",
-    "status": "open"
-  },
-  {
     "id": "pause_post_pause_updateSoundVolume__Fv",
     "file": "code/game/pause_post.cpp",
     "function": "pause_updateSoundVolume__Fv",
