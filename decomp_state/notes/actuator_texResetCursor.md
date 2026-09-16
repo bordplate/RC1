@@ -99,3 +99,36 @@ bloaders block).
   `cmp build/boot_elf.elf assets/boot_elf.elf` = PARITY_OK.
 - Remaining actuator.cpp nonmatches: func_001E8D00 (4B), actuator_CalcPower (0x414),
   func_001E9120 (4B dead tail), func_001E9148 (0x1C dead tail) — all INCLUDE_ASM.
+
+## Refactor 2026-09-16: named globals
+
+The constant-address casts were replaced with named plain externs:
+`textureMemoryBase` (0x15EE8C, the VRAM texture pool base) and
+`textureAllocCounter` (0x15EF20, cleared with the cursor; no boot-ELF readers,
+exact role unconfirmed) in config/symbols.txt.
+
+```cpp
+extern int textureCursor;
+extern int textureMemoryBase;
+extern int textureAllocCounter;
+
+void texResetCursor(void) {
+    textureCursor = textureMemoryBase;
+    textureAllocCounter = 0;
+}
+```
+
+Mechanism (probe-verified, decomp_state/probes/texreset_v1/v3): under SN, a plain
+`extern int` (gp window) makes EGC emit the SYMBOLIC pseudos
+`lw $2, textureMemoryBase` / `sw $0, textureAllocCounter` in the body. ps2eeas
+expands each in place to a self-based absolute `lui/lw` and `lui at/sw` pair
+because the `.extern` declarations EGC emits sit at the END of the file, so every
+body reference precedes its declaration (the absolute path, not the single
+GPREL16 path). The cursor store `sw $2, textureCursor` is inside EGC's
+`.set noreorder/.set nomacro` return block, so ps2eeas expands it to the single
+GPREL16 access `sw $2,%lo(textureCursor)($gp)` = `sw v0,-0x7D8C(gp)`. All three
+address forms therefore reproduce the original byte-for-byte with no flags,
+casts, or Splat-split change. Probe v1 (old cast form) 24/24 baseline; v3 (named
+form) 24/24. Clean `make clean && make split && make -j2` + cmp = PARITY OK.
+The rename also propagates to the generated nonmatching asm (loaders.o reads now
+use `%hi(textureMemoryBase)`); no byte change.

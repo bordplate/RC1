@@ -1507,7 +1507,7 @@
     "vram": "0x001E9128",
     "size": 24,
     "matched_date": "2026-09-09",
-    "note": "Resets the VRAM/GPU bump allocator at level start: cursor D_0015EE74 = base D_0015EE8C, counter D_0015EF20 = 0. void return + direct stores match (EGC loads base into v0, gp-relative store for the cursor). Was the live half of the old 0x20-byte func_001E9120; split via a symbols.txt entry, the 4-byte dead tail stays INCLUDE_ASM, and two file-scope asm(\"nop\") supply the 8-byte gap at 0x1E9140-0x1E9147 (stash.cpp convention) that otherwise shrank actuator.o by 8 bytes and shifted startlevel__Fv. Clean full boot parity passes. See notes/actuator_texResetCursor.md."
+    "note": "Resets the VRAM/GPU bump allocator at level start: textureCursor (D_0015EE74) = textureMemoryBase (D_0015EE8C), textureAllocCounter (D_0015EF20) = 0. void return + direct stores match (EGC loads base into v0, gp-relative store for the cursor). All three globals are named plain externs since the 2026-09-16 refactor; under SN the symbolic lw/sw pseudos expand in place to the original absolute lui/lw + lui at/sw pairs and the noreorder-block cursor store stays GPREL16. Was the live half of the old 0x20-byte func_001E9120; split via a symbols.txt entry, the 4-byte dead tail stays INCLUDE_ASM, and two file-scope asm(\"nop\") supply the 8-byte gap at 0x1E9140-0x1E9147 (stash.cpp convention) that otherwise shrank actuator.o by 8 bytes and shifted startlevel__Fv. Clean full boot parity passes. See notes/actuator_texResetCursor.md."
   },
   "code/game/draw.cpp:35:func_001F2070": {
     "name": "func_001F2070",

@@ -71,9 +71,10 @@
     "function": "texResetCursor__Fv",
     "addresses": ["0x15EE8C", "0x15EF20"],
     "category": "hardcoded-data-address",
-    "description": "textureCursor = *(int*)0x15EE8C; and *(int*)0x15EF20 = 0; use raw constant-address casts; neither address has a symbol. Name both globals in config/symbols.txt (the texture-cursor source slot and the cursor-reset flag), reference them, and verify the two-store tail shape under the TU's current flags.",
-    "evidence": "code/game/actuator.cpp:12-13",
-    "status": "open"
+    "description": "DONE 2026-09-16: named textureMemoryBase (0x15EE8C, VRAM texture pool base; every reader uses it as a base, several via >>8 for GS texture words) and textureAllocCounter (0x15EF20, cleared with the cursor at level start; no boot-ELF readers, exact role unconfirmed) in config/symbols.txt, and the function now stores through plain externs. Under SN the symbolic lw/sw pseudos expand in place to the original absolute lui/lw + lui at/sw pairs (.extern at end of file), while the cursor store inside EGC's noreorder/nomacro block stays a single GPREL16 — 24/24 probe and clean full parity with no flags or splits.",
+    "evidence": "decomp_state/notes/actuator_texResetCursor.md (Refactor 2026-09-16 section); decomp_state/probes/texreset_v1_cast.cpp, texreset_v3_final.cpp; code/game/actuator.cpp; config/symbols.txt (textureMemoryBase, textureAllocCounter)",
+    "status": "done",
+    "resolved": "2026-09-16"
   },
   {
     "id": "pause_post_SetPauseActionList",
