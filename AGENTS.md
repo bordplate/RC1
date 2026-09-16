@@ -306,9 +306,14 @@ $v0 for base and value (`lui v0,0x16; lw v0,-4428(v0)`). Casting the load
  RTL, and `*(int*)sym` (the STYLEGUIDE literal) miscompiles to a load-then
  indirect-store. Only the constant-address cast pseudo (`sw r,0xADDR`,
  expanded in place by ps2eeas to `lui at; sw r,%lo(at)`) reproduces the
- original. So `MENU_POST_CALLBACK_INDEX_ADDRESS` stays for all three stores.
- Do not re-attempt the named-store refactor for these three (see
- decomp_state/notes/menu_func_002088A8.md, 2026-09-16 table).
+  original. So `MENU_POST_CALLBACK_INDEX_ADDRESS` stays for the remaining
+  stores. Do not re-attempt the named-store refactor for these (see
+  decomp_state/notes/menu_func_002088A8.md, 2026-09-16 table). Per the
+  2026-09-16 owner policy, static data addresses are forbidden in source:
+  menu_restoreSelection (0x2088A8) was reverted to `INCLUDE_ASM` and blocked
+  that day; the sibling 0x2089A8 (menu_post_selectNextPage) and 0x208EB8
+  (menu_post_openGadgets) still carry the cast and need the same
+  revert-and-block treatment.
 
 Observation observed 2026-09-05 (EGC dead-code tails — ~46 "phantom functions"):
 the original binary contains ~46 unreachable 4-byte fragments that spimdis splits
@@ -442,6 +447,18 @@ clears the entry (remove it or set `"status": "done"` with a date). Do not
 keep a refactor entry for a function whose deviation is a documented,
 required codegen artifact (e.g. an EGC high-16 split page) — those stay as
 documented constants with an explanatory comment.
+
+Hard policy (2026-09-16, owner): static data addresses are forbidden in
+source — raw address constants, address-holding `#define`s, and constant
+address casts — because level overlays have their own data segments and only
+linker-resolved symbols relocate correctly. A refactor entry whose only
+matching form is a constant data-address cast is resolved by reverting the
+function to `INCLUDE_ASM` (the generated `.s` references the named symbol and
+is overlay-safe), recording a `blocked.json` entry for that target, and
+removing the refactor entry. This overrides the codegen-artifact escape above
+for data addresses: the cast may not be retained. See
+decomp_state/notes/menu_func_002088A8.md (2026-09-16) for the first
+application.
 
 The status tool enumerates source files directly, so stale queue entries cannot
 make the project appear complete. Every blocked target must have a non-empty
@@ -648,7 +665,10 @@ Select targets in this priority order:
 Only pick a new `queue.json` function while `refactor.json` has no open
 entries. A refactor entry that turns out to be unsafe under the current
 pipeline (the named form cannot match) is not a blocker for the project:
-record why in the entry, restore the original source, and move on.
+record why in the entry, restore the original source, and move on. The
+exception is static data addresses: when the only matching form is a
+constant data-address cast, the function is reverted to `INCLUDE_ASM` and
+blocked instead (see the Refactor Registry hard policy above).
 
 For each selected function:
 
@@ -693,7 +713,12 @@ When a data address must be referenced but is not yet a symbol, define it in
 reference the named symbol in source — do not hardcode the address as a cast.
 Insomniac did not hardcode data addresses; a bare magic address in source is a
 sign the underlying global should be named. (Only a genuine codegen artifact with
-no real symbol, such as EGC's high-16 split page, may stay a documented constant.)
+no real symbol, such as EGC's high-16 split page, may stay a documented constant —
+a data address always has a real symbol.) Static data addresses in source are
+forbidden (overlay-system compatibility): when the named-symbol form cannot be
+made to match, revert the function to `INCLUDE_ASM` and record a
+`blocked.json` entry — never fall back to a raw-address cast (Refactor
+Registry hard policy above).
 
 Prefer small leaf functions and focused iterations. Preserve old compiler
 compatibility and existing project style. If repeated attempts fail, record the
