@@ -157,6 +157,12 @@ snd_cdCallbackData = 0x0015ECD8;
 snd_cdCallbackArg = 0x0015ED00;
 snd_SifBindRpcErrorString = 0x00153C50;
 snd_989SndSourceFile = 0x00153C78;
+snd_iopReturnWord = 0x00133104;
+snd_cdSyncPending = 0x0015EC94;
+snd_cdStreamEndPending = 0x0015EC98;
+snd_returnCallbackPending = 0x0015EC9C;
+snd_returnCallbackFn = 0x0015ECE0;
+snd_returnCallbackData = 0x0015ECE8;
 
 
 __main = 0x011dcc8;

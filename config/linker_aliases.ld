@@ -184,6 +184,7 @@ videoErrorMessage = 0x00161220;
 movieErrorMessage = 0x001611F8;
 frameBufferColor = 0x00152078;
 snd_cdStreamInfo = 0x00137B00;
+snd_cdCallbackArgGp = 0x0015ED00;
 debugFontLoadInfo = 0x00137B80;
 debugFontBuffer = 0x001AABC0;
 pauseActionListA = 0x001D4810;
