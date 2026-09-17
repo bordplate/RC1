@@ -254,8 +254,6 @@ void snd_StreamSafeCheckCDIdle(int arg) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdRead);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_StreamSafeCdSync);
-
 // `volatile` keeps EGC from folding the out-of-window 0x137B00 base load into
 // the branch delay slot; without it the 14-word shape does not match.
 typedef struct {
@@ -266,6 +264,7 @@ typedef struct {
 
 extern int snd_cdStreamActive;
 extern int snd_cdStatusCallback;
+extern int snd_cdStreamEndPending;
 extern SndCdStreamInfo snd_cdStreamInfo;
 /* The generated SCE library provides this raw CD error/status getter. Its
  * exact SDK API identity is unresolved, so retain the address-based name in
@@ -279,6 +278,34 @@ extern int func_00120678(int);
  * IOP. Its exact SDK API identity is unresolved, so retain the address-based
  * name in this C TU. */
 extern int func_001216C8(void);
+/* The generated SCE library checks the CD streaming command queue state when
+ * no stream-safe session is active. Its exact SDK API identity is unresolved,
+ * so retain the address-based name in this C TU. */
+extern int func_00120C30(int);
+
+int snd_StreamSafeCdSync(int arg0) {
+    int stateZero;
+
+    if (!snd_cdStreamActive)
+        return func_00120C30(arg0);
+
+    FlushCache(0);
+    stateZero = (snd_cdStreamInfo.state == 0);
+    snd_cdStreamEndPending = stateZero;
+    if (stateZero == 1)
+        return 0;
+    if (arg0 == 1)
+        return 1;
+    if (stateZero)
+        return 0;
+    do {
+        snd_FlushSoundCommands();
+        FlushCache(0);
+        stateZero = (snd_cdStreamInfo.state == 0);
+        snd_cdStreamEndPending = stateZero;
+    } while (stateZero == 0);
+    return 0;
+}
 
 int snd_StreamSafeCdBreak(void) {
     if (!snd_cdStreamActive)
