@@ -131,3 +131,42 @@ only the fn register (v10) and `-mno-split-addresses` makes the function worse. 
 diffs are 60 words (476 vs 480 bytes), all in 0x12dd58-0x12ddb8 plus the 0x12dd1c `addu`.
 INCLUDE_ASM retained. Revisit if the EGC build/flags are revisited or a per-access
 self-based-addressing control is added to the toolchain.
+
+## The dead tail (func_0012DE60) — blocked, INCLUDE_ASM retained
+
+The 0xC bytes at 0x12DE60 (file 0x2EDE0), immediately after this function's
+`jr ra; addiu sp,sp,0x50` epilogue and before `snd_GotReturns` (0x12DE70):
+
+```
+0x12DE58: jr   ra
+0x12DE5C:      addiu sp, sp, 0x50    (delay slot; complete restore)
+0x12DE60: addiu sp, sp, 0x10         <- unreachable dead tail (Splat symbol func_0012DE60)
+0x12DE64: nop
+0x12DE68: addiu sp, sp, 0x10         <- unreachable
+0x12DE6C: nop                        (alignment padding after endlabel)
+```
+
+- A 2x0x10 dead deallocate fragment, not a "duplicate of the parent's 0x50
+  dealloc" (unlike the single-0x10 sibling func_0012EC00). The parent's own
+  frame is fully restored in the `jr` delay slot, so these two adds are pure
+  dead code. Same-TU two-deallocate tails also occur at func_0012E270,
+  func_0012E198, and func_0012EF58.
+- Deadness: Ghidra has no function at 0x12DE60 and no xrefs to it; a raw-ELF
+  scan finds 0 jal and 0 j instructions targeting 0x12DE60 (jal word
+  0x3004B798 and j word 0x2004B798 are absent from the entire boot ELF); the
+  parent's branches (all targets 0x12DD18-0x12DE44) do not reach it.
+- Not regenerable: local EGC 2.95.2 v2.73a (`-G8 -O2 -ffast-math
+  -fno-exceptions -snas`) probes (deadaddiu.c, t1/t6) emit exactly ONE
+  reachable `addiu sp,sp,N` in the epilogue and never a dead one after `jr ra`
+  (a 0x40 frame emits a single `addiu sp,sp,0x40`, not split into adds). This
+  matches the func_0012EC00 t1-t10 experiments: EGC's only dead-tail mechanism
+  is the dead *store*, never a dead frame deallocation. Scheduler flags reorder
+  existing RTL but cannot synthesize a missing post-return epilogue.
+- A standalone C function cannot match: it has no prologue, no `jr ra`/return,
+  and would fall through into snd_GotReturns after corrupting sp.
+- **last-resort GPT-5.6 Sol** invoked 2026-09-17: confirmed no credible C form or
+  TU flag reproduces the fragment with the current toolchain; recommended
+  retaining the orphan INCLUDE_ASM and blocking the entry.
+- Therefore the orphan `INCLUDE_ASM(..., func_0012DE60)` is retained to supply the
+  bytes (preserving full boot-ELF parity), and the queue entry is blocked
+  (precedent: func_0012EC00, func_001FDD50, func_00233880).
