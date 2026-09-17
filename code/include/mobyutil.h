@@ -3,8 +3,17 @@
 
 #include "types.h"
 
+// 16-byte vector. The original class stores a single 128-bit value (the
+// Deadlocked symbols show one 128-bit member, hence the old s128 spelling),
+// but this EGC has no 16-byte scalar type, so the components are spelled
+// out. sizeof(vec4) == 16 is what the original layout requires: the
+// 0x100-byte MobyInstance stride (addiu s0,s0,0x100 in CreateMoby) only
+// closes with 16-byte vec4 members.
 struct vec4 {
-    s128 m_v_dont_even_think_about_touching_this;
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 w;
 /*
     vec4& operator=();
     vec4();

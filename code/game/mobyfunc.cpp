@@ -25,11 +25,11 @@ MobyInstance* CreateMoby(s32 oClass) {
         nextState = moby->state;
         loop_2:
         if (nextState < 0xFEU) {
-            moby += 0x100;
+            moby += 1;
             goto block_13;
         }
         if ((u32)worldUpdateTime < (u64)moby->unk1) {
-            moby += 0x100;
+            moby += 1;
             block_13:
             if ((u32)moby < (u32)MobyInstancePermEnd) {
                 nextState = moby->state;

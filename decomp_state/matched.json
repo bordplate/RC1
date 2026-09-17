@@ -1897,5 +1897,14 @@
     "size": 80,
     "matched_date": "2026-09-15",
     "note": "Append (func, arg) to per-draw-phase callback list 0: count at in-window D_0015F464 (one of three counters 0x15F464/68/6C, zeroed by ResetDrawGlobals), if < 0x40 store func->drawCallbackFuncs[D_0018DB40][idx] and arg->drawCallbackArgs[D_0018DC40][idx], then count++. func_001F47B8 is the identical clone for list 1 (0x15F468 / 0x18DD40/DE40). Consumers func_001F4650/740/808 iterate and jalr each registered callback. Linkage C++ (mangled AddDrawCallback__FUiUi, u32 params encode Ui). Codegen: idx must be SIGNED int (slti, not sltiu); the in-window count needs a constant-address cast (*(int*)0x15F464) to reproduce the self-based lui/lw load and absolute sw store - a named .data symbol emits a two-register load and GPREL store instead (does not match). draw.o uses default flags. 0x40 extracted to DRAW_CALLBACK_MAX."
+  },
+  "code/game/sound.cpp:57:sound_GetFade__FP9SoundDataP4vec4": {
+    "name": "sound_GetFade__FP9SoundDataP4vec4",
+    "original_name": "func_0022C7E8",
+    "source": "code/game/sound.cpp",
+    "vram": "0x0022C7E8",
+    "size": 68,
+    "matched_date": "2026-09-17",
+    "note": "3D sound channel volume at camera distance: dist = FastVecDist(pos, Camera 0x187080), return sound_GetFade(channel->def, dist, def->minRange, def->maxRange). The mov.s f12,f0 is the distance passthrough, NOT 0.0f. Name + SoundDef/SoundData field layout from the Deadlocked successors sound_GetFade__FP8SoundDeffffb / sound_GetFade__FP11_sound_dataR4vec4P4vec4b; slot layout verified against raw objdump of start func 0x22D7F0 (slot = 0x13E5C0+i*0x70). Callee 0x22C6F8 renamed sound_GetFade__FP8SoundDeffff (still INCLUDE_ASM); FastVecDist = 0x1f9b48 named. Same change fixes vec4 to 16 bytes (s128 was an 8-byte long long; MobyInstance stride 0x100 + field offsets confirm). See notes/sound_sound_GetFade__FP9SoundDataP4vec4.md."
   }
 }
