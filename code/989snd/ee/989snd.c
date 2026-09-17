@@ -10,10 +10,43 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_FlushSoundComma
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", func_0012DE60);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_GotReturns);
-
-extern void* snd_currentBuffer;
+extern int* snd_currentBuffer;
 extern int snd_currentBufferIndex;
+extern void FlushCache(int);
+extern int snd_rpcServer __attribute__((section(".data")));
+extern int sceSifCheckStatRpc(void*);
+/* The generated SCE library provides this SIF RPC wrapper. Its exact SDK API
+ * identity is unresolved, so retain the address-based name in this C TU. */
+extern void func_00116078(void*);
+extern int snd_NoReturnErrorString __attribute__((section(".data")));
+
+// Value held in a return buffer slot before the IOP writes a return into it.
+// The unsigned spelling (not -1) is required: EGC emits the original's
+// lui/ori constant split only for the unsigned form.
+#define SND_RETURN_SLOT_NONE 0xFFFFFFFF
+
+// Polls the IOP return buffer armed by snd_PrepareReturnBuffer and returns 1
+// when no buffer is armed or the "no return yet" state (both slots holding
+// SND_RETURN_SLOT_NONE) is confirmed, else 0: while the RPC is still busy, or
+// after reporting the 989snd error string on unexpected slot contents.
+// Callers loop on the zero result.
+int snd_GotReturns(void) {
+    FlushCache(0);
+    if (snd_currentBuffer == 0) {
+        return 1;
+    }
+    if (sceSifCheckStatRpc(&snd_rpcServer) != 0) {
+        return 0;
+    }
+    if (*snd_currentBuffer == SND_RETURN_SLOT_NONE &&
+        snd_currentBuffer[snd_currentBufferIndex + 1] == *snd_currentBuffer) {
+        snd_currentBuffer = 0;
+        return 1;
+    }
+    func_00116078(&snd_NoReturnErrorString);
+    return 0;
+}
+
 extern int snd_batchBusy;
 
 void snd_PrepareReturnBuffer(int* buf, int index) {
@@ -136,17 +169,12 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SendIOPCommandA
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd", snd_SendIOPCommandNoWait);
 
-extern void FlushCache(int);
-extern int snd_batchCommand __attribute__((section(".data")));
-extern int snd_rpcServer __attribute__((section(".data")));
+// "989snd.c: RPC still nonidle!\n" error string reported by snd_SendCurrentBatch.
+extern int snd_NonIdleErrorString __attribute__((section(".data")));
 extern int* snd_batchCommandBuffers[2];
 extern int snd_batchFreeBytes[2];
 extern int* snd_batchReturnBuffers[2];
 extern int snd_batchIndex;
-extern int sceSifCheckStatRpc(void*);
-/* The generated SCE library provides this SIF RPC wrapper. Its exact SDK API
- * identity is unresolved, so retain the address-based name in this C TU. */
-extern void func_00116078(void*);
 extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);
 
 void snd_PostMessage(void) {
@@ -161,7 +189,7 @@ void snd_SendCurrentBatch(void) {
     snd_PrepareReturnBuffer(snd_batchReturnBuffers[snd_batchIndex],
                              *snd_batchCommandBuffers[snd_batchIndex]);
     while (sceSifCheckStatRpc(&snd_rpcServer)) {
-        func_00116078(&snd_batchCommand);
+        func_00116078(&snd_NonIdleErrorString);
         FlushCache(0);
     }
 

@@ -874,6 +874,15 @@
     "size": 28,
     "note": "Prepares IOP return buffer: D_0015EC84=index, D_0015EC80=buf (first two .core_lit words, direct sw disp(gp) via R_MIPS_GPREL16), then buf[index+1]=0; *buf=0 (second zero-store in jr $ra delay slot; independent sll for the index*4 base hoisted above the gp stores). Caller 0x12E74C: snd_PrepareReturnBuffer(0x133100, 1); snd_GotReturns polls D_0015EC80. PITFALL: Ghidra Gp name puGpffff8080 = gp-0x7F80 = 0x15EC80, NOT D_0015EE80 (that lit label is 0x200 away; wrong name broke parity at the two GPREL16 displacement bytes). See decomp_state/notes/snd_PrepareReturnBuffer.md"
   },
+  "code/989snd/ee/989snd.c:33:snd_GotReturns": {
+    "name": "snd_GotReturns",
+    "source": "code/989snd/ee/989snd.c",
+    "vram": "0x0012DE70",
+    "file_offset": "0x2EDF0",
+    "size": 136,
+    "matched_date": "2026-09-17",
+    "note": "IOP return-buffer poll armed by snd_PrepareReturnBuffer: FlushCache(0); snd_currentBuffer==0 -> 1; sceSifCheckStatRpc(&snd_rpcServer)!=0 (RPC busy) -> 0; *buf==SND_RETURN_SLOT_NONE && buf[index+1]==*buf (both slots 0xFFFFFFFF) -> snd_currentBuffer=0 (GPREL pointer disarm, NOT *buf), return 1; else func_00116078(&snd_NoReturnErrorString) and 0. Callers poll on zero (0x12E668, 0x12DCA8). Codegen constraints: the daddu v0,zero,zero in the stat-busy bnez delay slot is the live 0 return (not the stat value); the sentinel must be spelled unsigned 0xFFFFFFFF (SND_RETURN_SLOT_NONE define) for the original lui/ori split, -1 gives a single addiu and (int)0xFFFFFFFFL gives 22 diffs; the two distinct return-1 guards must stay separate conditions or EGC merges them and mis-schedules. Added symbols: snd_NoReturnErrorString = 0x153C98 ('989snd.c: Sif says RPC isn't busy, but we still don't have return from IOP!'), and renamed the misnamed rdata snd_batchCommand (0x153D20) to snd_NonIdleErrorString ('989snd.c: RPC still nonidle!') in symbols.txt + linker_aliases.ld + all references. snd_currentBuffer void*->int* (codegen-neutral for snd_PrepareReturnBuffer). See decomp_state/notes/snd_GotReturns.md"
+  },
   "code/game/sound.cpp:33:func_0022DD78": {
     "name": "func_0022DD78",
     "source": "code/game/sound.cpp",
