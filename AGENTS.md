@@ -330,10 +330,26 @@ two stores before a `return`, EGC keeps the FIRST alive (before `jr ra`, often i
 the delay slot) and emits the SECOND after the `jr ra` — unreachable. Strategy:
 when matching the preceding function, look for the C form that makes EGC
 regenerate the tail bytes and drop the orphan INCLUDE_ASM in the same commit; if
-no form is found, keep the orphan INCLUDE_ASM (it supplies the 8 bytes and keeps
-parity) and block the orphan entry explaining it is a dead tail, not a function
-(see decomp_state/notes/help_msg_string__Fi.md — msg_string__Fi matched with its
- orphan func_001FDD50 retained).
+ no form is found, keep the orphan INCLUDE_ASM (it supplies the 8 bytes and keeps
+ parity) and block the orphan entry explaining it is a dead tail, not a function
+ (see decomp_state/notes/help_msg_string__Fi.md — msg_string__Fi matched with its
+  orphan func_001FDD50 retained).
+ Extension observed 2026-09-18 (multi-unit dead addiu-sp tails, 989snd): spimdis
+ groups contiguous `addiu sp,sp,N; nop` units into single 12-52-byte "functions"
+ (e.g. func_0012E078 = 0x60,0x50; func_0012E478 = 0x20 x8 + 0x30); 989snd.c alone
+ has a 15-fragment family, and the unit sizes do NOT match the parent's frame
+ (snd_StopSound: 0x10 frame, tail 0x40,0x40,0x20,0x30) nor follow any visible
+ function of the decompiled body (same wrapper shapes with and without tails).
+ Cross-game confirmation (Deadlocked PAL, reference/SCUS_974.65): identical
+ artifact with the SAME per-function sequences despite a newer 64-bit EGC and
+ different frames, and its .mdebug symbol SIZES exclude the tail bytes (they are
+ gap bytes between one symbol's end and the next symbol's start, via
+ tools/ccc/stdump) — so the original compiler emitted them after the function's
+ RTL and the linker placed them. Local EGC 2.95.2 never emits dead
+ `addiu sp,sp,N` (t1-t10 plus 2026-09-18 p1-p5 multi-return/tail-call/trailing
+ forms), so when the parent is unmatchable these siblings are retained + blocked
+ one by one (each still needs its own deadness scan + last-resort per the hard
+ rule). See decomp_state/notes/989snd_func_0012E078.md (family table).
 
 Observation observed 2026-09-05 (EGC auto-emits `jal __main` for C++ main): a
 C++ `main` gets a compiler-inserted `jal __main; nop` at the top of the body
