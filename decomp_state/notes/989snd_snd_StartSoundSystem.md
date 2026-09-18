@@ -1,97 +1,129 @@
-# snd_StartSoundSystem (code/989snd/ee/989snd.c) - BLOCKED 2026-09-16
+# 989snd_snd_StartSoundSystem (VMA 0x11EA28, 0x258 / 600 bytes)
 
-`void snd_StartSoundSystem(void)` at vram 0x12DA28, 0x258 bytes (600 bytes / 150 words),
-frame 0xB0 (saves s0-s8 + ra).
+Target of one full attempt. Structurally understood and a C candidate compiles,
+but it does NOT match byte-for-byte: EGC's register allocation and prologue
+scheduling differ from the original. Reverted to INCLUDE_ASM (parity intact).
 
-## What the function does
-Sound-system init. Writes the six sound-buffer base addresses into six global
-pointer slots, calls SIF init (`func_0011AB20(0)`), then in two do/while-retry
-loops binds two RPC clients (`func_0011AFF8`) for ids 0x123456 ("main") and
-0x123457 ("cd"), busy-waiting until each client's `ready` field (struct offset
-+0x24) is nonzero. On bind failure it prints an error
-(`func_00116078(errString, srcFile, line)`) and spins forever. Between the two
-bind loops it zeroes four cd-callback globals. Finally it zeros the head of both
-command buffers, zeros `cdStreamInfo.state`/`.error`, sets two free-byte counters
-to 0xFFC, sets a local `buf = (int)&cdStreamInfo`, and calls
-`snd_SendIOPCommandAndWait(0, 4, &buf)`.
+## Verified facts
 
-## Key structural facts (verified from the reference)
-- Prologue materializes the six buffer bases into v0,v1,a1,a2,a3,t0 and stores
-  them: the three `*1` slots (commandBuffer1/returnBuffer1/streamBuffer1 at
-  0x15ECA0/0x15ECB8/0x15ECB0) are GPREL16 (`sw reg,off(gp)`), the three `*2`
-  slots (0x15ECA4/0x15ECBC/0x15ECB4) are ABSOLUTE (`lui $at,%hi; sw reg,%lo($at)`).
-  s8 = hi(commandBuffer1) is saved and kept live, used ONLY in the final
-  section (`sw 0,%lo(commandBuffer1)(s8)` for `commandBuffer1[0]=0`).
-- Each of the four loop bodies (2 fatal-error `for(;;)` + 2 delay spin) contains
-  exactly 5 explicit NOPs. The 40 bytes of the 48-byte shortfall vs an empty-body
-  candidate are these NOPs.
-- Delay-loop shape (both loops): `i = 9999` (set as `addiu v0,saved10000,-1` in the
-  bind `bgez` delay slot); top `beq i,-1` guard with `sw i,0(sp)` (entry store) in
-  its delay slot; `v1 = -1`; a pre-decrement `addiu i,i,-1`; then the spin
-  `5 nops; bnel i,-1,spin` with the decrement `addiu i,i,-1` IN THE bnel DELAY
-  SLOT; then `sw i,0(sp)` (exit store). `buf` (sp+0, the address-taken local later
-  passed to the IOP call) is the same variable as the counter.
+- Real VMA is **0x11EA28** (file offset 0x2E9A8). The generated `.s` comment
+  prints `0012DA28` because Splat's VMA comments use a base 0x1000 above the
+  final ELF; the PT_LOAD maps `vma = fileoff + 0xF0080`. Trust the ELF/objdump,
+  not the `.s` VMA field.
+- Frame 0xB0; saves s0-s8 + ra (10 `sq`). Locals at 0(sp) (`data`).
+- It is the sound-system startup: sets the 6 batch/stream/return buffer pointer
+  slots, inits the SIF, binds two RPC servers with a retry+spin, clears the CD
+  callback state, and issues a first IOP command.
 
-## Progress made (this session)
-A last-resort-decompiler (GPT-5.6 Sol) consultation corrected two errors and gave
-concrete fixes that were implemented and verified with `tools/decomp_probe.py`:
-1. The GP addresses were miscomputed earlier (gp-0x7F60 = 0x15ECA0, not 0x15EC00);
-   the buffer slots ARE the three `[2]` arrays (snd_batchCommandBuffers /
-   snd_batchReturnBuffers / snd_streamBuffers) — no six-independent-global model.
-2. The 5-NOP loop bodies (`while/for { asm nop x5 }`) — added.
-3. Drop the `commandBuffer1` local pointer (use the global directly) so EGC CSEs
-   hi(commandBuffer1) into s8 — added; the prologue now matches and the frame is
-   0xB0.
-4. `snd_SendIOPCommandAndWait` returns `int` (Ghidra: returns DAT_00133104), not void.
-5. `snd_cdCallbackArg` needs `__attribute__((section(".data")))` for its absolute
-   `lui $at / sw` store; `snd_cdCallbackData` (long, 8-byte `sd`) stays plain.
+## Data layout (all verified against objdump)
+- 0x15ECA0/4: batchCommandBuffers[0/1] = &cmdBuf1(0x133280)/&cmdBuf2(0x134280)
+- 0x15ECB8/0x15ECBC: batchReturnBuffers[0/1] = &retBuf1(0x137280)/&retBuf2(0x1376C0)
+- 0x15ECB0/0x15ECB4: streamBuffers[0/1] = &strBuf1(0x135280)/&strBuf2(0x136280)
+- 0x15EBC0: rpcServer; 0x15EBE8: cdRpcServer. `.bound` flag at offset 0x24
+  (rpcServer.bound=0x15EBE4, cdRpcServer.bound=0x15EC0C). Server block layout
+  (from bind FUN_0011aff8): [0]=blk*, [1]=int, [2]=sema, [4]=0, [9]=bound.
+- 0x15ECC8/0x15ECD0/0x15ECD8(sd,8B)/0x15ED00: cdCallbackPending/Fn/Data/Arg (all zeroed).
+- 0x15ECA8/0x15ECAC: batchFreeBytes[0/1] (0x15ECAC == freeBytes[1], NOT a new sym).
+- 0x137B00: cdStreamInfo {state@0, error@0x10}; cmdBuf1[0]=cmdBuf2[0]=0.
+- Error strings 0x153C50 (SifBindRpcErrorString) / 0x153C78 (989SndSourceFile), out of GP window.
+- Callees: initializeSoundSystem(0x11AB20, void, already named), func_0011AFF8
+  (0x11AFF8 bind, returns int), func_00116078 (0x116078 error, effectively
+  (msg,file,line) -> needs variadic `void f(void*, ...)`), snd_SendIOPCommandAndWait.
+- EIDs 0x123456 (rpc) / 0x123457 (cd); error line numbers 0x73 / 0x88.
 
-With the `for (buf=10000; buf!=-1; buf--) { 5 nops; }` delay form and three
-separate `.data`-section symbols for the `*2` slots (so the `[1]` stores are
-absolute), the candidate reaches 600 bytes (size matches) but 95 word diffs remain.
+## Structure (C that is logically correct)
+```
+6 buffer pointer stores (cmdBufs, retBufs, strBufs, [0] then [1])
+timeout=10000; initializeSoundSystem(0); minus=-1;
+do { ret=bind(&rpcServer,0x123456,0);
+     if(ret<0){ ret=timeout-1; err(errStr,srcFile,0x73); for(;;){} }
+     data=(int*)ret; while(ret!=minus) ret--; data=(int*)ret;
+  } while(rpcServer.bound==0);
+zero cdCallbackPending/Fn/Data/Arg;
+do { ret=bind(&cdRpcServer,0x123457,0);
+     if(ret<0){ ret=timeout-1; err(errStr,srcFile,0x88); for(;;){} }
+     data=(int*)ret; while(ret!=minus) ret--; data=(int*)ret;
+  } while(cdRpcServer.bound==0);
+data=(int*)&cdStreamInfo; freeBytes[1]=0xFFC; cmdBuf1[0]=0; cdStreamInfo.state=0;
+cmdBuf2[0]=0; cdStreamInfo.error=0; snd_SendIOPCommandAndWait(0,4,&data);
+freeBytes[0]=0xFFC;   // in call delay slot
+```
 
-## The two blockers (both EGC codegen, not steerable from C after many variants)
-1. **`*2`-slot register allocation.** The original stores the `*2` values (v1/a2/t0)
-   through `$at` (`lui $at,%hi(slot); sw reg,%lo($at)`), keeping the six bases in
-   v0,v1,a1,a2,a3,t0. Declaring the `*2` slots as separate `.data` symbols makes
-   EGC keep their addresses in BASE registers (sw reg,0(base); t0/a0/t1/t2...) and
-   re-materializes the values into a different register set, shifting the whole
-   prologue (38-word run at 0x12DA34-0x12DAC8). The plain `[2]`-array form keeps the
-   prologue register set but emits the `[1]` stores as GPREL16 (576-592 bytes, size
-   mismatch). Neither reproduces the original's `[0]`-GPREL + `[1]`-absolute-`$at`
-   mix with the v0,v1,a1,a2,a3,t0 value allocation.
-2. **Delay-spin scheduling.** The original uses `bnel` (branch-likely) with the
-   countdown decrement in the branch's DELAY SLOT, plus a separate pre-decrement
-   before the spin. EGC 2.95.2 (project flags) consistently emits `bne` with the
-   decrement as a normal instruction BEFORE the branch (nop delay slot) and folds
-   away the pre-decrement. Tried: `while (buf--) {nops}`, `buf--; while(buf!=-1){nops;buf--}`,
-   `for (buf=10000; buf!=-1; buf--) {nops}`, and `-fno-schedule-insns2` — all give
-   the `bne` form, none the `bnel`-delay-slot form.
+## Spin loop (both instances identical)
+```
+beq  v0, s1, exit        ; s1 = minus (-1)
+sw   v0, 0(sp)           ; (beq delay) store A
+li   v1, -1              ; fresh -1
+v0--
+nop
+.Ltop: nop nop nop nop nop
+bnel v0, v1, .Ltop
+v0--                     ; (bnel delay)
+sw   v0, 0(sp)           ; store B
+exit:
+```
+Countdown starts at 9999: the `bgez v0,spin` DELAY slot is `addiu v0,s2,-1`
+(s2=10000), which always runs, so the spin is a fixed ~5000-iter busy wait,
+independent of the bind return. The 5-nop `.Ltop` body is alignment padding at
+the loop top (0x12DB30 / 0x12DBE8, 8-aligned) — it only materializes when built
+in-place at the real address; a standalone probe at another address emits 0 nops.
 
-## Attempts (all in /tmp/opencode/start_probe)
-- Direct globals, all-local-pointers, cmdBuf1-local-only, `while(buf--)`,
-  pre-decrement `while`, `for` loop, `-fno-schedule-insns2`: 524-592 bytes, no match.
-- `.data`-section `*2` symbols + `for` loop: 600 bytes (size matches), 95 diffs
-  (prologue alloc + bnel + middle/final).
-- Isolated delay-loop probes (dA-dF, g1-g5) and the assembler expansion of
-  `sym` vs `sym+4` (GNU as emits GPREL16 for both — the last-resort "symbol+4 →
-  absolute" explanation does not hold under this toolchain).
+## CRITICAL: the function must be the FIRST 989snd definition (line 7)
 
-## Last-resort result
-last-resort-decompiler (GPT-5.6 Sol) was invoked for this exact target. It
-corrected the GP-address arithmetic and the `snd_SendIOPCommandAndWait` return
-type, and supplied the 5-NOP-body + no-commandBuffer1-local + `.data`
-cdCallbackArg forms, all of which were implemented and reduced the diff from 143
-to 95 words (size now matches). It did not identify a C form for the `[1]`-slot
-`$at` allocation or the `bnel` delay-slot spin; its "symbol+4 expands absolute"
-claim was disproven by the GNU-as relocation output (both `sym` and `sym+4` are
-R_MIPS_GPREL16).
+2026-09-18 finding (re-confirmed the block; new gotcha). 989snd functions are
+placed SEQUENTIALLY in `.core_text` (no fixed per-function addresses in
+SCUS_971.99.ld — the linker script only fixes section boundaries and places
+`989snd.o(.text)` in order). So a C function's address is determined by its
+position in the .o, which is its position in the SOURCE. In the baseline the
+`INCLUDE_ASM(..., snd_StartSoundSystem)` is at **line 7** (the first 989snd
+definition), so it links at 0x11EA28. If you write the C body at a later line
+(e.g. after `snd_cdStreamInfo` ~line 290), it is compiled AFTER the other
+989snd functions and lands ~0x1188 bytes too late (observed 0x11FBB0), with a
+huge whole-TU diff even though the prologue is byte-identical.
 
-## Blocker
-EGC 2.95.2 cannot be steered (via C form, `.data` section, or `-fno-schedule-insns2`)
-to reproduce (a) the prologue's v0,v1,a1,a2,a3,t0 value allocation with the `*2`
-slots stored through `$at` absolute (vs the `*1` slots GPREL16), and (b) the
-delay-spin's `bnel` branch-likely with the decrement in the delay slot (EGC emits
-`bne` with the decrement before the branch). Size matches at 600 bytes; 95 word
-diffs remain across the prologue allocation, both delay spins, and the
-middle/final sections. Revisit if the EGC build/flags are revisited.
+Fix for any future attempt: put the C body at line 7 (replacing the INCLUDE_ASM)
+and hoist every declaration it uses (the `sndRpcServerT` + `SndCdStreamInfo`
+structs, the 6 buffer arrays, the batch/cd-callback globals, the callees, and
+the 5-nop macro) to the top of the file above it. This makes the prologue and
+address match; it does NOT fix the body (see below). Do this FIRST before any
+body iteration, or you will chase a phantom whole-TU shift.
+
+## 9999 folding detail
+The original materializes 10000 into a saved register (s2) in the prologue and
+forms the spin start as `addiu v0, s2, -1` in the `bgez` DELAY slot (runtime
+subtraction). A plain C `data = timeout - 1;` (timeout a local 10000) is
+constant-folded by EGC to a literal `li s0, 9999`, which both changes the
+register and breaks the delay-slot schedule. Keeping 10000 live in a register
+across the bind calls without folding was not achieved.
+
+## expert (GPT-6 Astra) consultation, 2026-09-18
+One-shot `expert` consulted. Best concrete recommendation: (1) move
+`snd_batchFreeBytes[0]=0xFFC` BEFORE the final `snd_SendIOPCommandAndWait` call
+(original puts it in the call delay slot), and (2) try a post-decrement loop
+`data = 10000; while (data--) { nops; }`. Testing showed (1) SHRANK the function
+to 584 bytes (wrong direction — the original tail is longer than the reordered
+C), and (2) compares against 0, not -1, so it cannot produce the original's
+`bnel v0, v1` (v1=-1) back-branch. The `data=timeout; ...data--;` split form
+OVERFLOWS `.core_text` past the `.core_data` boundary (>600 bytes). So no C form
+tested reaches 600 bytes with a matching body; the prior 2026-09-16 attempt got
+600 bytes but still had 95 word diffs (prologue alloc + bnel spin).
+
+## Why it does not match (the blocker)
+The instruction SET is identical, but EGC schedules the prologue and allocates
+registers differently:
+- Original keeps **cmdBuf1 in s8** (long-lived, used at the end `sw zero,lo(s8)`),
+  and **reloads cmdBuf2** at the end (`lui a0,hi(cmdBuf2)`). My candidate keeps
+  cmdBuf1 in s7 and cmdBuf2 in s8 (both saved), so the prologue `move`/`sq`
+  interleaving and the whole 0xB0-frame prologue are reordered word-for-word.
+- This keep-one-buffer-in-a-saved-reg vs reload-the-other asymmetry, plus the
+  exact s1-s8 assignment, is an EGC allocation decision I could not force by
+  reordering the C statements or by declaration changes (arrays, section attrs).
+- Net effect: 0x228 (552) bytes vs 0x258 (600); a 48-byte cascade from 0x11EA28.
+
+## Things to try next (not yet conclusive)
+- The buffer keep-vs-reload split may depend on the exact order the 6 buffer
+  addresses are first materialized and on which are dereferenced at the end.
+  Original end-deref order: cmdBuf1(s8), cdStreamInfo, cmdBuf2(reloaded).
+- Consider whether `data` should be the loop variable (vs a separate `ret`).
+- This is the "EGC register-allocation/scheduling mismatch on a large
+  multi-call function" class, not a symbol/data problem — all symbols exist.
