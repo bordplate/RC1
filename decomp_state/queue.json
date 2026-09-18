@@ -65,11 +65,11 @@
   },
   {
     "id": "code/989snd/ee/989snd.c:19:snd_BankLoadFromEE_CB",
-    "source": "code/989snd/ee/989snd.c",
+    "source": "code/989snd/ee/989snd_bankload.c",
     "line": 19,
     "asm": "code/_generated/nonmatchings/989snd/ee/989snd/snd_BankLoadFromEE_CB.s",
     "name": "snd_BankLoadFromEE_CB",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/989snd/ee/989snd.c:21:func_0012E198",

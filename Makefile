@@ -93,7 +93,8 @@ $(OBJ_DIR)/game/pause_post2.o: PRIVATE_COMPILE_FLAGS = -G0
 # Existing source forms in these TUs rely on GNU macro expansion/scheduling.
 # Keep their assembler local until each source migration passes full parity.
 # See decomp_state/notes/sn_toolchain_assemblers.md for measured differences.
-$(OBJ_DIR)/989snd/ee/989snd.o $(OBJ_DIR)/game/draw.o \
+$(OBJ_DIR)/989snd/ee/989snd_pre.o $(OBJ_DIR)/989snd/ee/989snd_post.o \
+    $(OBJ_DIR)/game/draw.o \
     $(OBJ_DIR)/game/hud.o $(OBJ_DIR)/game/mobyutil.o \
     $(OBJ_DIR)/game/movie/vobuf.o: \
     ASSEMBLER_FLAGS = -Wa,-EL -Wa,-Icode/include
