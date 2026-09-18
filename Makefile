@@ -62,7 +62,7 @@ COMMON_COMPILE_FLAGS = -G8 -O2 -ffast-math -fno-exceptions $(ASSEMBLER_FLAGS)
 setup-snas:
 	python3 tools/install_sn_assembler.py --dest $(SN_AS)
 
-$(SN_AS):
+$(SN_AS): tools/install_sn_assembler.py
 	python3 tools/install_sn_assembler.py --dest $@
 
 # Verified against the full boot image; do not propagate into 989snd.
@@ -142,4 +142,4 @@ $(OBJ_DIR)/%.o: code/%.c $$(wildcard code/_generated/nonmatchings/$$*/*.s code/_
 
 $(OBJ_DIR)/%.o: code/%.cpp $$(wildcard code/_generated/nonmatchings/$$*/*.s code/_generated/matchings/$$*/*.s)
 	@mkdir -p $(dir $@)
-	$(EEGCC) -v -c -x c++ $(COMMON_COMPILE_FLAGS) $(PRIVATE_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@
+	$(EEGCC) -c -x c++ $(COMMON_COMPILE_FLAGS) $(PRIVATE_COMPILE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $< -o $@

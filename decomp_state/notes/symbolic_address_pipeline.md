@@ -2,7 +2,7 @@
 
 ## Verified pipeline
 
-C/C++ compilation defaults to EEGCC 2.95.2 SN 2.73a with SN `ps2eeas` 1.8.19.316,
+C/C++ compilation defaults to EEGCC 2.95.2 SN 2.73a with SN `ps2eeas` 1.9.6.516,
 selected with `-snas`. Five compatibility TUs retain GNU assembly; the verified
 production build uses those explicit overrides and passes full-image parity.
 See [sn_toolchain_assemblers.md](sn_toolchain_assemblers.md) for installation,

@@ -97,7 +97,7 @@ tests require a completed JSON diff with the expected number of differences.
 ## Diagnose The First Difference
 
 For symbolic global loads/stores, first read `notes/symbolic_address_pipeline.md`.
-Production defaults and default probes use SN `ps2eeas` 1.8.19.316 through
+Production defaults and default probes use SN `ps2eeas` 1.9.6.516 through
 `-snas`. Five current TUs retain explicit GNU assembly overrides; consult the
 Makefile and `notes/sn_toolchain_assemblers.md` when reproducing those functions.
 Ordinary scalar externs reproduce the absolute-load/GP-delay-slot combinations
@@ -157,10 +157,11 @@ env WINEPREFIX="$PWD/tools/wineprefix" WINEDEBUG=-all tools/wine/bin/wine \
 ```
 
 Local versions: driver 2.9-ee-991111b/r4, C++ 2.95.2 SN BUILD v2.73a,
-assembler SN 1.8.19.316 by default (GNU 2.9-ee-991111b for compatibility TUs).
+assembler SN 1.9.6.516 by default (GNU 2.9-ee-991111b for compatibility TUs).
 If an RTL dump is needed, use a standalone probe
 with `-da` (or selected `-d` passes); keep dump files out of game source.
-The build's `-v` output shows the actual driver, cc1plus and assembler commands.
+Use `-S -v` only for a compiler-stage command trace; do not pass `-v` through
+an assembling compile because ps2eeas 1.9.6.516 crashes under Wine.
 
 ## Integrate And Verify
 

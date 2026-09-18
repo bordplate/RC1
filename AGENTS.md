@@ -75,7 +75,7 @@ decomp_state/notes/snd_PrepareReturnBuffer.md).
 ## Local Toolchain
 
 Production C/C++ defaults and default probes use EEGCC 2.95.2 SN 2.73a with SN
-`ps2eeas.exe` 1.8.19.316, selected by `-snas`. Common flags are
+`ps2eeas.exe` 1.9.6.516, selected by `-snas`. Common flags are
 `-G8 -O2 -ffast-math -fno-exceptions -snas`. `make setup-snas` installs or
 verifies the assembler using pinned archive/binary SHA-256 hashes; make also
 installs it if missing. Do not pass GNU's `-Wa,-EL -Wa,-Icode/include` to SN.
@@ -89,6 +89,8 @@ blocks are supported by SN.
 `tools/run_ee_compiler.py` serializes compiler-driver invocations: concurrent
 Wine/SN compiles intermittently fail to open the shared labels.inc. Native
 cross-assembly remains parallel; the wrapper preserves compiler exit status.
+Do not pass `-v` to ps2eeas 1.9.6.516 through the compiler driver: it crashes
+under Wine with a stack overflow. The production recipes intentionally omit it.
 
 Ordinary symbolic DrawMobys, ProcessMobyAnimData, and menu callback probes
 match exact original bytes. The same compiler assembly also matches with SN
@@ -651,6 +653,18 @@ symbols.txt. Matched VU1_gsRegsNormal__Fv (0x233BC8) byte-for-byte; the family
 siblings func_00233C28 (data 0x1DE3F0, needs the same signed split) and
 func_00233C90 (data 0x13CF10) should start from this form. See
 decomp_state/notes/vuchain_VU1_gsRegsNormal__Fv.md.
+
+#### Deadlocked debug symbols referencing
+
+You can reference symbols and Ghidra pseudo-code from a Ratchet: Deadlocked PAL build
+with symbols in `reference/dl`. A lot has probably changed from this (the first 
+Ratchet game) to Deadlocked (the 4th and last Ratchet game on this engine). However,
+it could prove useful while decompiling this game. There's a Ghidra project file for this
+annotated with all the debug information at `reference/SCUS_974.65.Deadlocked.Ghidra.gzf`.
+The full PAL binary with debug symbols is at `reference/SCUS_974.65`. You need to use
+the `ccc` toolset under `tools/ccc` to inspect the binary. `reference/dl/SOURCES.txt` lists
+all of the files found in the debug symbols. Make particular note of which functions are 
+handwritten assembly. 
 
 ### Subagent Delegation
 

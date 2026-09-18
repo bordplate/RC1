@@ -2,9 +2,18 @@
 
 User requested downloading and testing decomp.me's five SN compiler builds.
 Research and integration were performed without subagents. Production C/C++
-compilation defaults to `-snas` with SN 1.8.19.316; five translation units
+compilation defaults to `-snas` with SN 1.9.6.516; five translation units
 retain GNU assembly for existing-source compatibility. Probes default to SN.
-The full rebuild and boot ELF `cmp` pass; 688 nonmatching remain.
+The full rebuild and boot ELF `cmp` pass; 685 nonmatching remain.
+
+Update 2026-09-18: production now uses SN 1.9.6.516 with the same 2.73a
+compiler. Compiler-isolation against the MPEG streaming sample reproduced
+36/42 comparable functions with either GNU as or 1.9.6.516, versus 34/42 with
+1.8.19.316; the newer assembler restored exact 272-byte viBufStopDMA and
+824-byte viBufRestartDMA. It also reproduced the blocked Hud_GetIconIndex's
+two missing NOPs. An isolated full build and an integrated-candidate build both
+passed boot ELF parity. The compiler driver's `-v` option crashes 1.9.6.516
+under Wine and was removed from the production C++ recipe.
 
 ## Finding
 

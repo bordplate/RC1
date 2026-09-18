@@ -94,14 +94,14 @@ make setup-snas
 ```
 
 The C/C++ pipeline defaults to EEGCC **2.95.2 SN 2.73a** with the SN assembler
-**ps2eeas 1.8.19.316**, selected by `-snas`. `make setup-snas` downloads the
-2.73a archive from decomp.me, verifies the archive and assembler SHA-256 hashes,
+**ps2eeas 1.9.6.516**, selected by `-snas`. `make setup-snas` downloads the
+SN 1.14 archive from decomp.me, verifies the archive and assembler SHA-256 hashes,
 and installs only `tools/cc/lib/gcc-lib/ee/2.95.2/ps2eeas.exe`. A normal build
 also installs it if missing. Existing compiler binaries and headers are retained.
 For an offline installation, run:
 
 ```sh
-python3 tools/install_sn_assembler.py --archive /path/to/ee-gcc2.95.2-273a.tar.gz
+python3 tools/install_sn_assembler.py --archive /path/to/ee-gcc2.95.3-114.tar.gz
 ```
 
 Do not pass the GNU assembler options `-Wa,-EL -Wa,-Icode/include` to SN.
