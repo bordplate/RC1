@@ -16,6 +16,7 @@ userconfig*
 
 # Local reverse-engineering and tool installations
 tools/wrench/
+tools/ccc/
 tools/wrench-release/
 tools/mipsel-linux-gnu/
 tools/mips64r5900el-ps2-elf/
