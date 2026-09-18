@@ -349,9 +349,13 @@ regenerate the tail bytes and drop the orphan INCLUDE_ASM in the same commit; if
  tools/ccc/stdump) — so the original compiler emitted them after the function's
  RTL and the linker placed them. Local EGC 2.95.2 never emits dead
  `addiu sp,sp,N` (t1-t10 plus 2026-09-18 p1-p5 multi-return/tail-call/trailing
- forms), so when the parent is unmatchable these siblings are retained + blocked
- one by one (each still needs its own deadness scan + last-resort per the hard
- rule). See decomp_state/notes/989snd_func_0012E078.md (family table).
+  forms), so when the parent is unmatchable these siblings are retained + blocked
+  one by one (each still needs its own deadness scan — tools/deadness_scan.py
+  <addr> scans jal/j/relative-branch targets in core.text/.text plus 32/64-bit
+  data words in all other sections — and last-resort per the hard rule). See
+  decomp_state/notes/989snd_func_0012E078.md (family table) and
+  decomp_state/notes/989snd_func_0012E198.md (first sibling blocked with the
+  scanner).
 
 Observation observed 2026-09-05 (EGC auto-emits `jal __main` for C++ main): a
 C++ `main` gets a compiler-inserted `jal __main; nop` at the top of the body
