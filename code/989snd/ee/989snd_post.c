@@ -203,9 +203,10 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_StreamSafe
 // `volatile` keeps EGC from folding the out-of-window 0x137B00 base load into
 // the branch delay slot; without it the 14-word shape does not match.
 typedef struct {
-    int state;
+    int cd_busy;
     int pad_04[3];
-    int error;
+    int cd_error;
+    int pad_14[11];
 } volatile SndCdStreamInfo;
 
 extern int snd_cdStreamActive;
@@ -236,7 +237,7 @@ int snd_StreamSafeCdSync(int arg0) {
         return func_00120C30(arg0);
 
     FlushCache(0);
-    stateZero = (snd_cdStreamInfo.state == 0);
+    stateZero = (snd_cdStreamInfo.cd_busy == 0);
     snd_cdStreamEndPending = stateZero;
     if (stateZero == 1)
         return 0;
@@ -247,7 +248,7 @@ int snd_StreamSafeCdSync(int arg0) {
     do {
         snd_FlushSoundCommands();
         FlushCache(0);
-        stateZero = (snd_cdStreamInfo.state == 0);
+        stateZero = (snd_cdStreamInfo.cd_busy == 0);
         snd_cdStreamEndPending = stateZero;
     } while (stateZero == 0);
     return 0;
@@ -263,7 +264,7 @@ int snd_StreamSafeCdBreak(void) {
 int snd_StreamSafeCdGetError(void) {
     if (!snd_cdStreamActive)
         return func_00121630();
-    return snd_cdStreamInfo.error;
+    return snd_cdStreamInfo.cd_error;
 }
 
 int snd_StreamSafeCdCallback(int callback) {
