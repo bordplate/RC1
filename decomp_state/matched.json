@@ -1914,5 +1914,13 @@
     "size": 68,
     "matched_date": "2026-09-17",
     "note": "3D sound channel volume at camera distance: dist = FastVecDist(pos, Camera 0x187080), return sound_GetFade(channel->def, dist, def->minRange, def->maxRange). The mov.s f12,f0 is the distance passthrough, NOT 0.0f. Name + SoundDef/SoundData field layout from the Deadlocked successors sound_GetFade__FP8SoundDeffffb / sound_GetFade__FP11_sound_dataR4vec4P4vec4b; slot layout verified against raw objdump of start func 0x22D7F0 (slot = 0x13E5C0+i*0x70). Callee 0x22C6F8 renamed sound_GetFade__FP8SoundDeffff (still INCLUDE_ASM); FastVecDist = 0x1f9b48 named. Same change fixes vec4 to 16 bytes (s128 was an 8-byte long long; MobyInstance stride 0x100 + field offsets confirm). See notes/sound_sound_GetFade__FP9SoundDataP4vec4.md."
+  },
+  "code/game/actuator.cpp:3:func_001E8D00": {
+    "name": "func_001E8D00",
+    "source": "code/game/actuator.cpp",
+    "vram": "0x001E8D00",
+    "size": 8,
+    "note": "Phantom, not a function: first 8 bytes of resident .text are two nops of section-head padding before actuator_CalcPower (0x1E8D08). spimdis split them into a 4-byte phantom func + trailing nop. Resolved with two file-scope asm(\"nop\") (standard padding idiom); no code reference, Ghidra has no function there. See notes/actuator_func_001E8D00.md.",
+    "matched_date": "2026-09-19"
   }
 }

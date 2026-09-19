@@ -1,6 +1,10 @@
 #include "common.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/actuator", func_001E8D00);
+// The original .text section starts with 8 padding bytes (two nops) before
+// the first actuator function; spimdis split them into a phantom 4-byte
+// "function" (func_001E8D00) plus one trailing nop. Nothing jumps here.
+asm("nop");
+asm("nop");
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/actuator", actuator_CalcPower);
 
