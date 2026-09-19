@@ -6,8 +6,8 @@ Usage: python3 tools/deadness_scan.py 0x12E198
 Checks, per the AGENTS.md dead-tail rule:
   1. jal / j instructions in the executable text sections whose
      section-relative target is the address.
-  2. Relative conditional/unconditional branches (major ops 4-7, 10-13)
-     whose PC+4+signext(imm16)*4 target is the address.
+  2. Relative branches (major ops 4-7 and 20-23) whose
+      PC+4+signext(imm16)*4 target is the address.
   3. 32-bit (and 64-bit) words equal to the address in every
      non-text, non-NBITS section (jump tables, lit pools, data).
 
@@ -21,8 +21,11 @@ import sys
 ELF = "assets/boot_elf.elf"
 TEXT_SECTIONS = ("core.text", ".text")
 # 6-bit major opcodes: j=2, jal=3, regimm(beqz/bnez)=1, beq=4, bne=5,
-# blez=6, bgtz=7, beql=12, bnel=13, blezl=14, bgtzl=15
-BRANCH_OPS = {4, 5, 6, 7, 12, 13, 14, 15}
+# blez=6, bgtz=7, beql=20, bnel=21, blezl=22, bgtzl=23.
+# Opcodes 12-15 are andi/ori/xori/lui, NOT branches (verified 2026-09-19
+# against objdump of the EE; the binary contains 640 real beql-family
+# instructions in the 20-23 range).
+BRANCH_OPS = {4, 5, 6, 7, 20, 21, 22, 23}
 REGIMM = 1
 JAL = 3
 J = 2
