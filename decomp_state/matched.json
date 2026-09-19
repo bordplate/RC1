@@ -24,6 +24,14 @@
     "matched_date": "2026-09-06",
     "note": "Unblocked with default flags. Correct sceSifCallRpc prototype returns int, not void, even though caller discards result. The wrong void declaration alone reproduces 10 epilogue word differences. Also corrected return-buffer/free-byte global addresses to 0x15ECB8/0x15ECA8. Entire relocated 276-byte probe and full boot cmp pass. Adjacent snd_UnkFunction_0012eaf0 since matched (2026-09-06). See notes/989snd_snd_SendCurrentBatch.md."
   },
+  "code/989snd/ee/989snd_flush.c:53:snd_FlushSoundCommands": {
+    "name": "snd_FlushSoundCommands",
+    "source": "code/989snd/ee/989snd_flush.c",
+    "vram": "0x0012DC80",
+    "size": 480,
+    "matched_date": "2026-09-19",
+    "note": "IOP sound-command queue flush + CD callback fire (0x1E0 bytes, 0x12DC80). All blocks (IOP return callback, stream-entry loop, batch send, CD sync, epilogue) matched in prior probes; the CD-callback block (0x12DD58-0x12DDB8) was the last blocker: fn in v0 REUSED across the fn=0 clear for jalr v0, a beqzl (likely) fn test, self-based fresh-lui .data accesses for the arg/data load+clears, the data clear BEFORE the call (nop call delay slot), and arg=0 in the beqzl delay slot. Solved by (a) capturing fn AFTER the 0xFFFFFFFF sentinel test so fn reuses v0 (the sentinel's dead register; capturing it before the test forces v1) and (b) two zero-instruction asm volatile(\"\" ::: \"memory\") barriers that pin the data load/clear in the macro region so the arg clear takes the callback-test delay slot (emitting the beql + duplicated arg store). SN single-pass assembler needs .extern seeds before first use (arg/data deliberately unseeded so they expand self-based). The match is SN-as-specific (the same C under GNU-as is 116 words/many diffs), so the 989snd_pre segment was split into 989snd_pre (GNU-as) + 989snd_flush (SN-as, this fn) + 989snd_mid (GNU-as, 0x12DE60+). snd_FlushSoundCommands prototype void->int in 989snd_post.c/989snd_bankload.c (callers discard the return). Verified: object 120/120 words identical, full make + cmp byte-for-byte. See notes/989snd_snd_FlushSoundCommands.md."
+  },
   "code/game/movie/vibuf.cpp:14:scTag2": {
     "name": "scTag2",
     "source": "code/game/movie/vibuf.cpp",

@@ -2,7 +2,7 @@
 
 extern void snd_SendIOPCommandAndWait(int cmd, int count, void* data);
 extern void snd_SendIOPCommandNoWait(int cmd, int count, void* data, int x, int y);
-extern void snd_FlushSoundCommands(void);
+extern int snd_FlushSoundCommands(void);
 extern void FlushCache(int);
 extern int snd_rpcServer __attribute__((section(".data")));
 extern int sceSifCheckStatRpc(void*);

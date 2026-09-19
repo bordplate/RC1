@@ -1,9 +1,9 @@
-# snd_FlushSoundCommands (code/989snd/ee/989snd.c) - BLOCKED 2026-09-17
+# snd_FlushSoundCommands (code/989snd/ee/989snd_flush.c) - MATCHED 2026-09-19
 
 `int snd_FlushSoundCommands(void)` at vram 0x12DC80, 0x1E0 bytes (480 bytes / 120 words).
-C-linkage (unmangled). `989snd.c` is one of the five GNU-compatibility TUs, so the
-candidate builds with `ASSEMBLER=gnu` (`-Wa,-EL -Wa,-Icode/include`) and the common
-flags `-G8 -O2 -ffast-math -fno-exceptions`. gp = 0x166C00.
+C-linkage (unmangled). The function lives in `989snd_flush.c`, an SN-as TU (default
+`-snas`); the sibling `989snd_pre.c` (snd_StartSoundSystem) and `989snd_mid.c`
+(0x12DE60+) keep GNU-as. The match is SN-as-specific (see below). gp = 0x166C00.
 
 ## What the function does
 Returns nonzero if the EE sound system still has pending work. Four blocks:
@@ -24,12 +24,33 @@ Returns nonzero if the EE sound system still has pending work. Four blocks:
 
 Returns `(snd_currentBuffer != 0) || (snd_cdCallbackPending != 0)`.
 
-## Match status
-Blocks 1, 3, 4 and the epilogue match byte-for-byte in the best candidate. The stream-entry
-for-loop matches except one `addu` operand order at 0x12dd1c. The **CD-callback block
-(0x12dd58-0x12ddb8) does not match** — it is a tight cluster of EGC register-allocation and
-scheduling decisions that no C form reproduced. Best candidate: `flush_v10.c` (476 bytes vs
-480; 60 word diffs, all in the CD block + the one addu).
+## Match
+All four blocks + the epilogue match byte-for-byte (object 120/120 words, full `make` +
+`cmp build/boot_elf.elf assets/boot_elf.elf` pass). The CD-callback block
+(0x12DD58-0x12DDB8) was the last blocker and is solved by three things:
+
+1. **Late `fn` capture.** Snapshot `fn = snd_cdCallbackFn` *after* the `0xFFFFFFFF`
+   sentinel test (nested `if`), not before. The sentinel value is left in `v0` by the
+   test; capturing `fn` after it lets the allocator reuse `v0` (the sentinel's dead
+   register) for `fn`, so `jalr v0` reuses that same `v0` across the `fn=0` clear.
+   Capturing `fn` before the sentinel test (the comma/early form) forces `fn` into `v1`
+   and breaks the `jalr v0`.
+2. **Two zero-instruction memory barriers.** `asm volatile("" : : : "memory");`
+   (emits no machine instruction, only `#APP`/`#NO_APP`). One at the top of the
+   `if (fn != 0)` block pins the data load out of the `fn`-test delay slot, which (a) lets
+   the `arg=0` clear take that delay slot — producing the `beqzl` (likely) `fn` test and the
+   duplicated `arg=0` store — and (b) forces the data load to the self-based two-instruction
+   form in the macro region. One between `snd_cdCallbackData = 0` and the call pins the data
+   clear before the call, leaving the call delay slot a `nop`.
+3. **`.extern` seeds + SN-as.** The SN single-pass assembler expands a bare `lw/sw r,sym`
+   pseudo GPREL only if a `.extern sym,N` appeared earlier in the file; the flush TU seeds
+   the small-data globals up front (arg/data deliberately unseeded so they expand
+   self-based). The match is SN-as-specific: the identical C under GNU-as is 116 words with
+   many diffs, so the `989snd_pre` Splat segment was split into `989snd_pre` (GNU-as) +
+   `989snd_flush` (SN-as, this fn) + `989snd_mid` (GNU-as, 0x12DE60+).
+
+The `snd_FlushSoundCommands` prototype was corrected `void` -> `int` in `989snd_post.c` and
+`989snd_bankload.c` (all callers discard the return, so the change is codegen-neutral).
 
 ## CD-callback block ground truth (objdump of assets/boot_elf.elf)
 ```
@@ -59,78 +80,46 @@ scheduling decisions that no C form reproduced. Best candidate: `flush_v10.c` (4
 12ddb4: lw   v0,-32640(gp)        # A
 12ddb8: bnez v0,0x12ddf4
 ```
-Note the `beqzl` at 12dd84 is a likely branch: its delay slot (arg=0, 12dd88) is annulled
-when taken (fn==0) and EXECUTES on the non-null path (fn!=0). So arg=0 is a non-null-path
-store (appears twice on that path: 12dd88 delay + 12ddac tail), and K=0 is reached by both
-the fn==0 and fn!=0 paths but not the arg==-1 path. The non-null path order is:
+The `beqzl` at 12dd84 is a likely branch: its delay slot (arg=0, 12dd88) is annulled when
+taken (fn==0) and EXECUTES on the non-null path (fn!=0). So arg=0 is a non-null-path store
+(appears twice on that path: 12dd88 delay + 12ddac tail), and K=0 is reached by both the
+fn==0 and fn!=0 paths but not the arg==-1 path. The non-null path order is:
 `arg=0; data-load; fn=0; data=0; call; arg=0; K=0`, with the data/arg stores SELF-BASED
 (fresh `lui` per access, base reg == dest/temp) and the data clear BEFORE the call.
 
-## The remaining (unreproducible) differences
-1. **fn register + call target.** The original loads fn into `v0` (12dd80) and reuses that
-   same `v0` for `jalr v0` (12dda0) across the `fn=0` clear (12dd94). Calling through the
-   global after clearing it makes local EGC re-load the cleared 0 (`li at,0; jalr at`, a
-   null call — v9). So the call must go through a local snapshot; but the snapshot lands in
-   `a2` (v6) or `v1` (v5), not `v0`. Pinning `register void (*cb)() asm("$2")` (v10) does
-   put fn in `v0` and yields `jalr v0`, but the rest of the block still differs.
-2. **`beqzl` likely vs `beqz` non-likely** for the `fn != 0` test. EGC emits the non-likely
-   form in every candidate; no C form produced the likely branch.
-3. **Self-based vs split `.data` addressing.** The original re-materializes a fresh `lui`
-   per access (base == dest). EGC hoists the `lui 0x16` into a shared base register (v1/a2)
-   for the data load and the data/arg clears (split form), even with distinct `.data` alias
-   symbols for the clears (v5/v10). `-mno-split-addresses` does NOT fix it here — it shifts
-   the whole function and makes it worse (v10nosp: 488 bytes, 111 diffs).
-4. **Store ordering across the call.** The original hoists the data load + data clear + fn
-   clear BEFORE the call (call delay = nop); EGC packs the data load into the call's delay
-   slot and leaves the clears after the call (v5/v10).
-5. **addu operand order at 0x12dd1c** (stream-entry loop): original `addu a0,v0,v1`
-   (offset,base) vs candidate `addu a0,v1,v0` (base,offset). A standalone `buf[idx]+i` probe
-   does emit the original order, so this is full-function RA context; `i + (T*)base` (the
-   last-resort suggestion) was not separable from the CD-block mismatch.
+## Requirements the solution satisfies
+1. **fn register + call target.** Late capture puts `fn` in `v0` (the sentinel's dead
+   register), reused for `jalr v0` across the `fn=0` clear.
+2. **`beqzl` likely vs `beqz` non-likely.** The `arg=0` store in the `fn`-test delay slot
+   (from barrier 1) is what makes EGC emit the likely form.
+3. **Self-based vs split `.data` addressing.** The unseeded arg/data + the barriers keep the
+   data load/clear self-based (fresh `lui` per access) instead of a shared hoisted base.
+4. **Store ordering across the call.** Barrier 2 keeps the data load + clears before the
+   call (call delay = `nop`).
+5. **addu operand order at 0x12dd1c** (stream-entry loop) resolved by the full-function RA
+   context once the CD block matched.
 
-## Attempts (all via tools/decomp_probe.py, /tmp/opencode/flush_v*)
-- v1 `[argGp=0; call; fn=0; data=0; arg=0]` all `.data` names -> split bases, stores after call.
-- v2 clears before call calling THROUGH THE GLOBAL -> broken null call (`jalr at`, at=0).
-- v3 bare `for` loop (no `if(count>0)` wrapper) -> fixed the whole loop region.
-- v4 `arg != 0xFFFFFFFF` (not `!= -1`) -> fixed the -1 constant (`lui/ori` split).
-- v5 distinct `.data` clear aliases (argGp GPREL + argClear/dataClear `.data`) -> 476 B, 61 diffs.
-- v6 snapshot locals (callback/data), clears before call, call through local -> 476 B, fn in a2.
-- v7 common-tail `arg=0` (GPT-6 Astra expert's form, aliases removed) -> 460 B (over-optimized), worse.
-- v8 v7 + `register` pins `$4/$2/$5` -> 460 B, still over-optimized.
-- v9 snapshot only `data`, call through global after clearing fn -> null call (like v2).
-- v10 v6 + `register void (*callback)() asm("$2")` -> 476 B, 60 diffs; fn now in v0, `jalr v0`
-  correct, but beqz (non-likely), split data/arg bases, data-clear after call, argGp not in
-  the delay slot. Best so far (kept at decomp_state/probes/flush_v10.c).
-- v10nosp: v10 + `-mno-split-addresses` -> 488 B, 111 diffs (flag makes it worse; the
-  self-based accesses are NOT a flag issue in this function).
-- kprobes (bare `for` loop, K-hoisting, `!= 0xFFFFFFFF` constant form) confirmed the loop and
-  constant findings above.
+## Historical attempts (pre-match, via tools/decomp_probe.py)
+- v1-v6: various snapshot/alias/loop forms; best was v6 (fn in a2, split bases).
+- v7: common-tail `arg=0` (GPT-6 Astra expert's form) -> over-optimized to 460 B (worse).
+- v8: v7 + `register` pins `$4/$2/$5` -> 460 B, still over-optimized.
+- v10: v6 + `register void (*callback)() asm("$2")` -> 476 B, 60 diffs; fn in `v0` and
+  `jalr v0` correct, but beqz (non-likely), split bases, data-clear after call. Best of the
+  pre-match set (kept at decomp_state/probes/flush_v10.c).
+- v10nosp: v10 + `-mno-split-addresses` -> 488 B, 111 diffs (flag makes it worse).
+- The decisive step was the late `fn` capture + the two memory barriers (see Match), which no
+  pre-match variant tried.
 
 ## Escalations
-- **expert (GPT-6 Astra)** invoked 2026-09-17: recommended the snapshot-into-locals /
-  clear-before-call / common-tail form (v7). Tested: over-optimized to 460 B (worse). It also
-  claimed the 12dd88 delay-slot store is on the NULL path ("annulled when non-null") — that
-  is inverted; a MIPS likely branch annuls the delay slot when TAKEN, so `beqzl v0,0x12ddb0`
-  (taken when fn==0) executes 12dd88 on the NON-NULL path.
-- **last-resort-decompiler (GPT-5.6 Sol)** invoked 2026-09-17: recommended (1) the alias-free
-  common-tail form (v7 — tested, worse), (2) `register asm("$4/$2/$5")` pins (v8 — tested,
-  worse with the common-tail base; the `$2` pin alone, v10, does fix the fn register),
-  (3) a zero-byte memory barrier after the data clear, (4) moving the callback snapshot before
-  the arg test, (5) `i + (T*)base` for the addu. Its "key correction" about the delay-slot
-  path is the same inverted likely-branch claim as the expert. No recommendation produced a
-  full match; the register pin (v10) is the only net gain.
+- **expert (GPT-6 Astra)** and **last-resort-decompiler (GPT-5.6 Sol)** were each invoked
+  2026-09-17 on this target; neither produced a match (their forms tested as v7/v8, worse).
+- The late-`fn`-capture hypothesis (the sentinel leaves `v0` live for `fn`) plus the
+  delay-slot pinning barriers closed the block.
 
-## Blocker
-EGC 2.95.2 (project flags) cannot be steered, by any C form or block-local flag, to
-reproduce the CD-callback block's combined requirements: fn loaded into `v0` and reused for
-`jalr v0` across the `fn=0` clear, a `beqzl` (likely) fn test, self-based (fresh-`lui`,
-base==dest) `.data` accesses for the arg/data load and clears, the data clear scheduled
-BEFORE the call with a nop call delay slot, and the arg=0 store duplicated into the `beqzl`
-delay slot. Each requirement is an independent RA/scheduling decision; the register pin fixes
-only the fn register (v10) and `-mno-split-addresses` makes the function worse. The remaining
-diffs are 60 words (476 vs 480 bytes), all in 0x12dd58-0x12ddb8 plus the 0x12dd1c `addu`.
-INCLUDE_ASM retained. Revisit if the EGC build/flags are revisited or a per-access
-self-based-addressing control is added to the toolchain.
+## Verification
+- Object: 120/120 words identical to the original (reloc-aware word diff).
+- Full build: `make` + `cmp build/boot_elf.elf assets/boot_elf.elf` byte-for-byte.
+- The stale `blocked.json` entry was removed; the matched entry was added.
 
 ## The dead tail (func_0012DE60) — blocked, INCLUDE_ASM retained
 
@@ -167,6 +156,6 @@ The 0xC bytes at 0x12DE60 (file 0x2EDE0), immediately after this function's
 - **last-resort GPT-5.6 Sol** invoked 2026-09-17: confirmed no credible C form or
   TU flag reproduces the fragment with the current toolchain; recommended
   retaining the orphan INCLUDE_ASM and blocking the entry.
-- Therefore the orphan `INCLUDE_ASM(..., func_0012DE60)` is retained to supply the
-  bytes (preserving full boot-ELF parity), and the queue entry is blocked
-  (precedent: func_0012EC00, func_001FDD50, func_00233880).
+- Therefore the orphan `INCLUDE_ASM(..., func_0012DE60)` is retained (now in
+  `989snd_mid.c`) to supply the bytes (preserving full boot-ELF parity), and the
+  queue entry is blocked (precedent: func_0012EC00, func_001FDD50, func_00233880).

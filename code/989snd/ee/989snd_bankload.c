@@ -11,7 +11,7 @@ extern int snd_cdRpcServer __attribute__((section(".data")));
 extern int snd_cdLoadError;
 extern int snd_cdCallbackPending;
 extern int snd_StreamSafeCdSync(int);
-extern void snd_FlushSoundCommands(void);
+extern int snd_FlushSoundCommands(void);
 extern void FlushCache(int);
 extern int sceSifCheckStatRpc(void*);
 extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);

@@ -59,6 +59,8 @@ segments:
     - [0x2e6a8, asm, sce/crt0]
     - [0x2e878, cpp, game/boot]
     - [0x2e9a8, c, 989snd/ee/989snd_pre]
+    - [0x2EC00, c, 989snd/ee/989snd_flush]
+    - [0x2ED80, c, 989snd/ee/989snd_mid]
     - [0x2F008, c, 989snd/ee/989snd_bankload]
     - [0x2F118, c, 989snd/ee/989snd_post]
     - [0x30148, cpp, game/permcb]
