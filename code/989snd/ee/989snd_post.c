@@ -1,13 +1,24 @@
 #include "common.h"
+#include "types.h"
+
+typedef void (*SndCompleteProc)(int, u64);
+typedef struct {
+    SndCompleteProc done;
+    u64 u_data;
+} SndCommandReturnDef;
+typedef struct {
+    int num_commands;
+    char buffer[4092];
+} SndCommandBuffer;
 
 extern unsigned int snd_SendIOPCommandAndWait(int cmd, int count, char* data);
-extern void snd_SendIOPCommandNoWait(int cmd, int count, void* data, int x, int y);
+extern void snd_SendIOPCommandNoWait(int command, int data_size, char* data, SndCompleteProc done, u64 u_data);
 extern int snd_FlushSoundCommands(void);
 extern void FlushCache(int);
 extern int snd_rpcServer __attribute__((section(".data")));
 extern int sceSifCheckStatRpc(void*);
 extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);
-extern void func_00116078(void*);
+extern void func_00116078(void*, ...);
 extern int snd_batchBusy;
 extern int snd_GotReturns(void);
 extern int* snd_currentBuffer;
@@ -17,7 +28,11 @@ extern unsigned int snd_syncBuffer[16] __attribute__((section(".data")));
 extern char snd_syncSendBuffer[0x200] __attribute__((section(".data")));
 // "989snd.c: RPC still nonidle!\n" error string reported by snd_SendCurrentBatch.
 extern int snd_NonIdleErrorString __attribute__((section(".data")));
-extern int* snd_batchCommandBuffers[2];
+// "snd_SendIOPCommandNoWait: BUFFER %d FULL(%d)! ...\n" stalled-buffer error.
+extern int snd_NoWaitBufferFullString __attribute__((section(".data")));
+// "snd_SendIOPCommandNoWait: continueing (%d).\n" spin-wait progress report.
+extern int snd_NoWaitContinuingString __attribute__((section(".data")));
+extern SndCommandBuffer* snd_batchCommandBuffers[2];
 extern int snd_batchFreeBytes[2];
 extern int* snd_batchReturnBuffers[2];
 extern int snd_batchIndex;
@@ -33,20 +48,20 @@ void snd_ResolveBankXREFS(void) {
 void snd_UnloadBank(int a) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x6, 0x4, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x6, 0x4, (char*)buf, 0, 0);
 }
 
 void snd_SetMasterVolume(int a, int b) {
     int buf[2];
     buf[0] = a;
     buf[1] = b;
-    snd_SendIOPCommandNoWait(0x9, 0x8, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x9, 0x8, (char*)buf, 0, 0);
 }
 
 void snd_SetPlaybackMode(int a) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0xB, 0x4, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0xB, 0x4, (char*)buf, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E270);
@@ -55,7 +70,7 @@ void snd_SetMixerMode(int a, int b) {
     int buf[2];
     buf[0] = a;
     buf[1] = b;
-    snd_SendIOPCommandNoWait(0xD, 0x8, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0xD, 0x8, (char*)buf, 0, 0);
 }
 
 void snd_SetGroupVoiceRange(int a, int b, int c) {
@@ -63,12 +78,13 @@ void snd_SetGroupVoiceRange(int a, int b, int c) {
     buf[0] = a;
     buf[1] = b;
     buf[2] = c;
-    snd_SendIOPCommandNoWait(0x4E, 0xC, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x4E, 0xC, (char*)buf, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E2F8);
 
-void snd_PlaySoundVolPanPMPB(int a, int b, int c, int d, int e, int f, int g, int h) {
+void snd_PlaySoundVolPanPMPB(int a, int b, int c, int d, int e, int f,
+                             SndCompleteProc g, u64 h) {
     int buf[6];
     buf[0] = a;
     buf[1] = b;
@@ -76,14 +92,14 @@ void snd_PlaySoundVolPanPMPB(int a, int b, int c, int d, int e, int f, int g, in
     buf[3] = d;
     buf[4] = e;
     buf[5] = f;
-    snd_SendIOPCommandNoWait(0x11, 0x18, buf, g, h);
+    snd_SendIOPCommandNoWait(0x11, 0x18, (char*)buf, g, h);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E350);
 
 void snd_StopSound(int id) {
     int data = id;
-    snd_SendIOPCommandNoWait(0x15, 4, &data, 0, 0);
+    snd_SendIOPCommandNoWait(0x15, 4, (char*)&data, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E398);
@@ -95,24 +111,25 @@ void snd_StopAllSounds(void) {
 void snd_PauseAllSoundsInGroup(int a) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x16, 0x4, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x16, 0x4, (char*)buf, 0, 0);
 }
 
 void snd_ContinueAllSoundsInGroup(int a) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x17, 0x4, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x17, 0x4, (char*)buf, 0, 0);
 }
 
-void snd_SoundIsStillPlaying_CB(int a, int b, int c) {
+void snd_SoundIsStillPlaying_CB(int a, SndCompleteProc b, u64 c) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x19, 0x4, buf, b, c);
+    snd_SendIOPCommandNoWait(0x19, 0x4, (char*)buf, b, c);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E478);
 
-void snd_SetSoundParams_CB(int a, int b, int c, int d, int e, int f, int g, int h) {
+void snd_SetSoundParams_CB(int a, int b, int c, int d, int e, int f,
+                           SndCompleteProc g, u64 h) {
     int buf[6];
     buf[0] = a;
     buf[1] = b;
@@ -120,7 +137,7 @@ void snd_SetSoundParams_CB(int a, int b, int c, int d, int e, int f, int g, int 
     buf[3] = d;
     buf[4] = e;
     buf[5] = f;
-    snd_SendIOPCommandNoWait(0x21, 0x18, buf, g, h);
+    snd_SendIOPCommandNoWait(0x21, 0x18, (char*)buf, g, h);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E508);
@@ -160,17 +177,33 @@ unsigned int snd_SendIOPCommandAndWait(int cmd, int count, char* data) {
         asm volatile("nop\n\tnop\n\tnop");
     } while (r == 0);
     ret = snd_syncBuffer[1];
-    if (*snd_batchCommandBuffers[snd_batchIndex] != 0 && snd_batchBusy == 0) {
+    if (snd_batchCommandBuffers[snd_batchIndex]->num_commands != 0 &&
+        snd_batchBusy == 0) {
         snd_SendCurrentBatch();
     }
     return ret;
 }
 
+// Sends a command to the IOP sound server. When no synchronous command or
+// batch transfer is in flight and the command has no payload or completion
+// callback, it is issued synchronously as a fire-and-forget RPC. Otherwise it
+// is appended to the current command batch (spinning until the batch has
+// room), with the completion callback table updated, and snd_PostMessage
+// advances the batch command count and flushes.
+//
+// Blocked: the body is fully understood (see
+// decomp_state/notes/989snd_snd_SendIOPCommandNoWait.md) but the local EGC
+// (SN 2.73a) allocates the spin-loop constants (256, 1, string base) into
+// caller-saved s-registers and spills the incoming command/data/done
+// parameters to the stack, while the original keeps all four parameters in
+// s-registers and reloads the constants between calls. No C structure or
+// flag found makes the local build reproduce the original 9-s-register
+// allocation.
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_SendIOPCommandNoWait);
 
 void snd_PostMessage(void) {
-    int* commandBuffer = snd_batchCommandBuffers[snd_batchIndex];
-    (*commandBuffer)++;
+    SndCommandBuffer* commandBuffer = snd_batchCommandBuffers[snd_batchIndex];
+    commandBuffer->num_commands++;
     snd_FlushSoundCommands();
 }
 
@@ -178,7 +211,7 @@ void snd_SendCurrentBatch(void) {
     int nextIndex;
 
     snd_PrepareReturnBuffer(snd_batchReturnBuffers[snd_batchIndex],
-                             *snd_batchCommandBuffers[snd_batchIndex]);
+                             snd_batchCommandBuffers[snd_batchIndex]->num_commands);
     while (sceSifCheckStatRpc(&snd_rpcServer)) {
         func_00116078(&snd_NonIdleErrorString);
         FlushCache(0);
@@ -187,10 +220,10 @@ void snd_SendCurrentBatch(void) {
     sceSifCallRpc(&snd_rpcServer, 0x4D, 1, snd_batchCommandBuffers[snd_batchIndex],
                   0x1000 - snd_batchFreeBytes[snd_batchIndex],
                   snd_batchReturnBuffers[snd_batchIndex],
-                  *snd_batchCommandBuffers[snd_batchIndex] * 4 + 8, 0, 0);
+                  snd_batchCommandBuffers[snd_batchIndex]->num_commands * 4 + 8, 0, 0);
     nextIndex = snd_batchIndex != 1;
     snd_batchIndex = nextIndex;
-    *snd_batchCommandBuffers[nextIndex] = 0;
+    snd_batchCommandBuffers[nextIndex]->num_commands = 0;
     snd_batchFreeBytes[nextIndex] = 0xFFC;
 }
 
@@ -216,25 +249,25 @@ INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_PlayVAGStr
 void snd_PauseVAGStream(int a) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x2D, 0x4, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x2D, 0x4, (char*)buf, 0, 0);
 }
 
 void snd_ContinueVAGStream(int a) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x2E, 0x4, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x2E, 0x4, (char*)buf, 0, 0);
 }
 
-void snd_GetVAGStreamTimeRemaining_CB(int a, int b, int c) {
+void snd_GetVAGStreamTimeRemaining_CB(int a, SndCompleteProc b, u64 c) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x32, 0x4, buf, b, c);
+    snd_SendIOPCommandNoWait(0x32, 0x4, (char*)buf, b, c);
 }
 
-void snd_IsVAGStreamBuffered_CB(int a, int b, int c) {
+void snd_IsVAGStreamBuffered_CB(int a, SndCompleteProc b, u64 c) {
     int buf[1];
     buf[0] = a;
-    snd_SendIOPCommandNoWait(0x4F, 0x4, buf, b, c);
+    snd_SendIOPCommandNoWait(0x4F, 0x4, (char*)buf, b, c);
 }
 
 void snd_StreamSafeCheckCDIdle(int arg) {
@@ -332,14 +365,14 @@ void snd_SetReverbEx(int a, int b, int c, int d, int e) {
     buf[2] = c;
     buf[3] = d;
     buf[4] = e;
-    snd_SendIOPCommandNoWait(0x50, 0x14, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x50, 0x14, (char*)buf, 0, 0);
 }
 
 void snd_PreAllocReverbWorkArea(int a, int b) {
     int buf[2];
     buf[0] = a;
     buf[1] = b;
-    snd_SendIOPCommandNoWait(0x51, 0x8, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x51, 0x8, (char*)buf, 0, 0);
 }
 
 void snd_AutoReverb(int a, int b, int c, int d) {
@@ -348,7 +381,7 @@ void snd_AutoReverb(int a, int b, int c, int d) {
     buf[1] = b;
     buf[2] = c;
     buf[3] = d;
-    snd_SendIOPCommandNoWait(0x10, 0x10, buf, 0, 0);
+    snd_SendIOPCommandNoWait(0x10, 0x10, (char*)buf, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012F020);

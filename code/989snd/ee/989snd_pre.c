@@ -6,6 +6,10 @@ typedef struct {
     SndCompleteProc done;
     u64 u_data;
 } SndCommandReturnDef;
+typedef struct {
+    int num_commands;
+    char buffer[4092];
+} SndCommandBuffer;
 
 // 989 IOP sound-server RPC client state. sceSifBindRpc zeroes `bound`; the
 // IOP's SIF tag 0x8000000A response handler (0x11B138) writes it non-zero
@@ -34,9 +38,9 @@ extern int sceSifInitRpc(int enable);
 extern int sceSifBindRpc(SndRpcServer* client, int rpc_num, int flags);
 extern void func_00116078(void*, ...);
 extern unsigned int snd_SendIOPCommandAndWait(int cmd, int count, char* data);
-extern void snd_SendIOPCommandNoWait(int cmd, int count, void* data, int x, int y);
+extern void snd_SendIOPCommandNoWait(int command, int data_size, char* data, SndCompleteProc done, u64 u_data);
 
-extern int* snd_batchCommandBuffers[2];
+extern SndCommandBuffer* snd_batchCommandBuffers[2];
 extern int snd_batchFreeBytes[2];
 extern int* snd_batchReturnBuffers[2];
 extern SndCommandReturnDef* snd_streamBuffers[2];
