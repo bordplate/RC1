@@ -6,8 +6,9 @@ Usage: python3 tools/deadness_scan.py 0x12E198
 Checks, per the AGENTS.md dead-tail rule:
   1. jal / j instructions in the executable text sections whose
      section-relative target is the address.
-  2. Relative branches (major ops 4-7 and 20-23) whose
-      PC+4+signext(imm16)*4 target is the address.
+  2. Every relative branch encoding in the EE opcode map (see
+     is_relative_branch below) whose PC+4+signext(imm16)*4 target is
+     the address.
   3. 32-bit (and 64-bit) words equal to the address in every
      non-text, non-NBITS section (jump tables, lit pools, data).
 
@@ -20,15 +21,34 @@ import sys
 
 ELF = "assets/boot_elf.elf"
 TEXT_SECTIONS = ("core.text", ".text")
-# 6-bit major opcodes: j=2, jal=3, regimm(beqz/bnez)=1, beq=4, bne=5,
-# blez=6, bgtz=7, beql=20, bnel=21, blezl=22, bgtzl=23.
-# Opcodes 12-15 are andi/ori/xori/lui, NOT branches (verified 2026-09-19
-# against objdump of the EE; the binary contains 640 real beql-family
-# instructions in the 20-23 range).
+# EE 6-bit major opcodes. Verified 2026-09-20 by decoding every labeled
+# branch/jump word in code/_generated (6747 instances): mnemonic fields,
+# and pc+4+signext(imm16)*4 for relative branches, hit the label VMA
+# 100% with this map.
+#   j=2, jal=3.
+#   regimm=1: bltz(rt=0), bgez(rt=1), bltzl(rt=2), bgezl(rt=3),
+#   bgezal(rt=17) — the rt field is the selector, NOT funct; the block
+#   also holds mtsab(rt=24)/mtsa-h(rt=25), which are not branches.
+#   beq/beqz/b=4, bne/bnez=5, blez=6, bgtz=7 (on the EE beqz/bnez sit in
+#   the beq/bne slots with rt=0, and plain `b` uses rs=rt=0 in major 4).
+#   COP0=16 / COP1=17: conditional branches bc0f/bc0t and
+#   bc1f/bc1t/bc1fl/bc1tl are the ONLY fmt=2 (bits 25-23) encodings in
+#   those blocks; all mfc0/mtc0/ei/di/eret and C1 arithmetic use other
+#   fmt values.
+#   beql=20, bnel=21, blezl=22, bgtzl=23.
 BRANCH_OPS = {4, 5, 6, 7, 20, 21, 22, 23}
 REGIMM = 1
+REGIMM_BRANCH_RT = (0, 1, 2, 3, 17)  # bltz, bgez, bltzl, bgezl, bgezal
+COP_OPS = {16, 17}
+COP_BRANCH_FMT = 2
 JAL = 3
 J = 2
+
+REGIMM_RT_NAME = {0: "bltz", 1: "bgez", 2: "bltzl", 3: "bgezl", 17: "bgezal"}
+COP_RT_NAME = {
+    16: {0: "bc0f", 1: "bc0t"},
+    17: {0: "bc1f", 1: "bc1t", 2: "bc1fl", 3: "bc1tl"},
+}
 
 
 def load_sections(path):
@@ -64,6 +84,26 @@ def signext16(v):
     return v - 0x10000 if v & 0x8000 else v
 
 
+def branch_name(word):
+    op = word >> 26
+    if op == REGIMM:
+        return REGIMM_RT_NAME.get((word >> 16) & 0x1F, f"regimm{op}")
+    if op in COP_OPS:
+        return COP_RT_NAME[op].get((word >> 16) & 0x1F, f"cop{op}")
+    return f"branch(op {op})"
+
+
+def is_relative_branch(word):
+    op = word >> 26
+    if op in BRANCH_OPS:
+        return True
+    if op == REGIMM and (word >> 16) & 0x1F in REGIMM_BRANCH_RT:
+        return True
+    if op in COP_OPS and (word >> 23) & 7 == COP_BRANCH_FMT:
+        return True
+    return False
+
+
 def scan_text(data, secs, by_name, target, refs):
     for name in TEXT_SECTIONS:
         addr, off, size, _ = by_name[name]
@@ -75,14 +115,10 @@ def scan_text(data, secs, by_name, target, refs):
                 t = (pc & 0xF0000000) | ((word & 0x03FFFFFF) << 2)
                 if t == target:
                     refs.append(f"{name}: {op_name(op)} at 0x{pc:06X} -> 0x{t:06X}")
-            elif op == REGIMM and (word >> 16) & 0x1F in (4, 5):
+            elif is_relative_branch(word):
                 t = pc + 4 + (signext16(word & 0xFFFF) << 2)
                 if t == target:
-                    refs.append(f"{name}: beqz/bnez at 0x{pc:06X} -> 0x{t:06X}")
-            elif op in BRANCH_OPS:
-                t = pc + 4 + (signext16(word & 0xFFFF) << 2)
-                if t == target:
-                    refs.append(f"{name}: branch(op {op}) at 0x{pc:06X} -> 0x{t:06X}")
+                    refs.append(f"{name}: {branch_name(word)} at 0x{pc:06X} -> 0x{t:06X}")
 
 
 def op_name(op):
