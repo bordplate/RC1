@@ -185,5 +185,10 @@
         "status": "blocked",
         "date": "2026-09-05",
         "note": "NOT a function: 4-byte unreachable dead-code tail of snd_StopAllStreams (addiu sp,sp,0x10 at 0x12EC00 / file 0x2FB80, right after the parent's jr ra; <addiu sp,sp,0x10> epilogue; parent frame is 0x10 so this is a dead duplicate deallocate). Local EGC 2.95.2 v2.73a never emits a dead addiu sp,sp,N (only dead stores; /tmp/opencode/tail_exp t1-t10). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/989snd_snd_StopAllStreams.md."
+    },
+    "code/989snd/ee/989snd_post.c:278:snd_PlayVAGStreamByLocEx_CB": {
+        "status": "blocked",
+        "date": "2026-09-20",
+        "note": "Local EGC 2.95.2 COMBINE pass keeps the offset-4 (data[1]=a1) argument copy that Insomniac's build folded: an extra 'move $v1,$a1' + 'sw $v1,4(sp)' (original stores data[1] as a direct 'sw $5,4(sp)'). Minimal reps (minirepro{,2,3}.c) prove the index-1 store is the invariant non-fold for every register/order/array-size. last-resort-decompiler (GPT-5.6 Sol) found a selective-volatile-array + named-$12-register form that removes the copy (100 bytes, tail byte-exact) but leaves a head-schedule + in-place-andi register-allocation gap of 9 word-diffs (-fno-schedule-insns2) / 13 (default); ~20 statement orders, int/u32, DL order, unsigned casts, all scheduler flags tested. expert (named-$5 idiom, -fno-regmove) also tested, both worse. No matching source/flag form with this toolchain; kept INCLUDE_ASM. See notes/989snd_snd_PlayVAGStreamByLocEx_CB.md. last-resort GPT-5.6 Sol used."
     }
 }
