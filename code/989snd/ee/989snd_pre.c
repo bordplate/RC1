@@ -33,7 +33,7 @@ typedef struct {
 extern int sceSifInitRpc(int enable);
 extern int sceSifBindRpc(SndRpcServer* client, int rpc_num, int flags);
 extern void func_00116078(void*, ...);
-extern void snd_SendIOPCommandAndWait(int cmd, int count, void* data);
+extern unsigned int snd_SendIOPCommandAndWait(int cmd, int count, char* data);
 extern void snd_SendIOPCommandNoWait(int cmd, int count, void* data, int x, int y);
 
 extern int* snd_batchCommandBuffers[2];

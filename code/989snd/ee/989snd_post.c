@@ -1,14 +1,28 @@
 #include "common.h"
 
-extern void snd_SendIOPCommandAndWait(int cmd, int count, void* data);
+extern unsigned int snd_SendIOPCommandAndWait(int cmd, int count, char* data);
 extern void snd_SendIOPCommandNoWait(int cmd, int count, void* data, int x, int y);
 extern int snd_FlushSoundCommands(void);
 extern void FlushCache(int);
 extern int snd_rpcServer __attribute__((section(".data")));
 extern int sceSifCheckStatRpc(void*);
+extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);
 extern void func_00116078(void*);
 extern int snd_batchBusy;
+extern int snd_GotReturns(void);
+extern int* snd_currentBuffer;
+// Synchronous command return area (16 words); word 1 is the IOP return word.
+extern unsigned int snd_syncBuffer[16] __attribute__((section(".data")));
+// Staging area copied to the IOP for synchronous command payloads.
+extern char snd_syncSendBuffer[0x200] __attribute__((section(".data")));
+// "989snd.c: RPC still nonidle!\n" error string reported by snd_SendCurrentBatch.
+extern int snd_NonIdleErrorString __attribute__((section(".data")));
+extern int* snd_batchCommandBuffers[2];
+extern int snd_batchFreeBytes[2];
+extern int* snd_batchReturnBuffers[2];
+extern int snd_batchIndex;
 void snd_PrepareReturnBuffer(int* buf, int index);
+extern void snd_SendCurrentBatch(void);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E198);
 
@@ -111,17 +125,48 @@ void snd_SetSoundParams_CB(int a, int b, int c, int d, int e, int f, int g, int 
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E508);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_SendIOPCommandAndWait);
+// IOP RPC result region for a synchronous command: the three return words
+// that snd_GotReturns validates after the call.
+#define SND_SYNC_RPC_RESULT_SIZE 0xC
+
+unsigned int snd_SendIOPCommandAndWait(int cmd, int count, char* data) {
+    int i;
+    int r;
+    unsigned int ret;
+
+    for (i = 0; i < count; i++)
+        snd_syncSendBuffer[i] = data[i];
+    while (snd_currentBuffer != 0) {
+        snd_FlushSoundCommands();
+        FlushCache(0);
+    }
+    snd_PrepareReturnBuffer(snd_syncBuffer, 1);
+    while (sceSifCheckStatRpc(&snd_rpcServer) != 0) {
+        func_00116078(&snd_NonIdleErrorString);
+        snd_FlushSoundCommands();
+        FlushCache(0);
+    }
+    if (count != 0) {
+        sceSifCallRpc(&snd_rpcServer, cmd, 1, snd_syncSendBuffer, count,
+                      snd_syncBuffer, SND_SYNC_RPC_RESULT_SIZE, 0, 0);
+    } else {
+        sceSifCallRpc(&snd_rpcServer, cmd, 1, 0, 0,
+                      snd_syncBuffer, SND_SYNC_RPC_RESULT_SIZE, 0, 0);
+    }
+    do {
+        r = snd_GotReturns();
+        // The library's build pads the spin-loop body with three nops; the EE
+        // assembler adds one more for the jal delay slot.
+        asm volatile("nop\n\tnop\n\tnop");
+    } while (r == 0);
+    ret = snd_syncBuffer[1];
+    if (*snd_batchCommandBuffers[snd_batchIndex] != 0 && snd_batchBusy == 0) {
+        snd_SendCurrentBatch();
+    }
+    return ret;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_SendIOPCommandNoWait);
-
-// "989snd.c: RPC still nonidle!\n" error string reported by snd_SendCurrentBatch.
-extern int snd_NonIdleErrorString __attribute__((section(".data")));
-extern int* snd_batchCommandBuffers[2];
-extern int snd_batchFreeBytes[2];
-extern int* snd_batchReturnBuffers[2];
-extern int snd_batchIndex;
-extern int sceSifCallRpc(void*, int, int, void*, int, void*, int, void (*)(void*), void*);
 
 void snd_PostMessage(void) {
     int* commandBuffer = snd_batchCommandBuffers[snd_batchIndex];
