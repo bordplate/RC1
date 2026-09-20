@@ -1930,5 +1930,13 @@
     "size": 404,
     "matched_date": "2026-09-20",
     "note": "Synchronous 989snd IOP command wrapper (0x12E548, 404 bytes). Three EGC facts: (1) the payload copy must be a plain `for`, the `if (count > 0) { for }` form emits a double blez + s5 la hold and a 0x80 frame; (2) the return word loads into a local AFTER the spin loop (base kept in saved s0, addiu in loop delay slot, lw s0,4(v1), move v0,s0 at both exits) - a bare `return snd_syncBuffer[1];` or the Deadlocked load-inside-loop shape does not match; (3) the spin-loop body carries three explicit nops in the original, reproduced with asm volatile(\"nop\\n\\tnop\\n\\tnop\") (the EE assembler adds a fourth for the jal delay slot; same precedent as mobyutil.cpp). Prototype corrected to `unsigned int (int, int, char*)` in 989snd_post.c and 989snd_pre.c; all 7 matched callers still match. New symbols snd_syncBuffer (0x133100), snd_syncSendBuffer (0x133140). Probe 404/404 bytes, 0 diffs; full make + cmp byte-for-byte. See notes/989snd_snd_SendIOPCommandAndWait.md."
+  },
+  "code/989snd/ee/989snd_post.c:247:snd_InitVAGStreamingEx": {
+    "name": "snd_InitVAGStreamingEx",
+    "source": "code/989snd/ee/989snd_post.c",
+    "vram": "0x0012EB20",
+    "size": 172,
+    "matched_date": "2026-09-20",
+    "note": "VAG streaming init (0x12EB20, 172 bytes): already-initialized sessions (snd_cdStreamActive==1) return 0; otherwise drain snd_cdCallbackPending via flush-spin, snd_StreamSafeCdSync(0), stage 4 params on stack, command 0x2A/0x10 via snd_SendIOPCommandAndWait, response stored back to snd_cdStreamActive and returned. Two codegen facts: (1) the drain loop must keep its condition in a local (`pending = snd_cdCallbackPending; while (pending != 0) pending = snd_FlushSoundCommands();`) - the plain while-on-global form reloads at the back edge (+1 word); the original reuses the flush return in `bnez v0`. (2) loop body needs FOUR explicit asm volatile nops (GNU macro assembler consumes the first as the jal delay slot); the three-nop snd_SendIOPCommandAndWait precedent does not transfer because its back-edge beq is in a .set noreorder region. Signature per Deadlocked: int (int, int, unsigned int, int). See notes/989snd_snd_InitVAGStreamingEx.md."
   }
 }

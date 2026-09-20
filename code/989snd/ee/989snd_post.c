@@ -22,6 +22,9 @@ extern void func_00116078(void*, ...);
 extern int snd_batchBusy;
 extern int snd_GotReturns(void);
 extern int* snd_currentBuffer;
+extern int snd_cdStreamActive;
+extern int snd_cdCallbackPending;
+extern int snd_StreamSafeCdSync(int);
 // Synchronous command return area (16 words); word 1 is the IOP return word.
 extern unsigned int snd_syncBuffer[16] __attribute__((section(".data")));
 // Staging area copied to the IOP for synchronous command payloads.
@@ -236,7 +239,35 @@ void snd_UnkFunction_0012eb00(void) {
     snd_FlushSoundCommands();
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_InitVAGStreamingEx);
+// Initializes the IOP VAG streaming session. Already-initialized sessions
+// short-circuit to 0; otherwise pending callbacks are drained, the CD is
+// synced, and the init command goes out with the channel count, buffer
+// size, read mode, and EE stream-safe enable. The IOP response becomes the
+// new snd_cdStreamActive state.
+int snd_InitVAGStreamingEx(int num_channels, int buffer_size,
+                           unsigned int read_mode, int enable_streamsafe) {
+    int data[4];
+    int ret;
+    int pending;
+
+    if (snd_cdStreamActive == 1)
+        return 0;
+    pending = snd_cdCallbackPending;
+    while (pending != 0) {
+        pending = snd_FlushSoundCommands();
+        // The library's build pads the spin-loop body with four nops; the
+        // first fills the jal delay slot under the GNU macro assembler.
+        asm volatile("nop\n\tnop\n\tnop\n\tnop");
+    }
+    snd_StreamSafeCdSync(0);
+    data[0] = num_channels;
+    data[1] = buffer_size;
+    data[2] = read_mode;
+    data[3] = enable_streamsafe;
+    ret = snd_SendIOPCommandAndWait(0x2A, 0x10, (char*)data);
+    snd_cdStreamActive = ret;
+    return ret;
+}
 
 void snd_StopAllStreams(void) {
     snd_SendIOPCommandNoWait(0x34, 0, 0, 0, 0);
@@ -287,7 +318,6 @@ typedef struct {
     int pad_14[11];
 } volatile SndCdStreamInfo;
 
-extern int snd_cdStreamActive;
 extern int snd_cdStatusCallback;
 extern int snd_cdStreamEndPending;
 extern SndCdStreamInfo snd_cdStreamInfo;
