@@ -1,2 +1,12 @@
 [
+  {
+    "id": "989snd_post_snd_StreamSafeCdRead",
+    "file": "code/989snd/ee/989snd_post.c",
+    "function": "snd_StreamSafeCdRead",
+    "addresses": ["0x12ED58"],
+    "category": "style",
+    "description": "Matches byte-for-byte but uses a raw IOP command constant (0x38, the CD streaming-read opcode in snd_SendIOPCommandNoWait(0x38, 0xC, buf, 0, 0)) and a raw sync-mode argument (snd_StreamSafeCdSync(1)) that STYLEGUIDE.md wants as named constants. The 989snd IOP protocol has no established naming yet (every snd_SendIOPCommand* call in the TU passes a raw opcode), so a protocol-level naming pass is needed before this can be cleaned without inventing an unverified name. The data size 0xC is a clear buffer size (3 ints, exception) and the 0/1 values are clear boolean set/clear and success/failure states. Fix: introduce named IOP command constants (and a named sync-mode) once the 989snd IOP opcodes are documented, and re-verify the object/assembly diff + full parity (a compile-time constant rename is codegen-safe).",
+    "evidence": "notes/989snd_snd_StreamSafeCdRead.md; STYLEGUIDE.md magic-number rule; matched.json entry code/989snd/ee/989snd_post.c:347:snd_StreamSafeCdRead",
+    "status": "open"
+  }
 ]
