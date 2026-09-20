@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "989snd_iop.h"
 
 typedef void (*SndCompleteProc)(int, u64);
 
@@ -34,15 +35,16 @@ asm(".extern snd_cdCallbackPending, 4\n"
 // Asks the CD RPC server to load a sound bank that lives in EE memory: arms
 // the CD callback (snd_FlushSoundCommands fires cb with the IOP-written
 // result word and user_data once the result leaves the sentinel) and issues
-// the 0x57 bank-load RPC. Reports an error string and returns without
-// loading when a load is already pending or the CD is still streaming.
+// the SND_IOP_CMD_CD_BANK_LOAD RPC. Reports an error string and returns
+// without loading when a load is already pending or the CD is still
+// streaming.
 void snd_BankLoadFromEE_CB(void* ee_loc, SndCompleteProc cb, u64 user_data) {
     snd_cdLoadError = 0;
     if (snd_cdCallbackPending != 0) {
         func_00116078(&snd_BankLoadFromEEProgressString);
         return;
     }
-    if (snd_StreamSafeCdSync(1) == 1) {
+    if (snd_StreamSafeCdSync(SND_CD_SYNC_MODE_CHECK) == 1) {
         func_00116078(&snd_BankLoadFromEECdBusyString);
         return;
     }
@@ -56,6 +58,6 @@ void snd_BankLoadFromEE_CB(void* ee_loc, SndCompleteProc cb, u64 user_data) {
         FlushCache(0);
     }
     snd_cdCallbackPending = 1;
-    sceSifCallRpc(&snd_cdRpcServer, 0x57, 1, &snd_cdBankLoadRequest, 4,
-                  &snd_cdCallbackArg, 4, 0, 0);
+    sceSifCallRpc(&snd_cdRpcServer, SND_IOP_CMD_CD_BANK_LOAD, 1,
+                  &snd_cdBankLoadRequest, 4, &snd_cdCallbackArg, 4, 0, 0);
 }

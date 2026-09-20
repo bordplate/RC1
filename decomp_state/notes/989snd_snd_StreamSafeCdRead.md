@@ -10,31 +10,58 @@ int snd_StreamSafeCdRead(int arg0, int arg1, int arg2) {
 
     if (!snd_cdStreamActive)
         return func_00121450(arg0, arg1, arg2);
-    if (snd_StreamSafeCdSync(1) == 1)
+    if (snd_StreamSafeCdSync(SND_CD_SYNC_MODE_CHECK) == 1)
         return 0;
     snd_cdStreamInfo.cd_busy = 1;
     snd_cdStreamInfo.cd_error = 0;
     buf[0] = arg0;
     buf[1] = arg1;
     buf[2] = arg2;
-    snd_SendIOPCommandNoWait(0x38, 0xC, (char*)buf, 0, 0);
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_CD_STREAM_READ, 0xC, (char*)buf, 0, 0);
     snd_cdSyncPending = 1;
     snd_cdStreamEndPending = 0;
     return 1;
 }
 ```
 
+## 2026-09-20 refactor: named IOP command constants
+
+The protocol-level naming pass this function was held for landed in
+`code/include/989snd_iop.h`: a 33-entry `SND_IOP_CMD_*` enum covering every
+IOP command issued in C across the 989snd TUs (31 via snd_SendIOPCommand*
+here, plus SND_IOP_CMD_EXECUTE_BATCH 0x4D in snd_SendCurrentBatch and
+SND_IOP_CMD_CD_BANK_LOAD 0x57 in snd_BankLoadFromEE_CB), and the two
+`SND_CD_SYNC_MODE_*` values for snd_StreamSafeCdSync. Opcode meanings are
+evidenced by the verified EE wrapper that issues each command; the same
+opcode values appear in the same-named wrappers of the Deadlocked PAL
+989snd library (reference/dl/989snd/ee/989snd.c). The refactor applied the
+constants to all 34 C call sites in 989snd_post.c, 989snd_bankload.c, and
+989snd_flush.c (the only TUs with C call sites). Data-size args and the
+boolean 0/1 states stay raw (STYLEGUIDE buffer-size/boolean exception).
+The same pass also renamed the placeholder wrapper parameters
+(`a`/`b`/`argN` -> the Deadlocked debug-symbol names: `lbn`/`sectors`/`buf`
+here, plus `bank`/`which`/`vol`/`mode`/`groups`/`handle`/`stream`/`core`/...
+across the 989snd_post.c wrappers, and `mode` in snd_StreamSafeCdSync, whose
+internal busy test now reads `mode == SND_CD_SYNC_MODE_CHECK`). Parameter
+and local names are codegen-neutral in C; the local staging array in
+snd_StreamSafeCdRead became `data` to match the DL source now that the
+buffer parameter is `buf`. Clean `make clean && make split && make -j2`
++ `cmp` byte-for-byte, and `tu_assembler_diff` reports 54/54 (post), 1/1
+(bankload), 1/1 (flush) function-level matches. The refactor.json entry
+`989snd_post_snd_StreamSafeCdRead` was cleared.
+
 ## Semantics
 
 Three int args. If no stream-safe session is active (`snd_cdStreamActive == 0`),
 delegates to the raw SCE CD read `func_00121450(arg0, arg1, arg2)` and returns
-its result. Otherwise it syncs the CD (`snd_StreamSafeCdSync(1)`); a return of 1
-means "already handled / stream ended" and the function returns 0. On the live
+its result. Otherwise it syncs the CD
+(`snd_StreamSafeCdSync(SND_CD_SYNC_MODE_CHECK)`); a return of 1 means
+"already handled / stream ended" and the function returns 0. On the live
 path it marks the stream busy (`cd_busy = 1`), clears the error
-(`cd_error = 0`), stages the three args on the stack, queues IOP command 0x38
-with 0xC (12) bytes of data, then flags `snd_cdSyncPending = 1` and
-`snd_cdStreamEndPending = 0`, and returns 1. The return value is
-`(snd_StreamSafeCdSync(1) != 1)`.
+(`cd_error = 0`), stages the three args on the stack, queues
+SND_IOP_CMD_CD_STREAM_READ (0x38) with 0xC (12) bytes of data, then flags
+`snd_cdSyncPending = 1` and `snd_cdStreamEndPending = 0`, and returns 1.
+The return value is `(snd_StreamSafeCdSync(SND_CD_SYNC_MODE_CHECK) != 1)`.
 
 ## Globals / callees
 

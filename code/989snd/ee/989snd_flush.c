@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "989snd_iop.h"
 
 typedef void (*SndCompleteProc)(int, u64);
 typedef void (*SndCdCallback)(int);
@@ -111,7 +112,7 @@ int snd_FlushSoundCommands(void) {
         snd_SendCurrentBatch();
     }
     if (snd_cdSyncPending != 0) {
-        snd_StreamSafeCdSync(1);
+        snd_StreamSafeCdSync(SND_CD_SYNC_MODE_CHECK);
         if (snd_cdStreamEndPending != 0) {
             snd_cdSyncPending = 0;
             snd_cdStreamEndPending = 0;

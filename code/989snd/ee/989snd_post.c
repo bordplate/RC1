@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "989snd_iop.h"
 
 typedef void (*SndCompleteProc)(int, u64);
 typedef struct {
@@ -45,102 +46,104 @@ extern void snd_SendCurrentBatch(void);
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E198);
 
 void snd_ResolveBankXREFS(void) {
-    snd_SendIOPCommandNoWait(0x8, 0, 0, 0, 0);
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_RESOLVE_BANK_XREFS, 0, 0, 0, 0);
 }
 
-void snd_UnloadBank(int a) {
+void snd_UnloadBank(int bank) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x6, 0x4, (char*)buf, 0, 0);
+    buf[0] = bank;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_UNLOAD_BANK, 0x4, (char*)buf, 0, 0);
 }
 
-void snd_SetMasterVolume(int a, int b) {
+void snd_SetMasterVolume(int which, int vol) {
     int buf[2];
-    buf[0] = a;
-    buf[1] = b;
-    snd_SendIOPCommandNoWait(0x9, 0x8, (char*)buf, 0, 0);
+    buf[0] = which;
+    buf[1] = vol;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_MASTER_VOLUME, 0x8, (char*)buf, 0, 0);
 }
 
-void snd_SetPlaybackMode(int a) {
+void snd_SetPlaybackMode(int mode) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0xB, 0x4, (char*)buf, 0, 0);
+    buf[0] = mode;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_PLAYBACK_MODE, 0x4, (char*)buf, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E270);
 
-void snd_SetMixerMode(int a, int b) {
+void snd_SetMixerMode(int channel_mode, int reverb_mode) {
     int buf[2];
-    buf[0] = a;
-    buf[1] = b;
-    snd_SendIOPCommandNoWait(0xD, 0x8, (char*)buf, 0, 0);
+    buf[0] = channel_mode;
+    buf[1] = reverb_mode;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_MIXER_MODE, 0x8, (char*)buf, 0, 0);
 }
 
-void snd_SetGroupVoiceRange(int a, int b, int c) {
+void snd_SetGroupVoiceRange(int group, int min, int max) {
     int buf[3];
-    buf[0] = a;
-    buf[1] = b;
-    buf[2] = c;
-    snd_SendIOPCommandNoWait(0x4E, 0xC, (char*)buf, 0, 0);
+    buf[0] = group;
+    buf[1] = min;
+    buf[2] = max;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_GROUP_VOICE_RANGE, 0xC, (char*)buf, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E2F8);
 
-void snd_PlaySoundVolPanPMPB(int a, int b, int c, int d, int e, int f,
-                             SndCompleteProc g, u64 h) {
+void snd_PlaySoundVolPanPMPB(int bank, int sound, int vol, int pan,
+                             int pitch_mod, int bend, SndCompleteProc cb,
+                             u64 user_data) {
     int buf[6];
-    buf[0] = a;
-    buf[1] = b;
-    buf[2] = c;
-    buf[3] = d;
-    buf[4] = e;
-    buf[5] = f;
-    snd_SendIOPCommandNoWait(0x11, 0x18, (char*)buf, g, h);
+    buf[0] = bank;
+    buf[1] = sound;
+    buf[2] = vol;
+    buf[3] = pan;
+    buf[4] = pitch_mod;
+    buf[5] = bend;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_PLAY_SOUND, 0x18, (char*)buf, cb, user_data);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E350);
 
-void snd_StopSound(int id) {
-    int data = id;
-    snd_SendIOPCommandNoWait(0x15, 4, (char*)&data, 0, 0);
+void snd_StopSound(int handle) {
+    int data = handle;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_STOP_SOUND, 4, (char*)&data, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E398);
 
 void snd_StopAllSounds(void) {
-    snd_SendIOPCommandNoWait(0x18, 0, 0, 0, 0);
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_STOP_ALL_SOUNDS, 0, 0, 0, 0);
 }
 
-void snd_PauseAllSoundsInGroup(int a) {
+void snd_PauseAllSoundsInGroup(int groups) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x16, 0x4, (char*)buf, 0, 0);
+    buf[0] = groups;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_PAUSE_ALL_SOUNDS_IN_GROUP, 0x4, (char*)buf, 0, 0);
 }
 
-void snd_ContinueAllSoundsInGroup(int a) {
+void snd_ContinueAllSoundsInGroup(int groups) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x17, 0x4, (char*)buf, 0, 0);
+    buf[0] = groups;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_CONTINUE_ALL_SOUNDS_IN_GROUP, 0x4, (char*)buf, 0, 0);
 }
 
-void snd_SoundIsStillPlaying_CB(int a, SndCompleteProc b, u64 c) {
+void snd_SoundIsStillPlaying_CB(int handle, SndCompleteProc cb, u64 user_data) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x19, 0x4, (char*)buf, b, c);
+    buf[0] = handle;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_SOUND_IS_STILL_PLAYING, 0x4, (char*)buf, cb, user_data);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E478);
 
-void snd_SetSoundParams_CB(int a, int b, int c, int d, int e, int f,
-                           SndCompleteProc g, u64 h) {
+void snd_SetSoundParams_CB(int handle, int mask, int vol, int pan,
+                           int pitch_mod, int bend, SndCompleteProc cb,
+                           u64 user_data) {
     int buf[6];
-    buf[0] = a;
-    buf[1] = b;
-    buf[2] = c;
-    buf[3] = d;
-    buf[4] = e;
-    buf[5] = f;
-    snd_SendIOPCommandNoWait(0x21, 0x18, (char*)buf, g, h);
+    buf[0] = handle;
+    buf[1] = mask;
+    buf[2] = vol;
+    buf[3] = pan;
+    buf[4] = pitch_mod;
+    buf[5] = bend;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_SOUND_PARAMS, 0x18, (char*)buf, cb, user_data);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E508);
@@ -220,7 +223,8 @@ void snd_SendCurrentBatch(void) {
         FlushCache(0);
     }
 
-    sceSifCallRpc(&snd_rpcServer, 0x4D, 1, snd_batchCommandBuffers[snd_batchIndex],
+    sceSifCallRpc(&snd_rpcServer, SND_IOP_CMD_EXECUTE_BATCH, 1,
+                  snd_batchCommandBuffers[snd_batchIndex],
                   0x1000 - snd_batchFreeBytes[snd_batchIndex],
                   snd_batchReturnBuffers[snd_batchIndex],
                   snd_batchCommandBuffers[snd_batchIndex]->num_commands * 4 + 8, 0, 0);
@@ -259,52 +263,53 @@ int snd_InitVAGStreamingEx(int num_channels, int buffer_size,
         // first fills the jal delay slot under the GNU macro assembler.
         asm volatile("nop\n\tnop\n\tnop\n\tnop");
     }
-    snd_StreamSafeCdSync(0);
+    snd_StreamSafeCdSync(SND_CD_SYNC_MODE_WAIT);
     data[0] = num_channels;
     data[1] = buffer_size;
     data[2] = read_mode;
     data[3] = enable_streamsafe;
-    ret = snd_SendIOPCommandAndWait(0x2A, 0x10, (char*)data);
+    ret = snd_SendIOPCommandAndWait(SND_IOP_CMD_INIT_VAG_STREAMING, 0x10, (char*)data);
     snd_cdStreamActive = ret;
     return ret;
 }
 
 void snd_StopAllStreams(void) {
-    snd_SendIOPCommandNoWait(0x34, 0, 0, 0, 0);
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_STOP_ALL_STREAMS, 0, 0, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012EC00);
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_PlayVAGStreamByLocEx_CB);
 
-void snd_PauseVAGStream(int a) {
+void snd_PauseVAGStream(int stream) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x2D, 0x4, (char*)buf, 0, 0);
+    buf[0] = stream;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_PAUSE_VAG_STREAM, 0x4, (char*)buf, 0, 0);
 }
 
-void snd_ContinueVAGStream(int a) {
+void snd_ContinueVAGStream(int stream) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x2E, 0x4, (char*)buf, 0, 0);
+    buf[0] = stream;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_CONTINUE_VAG_STREAM, 0x4, (char*)buf, 0, 0);
 }
 
-void snd_GetVAGStreamTimeRemaining_CB(int a, SndCompleteProc b, u64 c) {
+void snd_GetVAGStreamTimeRemaining_CB(int stream, SndCompleteProc cb,
+                                      u64 user_data) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x32, 0x4, (char*)buf, b, c);
+    buf[0] = stream;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_GET_VAG_STREAM_TIME_REMAINING, 0x4, (char*)buf, cb, user_data);
 }
 
-void snd_IsVAGStreamBuffered_CB(int a, SndCompleteProc b, u64 c) {
+void snd_IsVAGStreamBuffered_CB(int stream, SndCompleteProc cb, u64 user_data) {
     int buf[1];
-    buf[0] = a;
-    snd_SendIOPCommandNoWait(0x4F, 0x4, (char*)buf, b, c);
+    buf[0] = stream;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_IS_VAG_STREAM_BUFFERED, 0x4, (char*)buf, cb, user_data);
 }
 
-void snd_StreamSafeCheckCDIdle(int arg) {
+void snd_StreamSafeCheckCDIdle(int block_ee_iop) {
     int buf[4];
-    buf[0] = arg;
-    snd_SendIOPCommandAndWait(0x36, 4, buf);
+    buf[0] = block_ee_iop;
+    snd_SendIOPCommandAndWait(SND_IOP_CMD_CHECK_CD_IDLE, 4, buf);
 }
 
 // `volatile` keeps EGC from folding the out-of-window 0x137B00 base load into
@@ -344,36 +349,36 @@ extern int func_00120C30(int);
 // Issues a raw CD streaming read while a stream-safe session is active:
 // sync the CD, mark the stream busy and clear the error, queue the read
 // command, then flag the sync/stream-end pending states.
-int snd_StreamSafeCdRead(int arg0, int arg1, int arg2) {
-    int buf[3];
+int snd_StreamSafeCdRead(int lbn, int sectors, int buf) {
+    int data[3];
 
     if (!snd_cdStreamActive)
-        return func_00121450(arg0, arg1, arg2);
-    if (snd_StreamSafeCdSync(1) == 1)
+        return func_00121450(lbn, sectors, buf);
+    if (snd_StreamSafeCdSync(SND_CD_SYNC_MODE_CHECK) == 1)
         return 0;
     snd_cdStreamInfo.cd_busy = 1;
     snd_cdStreamInfo.cd_error = 0;
-    buf[0] = arg0;
-    buf[1] = arg1;
-    buf[2] = arg2;
-    snd_SendIOPCommandNoWait(0x38, 0xC, (char*)buf, 0, 0);
+    data[0] = lbn;
+    data[1] = sectors;
+    data[2] = buf;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_CD_STREAM_READ, 0xC, (char*)data, 0, 0);
     snd_cdSyncPending = 1;
     snd_cdStreamEndPending = 0;
     return 1;
 }
 
-int snd_StreamSafeCdSync(int arg0) {
+int snd_StreamSafeCdSync(int mode) {
     int stateZero;
 
     if (!snd_cdStreamActive)
-        return func_00120C30(arg0);
+        return func_00120C30(mode);
 
     FlushCache(0);
     stateZero = (snd_cdStreamInfo.cd_busy == 0);
     snd_cdStreamEndPending = stateZero;
     if (stateZero == 1)
         return 0;
-    if (arg0 == 1)
+    if (mode == SND_CD_SYNC_MODE_CHECK)
         return 1;
     if (stateZero)
         return 0;
@@ -389,7 +394,7 @@ int snd_StreamSafeCdSync(int arg0) {
 int snd_StreamSafeCdBreak(void) {
     if (!snd_cdStreamActive)
         return func_001216C8();
-    snd_SendIOPCommandNoWait(0x37, 0, 0, 0, 0);
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_BREAK_CD_STREAM_READ, 0, 0, 0, 0);
     return 1;
 }
 
@@ -412,78 +417,80 @@ int snd_StreamSafeCdCallback(int callback) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012EF58);
 
-void snd_SetReverbEx(int a, int b, int c, int d, int e) {
+void snd_SetReverbEx(int core, int type, int depth, int delay, int feedback) {
     int buf[5];
-    buf[0] = a;
-    buf[1] = b;
-    buf[2] = c;
-    buf[3] = d;
-    buf[4] = e;
-    snd_SendIOPCommandNoWait(0x50, 0x14, (char*)buf, 0, 0);
+    buf[0] = core;
+    buf[1] = type;
+    buf[2] = depth;
+    buf[3] = delay;
+    buf[4] = feedback;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_REVERB, 0x14, (char*)buf, 0, 0);
 }
 
-void snd_PreAllocReverbWorkArea(int a, int b) {
+void snd_PreAllocReverbWorkArea(int core, int type) {
     int buf[2];
-    buf[0] = a;
-    buf[1] = b;
-    snd_SendIOPCommandNoWait(0x51, 0x8, (char*)buf, 0, 0);
+    buf[0] = core;
+    buf[1] = type;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_PREALLOC_REVERB_WORK_AREA, 0x8, (char*)buf, 0, 0);
 }
 
-void snd_AutoReverb(int a, int b, int c, int d) {
+void snd_AutoReverb(int core, int depth, int delta_time, int channel_flags) {
     int buf[4];
-    buf[0] = a;
-    buf[1] = b;
-    buf[2] = c;
-    buf[3] = d;
-    snd_SendIOPCommandNoWait(0x10, 0x10, (char*)buf, 0, 0);
+    buf[0] = core;
+    buf[1] = depth;
+    buf[2] = delta_time;
+    buf[3] = channel_flags;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_AUTO_REVERB, 0x10, (char*)buf, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012F020);
 
-void snd_InitMovieSound(int a, int b, int c, int d, int e, int f) {
+void snd_InitMovieSound(int sizeOfIOPBuffer, int sizeOfSPUBuffer, int volumeLevel,
+                        int panCenter, int volumeGroup, int type) {
     int buf[6];
-    buf[0] = a;
-    buf[1] = b;
-    buf[2] = c;
-    buf[3] = d;
-    buf[4] = e;
-    buf[5] = f;
-    snd_SendIOPCommandAndWait(0x3B, 0x18, buf);
+    buf[0] = sizeOfIOPBuffer;
+    buf[1] = sizeOfSPUBuffer;
+    buf[2] = volumeLevel;
+    buf[3] = panCenter;
+    buf[4] = volumeGroup;
+    buf[5] = type;
+    snd_SendIOPCommandAndWait(SND_IOP_CMD_INIT_MOVIE_SOUND, 0x18, buf);
 }
 
 void snd_ResetMovieSound(void) {
-    snd_SendIOPCommandAndWait(0x3D, 0, 0);
+    snd_SendIOPCommandAndWait(SND_IOP_CMD_RESET_MOVIE_SOUND, 0, 0);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012F0D0);
 
 void snd_CloseMovieSound(void) {
-    snd_SendIOPCommandAndWait(0x3C, 0, 0);
+    snd_SendIOPCommandAndWait(SND_IOP_CMD_CLOSE_MOVIE_SOUND, 0, 0);
 }
 
-void snd_StartMovieSound(int a, int b, int c, int d, int e) {
+void snd_StartMovieSound(int iopBuffer, int iopBufferSize, int iopPausePosition,
+                         int sr, int ch) {
     int buf[5];
-    buf[0] = a;
-    buf[1] = b;
-    buf[2] = c;
-    buf[3] = d;
-    buf[4] = e;
-    snd_SendIOPCommandAndWait(0x3E, 0x14, buf);
+    buf[0] = iopBuffer;
+    buf[1] = iopBufferSize;
+    buf[2] = iopPausePosition;
+    buf[3] = sr;
+    buf[4] = ch;
+    snd_SendIOPCommandAndWait(SND_IOP_CMD_START_MOVIE_SOUND, 0x14, buf);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012F140);
 
-void snd_UpdateMovieADPCM(int a, int b) {
+void snd_UpdateMovieADPCM(int data_size, int offset) {
     int buf[2];
-    buf[0] = a;
-    buf[1] = b;
-    snd_SendIOPCommandAndWait(0x5A, 0x8, buf);
+    buf[0] = data_size;
+    buf[1] = offset;
+    snd_SendIOPCommandAndWait(SND_IOP_CMD_UPDATE_MOVIE_ADPCM, 0x8, buf);
 }
 
 void snd_GetMovieNAX(void) {
-    snd_SendIOPCommandAndWait(0x5B, 0, 0);
+    snd_SendIOPCommandAndWait(SND_IOP_CMD_GET_MOVIE_NAX, 0, 0);
 }
 
-int snd_GetDopplerPitchMod(int arg0) {
-    return arg0 * 1524 / 741;
+int snd_GetDopplerPitchMod(int approaching_mph) {
+    return approaching_mph * 1524 / 741;
 }
