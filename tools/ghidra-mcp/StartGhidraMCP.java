@@ -4,7 +4,9 @@ import ghidra.app.script.GhidraScript;
 import ghidra.app.util.PseudoDisassembler;
 import ghidra.app.util.parser.FunctionSignatureParser;
 import ghidra.app.cmd.function.ApplyFunctionSignatureCmd;
+import ghidra.app.cmd.function.CreateFunctionCmd;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.FunctionDefinitionDataType;
 import ghidra.program.model.listing.CodeUnit;
@@ -99,6 +101,8 @@ public class StartGhidraMCP extends GhidraScript {
                 response = decompileByName(readBody(exchange));
             } else if (path.equals("/decompile_function")) {
                 response = decompileByAddress(query.get("address"));
+            } else if (path.equals("/create_function")) {
+                response = createFunction(query.get("address"), query.get("name"));
             } else if (path.equals("/disassemble_function")) {
                 response = disassemble(query.get("address"));
             } else if (path.equals("/get_function_by_address")) {
@@ -280,6 +284,33 @@ public class StartGhidraMCP extends GhidraScript {
     private String decompileByAddress(String text) {
         Function function = functionAt(text);
         return function == null ? "No function found at or containing address " + text : decompile(function);
+    }
+
+    private String createFunction(String text, String name) {
+        Address entry = address(text);
+        Function existing = functionAt(text);
+        if (existing != null) {
+            return "Function already exists: " + existing.getName() + " at " + existing.getEntryPoint();
+        }
+        int transaction = program.startTransaction("Headless GhidraMCP create function");
+        boolean success = false;
+        try {
+            CreateFunctionCmd command = new CreateFunctionCmd(new AddressSet(entry), SourceType.USER_DEFINED);
+            if (!command.applyTo(program, new ConsoleTaskMonitor())) {
+                return "Failed to create function at " + entry;
+            }
+            Function function = program.getFunctionManager().getFunctionAt(entry);
+            if (name != null && !name.isEmpty()) {
+                function.setName(name, SourceType.USER_DEFINED);
+            }
+            success = true;
+            return "Created " + function.getName() + " at " + function.getEntryPoint()
+                + " body " + function.getBody().getMinAddress() + " - " + function.getBody().getMaxAddress();
+        } catch (Exception e) {
+            return "Create failed: " + e.getMessage();
+        } finally {
+            program.endTransaction(transaction, success);
+        }
     }
 
     private String decompile(Function function) {
