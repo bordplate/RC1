@@ -193,3 +193,30 @@ Style follow-up recorded: the remaining `func_XXXX` callee prototypes in
 bmain.cpp still lack the per-declaration C-linkage evidence / unknown-symbol
 comments STYLEGUIDE.md requires (new refactor.json entry
 `bmain_callee_prototype_comments`).
+
+## Refactor: callee-prototype comments (2026-09-21, entry cleared)
+
+Added the STYLEGUIDE-required comment above each of the seven `extern "C"`
+prototypes. Comment-only (no code change). The C-linkage evidence, verified
+against the generated assembly and `nm` on the original ELF (the code section
+is stripped — no entry has a symbol, so Splat assigned the `func_<addr>`
+labels):
+
+- `snd_StreamSafeCdSync` — defined in the C sound-library TU (989snd_post.c:370).
+- `memcard_Update` — the generated nonmatching memcard assembly (memcard_Update.s).
+- `func_0023A3B8` — the generated nonmatching movie assembly (movie decode
+  setup; writes `movieDecodeBuf`, zeroed on exit per audiodec.h).
+- `func_00120C30` / `func_00122298` / `func_00120558` / `func_00122E68` — all in
+  the generated SCE SDK library (sce/lib.s; the last is an `alabel`).
+
+Ghidra-verified behavior (for the "what is known" part): `func_00120C30`
+= CD streaming command-queue sync/check (mode 0 blocks, nonzero polls);
+`func_00122298` = returns GS_CSR bit 0x13 gated on the display state (arg
+unused); `func_00120558` = busy-waits until every DMA/GIF/VIF channel is idle
+(args unused); `func_00122E68` = sets/clears the vblank (interrupt channel 2)
+handler via AddIntcHandler2/RemoveIntcHandler, returning the previous handler
+(0 removes; showDebugFont installs `vsync_callback`). The original identifiers
+are not recoverable, so the address-based names are retained and documented.
+
+Verification: `showDebugFont__Fi` region 0x1E9488–0x1E9658 byte-identical;
+full `cmp build/boot_elf.elf assets/boot_elf.elf` passes.

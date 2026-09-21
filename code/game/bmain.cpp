@@ -87,12 +87,39 @@ void FadeToBlack(int frames) asm("FadeToBlack__FiUi");
 // step per frame).
 #define DEBUG_FONT_FADE_OUT_FRAMES 0xC
 #define DEBUG_FONT_FADE_IN_FRAMES 4
+// C linkage: defined in the C sound-library TU (989snd_post.c), so the symbol
+// is unmangled. Stream-safe CD session sync/wait; when no stream-safe session
+// is active it delegates to the raw command-queue check func_00120C30.
 extern "C" int snd_StreamSafeCdSync(int mode);
+// C linkage: the implementation is the generated nonmatching assembly in the
+// memcard region (memcard_Update.s), whose entry point is the unmangled label.
+// The memcard I/O state machine, pumped in showDebugFont's settle loop.
 extern "C" int memcard_Update(void);
+// C linkage: the implementation is the generated nonmatching assembly in the
+// movie region, whose entry point is the unmangled label. Movie/audio decode
+// setup: positions the video/audio decode sub-buffers on the movie decode
+// buffer and starts the decode (writes movieDecodeBuf, zeroed on exit). No
+// original identifier is recoverable from the stripped boot ELF.
 extern "C" void func_0023A3B8(int src, int size, int video, int audio, int flags);
+// C linkage: the implementation is in the generated SCE SDK library
+// (sce/lib.s), whose entry point is an unmangled C label. CD streaming
+// command-queue sync/check: mode 0 blocks until the queue drains, a nonzero
+// mode polls and reports whether a read is pending.
 extern "C" int func_00120C30(int mode);
+// C linkage: the implementation is in the generated SCE SDK library
+// (sce/lib.s), whose entry point is an unmangled C label. Returns a GS
+// (graphics-synth) status flag, GS_CSR bit 0x13, read directly or through the
+// display-state wrapper; the passed argument is unused by the implementation.
 extern "C" int func_00122298(int arg);
+// C linkage: the implementation is in the generated SCE SDK library
+// (sce/lib.s), whose entry point is an unmangled C label. Busy-waits until
+// every DMA/GIF/VIF channel reports idle (a wait-for-all-transfers sync); the
+// passed arguments are unused by the implementation.
 extern "C" int func_00120558(int arg0, int arg1);
+// C linkage: the implementation is in the generated SCE SDK library
+// (sce/lib.s), whose entry point is an unmangled C label. Sets or clears the
+// vblank interrupt handler (interrupt channel 2) via AddIntcHandler2 /
+// RemoveIntcHandler and returns the previous handler; 0 removes it.
 extern "C" int func_00122E68(int (*callback)(int));
 // Sends the debug-font texture to the frame buffer: GS texture format, log2
 // width and height, and transfer mode (1 transfers now, 0 appends to the

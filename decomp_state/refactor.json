@@ -23,6 +23,8 @@
     "category": "style",
     "description": "The extern \"C\" callee prototypes in bmain.cpp (snd_StreamSafeCdSync, memcard_Update, func_0023A3B8, func_00120C30, func_00122298, func_00120558, func_00122E68) lack the comments STYLEGUIDE.md requires: a per-declaration statement of the C-linkage evidence/ABI reason, and for the still-unknown func_XXXX names a comment stating what is known and why the symbol remains unknown. Research each callee (Ghidra, callers, callees) to establish the evidence and real names before editing; the change must preserve the byte-for-byte match.",
     "evidence": "STYLEGUIDE.md 'C And C++ Linkage' and 'Names And Unknown Symbols'; notes/bmain_showDebugFont__Fi.md",
-    "status": "open"
+    "status": "done",
+    "date": "2026-09-21",
+    "resolution": "Added a per-declaration comment above each of the seven extern \"C\" prototypes stating the C-linkage evidence (C sound-library TU 989snd_post.c, generated nonmatching assembly in the memcard/movie regions, or the generated SCE SDK library sce/lib.s with an unmangled label) and, for the func_XXXX names, what the function does (Ghidra-verified behavior) plus why the address-based name is retained (no original identifier is recoverable from the stripped boot ELF). Comment-only; showDebugFont__Fi region 0x1E9488-0x1E9658 and full boot ELF cmp pass byte-identical."
   }
 ]
