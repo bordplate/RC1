@@ -434,6 +434,27 @@ stack args (see decomp_state/notes/989snd_snd_PlaySoundVolPanPMPB.md).
 - `attempts/` stores optional per-attempt records.
 - `notes/` stores investigation and strategy notes.
 
+## Working Directories
+
+Each active decompilation or refactor must have its own
+`working/<working name>/` directory. Create it before starting substantial work
+and keep the current function/file, temporary source copies, compiler probes,
+diffs, logs, and continuation notes there. The working directory is the
+checkpoint for interrupted sessions, so record the target, current hypothesis,
+attempted variants, next steps, and any commands needed to resume. Keep the
+authoritative source and required project state in their normal repository
+locations as well, but preserve the in-progress working copy and artifacts in
+this directory.
+
+When starting or resuming work, inspect `working/` first and prioritize
+continuing any existing unfinished work over selecting a new target. Do not
+reuse another task's directory or delete an unfinished directory. After the
+task reaches any final outcome (matched, blocked, or bailed), and that outcome
+is verified and committed or otherwise durably recorded, clear that task's own
+`working/<working name>/` directory. A blocked or bailed task is complete when
+no active continuation work remains; do not retain its working state merely
+because it did not match. Leave unrelated working directories alone.
+
 ## Refactor Registry
 
 `decomp_state/refactor.json` is a list of entries for code that already
@@ -702,7 +723,9 @@ not have the original source code for Deadlocked.
 - `last-resort-decompiler` uses the usage-limited GPT-5.6 Sol model. Do not use
   it for routine targets or initial research. Invoke it only after the primary
   agent has exhausted normal source, assembly, Ghidra, compiler-probe, and
-  `decomp-researcher` work and is otherwise ready to add a blocker.
+  `decomp-researcher` work and is otherwise ready to add a blocker. This
+  escalation is for real decompilation targets; dead-tail ghost fragments are
+  handled with inline assembly and are never blockers.
 - No new entry may be added to `decomp_state/blocked.json` until
   `last-resort-decompiler` has been tried on that exact target. Apply and test
   its concrete recommendations before deciding the target remains blocked.
@@ -713,7 +736,9 @@ not have the original source code for Deadlocked.
 
 ## Target Selection
 
-Select targets in this priority order:
+First inspect `working/` and resume the highest-priority unfinished task found
+there. Only when no unfinished working directory needs continuation, select a
+new target in this priority order:
 
 1. `decomp_state/refactor.json` (first `open` entry): the refactor is already
    scoped, the function already matches, and the change is a controlled
@@ -783,14 +808,18 @@ made to match, revert the function to `INCLUDE_ASM` and record a
 Registry hard policy above).
 
 Prefer small leaf functions and focused iterations. Preserve old compiler
-compatibility and existing project style. If repeated attempts fail, record the
-concrete blocker and continue elsewhere. A focused iteration may include the
-related cross-file refactor needed to make the target understandable, correct,
-or linkable.
+compatibility and existing project style. If repeated attempts fail on a real
+decompilation target, record the concrete blocker and continue elsewhere.
+Dead-tail ghost fragments are the exception: emit their exact bytes with inline
+assembly and do not record them as blockers. A focused iteration may include
+the related cross-file refactor needed to make the target understandable,
+correct, or linkable.
 
 For an experimental candidate that needs a temporary assembly fallback, retain
 the project's existing `INCLUDE_ASM` path while iterating. Only remove it after
-the candidate object or function assembly has been compared mechanically.
+the candidate object or function assembly has been compared mechanically. This
+does not apply to identified dead-tail ghost fragments, which use the required
+inline assembly instead of an orphan `INCLUDE_ASM`.
 
 In C++ files, prefer natural C++ functions and let EEGCC produce the expected
 cfront-style name. Use `extern "C"` only when the original symbol is confirmed
@@ -952,7 +981,11 @@ function is matched.
 
 Push `main` to `origin` when you've committed.
 
-Clean test probes and temporary files after finishing. 
+After any task outcome is durably recorded and its verification is complete,
+clean test probes and temporary files and clear that task's
+`working/<working name>/` directory, including when the outcome is a blocker.
+Do not clean an unfinished working directory merely because an attempt was
+interrupted.
 
 ## Mobile Status Notification
 

@@ -7,6 +7,7 @@ disc/
 code/_generated/
 build/
 reference/
+working/
 
 SCUS_971.99.ld
 ctx.c
