@@ -330,12 +330,13 @@ and the overlays, plus the jumptable entries — and Ghidra has no function ther
 Mechanism (verified by compiling standalone candidates with the project EGC): with
 two stores before a `return`, EGC keeps the FIRST alive (before `jr ra`, often in
 the delay slot) and emits the SECOND after the `jr ra` — unreachable. Strategy:
-when matching the preceding function, look for the C form that makes EGC
-regenerate the tail bytes and drop the orphan INCLUDE_ASM in the same commit; if
- no form is found, keep the orphan INCLUDE_ASM (it supplies the 8 bytes and keeps
- parity) and block the orphan entry explaining it is a dead tail, not a function
- (see decomp_state/notes/help_msg_string__Fi.md — msg_string__Fi matched with its
-  orphan func_001FDD50 retained).
+these ghost functions are not independent decompilation targets. Replace each
+ghost placeholder with the matching inline assembly, using forms such as
+`asm("nop")`, `asm("addiu $sp,$sp,N")`, or the appropriate `asm("sw ...")`,
+so the dead bytes and alignment padding are emitted without an orphan
+`INCLUDE_ASM`. Do not add these ghost functions to `blocked.json`; they are
+handled as byte-preservation assembly while matching the preceding function (see
+`decomp_state/notes/help_msg_string__Fi.md`).
  Extension observed 2026-09-18 (multi-unit dead addiu-sp tails, 989snd): spimdis
  groups contiguous `addiu sp,sp,N; nop` units into single 12-52-byte "functions"
  (e.g. func_0012E078 = 0x60,0x50; func_0012E478 = 0x20 x8 + 0x30); 989snd.c alone
@@ -348,13 +349,15 @@ regenerate the tail bytes and drop the orphan INCLUDE_ASM in the same commit; if
  gap bytes between one symbol's end and the next symbol's start, via
  tools/ccc/stdump) — so the original compiler emitted them after the function's
  RTL and the linker placed them. Local EGC 2.95.2 never emits dead
- `addiu sp,sp,N` (t1-t10 plus 2026-09-18 p1-p5 multi-return/tail-call/trailing
-  forms), so when the parent is unmatchable these siblings are retained + blocked
-  one by one (each still needs its own deadness scan — tools/deadness_scan.py
-  <addr> scans jal/j/relative-branch targets in core.text/.text plus 32/64-bit
-  data words in all other sections — and last-resort per the hard rule). See
+`addiu sp,sp,N` (t1-t10 plus 2026-09-18 p1-p5 multi-return/tail-call/trailing
+ forms), so when the parent is unmatchable these siblings are emitted with
+ explicit inline assembly for their exact instruction sequences and padding.
+ They do not need individual deadness blockers or `blocked.json` entries; use
+ `tools/deadness_scan.py <addr>` when confirming that a fragment is a ghost
+ (the scanner checks jal/j/relative-branch targets in core.text/.text plus
+ 32/64-bit data words in all other sections). See
   decomp_state/notes/989snd_func_0012E078.md (family table) and
-  decomp_state/notes/989snd_func_0012E198.md (first sibling blocked with the
+  decomp_state/notes/989snd_func_0012E198.md (first sibling checked with the
   scanner).
 
 Observation observed 2026-09-05 (EGC auto-emits `jal __main` for C++ main): a
@@ -611,15 +614,16 @@ store-tail family the dead fragment sits after the `jr`'s delay slot AND the
 following `.align` nop: `[jr ra; sw A (delay slot, ALIVE); nop (alignment);
 sw B (dead); nop]`. The intervening alignment nop means an 80-byte parent C
 function can NEVER reproduce the layout — its 80th word would occupy the nop's
-slot; only the orphan INCLUDE_ASM (4 B + pad) fits. EGC also deletes source
-statements written after a `return`, and every probed two-store form (void
-read-back, chained/nested assignment, pointer return with two stores of a
-local) lands the second store in the delay slot or before the `jr`, while the
-pointer-return forms break the matched body allocation (load register shifts
-plus a `move v0,v1`). So these tails are not regeneratable from C; retain the
-orphan and block it (last-resort GPT-5.6 Sol confirmed 2026-09-13). The
-help_msg_string case (dead store after a `addiu sp` epilogue delay slot) is
-the same rule with a longer epilogue in between.
+slot; use inline assembly for the dead fragment and its padding instead of an
+orphan `INCLUDE_ASM`. EGC also deletes source statements written after a
+`return`, and every probed two-store form (void read-back, chained/nested
+assignment, pointer return with two stores of a local) lands the second store in
+the delay slot or before the `jr`, while the pointer-return forms break the
+matched body allocation (load register shifts plus a `move v0,v1`). These tails
+are therefore byte-preservation assembly, not blockers (last-resort GPT-5.6 Sol
+confirmed the placement issue on 2026-09-13). The help_msg_string case (dead
+store after a `addiu sp` epilogue delay slot) follows the same rule with a
+longer epilogue in between.
 
 Observation observed 2026-09-14 (zero-byte asm barriers force an interleaved
 signed constant split, VU1_gsRegsNormal__Fv): when the original interleaves
