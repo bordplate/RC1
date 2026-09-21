@@ -37,8 +37,10 @@ menuSelectionCount = 0x0015FD64;
 menuSelectionState = 0x001413DC;
 menuPostCallbackIndex = 0x0015EEB0;
 menuPostFlags = 0x0015EEB4;
+decodeMode = 0x0015EED8;
 pauseMemoryCardState = 0x001A0318;
 pauseSoundVolume = 0x0013E5A0;
+audioState = 0x0013E550;
 musicVolumeRaw = 0x0015EDF0;
 pauseMenuFlags = 0x0013CB04;
 pauseCurrentActionList = 0x001D5BF8;
@@ -48,6 +50,7 @@ spaceLoadPending = 0x0015F5B0;
 spaceLoadId = 0x0015F600;
 spaceLoadInProgress = 0x0015F618;
 hudHeapBase = 0x001940CC;
+levelMem = 0x001940C0;
 hudHeap = 0x0019A3E8;
 hudMessageTimer = 0x0015F8F8;
 tieLightData = 0x001E3200;
@@ -292,6 +295,7 @@ actuator_CalcPower = 0x001e8d08;
 OcclVisibility = 0x00193fc0;
 
 // game/bmain.cpp
+showDebugFont__Fi = 0x1E9488;
 startlevel__Fv = 0x1e9658;
 ParseBin__Fv = 0x12d8f8;
 

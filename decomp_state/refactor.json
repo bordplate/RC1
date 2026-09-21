@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "bmain_showDebugFont__Fi",
+    "file": "code/game/bmain.cpp",
+    "function": "showDebugFont__Fi",
+    "addresses": [
+      "0x1E9488"
+    ],
+    "category": "style",
+    "description": "Function matches byte-for-byte but uses raw hex magic numbers that should become named constants (textual substitution only, must preserve the match): (1) debug-font table record offsets 0x1A98/0x1A9C (NTSC src/size) and 0x1A78/0x1A7C (non-NTSC src/size) relative to debugFontLoadInfo; (2) movie decode sub-buffer offsets decBase+0x100000 (video) and +0x400000 (audio) passed to func_0023A3B8; (3) Hud_sendTexture color params 0x1B, 6, 6, 1; (4) FadeToBlack frame counts 0xC and 4; (5) audioState.playbackFlags bits 0x8 (start) and 0x10 (finish); (6) decodeMode values 2/0 and GameMode values 1/0. The 0x1000000 EE VRAM/GS base and the inline-asm font-record address block are documented required codegen/hardware artifacts (see note) and are NOT part of this refactor.",
+    "evidence": "notes/bmain_showDebugFont__Fi.md",
+    "status": "open"
+  }
+]

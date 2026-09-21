@@ -6,7 +6,9 @@ struct MenuState {
     int selected;
     char pad1[0xBC - 0x20];
     int saved;
-    char pad2[0xDC - 0xC0];
+    char pad2[0xD4 - 0xC0];
+    int field_0xD4;
+    char pad2b[0xDC - 0xD8];
     int field_0xDC;
     int field_0xE0;
     char pad3[0xF4 - 0xE4];

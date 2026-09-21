@@ -1946,5 +1946,13 @@
     "size": 172,
     "matched_date": "2026-09-20",
     "note": "VAG streaming init (0x12EB20, 172 bytes): already-initialized sessions (snd_cdStreamActive==1) return 0; otherwise drain snd_cdCallbackPending via flush-spin, snd_StreamSafeCdSync(0), stage 4 params on stack, command 0x2A/0x10 via snd_SendIOPCommandAndWait, response stored back to snd_cdStreamActive and returned. Two codegen facts: (1) the drain loop must keep its condition in a local (`pending = snd_cdCallbackPending; while (pending != 0) pending = snd_FlushSoundCommands();`) - the plain while-on-global form reloads at the back edge (+1 word); the original reuses the flush return in `bnez v0`. (2) loop body needs FOUR explicit asm volatile nops (GNU macro assembler consumes the first as the jal delay slot); the three-nop snd_SendIOPCommandAndWait precedent does not transfer because its back-edge beq is in a .set noreorder region. Signature per Deadlocked: int (int, int, unsigned int, int). See notes/989snd_snd_InitVAGStreamingEx.md."
+  },
+  "code/game/bmain.cpp:69:showDebugFont__Fi": {
+    "name": "showDebugFont__Fi",
+    "source": "code/game/bmain.cpp",
+    "vram": "0x001E9488",
+    "size": 464,
+    "matched_date": "2026-09-21",
+    "note": "Plays boot stream table entry `index` (the debug-font movie): no-op if index<0; stops audio, fades out, waits for the menu to settle (memcard_Update loop), runs the movie decode on the level decode buffer (func_0023A3B8 with decodeBufBase+0x100000/+0x400000), refreshes the HUD (Hud_sendTexture to EE VRAM 0x1000000), and fades back in. Sets decodeMode 2->0 and GameMode 1->0 around the work, and sets audioState.playbackFlags bits 0x8 then 0x10. The font {src,size} records come from debugFontLoadInfo (0x137B80) at +0x1A98/+0x1A9C (NTSC) or +0x1A78/+0x1A7C (non-NTSC). The font-record address must be held in TWO registers (a0 32-bit + v0 64-bit via an explicit move) with fontSize loaded before fontSrc; this EGC build cannot emit that from natural C (it keeps the address in one register and reverses the load/s-reg coupling), so the address is pinned to a0/v0 with inline asm. A GPREL misread initially modeled the mid-store as D_0015F624=1; it is actually GameMode (0x15F604). Full boot ELF compares byte-for-byte. See notes/bmain_showDebugFont__Fi.md."
   }
 }
