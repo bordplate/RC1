@@ -363,6 +363,9 @@ Help_DrawPrompt = 0x1fe898;
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;
 FastMemCopy = 0x1f98d0;
+// Handwritten fastfunc: returns 0x1E - clz(x) = floor(log2(x)) - 1; the
+// width/height exponent used by the PSM T8H image loader.
+log2dim = 0x1f97a0;
 
 // game/initonce.cpp
 InitMemSlots__Fv = 0x2015d8;
