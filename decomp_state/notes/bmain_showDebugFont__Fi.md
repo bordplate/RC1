@@ -135,3 +135,61 @@ byte-identical to `assets/boot_elf.elf`; full `cmp build/boot_elf.elf
 assets/boot_elf.elf` passes. `func_001E9488` is no longer referenced by any
 `INCLUDE_ASM` and is absent from the built object (the leftover generated
 `func_001E9488.s` is not compiled).
+
+## Refactor: named constants (2026-09-21, refactor.json entry cleared)
+
+Pure textual substitution of the magic numbers with `#define`s (verified
+byte-identical: function region 0x1E9488–0x1E9658 and full ELF cmp pass
+afterwards). Constants added in bmain.cpp:
+
+- Font record offsets: `DEBUG_FONT_NTSC_SRC/SIZE` (0x1A98/0x1A9C),
+  `DEBUG_FONT_NON_NTSC_SRC/SIZE` (0x1A78/0x1A7C) — offsets from
+  `debugFontLoadInfo`.
+- Decode sub-buffer offsets: `LEVEL_DECODE_VIDEO_OFFSET` (0x100000),
+  `LEVEL_DECODE_AUDIO_OFFSET` (0x400000) — within `levelMem.decodeBufBase`.
+  The audio one matches the movie path: the decode setup stores it in the
+  global the decode loop advances by `MOVIE_VIBUF_OFFSET`/
+  `MOVIE_AUDIO_DEC_OFFSET` (audiodec.h) for the VIF/VAG buffers.
+- Texture transfer params: `DEBUG_FONT_TEX_FORMAT` (0x1B),
+  `DEBUG_FONT_TEX_U_LOG` (6), `DEBUG_FONT_TEX_V_LOG` (6),
+  `DEBUG_FONT_TEX_MODE_IMMEDIATE` (1). The entry's "color parameters"
+  label was wrong: Ghidra on `Hud_sendTexture__FPciiiii` (0x200B10) shows
+  the 3rd arg passed to the VU0 program as the GS texture format
+  (0x1B = PSMCT16SH4, 16-bit color + 4-bit shared alpha), the 4th/5th as
+  log2 width/height (used as `1 << n`, 64x64 here), and the 6th as a mode:
+  0 appends the transfer to the current VU1 chain, 1 does
+  `FlushCache(0)` + `func_00122658(packet, dest)` immediately.
+- Fade durations: `DEBUG_FONT_FADE_OUT_FRAMES` (0xC, through the
+  `func_001F96F8` scale), `DEBUG_FONT_FADE_IN_FRAMES` (4, direct).
+  `FadeToBlack`'s argument is the GS alpha step count (one loop iteration
+  per frame); `FadeToBlack(4)` also appears in the level loop
+  (FUN_001EB798) as the quick fade.
+- Playback flag bits: `AUDIO_PLAYBACK_FLAG_STARTING` (0x8),
+  `AUDIO_PLAYBACK_FLAG_FINISHED` (0x10).
+- Mode values: `DECODE_MODE_NORMAL` (0) / `DECODE_MODE_DEBUG_FONT` (2),
+  `GAME_MODE_NORMAL` (0) / `GAME_MODE_DEBUG_FONT` (1).
+
+Research backing the names:
+
+- `func_001F96F8` (fastfunc.s) is a frame-rate scaler:
+  `(int)(n * *(float*)0x15ED68 + 0.2f)`. The slot is 1.0f in the boot ELF
+  (0x15ED60/64/68 are all 1.0f; 0x15ED6C–0x15ED7C hold 1/60, 1/3600,
+  1/216000 frame-time constants), so it is the identity here. No boot-ELF
+  writer to those slots found (an overlay may rescale them).
+- `decodeMode` (0x15EED8) value set: startlevel writes -1 at 0x1E9844; the
+  movie decode loop FUN_0023A460 gates on `!= -1` / `!= 2` / `== 0`.
+- `GameMode` (0x15F604): the level loop FUN_001EB798 skips normal updates
+  while it is nonzero; 3 is the pause value (pause_scheduleInput; also
+  stored at 0x218F84). Many other writers pass the value as a parameter.
+- The playbackFlags byte 0x13E5BB is shared with the space clone as the
+  note's identity section said: the space sound-update code at 0x22CA90
+  reads it (`andi` 0x8, 0x13, 0x4 around the byte plus neighbor fields at
+  +0x64/0x68–0x6A of audioState), and the space debug-font player at
+  0x231640+ sets 0x8, calls the same `func_0023A3B8` setup and
+  `FadeToBlack(4)`. Its font records sit at +0x1938/+0x193C of its own
+  table copy (0x137B80 + index*8), not at the boot table's 0x1A78/0x1A98.
+
+Style follow-up recorded: the remaining `func_XXXX` callee prototypes in
+bmain.cpp still lack the per-declaration C-linkage evidence / unknown-symbol
+comments STYLEGUIDE.md requires (new refactor.json entry
+`bmain_callee_prototype_comments`).
