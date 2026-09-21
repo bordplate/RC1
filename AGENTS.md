@@ -444,7 +444,9 @@ checkpoint for interrupted sessions, so record the target, current hypothesis,
 attempted variants, next steps, and any commands needed to resume. Keep the
 authoritative source and required project state in their normal repository
 locations as well, but preserve the in-progress working copy and artifacts in
-this directory.
+this directory. You are free to dump as much data, notes and artifacts into this
+folder without prejudice. You do not need to maintain a specific structure within
+your working folder. 
 
 When starting or resuming work, inspect `working/` first and prioritize
 continuing any existing unfinished work over selecting a new target. Do not
