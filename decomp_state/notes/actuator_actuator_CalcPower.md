@@ -199,7 +199,7 @@ s3/s4 stack slots), and needs a linker-script patch hook for the switch table.
 ```c
 int actuator_CalcPower(int *power) asm("actuator_CalcPower");
 int actuator_CalcPower(int *power) {
-    int scale[2], numpower[2], numscale[2];
+    int scale[2], numscale[2], numpower[2];  // decl order = stack order sp+0x00/0x10/0x20
     int i, ret = 0, pos, pow = 0;
     struct actuatorWave *aw;
     { int *a=scale,*b=numscale,*c=numpower,*p=power;
@@ -249,3 +249,40 @@ original. See Blocker A.)
 `tools/mips64r5900el-ps2-elf/usr/bin/mips64r5900el-ps2-elf-objdump -d --start-address=0x1e8d08
 --stop-address=0x1e911c assets/boot_elf.elf` (only objdump that works on the EE binary)
 vs objdump of the candidate .o.
+
+## Session 2026-09-22 (re-examined; block re-confirmed)
+
+Re-attack from the corrected candidate (standalone EGC compile, default flags). Blockers
+A and B re-confirmed; two new details:
+
+- **Blocker A re-confirmed mechanically.** Corrected candidate (decl order
+  `scale, numscale, numpower`) compiles to: s0=aw, s1=i, s2=power, **s3=ret(zero),
+  s4=sp+0x20, s5=sp+0x10**, s6=hi(ActuatorWave), **frame 0xB0, no `swc1 f20`**.
+  Original: s3=numpower(sp+0x20), s4=numscale(sp+0x10), s5=ret, s6=AWhi, frame 0xC0
+  with `swc1 f20,0xB0(sp)`. The 0x10 frame delta = the f20 save (8B) + an 8B gap
+  (0xA8-0xAF) the candidate does not reserve; the local region is the same 48B
+  (three 16-byte slots at sp+0x00/0x10/0x20) in both. RTL-driven allocation unchanged.
+- **func_001FA6D0 (0x1FA6D0) is `trunc.w.s $f12,$f12; mfc1 v0,$f12`** (objdump ground
+  truth; splat mislabels the word `cvt.w.s`). It is the EE TRUNC.W.S variant: it reads
+  its float argument from **$f12** (not the standard $f0) and truncates toward zero.
+  The case-5 caller pre-positions f12 in the `jal` delay slot
+  (`jal; mul.s f12,f1,f12`), so the C form `func_001FA6D0(expr)` (arg in f0) CANNOT
+  reproduce the call — the value must land in f12 via the delay slot. This is a third,
+  independent codegen wall in case 5 on top of A and B.
+- **Blocker B has no clean C path (refined).** The 6-word table at 0x1E7640 already
+  exists in the .data blob (data.data.o bytes, match by construction) and the linker
+  script already defines `jtbl_001E7640 = 0x1e7640`. A hand-written inline-asm dispatch
+  through that symbol would avoid EGC's .rdata — BUT a plain C `switch` is still
+  required to emit the case bodies at the original absolute addresses the table
+  entries reference, and a plain switch forces EGC's .rdata table (which our linker
+  script places in the text .rodata region, shifting every byte after it → parity
+  break). The dispatch + case bodies therefore cannot be split between clean C and
+  asm; the only forms are (a) plain switch → 2 dispatch words + .rodata shift, or
+  (b) hand-write the whole switch in asm ≈ retaining INCLUDE_ASM. No linker-script
+  hook exists to relocate EGC's .rdata into the .data blob.
+- GNU computed-goto probe (`goto *target`) compiles to a beq/slt comparison chain +
+  local table (no .data reference) — does not reproduce the original table dispatch.
+
+Conclusion: unchanged. Retain INCLUDE_ASM. A future match would need the exact
+original RTL for the s3/s4/s5 + f20 allocation (A), a table-in-.data placement
+mechanism (B), and an f12 delay-slot FP convention (case 5) — three independent walls.
