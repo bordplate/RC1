@@ -96,10 +96,24 @@ def object_functions(obj):
         if sec_names.get(int(ndx)) != ".text":
             continue
         funcs.append((name, value, size))
-    funcs.sort(key=lambda f: f[1])
+    return function_extents(funcs)
+
+
+def function_extents(funcs):
+    """Remove aliases already covered by a sized function, not unsized entries.
+
+    GNU INCLUDE_ASM can tag interior assembly labels as zero-sized GLOBAL
+    FUNC symbols (e.g. draw's func_001F0C50). Their bytes are checked with
+    the containing function; they are not independent missing functions.
+    """
+    funcs = [f for f in funcs if not f[0].endswith(".NON_MATCHING")]
+    sized = [(value, value + size) for _, value, size in funcs if size > 0]
+    funcs.sort(key=lambda f: (f[1], f[2] == 0))
     unique = []
     for name, value, size in funcs:
-        if name.endswith(".NON_MATCHING") or (unique and unique[-1][1] == value):
+        if size == 0 and any(start <= value < end for start, end in sized):
+            continue
+        if unique and unique[-1][1] == value:
             continue
         unique.append((name, value, size))
     return unique
@@ -129,6 +143,9 @@ def main():
 
     results = []
     for name, offset, size in object_functions(args.object):
+        if size == 0:
+            results.append((name, size, None, "unknown-function-size"))
+            continue
         vma = names.get(name)
         if vma is None:
             results.append((name, size, None, "no-address-in-linker-script"))
