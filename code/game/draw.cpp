@@ -1,12 +1,16 @@
 #include "common.h"
 #include "types.h"
 
-extern int drawTextureDmaState[20] __attribute__((section(".data")));
+#define DRAW_TEXTURE_DMA_STATE_COUNT 20
+#define DRAW_TEXTURE_DMA_STATE_INITIAL 1
+
+extern int drawTextureDmaState[DRAW_TEXTURE_DMA_STATE_COUNT]
+    __attribute__((section(".data")));
 
 void draw_resetTextureDmaState(void) {
-    int value = 1;
+    int value = DRAW_TEXTURE_DMA_STATE_INITIAL;
     int* state = drawTextureDmaState;
-    int count = 19;
+    int count = DRAW_TEXTURE_DMA_STATE_COUNT - 1;
     state += count;
     do {
         *state = value;
