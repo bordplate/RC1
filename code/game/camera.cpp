@@ -89,7 +89,27 @@ float Cam_InterpValues(float current, float target, float* offset, float step, f
     return current + *offset;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBE60);
+// Unreachable dead tail of Cam_InterpValues (0x1EBD78): a single
+// `addiu sp,sp,0x50` after the parent's `jr ra; addiu sp,sp,0x30`.
+// Nothing reaches 0x1EBE60 (0 jal/j/branch/data references; no Ghidra
+// function), so it is not a function; no C form reproduces the parent plus
+// this tail. The original compiler emitted these bytes after the epilogue,
+// so they are preserved here as exact words. The glabel/nonmatching pair
+// keeps the Splat .ld symbol pins at 0x1EBE60; the trailing nop pads to the
+// 8-aligned Camera_handleCollWithHero__FiP9UpdateCam entry at 0x1EBE68.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001EBE60, 0x4\n"
+    "glabel func_001EBE60\n"
+    "    .word 0x27BD0050\n"
+    "endlabel func_001EBE60\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_handleCollWithHero__FiP9UpdateCam);
 
