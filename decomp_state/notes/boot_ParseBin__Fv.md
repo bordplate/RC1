@@ -67,12 +67,16 @@ allocation**, which no C form or flag reproduces:
    compute + `b TOP`; each copy loop body has TWO nops. Probes carry an extra nop
    and/or the initial setup in the prologue.
 
-## Probes (working/ParseBin/, `make probe`, flags `-G8 -O2 -ffast-math -fno-exceptions -snas`)
-Word-level raw-byte diffs (original 55 words). Best: **p21 (do-while) = 43/55**
-(matches 12: the qword/word loop cores — sd/sw, d-increments, loop nops, loop/skip
-branches). p16 (while, single TOP) = 54/55. p22/p23 (last-resort rotated-while,
-TOP in a comma-expression condition) = 47/55. p24 (last-resort ternary condition)
-= 54/55.
+## Probes (flags `-G8 -O2 -ffast-math -fno-exceptions -snas`)
+Diffs are `tools/decomp_probe.py <source> code/_generated/nonmatchings/game/boot/ParseBin__Fv.s ParseBin__Fv --out <dir>`
+which LINKS the probe with the game's symbol table + runtime GP (so relocations
+resolve to the true machine code) and compares the linked bytes to the original
+55 words (220 bytes). Best: **p21 (do-while) = 43/55** (matches 12: the qword/word
+loop cores — sd/sw, d-increments, loop nops, loop/skip branches). p16 (while, single
+TOP) = 54/55. p22 (last-resort rotated-while, TOP in a comma-expression condition)
+= 45/55. p24 (last-resort ternary condition) = 54/55. (An early unlinked `.o` byte
+diff muddied the register picture by showing pending relocations as address
+mismatches; `decomp_probe.py` is the authoritative comparison.)
 
 Exhausted: if/else-if chains, `||`/De Morgan `&&` alignment chain (the `&&` chain is
 required & correct; OR-form is wrong), goto (fails C++ compile: jumps cross
@@ -88,11 +92,15 @@ levelRoot load to a self-based `lui v1; lw v1` for the `.data` symbol but does n
 change the layout/RA).
 
 ## Tooling
-`working/ParseBin/diff_words.py` reads raw bytes from `assets/boot_elf.elf` (file
-offset computed from the ELF program headers — VMA 0x12D8F8 → 0x2E878, segment
-Off 0x1000 / VA 0x100080) and from the probe `.o` (via `objcopy -O binary`), which
-avoids objdump's `...` nop-collapsing and offset-column spacing quirks. Branch
-targets are normalized to relative offsets.
+Use `tools/decomp_probe.py` for function-level diffs: it reads the expected bytes
+from the Splat reference `.s` (verified against the boot image), compiles the
+candidate via `make probe`, LINKS it with the game's symbol table and runtime GP
+(`_gp = 0x166c00`) so relocations resolve to true machine code, and byte-compares
+the linked `.text` to the original. Do NOT diff an unlinked `.o` against the boot
+image (pending relocations masquerade as address mismatches), and do NOT rely on
+objdump text (it collapses nop pairs into `...` and right-justifies the offset
+column). VMA 0x12D8F8 maps to boot-image file offset 0x2E878 (segment Off 0x1000 /
+VA 0x100080).
 
 ## Escalations (this exact target)
 - decomp-researcher: full report — structure reproducible, no codebase idiom to copy
