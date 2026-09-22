@@ -36,7 +36,31 @@ extern "C" void BackupCurrentCam(void) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", ExecuteCamPostUpdFuncs);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBD60);
+// Unreachable dead tail of ExecuteCamPostUpdFuncs (0x1EBCF0): two
+// `move v0,zero` and one `sw zero,0(a0)` after the parent's `jr ra`.
+// Nothing reaches 0x1EBD60 (0 jal/j/branch/data references; no Ghidra
+// function), so it is not a function; no C form reproduces the parent plus
+// this tail. The original compiler emitted these bytes after the epilogue,
+// so they are preserved here as exact words. The glabel/nonmatching pair
+// keeps the Splat .ld symbol pins at 0x1EBD60; the trailing nop pads to the
+// 8-aligned Cam_InterpValues__FffPffff entry at 0x1EBD78.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001EBD60, 0x14\n"
+    "glabel func_001EBD60\n"
+    "    .word 0x0000102d\n"
+    "    .word 0x00000000\n"
+    "    .word 0x0000102d\n"
+    "    .word 0x00000000\n"
+    "    .word 0xac800000\n"
+    "endlabel func_001EBD60\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Cam_InterpValues__FffPffff);
 
