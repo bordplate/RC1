@@ -600,6 +600,10 @@ low16 >= 0x8000 can use an unsigned `lui/ori` split. Name real data symbols;
 SN can produce absolute self-based loads even for GP-window scalar externs.
 See decomp_state/notes/vuchain_func_002335A0.md for the original split example.
 
+You can use vectorcode to search the project for existing code or documentation.
+Do this when you're trying to figure out semantics or how something might have
+been done before to get a matching function. 
+
 Observation observed 2026-09-16 (the -G8 small-data bare-pseudo load,
 pause_updateSoundVolume 0x21CB00): whether a plain NAMED scalar extern in the
 GP window compiles to a GP-relative access or an absolute self-based load
