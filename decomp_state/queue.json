@@ -621,7 +621,7 @@
     "line": 9,
     "asm": "code/_generated/nonmatchings/game/camera/Cam_InterpValues__FffPffff.s",
     "name": "Cam_InterpValues__FffPffff",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/camera.cpp:11:func_001EBE60",

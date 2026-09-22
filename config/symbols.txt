@@ -503,6 +503,7 @@ FastVecDist = 0x1f9b48;
 FastVecNormalize = 0x001f9bf8;
 FastVecSub = 0x01f9a28;
 FastVecCross = 0x01f9ad8;
+FastAbsF = 0x1f99c0;
 
 // collproc
 // _lookup_grid_pointer = 0x0441e88; // Outside the configured segments.

@@ -62,7 +62,32 @@ asm(
     "    .set at\n"
 );
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Cam_InterpValues__FffPffff);
+// Exponential approach: moves *offset toward the gap (target - current) by
+// step * gap - decay * *offset each call, clamps it to the +/-limit band
+// (when limit is nonzero) and to the gap magnitude |gap| = FastAbsF(gap).
+// The original compiler clobbers the -|gap| value in a branch delay-slot
+// reload before the lower-clamp store, which therefore writes -*offset
+// instead of -|gap|. Returns current + *offset.
+float Cam_InterpValues(float current, float target, float* offset, float step, float decay, float limit) {
+    float delta = target - current;
+    float v = *offset + (step * delta - decay * *offset);
+    *offset = v;
+    if (limit != 0.0f) {
+        if (v > limit)
+            *offset = limit;
+        else if (v < -limit)
+            *offset = -limit;
+    }
+    float a = FastAbsF(delta);
+    if (a < *offset) {
+        *offset = FastAbsF(delta);
+    } else {
+        a = FastAbsF(delta);
+        if (*offset < -a)
+            *offset = -FastAbsF(delta);
+    }
+    return current + *offset;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBE60);
 

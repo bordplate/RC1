@@ -1963,5 +1963,13 @@
     "matched_date": "2026-09-21",
     "correction": "2026-09-22 startlevel investigation: debugFontLoadInfo is now the shared bootAssets table, and NTSCProgressive is videoModePal (zero = NTSC, nonzero = PAL). Thus +0x1A98/+0x1A9C are PAL records and +0x1A78/+0x1A7C are NTSC records, reversing the older note's labels. The shared layout and signed decodeMode declaration preserve all 464 bytes; clean full ELF cmp passes.",
     "note": "Plays boot stream table entry `index` (the debug-font movie): no-op if index<0; stops audio, fades out, waits for the menu to settle (memcard_Update loop), runs the movie decode on the level decode buffer (func_0023A3B8 with decodeBufBase+0x100000/+0x400000), refreshes the HUD (Hud_sendTexture to EE VRAM 0x1000000), and fades back in. Sets decodeMode 2->0 and GameMode 1->0 around the work, and sets audioState.playbackFlags bits 0x8 then 0x10. The font {src,size} records come from debugFontLoadInfo (0x137B80) at +0x1A98/+0x1A9C (NTSC) or +0x1A78/+0x1A7C (non-NTSC). The font-record address must be held in TWO registers (a0 32-bit + v0 64-bit via an explicit move) with fontSize loaded before fontSrc; this EGC build cannot emit that from natural C (it keeps the address in one register and reverses the load/s-reg coupling), so the address is pinned to a0/v0 with inline asm. A GPREL misread initially modeled the mid-store as D_0015F624=1; it is actually GameMode (0x15F604). Full boot ELF compares byte-for-byte. See notes/bmain_showDebugFont__Fi.md."
+  },
+  "code/game/camera.cpp:65:Cam_InterpValues__FffPffff": {
+    "name": "Cam_InterpValues__FffPffff",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001EBD78",
+    "size": 228,
+    "matched_date": "2026-09-22",
+    "note": "Camera exponential-approach offset smoother with limit-band and gap-magnitude clamps. C form needs the v-store outside the limit!=0 block (delay-slot pull) and an if/else-if chain for the two clamps (guard 2 must branch to the common join). Renamed func_001F99C0 to FastAbsF (symbols.txt + common.h). The original's lower-clamp store writes -*offset because EGC clobbers -|gap| in a bc1fl delay-slot reload; reproduced byte-for-byte. See notes/camera_Cam_InterpValues__FffPffff.md."
   }
 }
