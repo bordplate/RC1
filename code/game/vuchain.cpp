@@ -4,15 +4,16 @@
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", VU0_loadMicroProgram__FPl);
 
 extern int currentVuChain;
-// Index (0..18) of the currently selected VU chain in vuChainTable.
-extern int currentVuChainIndex;
+// The chain table is indexed by level, not by the double-buffered VU chain.
+// startlevel saves this level ID for DoSpaceTransition, then resets it to -1.
+extern int currentLevelId;
 extern int vuChainTable[];
 
 // Number of entries in vuChainTable.
 #define VU_CHAIN_TABLE_SIZE 19
 
 int* vuChain_getCurrent(void) {
-    int index = currentVuChainIndex;
+    int index = currentLevelId;
     if (index >= VU_CHAIN_TABLE_SIZE) {
         index = 0;
     }

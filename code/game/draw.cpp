@@ -3,10 +3,6 @@
 
 extern int drawTextureDmaState[20] __attribute__((section(".data")));
 
-// Symbol override: this recovered helper occupies an address-based generated
-// entry point whose original label is not naturally cfront-mangled.
-void draw_resetTextureDmaState(void) asm("func_001F0B88");
-
 void draw_resetTextureDmaState(void) {
     int value = 1;
     int* state = drawTextureDmaState;

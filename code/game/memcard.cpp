@@ -2,7 +2,7 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_GetName);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", func_00209168);
+INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", menu_checkBootMemoryCard__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_RestoreGame);
 

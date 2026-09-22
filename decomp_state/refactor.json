@@ -1,5 +1,15 @@
 [
   {
+    "id": "draw_resetTextureDmaState_constants",
+    "file": "code/game/draw.cpp",
+    "function": "draw_resetTextureDmaState__Fv",
+    "addresses": ["0x001F0B88"],
+    "category": "style",
+    "description": "The already-matched body uses 20 for the array extent, 19 for the final index, and 1 for the reset state. Give the count and state descriptive constants while preserving its 60-byte match. Discovered while startlevel's caller prototype and symbol were unified with this existing C++ definition.",
+    "evidence": "code/game/draw.cpp; notes/bmain_startlevel__Fv.md; clean full parity and per-TU check passed 2026-09-22",
+    "status": "open"
+  },
+  {
     "id": "bmain_showDebugFont__Fi",
     "file": "code/game/bmain.cpp",
     "function": "showDebugFont__Fi",

@@ -2,27 +2,11 @@
 #include "mobyfunc.h"
 #include "mobyutil.h"
 #include "types.h"
+#include "sound.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022C5A8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022C658);
-
-// Per-sound 3D audio parameters. The field names follow the Deadlocked
-// sound module (sound_GetFade__FP8SoundDeffffb reads sd->minRange/maxRange/
-// minVolume/maxVolume/flags, and the channel start function at 0x22D7F0
-// compares sd->minPitch/maxPitch and tests sd->loop).
-struct SoundDef {
-    f32 minRange;   // +0x00: maxVolume at this distance or less
-    f32 maxRange;   // +0x04: minVolume at this distance or more
-    int minVolume;  // +0x08
-    int maxVolume;  // +0x0C
-    int minPitch;   // +0x10
-    int maxPitch;   // +0x14
-    u8 loop;        // +0x18
-    u8 flags;       // +0x19: bit 0 = squared fade
-    u16 index;      // +0x1A
-    u32 field_0x1C; // +0x1C
-};
 
 // 3D sound channel slot (0x70 bytes; the free-slot scan in 0x22D7F0 reads
 // the status byte at 0x13E5C4 + i * 0x70). The field names follow the
@@ -66,7 +50,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022C8D0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_update);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022D708);
+INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_loadBankByLocation__Fi);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022D798);
 

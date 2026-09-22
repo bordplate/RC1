@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "boot_level.h"
 
 // PIF (PSM T8H) image header read from the debug font buffer.
 typedef struct {
@@ -58,13 +59,6 @@ extern "C" void LoadPifAsPSMT8H(u8* source, u8* destination, int offset, int siz
 // declaration reordering do not change it. Retain the generated assembly.
 INCLUDE_ASM("code/_generated/nonmatchings/game/bloaders", LoadPifAsPSMT8H);
 
-typedef struct {
-    u8 pad[8];
-    u32 src;
-    u32 size;
-} DebugFontLoadInfo;
-
-extern DebugFontLoadInfo debugFontLoadInfo __attribute__((section(".data")));
 extern u8 debugFontBuffer[] __attribute__((section(".data")));
 // Match-sensitive: these stay PLAIN externs (no .data section attribute).
 // EGC then emits one GPREL pseudo per access, and ps2eeas — which sees the
@@ -82,7 +76,7 @@ extern u64 debugFontPifHeader;
 // C linkage: this loader entry point is called by the original boot code.
 extern "C" void LoadDebugFont(void) {
     u8 buf[0x18];
-    Load(debugFontBuffer, debugFontLoadInfo.src, debugFontLoadInfo.size);
+    Load(debugFontBuffer, bootAssets.src, bootAssets.size);
     LoadPifAsPSMT8H(debugFontBuffer, buf, frameBufferBase + 0xC0000, 0x3FFC00);
     debugFontPifHeader = *(u64*)buf;
 }

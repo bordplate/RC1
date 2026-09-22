@@ -89,4 +89,4 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00201200);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_002012A8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_002012B8);
+INCLUDE_ASM("code/_generated/nonmatchings/game/hud", draw_bootImage__Fi);

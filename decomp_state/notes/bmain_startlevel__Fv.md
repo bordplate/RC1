@@ -1,10 +1,89 @@
-# startlevel__Fv (0x1E9658, 0x45C, 279 words) — blocked
+# startlevel__Fv (0x1E9658, 0x45C, 279 words) — matched
 
-Boot/main-menu level entry. Reverted to `INCLUDE_ASM`. A full C candidate
-reproduces most of the body but leaves ~45 distributed diff blocks. See
-`blocked.json` entry `code/game/bmain.cpp:5:startlevel__Fv` for the durable
-blocker. This note records the reusable codegen findings so a future attempt
-does not repeat the matrix.
+## Correction and successful retry, 2026-09-22
+
+The earlier conclusion of a compiler wall was too strong. The replacement in
+`code/game/bmain.cpp` matches all 1116 bytes with the default EEGCC/SN flags.
+The full integrated build also compares byte-for-byte with the original ELF.
+No subagents or escalation were used in this retry (explicit user request).
+
+### What unlocked the match
+
+1. Reconstructing from assembly with signed `decodeMode`, signed decode-buffer
+   arithmetic and `.data` movie records immediately fixed the old BSS-loop,
+   negative-constant, movie-load, and decode-register differences. A simple
+   `for (int i = 0; i < levelBssEnd - levelBssStart; ++i)` produces the two
+   preheader copies and the original operand order without any asm.
+2. **Constrain the initializer, not the entire loop variable lifetime.**
+
+   ```cpp
+   register int initialState asm("$16") = 0;
+   int prevState;
+   VU1_initChain();
+   asm volatile("" : "=r"(prevState) : "0"(initialState));
+   ```
+
+   The zero-byte tied transfer coalesces `prevState` onto s0. The remaining
+   five loop values naturally take s1..s5 and the frame stays 0x70. Putting
+   the transfer BEFORE the call prevents the initializer from occupying its
+   delay slot; making it nonvolatile lets EGC treat the empty asm as a delay
+   instruction and SN rejects the following jal in that slot. Pinning
+   `prevState` itself inhibits invariant motion (hoists a constant 1 into s5
+   and loses the cached base+0x10). Pinning the initializer avoids that effect.
+3. A short-lived `BootAssetTable*` pinned to v0 reproduces the bank-location
+   load's base register. The table's shared type declares the +0x14E0 field;
+   a raw char-array expression folds the offset into the symbol's HI/LO pair.
+4. Sound-bank assignment uses volatile local views and volatile publication
+   stores to reproduce the original ordering. A zero-byte memory barrier
+   followed by the last ordinary bank store lets that store fill the
+   transition call's delay slot. Making the last store volatile adds a NOP.
+   No emitted asm instructions, numeric data addresses, patched bytes, or
+   compiler flag changes are used.
+
+### Layout and naming corrections established by this function
+
+- `D_24135F` was **not a real data object**: it equals the ELF `.text` end
+  (0x23D360) plus 0x3FFF. The source now rounds the linker-provided
+  `text_VRAM_END` up to 0x4000 and adds the 0x2C0000 workspace size. This
+  remains relocatable and emits the original symbolic HI/LO pair.
+- `currentVuChainIndex` (0x15ED84) is `currentLevelId`: save/menu callers
+  index per-level save data with it. startlevel saves it into `spaceLoadId`
+  and writes -1. `vuChain_getCurrent` selects its chain by **level**, not by
+  double-buffer index; its declaration/comment were corrected too.
+- `streamState` (0x13C940) is the already-known `padState` used by
+  `UpdatePad(PAD&)`. The shared PAD declaration now includes the reset fields
+  and +0x1A4 pressed-buttons mask. The reset helper is `pad_resetState`.
+- `NTSCProgressive` (0x15ED80) had its meaning reversed: InitOnce derives it
+  from the disc region, and the GS reset call selects NTSC=2 for zero, PAL=3
+  for nonzero. It is now `videoModePal`; boot movie and debug-stream names
+  reflect the same mapping.
+- `bootAssets` (formerly debugFontLoadInfo) is a resident asset table, shared
+  by bloaders and bmain. The two sound-definition arrays live in the boot
+  overlay data at 0x186100/0x1861E0; their +0x1C fields are 989snd bank handles.
+- Memory-card polling checks card type/format, an existing save directory,
+  and free space; it returns the localized warning-image selector.
+- Related callees were named for their established behavior, with natural
+  C++ linkage for game functions and C linkage for the SDK routines.
+
+### Verification
+
+- Standalone p14 and p15: 1116 original/candidate bytes, zero word differences.
+- Integrated `make split && make -j2 && cmp`: passed with the replacement
+  active, shared declarations, recovered function names and linker end symbol.
+- Final clean `make clean`, `make split`, `make -j2`, and full ELF `cmp`
+  pass. `tu_assembler_diff.py` verifies all 219 sized functions across bmain,
+  bloaders, draw, framebuf, hud, memcard, pad, sound, stream, and vuchain.
+  This includes the C replacements and the surrounding assembly functions.
+- The per-TU checker initially misclassified two zero-sized interior GNU
+  assembly labels in draw.o as missing functions. It now excludes only aliases
+  covered by a sized function and rejects independent unsized entries. Two
+  focused regression tests pass; no original/candidate bytes are ignored by
+  the containing-function check or the full-image oracle.
+- `SoundDef` is now shared in `code/include/sound.h`; its former field_0x1C
+  is the bank handle. Existing range/volume/pitch fields and users are retained.
+- Status count after the match: 678 nonmatching INCLUDE_ASM entries remain.
+
+## Historical failed attempt (superseded by the correction above)
 
 ## The six callee-saved loop values
 

@@ -17,7 +17,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDispBuffer__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDrawBufferLarge__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB368);
+INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", framebuf_appendLargeSetup__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDrawBufferSmall__Fv);
 
@@ -25,7 +25,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB440);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", AA_BlurPass__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB6E0);
+INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", framebuf_appendSmallSetup__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB740);
 

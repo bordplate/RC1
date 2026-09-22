@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "pad_state.h"
 
 typedef struct {
     u8 pad_0x08[0x08];
@@ -156,17 +157,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216C30);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00216C48);
 
-typedef struct {
-    u8 pad[0x18E];
-    u16 field_18e;
-    u32 field_190;
-} StreamState;
-
-extern StreamState streamState __attribute__((section(".data")));
-
-void stream_resetState(void) {
-    streamState.field_18e = 0;
-    streamState.field_190 = 0;
+void pad_resetState(void) {
+    padState.field_18e = 0;
+    padState.field_190 = 0;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217038);

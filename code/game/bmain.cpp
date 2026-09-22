@@ -1,24 +1,20 @@
 #include "common.h"
 #include "types.h"
 #include "menu.h"
+#include "boot_level.h"
+#include "pad_state.h"
+#include "sound.h"
 
 // The boot font table is a large block at 0x137B80. The 16-byte head is the
 // debug font image (LoadDebugFont, bloaders.cpp); the 8-byte {src, size}
 // records much further in describe the streams showDebugFont plays. The
-// NTSC and non-NTSC tables sit 0x20 apart.
-typedef struct {
-    u8 pad[8];
-    u32 src;
-    u32 size;
-} DebugFontLoadInfo;
-extern DebugFontLoadInfo debugFontLoadInfo __attribute__((section(".data")));
-
-// Offsets from debugFontLoadInfo of the {src, size} stream records
+// PAL and NTSC tables sit 0x20 apart.
+// Offsets from bootAssets of the {src, size} stream records
 // showDebugFont plays.
-#define DEBUG_FONT_NTSC_SRC 0x1A98
-#define DEBUG_FONT_NTSC_SIZE 0x1A9C
-#define DEBUG_FONT_NON_NTSC_SRC 0x1A78
-#define DEBUG_FONT_NON_NTSC_SIZE 0x1A7C
+#define DEBUG_FONT_PAL_SRC 0x1A98
+#define DEBUG_FONT_PAL_SIZE 0x1A9C
+#define DEBUG_FONT_NTSC_SRC 0x1A78
+#define DEBUG_FONT_NTSC_SIZE 0x1A7C
 
 // Audio state block at 0x13E550. pauseSoundVolume (0x13E5A0) is offset 0x50
 // of this same block; the byte at 0x6B (0x13E5BB) is a playback state flag
@@ -57,8 +53,9 @@ extern LevelMem levelMem __attribute__((section(".data")));
 // In-window scalar globals: plain externs (no .data) keep the -G8 small-data
 // bare pseudo that ps2eeas expands to the original's self-based absolute
 // lui/load and lui at/store (see bloaders_LoadDebugFont.md).
-extern u32 NTSCProgressive;
-extern u32 decodeMode;
+// InitOnce reads the disc region; 0 selects GS NTSC (2), 1 selects PAL (3).
+extern u32 videoModePal;
+extern int decodeMode;
 extern u32 frameBufferBase;
 extern u32 GameMode;
 
@@ -149,24 +146,24 @@ void showDebugFont(int index) {
     // decomp_state/notes/bmain_showDebugFont__Fi.md.
     register u32 fontSize asm("$17");
     register u32 fontSrc asm("$18");
-    if (NTSCProgressive) {
+    if (videoModePal) {
         register u32 scaled asm("$3") = index * 8;
-        register u8* base asm("$2") = (u8*)&debugFontLoadInfo;
+        register u8* base asm("$2") = (u8*)&bootAssets;
+        register u8* p asm("$4");
+        asm volatile("addu %0,%1,%2" : "=r"(p) : "r"(base), "r"(scaled));
+        register u8* q asm("$2");
+        asm volatile("daddu %0,%1,$0" : "=r"(q) : "r"(p));
+        fontSize = *(u32*)(p + DEBUG_FONT_PAL_SIZE);
+        fontSrc = *(u32*)(q + DEBUG_FONT_PAL_SRC);
+    } else {
+        register u32 scaled asm("$3") = index * 8;
+        register u8* base asm("$2") = (u8*)&bootAssets;
         register u8* p asm("$4");
         asm volatile("addu %0,%1,%2" : "=r"(p) : "r"(base), "r"(scaled));
         register u8* q asm("$2");
         asm volatile("daddu %0,%1,$0" : "=r"(q) : "r"(p));
         fontSize = *(u32*)(p + DEBUG_FONT_NTSC_SIZE);
         fontSrc = *(u32*)(q + DEBUG_FONT_NTSC_SRC);
-    } else {
-        register u32 scaled asm("$3") = index * 8;
-        register u8* base asm("$2") = (u8*)&debugFontLoadInfo;
-        register u8* p asm("$4");
-        asm volatile("addu %0,%1,%2" : "=r"(p) : "r"(base), "r"(scaled));
-        register u8* q asm("$2");
-        asm volatile("daddu %0,%1,$0" : "=r"(q) : "r"(p));
-        fontSize = *(u32*)(p + DEBUG_FONT_NON_NTSC_SIZE);
-        fontSrc = *(u32*)(q + DEBUG_FONT_NON_NTSC_SRC);
     }
 
     decodeMode = DECODE_MODE_DEBUG_FONT;
@@ -202,4 +199,227 @@ void showDebugFont(int index) {
     audioState.playbackFlags |= AUDIO_PLAYBACK_FLAG_FINISHED;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/bmain", startlevel__Fv);
+// The boot overlay sets this flag; sound and menu code use it to distinguish
+// the title screen from a running level. These scalars need plain -G8 externs.
+extern int bootLevelActive;
+extern int drawFrameCount;
+extern int gameLanguage;
+extern int bootImageBuffer;
+extern int currentLevelId;
+extern int spaceLoadId;
+extern u8 requestedVideoMode;
+
+extern char levelBssStart[];
+extern char levelBssEnd[];
+extern char text_VRAM_END[];
+extern char loadingBootSoundBankMessage[];
+extern BootStreamInfo bootIntroMovieNtsc __attribute__((section(".data")));
+extern BootStreamInfo bootIntroMoviePal __attribute__((section(".data")));
+extern SoundDef bootSoundDefsA[];
+extern SoundDef bootSoundDefsB[];
+
+// Volatile accesses preserve the original publication order of the sound
+// table and its bank handles. The last bank write is an ordinary delay-slot
+// store; see the ordering barrier in startlevel and its matching note.
+extern SoundDef* volatile levelSoundDefs;
+extern volatile int levelSoundDefCount;
+
+// Transition state shared with DoSpaceTransition. +0x2A is set when boot or
+// the new-game menu requests entry; its finer state-machine meaning is unknown.
+struct BootSpaceTransitionState {
+    u8 pad_0x00[0x2A];
+    short field_0x2A;
+};
+extern BootSpaceTransitionState bootSpaceTransitionState;
+
+void InitOnce(void);
+void texResetCursor(void);
+void VU1_initChain(void);
+void DMAC_VIF1_Enable(void);
+void PutDispBuffer(void);
+void SetBackgroundColor(int red, int green, int blue);
+void PutDrawBufferLarge(void);
+void PutDrawBufferSmall(void);
+void VU1_sendChain(void);
+void VU1_swapChain(void);
+void VU1_syncChain(int mode);
+void UpdatePad(void);
+void Transition_DoTransition(void);
+
+// The original SetPalMode__Fi consumes no argument, and this caller supplies
+// none. Keep the historical symbol without manufacturing an argument load.
+void SetPalMode(void) asm("SetPalMode__Fi");
+void draw_resetTextureDmaState(void);
+void framebuf_appendLargeSetup(void);
+void framebuf_appendSmallSetup(void);
+void draw_bootImage(int image);
+int menu_checkBootMemoryCard(void);
+int sound_loadBankByLocation(int location);
+// The space entry still uses its original unmangled assembly label.
+void DoSpaceTransition(void) asm("DoSpaceTransition");
+
+// C linkage: handwritten decompressor in the loaders assembly region.
+extern "C" void FastDecompress(int source, int destination);
+// C linkage: resident 989snd library, defined in 989snd_post.c.
+extern "C" void snd_ResolveBankXREFS(void);
+// C linkage: variadic printf replacement in the handwritten game/stub TU.
+extern "C" int STUB_printf(const char* format, ...);
+// C linkage: SDK routine resets VIF1, VU1 and GIF hardware.
+extern "C" void resetVif1Gif(void);
+// C linkage: SDK GS reset routine, mode/interlace/video-system/field-mode.
+extern "C" void sceGsResetGraph(short mode, unsigned short interlace,
+                                unsigned short videoSystem, unsigned short fieldMode);
+
+#define BOOT_ARCHIVE_ALIGNMENT 0x4000U
+#define BOOT_ARCHIVE_WORKSPACE_SIZE 0x2C0000
+#define BOOT_CARD_POLL_MIN_FRAMES 11
+#define BOOT_CARD_WARNING_UNAVAILABLE 1
+#define BOOT_CARD_FADE_OUT_FRAMES 10
+#define BOOT_INTRO_FADE_OUT_FRAMES 18
+#define BOOT_SOUND_DEF_COUNT 7
+#define BOOT_DECODE_ALIGNMENT 0x40
+#define DECODE_MODE_INTRO -1
+#define GS_RESET_FULL 0
+#define GS_INTERLACED 1
+#define GS_VIDEO_NTSC 2
+#define GS_VIDEO_PAL 3
+#define GS_FIELD_MODE 0
+#define LEVEL_ID_NONE -1
+#define VU_SYNC_WAIT 1
+
+void startlevel(void) {
+    bootLevelActive = 1;
+    InitOnce();
+    texResetCursor();
+    for (int i = 0; i < levelBssEnd - levelBssStart; ++i)
+        levelBssStart[i] = 0;
+
+    // Constrain only the initial value, then let the loop use an ordinary
+    // local. Pinning prevState for its whole lifetime disrupts loop-invariant
+    // motion. This zero-byte transfer preserves s0 without growing the frame.
+    register int initialState asm("$16") = 0;
+    int prevState;
+    VU1_initChain();
+    asm volatile("" : "=r"(prevState) : "0"(initialState));
+    int frame = 0;
+    DMAC_VIF1_Enable();
+    draw_resetTextureDmaState();
+    drawFrameCount = 0;
+    func_00122298(0);
+    GameMode = GAME_MODE_NORMAL;
+    PutDispBuffer();
+    SetBackgroundColor(0, 0, 0);
+
+    // Round the actual linked overlay end up, then reserve its workspace.
+    // The old D_24135F label was text_VRAM_END + 0x3FFF, not a data object.
+    int base = ((u32)(text_VRAM_END + BOOT_ARCHIVE_ALIGNMENT - 1) &
+                ~(BOOT_ARCHIVE_ALIGNMENT - 1)) + BOOT_ARCHIVE_WORKSPACE_SIZE;
+    int state;
+    while ((state = menu_checkBootMemoryCard()) &&
+           (frame < BOOT_CARD_POLL_MIN_FRAMES || !padState.pressedButtons)) {
+        if (state != prevState) {
+            // The original reuses the previous-state register as the selected
+            // localized image-table pointer until the next state is saved.
+            prevState = (int)&((BootImageArchive*)base)->cardWarnings[1];
+            if (state == BOOT_CARD_WARNING_UNAVAILABLE)
+                prevState = (int)&((BootImageArchive*)base)->cardWarnings[0];
+            FlushCache(0);
+            FastDecompress(((BootImageRef*)prevState)[gameLanguage].offset + base,
+                           ((BootImageArchive*)base)->decodeBuffer.offset + base);
+            FlushCache(0);
+            VU1_initChain();
+            SetBackgroundColor(0, 0, 0);
+            PutDrawBufferLarge();
+            framebuf_appendLargeSetup();
+            draw_bootImage(((BootImageArchive*)base)->decodeBuffer.offset + base);
+            PutDrawBufferSmall();
+            framebuf_appendSmallSetup();
+            VU1_sendChain();
+            VU1_swapChain();
+            VU1_syncChain(VU_SYNC_WAIT);
+        }
+        prevState = state;
+        func_00122298(0);
+        ++frame;
+        UpdatePad();
+    }
+    if (prevState)
+        FadeToBlack(BOOT_CARD_FADE_OUT_FRAMES);
+
+    int dst = ((BootImageArchive*)base)->decodeBuffer.offset + base;
+    decodeMode = DECODE_MODE_INTRO;
+    bootImageBuffer = dst;
+    if (!videoModePal) {
+        func_0023A3B8(bootIntroMovieNtsc.src, bootIntroMovieNtsc.size,
+                     (dst + BOOT_DECODE_ALIGNMENT - 1) & -BOOT_DECODE_ALIGNMENT,
+                     (dst + BOOT_ARCHIVE_WORKSPACE_SIZE + BOOT_DECODE_ALIGNMENT - 1) &
+                         -BOOT_DECODE_ALIGNMENT, 0);
+    } else {
+        func_0023A3B8(bootIntroMoviePal.src, bootIntroMoviePal.size,
+                     (dst + BOOT_DECODE_ALIGNMENT - 1) & -BOOT_DECODE_ALIGNMENT,
+                     (dst + BOOT_ARCHIVE_WORKSPACE_SIZE + BOOT_DECODE_ALIGNMENT - 1) &
+                         -BOOT_DECODE_ALIGNMENT, 0);
+    }
+    decodeMode = DECODE_MODE_NORMAL;
+    FadeToBlack(func_001F96F8(BOOT_INTRO_FADE_OUT_FRAMES));
+    FlushCache(0);
+    if (videoModePal) {
+        FastDecompress(((BootImageArchive*)base)->splash[1].offset + base,
+                       ((BootImageArchive*)base)->decodeBuffer.offset + base);
+    } else {
+        FastDecompress(((BootImageArchive*)base)->splash[0].offset + base,
+                       ((BootImageArchive*)base)->decodeBuffer.offset + base);
+    }
+    FlushCache(0);
+    VU1_initChain();
+    SetBackgroundColor(0, 0, 0);
+    PutDrawBufferLarge();
+    framebuf_appendLargeSetup();
+    draw_bootImage(((BootImageArchive*)base)->decodeBuffer.offset + base);
+    PutDrawBufferSmall();
+    framebuf_appendSmallSetup();
+    VU1_sendChain();
+    VU1_swapChain();
+    VU1_syncChain(VU_SYNC_WAIT);
+    func_00122298(0);
+    drawFrameCount++;
+    STUB_printf(loadingBootSoundBankMessage);
+
+    // EGC otherwise assigns the single-use asset-table base to v1.
+    register BootAssetTable* assets asm("$2") = &bootAssets;
+    int bank = sound_loadBankByLocation(assets->soundBankLocation);
+    snd_ResolveBankXREFS();
+    volatile SoundDef* defsA = bootSoundDefsA;
+    volatile SoundDef* defsB = bootSoundDefsB;
+    defsB[4].bank = bank;
+    defsA[6].bank = bank;
+    levelSoundDefs = bootSoundDefsA;
+    levelSoundDefCount = BOOT_SOUND_DEF_COUNT;
+    defsA[0].bank = bank;
+    defsA[1].bank = bank;
+    defsA[2].bank = bank;
+    defsA[3].bank = bank;
+    defsA[4].bank = bank;
+    defsA[5].bank = bank;
+    defsB[0].bank = bank;
+    defsB[1].bank = bank;
+    defsB[2].bank = bank;
+    // Keep this ordinary final store after the ordered stores while allowing
+    // EGC to schedule it into the transition call's delay slot.
+    asm volatile("" : : : "memory");
+    bootSoundDefsB[3].bank = bank;
+    Transition_DoTransition();
+
+    if (videoModePal != requestedVideoMode) {
+        videoModePal = requestedVideoMode;
+        resetVif1Gif();
+        sceGsResetGraph(GS_RESET_FULL, GS_INTERLACED,
+                        videoModePal ? GS_VIDEO_PAL : GS_VIDEO_NTSC, GS_FIELD_MODE);
+        SetPalMode();
+        PutDispBuffer();
+    }
+    bootSpaceTransitionState.field_0x2A = 1;
+    spaceLoadId = currentLevelId;
+    currentLevelId = LEVEL_ID_NONE;
+    DoSpaceTransition();
+}
