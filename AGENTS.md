@@ -530,6 +530,28 @@ not compare equal to `assets/boot_elf.elf`.
 
 ## Function Workflow
 
+Verified scoped-register transfer (2026-09-22, startlevel, 0x1E9658): a hard
+register local spanning a loop can change loop-invariant motion as well as
+allocation. Pinning `prevState` throughout startlevel hoists a constant and
+loses the cached image-table pointer; broader pinning grows its frame. Instead,
+pin only its initializer and transfer to an ordinary local through a zero-byte
+tied asm AFTER the first call:
+`register int initial asm("$16") = 0; int prev; VU1_initChain();`
+`asm volatile("" : "=r"(prev) : "0"(initial));`.
+This coalesces prev onto s0 while the other five values naturally occupy s1..s5,
+preserving the 0x70 frame. Moving the transfer before the call blocks the zero
+initializer's delay-slot placement; making the asm nonvolatile lets EGC use it
+as a nonexistent delay instruction and SN rejects the following jal. The full
+279-word function matches with default flags. The prior allocator-wall note is
+superseded; see decomp_state/notes/bmain_startlevel__Fv.md.
+
+The same investigation identified the former D_24135F as `text_VRAM_END +
+0x3FFF`, NOT a data object. Use linker-defined segment ends plus alignment
+arithmetic rather than inventing a fixed absolute symbol for a computed end.
+It also corrected `currentVuChainIndex` to `currentLevelId`, `streamState` to
+the existing `padState` (shared PAD type), and `NTSCProgressive` to
+`videoModePal` (zero selects GS NTSC=2; nonzero selects PAL=3).
+
 Verified callee-prototype effect (2026-09-06): an ignored return value still
 affects EGC register allocation. snd_SendCurrentBatch's 276-byte body matches
 with `int sceSifCallRpc(...)`; declaring that callee `void` alone produces ten
