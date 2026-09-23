@@ -15,6 +15,7 @@ extern "C" float FastVecDist(void* p1, void* p2);
 extern "C" float FastAbsF(float x);
 // C linkage: handwritten fast vector helpers in game/fastfunc. Vectors are
 // 16-byte vec4s (see mobyutil.h); dot/length return their result in f0.
+extern "C" void FastVecAdd(void* dest, void* a, void* b);
 extern "C" void FastVecSub(void* dest, void* a, void* b);
 extern "C" float FastVecDot(void* a, void* b);
 extern "C" float FastVecLength(void* a);

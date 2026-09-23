@@ -252,8 +252,10 @@ Camera_runSetupToNewCam__FP9UpdateCam = 0x1ebec8;
 Camera_handleCollWithHero__FiP9UpdateCam = 0x1ebe68;
 GameCamera = 0x187194;
 camCollState = 0x1870d0;
+Camera_stagePendingTransform__Fv = 0x1ec7f0;
 Camera_commitPendingTransform__Fv = 0x1ec868;
 camTransState = 0x1871b0;
+camPosOffset = 0x13f490;
 
 // mobyfunc
 DeleteMoby = 0x20c828;
@@ -503,6 +505,7 @@ FastVecLength = 0x1f9af0;
 FastVecDot = 0x1f9ab0;
 FastVecDist = 0x1f9b48;
 FastVecNormalize = 0x001f9bf8;
+FastVecAdd = 0x1f9a10;
 FastVecSub = 0x01f9a28;
 FastVecCross = 0x01f9ad8;
 FastAbsF = 0x1f99c0;

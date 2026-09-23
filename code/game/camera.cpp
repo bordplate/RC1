@@ -302,7 +302,36 @@ void Camera_Pos2Polar3d(PolarSm* res, vec4* pos, vec4* center,
     res->radius = FastVecLength(&v0);
 }
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC710);
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC7F0);
+// Stages the pending camera transform before a mode switch: copies the
+// active 16-byte quads (+0x50/+0x60) to the pending slots (+0xC0/+0xD0),
+// adding camPosOffset to the first pending quad when the requested blend
+// type is 2.
+//
+// EGC emits copy1 as lq v0/sq v0(a1) and the `reqType == 2` test as
+// lbu a0 + li v0 scheduled after the sq with `bne a0,v0`. Natural forms put
+// the li in the lq/sq gap and the lbu into v1; pinning src0 to $3, val to
+// $2, reqType to $4 and the constant to $2 (disjoint live ranges), with a
+// tied barrier between the lbu and the li, reproduces the original exactly.
+void Camera_stagePendingTransform(void) {
+    if (camTransState.type != 0)
+        return;
+    CameraQuad* dst0 = &camTransState.pendingCam0;
+    asm volatile("" : "+r"(dst0));
+    register CameraQuad* src0 asm("$3") = &camTransState.activeCam0;
+    asm volatile("" : "+r"(src0));
+    register CameraQuad val asm("$2") = *src0;
+    *dst0 = val;
+    register int reqType asm("$4") = camTransState.reqType;
+    asm volatile("" : "+r"(reqType));
+    register int two asm("$2") = 2;
+    if (reqType == two)
+        FastVecAdd((void*)dst0, (void*)&camPosOffset, (void*)dst0);
+    CameraQuad* src1 = &camTransState.activeCam1;
+    asm volatile("" : "+r"(src1));
+    CameraQuad* dst1 = &camTransState.pendingCam1;
+    asm volatile("" : "+r"(dst1));
+    *dst1 = *src1;
+}
 // Commits the staged camera transform when a mode switch is pending: copies
 // the 16-byte pending quads (+0xC0/+0xD0) over the active ones (+0x50/+0x60).
 //

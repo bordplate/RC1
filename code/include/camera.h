@@ -63,5 +63,8 @@ struct Camera {
 extern Camera currentCamera;
 extern Camera drawCamera;
 extern CamBlender camTransState __attribute__((section(".data")));
+// 0x13F490: 16-byte camera position offset added to staged camera quads;
+// level-provided (zero in boot).
+extern CameraQuad camPosOffset __attribute__((section(".data")));
 
 #endif
