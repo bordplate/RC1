@@ -253,6 +253,27 @@ above the stores. Reordering assignments in the C source flips which store
  `lui`s can remain a blocker even with loop+tail fully matched (see
  decomp_state/notes/camera_UpdateAllCameras__Fi.md).
  
+ Observation observed 2026-09-23 (tied read/write empty-asm barrier defeats
+ EGC DImode / 128-bit constant-base folding; supersedes the camera_func_001EC868
+ "unfixable" scope note): when a 128-bit DATA access (mode TI / `CameraQuad`,
+ lowered to `lq`/`sq`) targets a constant-base address (a symbol base + constant
+ offset, OUT of the gp window), EGC 2.95.2 FOLDS it into offset addressing
+ (`sq v0,144(s0)`) instead of the original's materialized register base
+ (`addiu v1,s0,144; sq v0,0(v1)`). Force the materialized form by computing the
+ pointer into a variable and applying a TIED READ/WRITE empty-asm barrier before
+ the access (`CameraQuad* dst=(CameraQuad*)(base+OFF);
+ `asm volatile("" : "+r"(dst)); *dst=val;`  ->  `addiu v?,base,OFF; sq v0,0(v?)`).
+ An INPUT-ONLY `"r"(dst)` barrier is insufficient — EGC keeps the `base + const`
+ equivalence and still folds. No flag is involved: `-mno-split-addresses` does
+ NOT change the DImode store form. Register tie-breaks are separately
+ controllable by pinning the 128-bit DATA value (`register CameraQuad tmp
+ asm("$2")` = v0) and the base pointer (`register CameraQuad* dst asm("$4")` =
+ a0). Verified on camera func_001EC710 (0x1EC710): the barrier defeats the
+ documented DImode folding (the whole camera 128-bit-copy class), leaving only
+ pure instruction-ORDER scheduler tie-breaks (store/epilogue scheduling), which
+ `-fno-schedule-insns[2]` makes WORSE (the original used the default scheduler).
+ See decomp_state/notes/camera_func_001EC710.md).
+ 
 Exception observed 2026-09-04: when both trailing stores are CONSTANT stores
 sharing one %hi/%lo-computed global base (e.g. zeroing two struct fields),
 EGC emitted them in REVERSE source order instead — the first statement's store
