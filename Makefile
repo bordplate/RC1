@@ -32,6 +32,7 @@ SRC_S   = $(shell $(FIND) code -type f -name '*.s' | grep -v "_generated/matchin
 SRC_CPP = $(shell $(FIND) code -type f -name '*.cpp')
 
 INCLUDE = -Icode/include -Itools/cc/lib/gcc-lib/ee/2.95.2/include
+COMMA := ,
 
 BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/code
@@ -105,8 +106,8 @@ $(OBJ_DIR)/989snd/ee/989snd_pre.o $(OBJ_DIR)/989snd/ee/989snd_mid.o \
 probe: $(SN_AS)
 	@test -n "$(PROBE_SOURCE)" -a -n "$(PROBE_OUT)" || (echo 'Set PROBE_SOURCE and PROBE_OUT (without extension)'; exit 1)
 	@mkdir -p $(dir $(PROBE_OUT))
-	$(EEGCC) -S $(COMMON_COMPILE_FLAGS) $(PROBE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $(PROBE_SOURCE) -o $(PROBE_OUT).s
-	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) $(PROBE_FLAGS) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $(PROBE_SOURCE) -o $(PROBE_OUT).o
+	$(EEGCC) -S $(COMMON_COMPILE_FLAGS) $(subst $(COMMA), ,$(PROBE_FLAGS)) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $(PROBE_SOURCE) -o $(PROBE_OUT).s
+	$(EEGCC) -c $(COMMON_COMPILE_FLAGS) $(subst $(COMMA), ,$(PROBE_FLAGS)) $(INCLUDE) -B$(PRODG_DIR)/lib/gcc-lib/ee/2.95.2/ $(PROBE_SOURCE) -o $(PROBE_OUT).o
 
 all: $(TARGET)
 
