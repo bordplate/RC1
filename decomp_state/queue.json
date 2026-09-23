@@ -1721,11 +1721,11 @@
   },
   {
     "id": "code/game/hud.cpp:3:Hud_GetIconIndex__Fi",
-    "source": "code/game/hud.cpp",
-    "line": 3,
-    "asm": "code/_generated/nonmatchings/game/hud/Hud_GetIconIndex__Fi.s",
+    "source": "code/game/hud_icon.cpp",
+    "line": 22,
+    "asm": "code/_generated/matchings/game/hud_icon/Hud_GetIconIndex__Fi.s",
     "name": "Hud_GetIconIndex__Fi",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/hud.cpp:5:func_001FEE88",

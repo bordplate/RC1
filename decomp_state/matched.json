@@ -1987,5 +1987,13 @@
     "size": 68,
     "matched_date": "2026-09-23",
     "note": "Per-level camera setup dispatch. Reads UpdateCam::camType (s16 at +0x8C), indexes lvlCamVtbl (entry stride 0x14; the EGC/EE build uses 32-bit function pointers, so the 5-field entry is int+4 fp = 20 bytes) and calls the non-null runSetupToNewCam slot at +0x8 with the camera entry as its single argument. Byte-for-byte identical to the sibling Camera_Exit (0x1EC3D8) except the slot offset (0x8 vs 0x10). Standalone decomp_probe matched 68/68; full boot ELF cmp byte-identical. Note: the struct UpdateCam/UpdateCamVtbl and 'extern lvlCamVtbl' had to be moved above the function so it stays at its original source position (0x1EBEC8); the .ld places camera.o(.text) as one block so function addresses follow source order, and moving a function within the TU rotates every later address."
+  },
+  "code/game/hud_icon.cpp:22:Hud_GetIconIndex__Fi": {
+    "name": "Hud_GetIconIndex__Fi",
+    "source": "code/game/hud_icon.cpp",
+    "vram": "0x001FEE38",
+    "size": 76,
+    "matched_date": "2026-09-23",
+    "note": "Returns the 0-based index of iconId in the hud icon table (8-byte HudIconDef entries, u16 id at +0, 0xFFFF terminator); element 0 is index 0. Table ptr is hudHeap.iconTable (0x19A404 = hudHeap+0x1C); callers GetIconFrame__Fii/func_001FF500 use index<<3. Codegen requires: (a) inverted condition \"if (value != end && value != iconId) { loop }\" so EGC emits beq (return-as-jump) for the peeled element-0 checks; (b) register pins (asm(\"$5\"/$6/$2/$3\" in prologue, asm(\"$3\"/$5\" in loop)) to force the a1<->v1 table/constant swap across prologue->loop; (c) SN ps2eeas assembly (not GNU) because the two loop filler nops are inserted by ps2eeas. hud.o is a GNU TU, so Hud_GetIconIndex was split into its own SN TU (hud_icon.o) via a Splat boundary at 0xFFE08 (func_001FEE88). Full boot parity passes."
   }
 }

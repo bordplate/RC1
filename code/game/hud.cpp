@@ -1,7 +1,16 @@
 #include "common.h"
 #include "types.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", Hud_GetIconIndex__Fi);
+typedef struct {
+    u8 pad[0x10];
+    u32 heapCursor;
+    u32 heapEnd;
+    u32 pad_18;
+    u32 iconTable;
+} HudHeap;
+
+extern int hudHeapBase __attribute__((section(".data")));
+extern HudHeap hudHeap __attribute__((section(".data")));
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FEE88);
 
@@ -10,15 +19,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/hud", LinkHudBank__FiPc);
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF120);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", Hud_SendResidentBank__FiPcb);
-
-typedef struct {
-    u8 pad[0x10];
-    u32 heapCursor;
-    u32 heapEnd;
-} HudHeap;
-
-extern int hudHeapBase __attribute__((section(".data")));
-extern HudHeap hudHeap __attribute__((section(".data")));
 
 void Hud_HeapReset(void) {
     hudHeap.heapEnd = hudHeapBase + 0x64000;
