@@ -111,7 +111,52 @@ asm(
     "    .set at\n"
 );
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_handleCollWithHero__FiP9UpdateCam);
+struct MobyInstance;
+struct vec4;
+
+// 16-bit camera mode read from the camera entry passed in a0 (the first
+// parameter is declared int only so the symbol mangles to (int, UpdateCam*);
+// it holds an UpdateCam* at runtime). Mode 0 keeps the hero-collision moby
+// spawned, any other value clears it. Deadlocked reads the equivalent camera
+// `type` at this spot, 6 bytes before UpdateCam::camType.
+#define CAM_COLL_MODE_OFF 0x86
+// Bytes from the collision-state block back to the camera position (Camera)
+// handed to the moby spawn.
+#define CAM_POS_BACK_OFF 0x50
+
+// Camera-collision state block at 0x1870D0; the current collision moby
+// (GameCamera, 0x187194) sits at +0xC4. Moby pointers live below 0x10000000
+// so the block stores/compares them as 32-bit values. The spawn reuses the
+// single hoisted base register, so its position argument is a base offset.
+struct CamCollState {
+    char pad_c4[0xC4];
+    MobyInstance* pCamColl; // +0xC4 -> 0x187194
+};
+extern CamCollState camCollState __attribute__((section(".data")));
+
+struct UpdateCam;
+// func_001E9448 is a boot-ELF stub (jr $ra) for the hero-collision moby
+// spawn. Its real symbol and linkage are unknown (the body is supplied by a
+// level overlay), so pin the unmangled Splat placeholder with a symbol
+// override rather than assuming C linkage.
+MobyInstance* func_001E9448(vec4* pos) asm("func_001E9448");
+// The moby-deletion entry point at 0x20C828 is the unmangled symbol DeleteMoby
+// in the boot ELF; a C++ free function here would mangle differently, so pin
+// it with a symbol override instead of assuming C linkage.
+void DeleteMoby(MobyInstance* moby) asm("DeleteMoby");
+
+void Camera_handleCollWithHero(int camPtr, UpdateCam* pCam) {
+    CamCollState* base = &camCollState;
+    s16 mode = *(s16*)((long)camPtr + CAM_COLL_MODE_OFF);
+    if (mode == 0) {
+        if (base->pCamColl == 0) {
+            base->pCamColl = func_001E9448((vec4*)((char*)base - CAM_POS_BACK_OFF));
+        }
+    } else if (base->pCamColl != 0) {
+        DeleteMoby(base->pCamColl);
+        base->pCamColl = 0;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_runSetupToNewCam__FP9UpdateCam);
 

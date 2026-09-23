@@ -1971,5 +1971,13 @@
     "size": 228,
     "matched_date": "2026-09-22",
     "note": "Camera exponential-approach offset smoother with limit-band and gap-magnitude clamps. C form needs the v-store outside the limit!=0 block (delay-slot pull) and an if/else-if chain for the two clamps (guard 2 must branch to the common join). Renamed func_001F99C0 to FastAbsF (symbols.txt + common.h). The original's lower-clamp store writes -*offset because EGC clobbers -|gap| in a bc1fl delay-slot reload; reproduced byte-for-byte. See notes/camera_Cam_InterpValues__FffPffff.md."
+  },
+  "code/game/camera.cpp:13:Camera_handleCollWithHero__FiP9UpdateCam": {
+    "name": "Camera_handleCollWithHero__FiP9UpdateCam",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001EBE68",
+    "size": 96,
+    "matched_date": "2026-09-23",
+    "note": "Hero-camera collision-moby gate. Reads a 16-bit camera mode (CAM_COLL_MODE_OFF=0x86, six bytes before UpdateCam::camType; the equivalent Deadlocked camera `type`) from the camera entry passed in a0 (declared int for the (int, UpdateCam*) mangling; holds an UpdateCam* at runtime). Mode 0 spawns the collision moby via the stub func_001E9448, passing the camera position as the hoisted base minus CAM_POS_BACK_OFF=0x50, when camCollState.pCamColl is null; any other mode clears it via DeleteMoby. State is the camCollState block at 0x1870D0 (new symbol) with the moby pointer at +0xC4 (GameCamera, 0x187194); moby pointers are below 0x10000000 so they are 32-bit. EGC reuses one hoisted base register for pCamColl (+0xC4) and the spawn position (-0x50). 24/24 words match; full boot parity passes. See notes/camera_Camera_handleCollWithHero__FiP9UpdateCam.md."
   }
 }

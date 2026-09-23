@@ -637,7 +637,7 @@
     "line": 13,
     "asm": "code/_generated/nonmatchings/game/camera/Camera_handleCollWithHero__FiP9UpdateCam.s",
     "name": "Camera_handleCollWithHero__FiP9UpdateCam",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/camera.cpp:15:Camera_runSetupToNewCam__FP9UpdateCam",
