@@ -15,7 +15,16 @@ extern int snd_NoReturnErrorString __attribute__((section(".data")));
 // lui/ori constant split only for the unsigned form.
 #define SND_RETURN_SLOT_NONE 0xFFFFFFFF
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_mid", func_0012DE60);
+// Unreachable dead tail the original compiler emitted after
+// snd_FlushSoundCommands: two 0x10 stack deallocations plus the alignment
+// nop before snd_GotReturns. EGC 2.95.2 never regenerates a dead frame
+// deallocation after the epilogue (probed; see
+// decomp_state/notes/989snd_snd_FlushSoundCommands.md), so the bytes are
+// preserved with raw asm.
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
 
 // Polls the IOP return buffer armed by snd_PrepareReturnBuffer and returns 1
 // when no buffer is armed or the "no return yet" state (both slots holding

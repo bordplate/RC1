@@ -156,6 +156,31 @@ The 0xC bytes at 0x12DE60 (file 0x2EDE0), immediately after this function's
 - **last-resort GPT-5.6 Sol** invoked 2026-09-17: confirmed no credible C form or
   TU flag reproduces the fragment with the current toolchain; recommended
   retaining the orphan INCLUDE_ASM and blocking the entry.
-- Therefore the orphan `INCLUDE_ASM(..., func_0012DE60)` is retained (now in
-  `989snd_mid.c`) to supply the bytes (preserving full boot-ELF parity), and the
-  queue entry is blocked (precedent: func_0012EC00, func_001FDD50, func_00233880).
+
+## Resolution (2026-09-23): inline-asm byte preservation
+
+Per the current ghost-fragment policy (AGENTS.md, 2026-09-18 extension), dead
+tails are emitted as explicit inline assembly instead of an orphan INCLUDE_ASM
+and are never blockers. The orphan `INCLUDE_ASM` in `989snd_mid.c` was
+replaced with top-level raw asm at the same source position:
+
+```c
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+```
+
+EGC places file-scope asm statements at their source position in the object's
+`.text`, so the four bytes-plus-two-deallocations land at the start of
+`989snd_mid.o(.text)` (linked at 0x12DE60, immediately after
+`snd_FlushSoundCommands`) and `snd_GotReturns` keeps its 0x12DE70 start.
+Probe: /tmp/opencode/tailasm (probe.c/probe.o) confirmed the 16-byte layout
+before the first function. The Splat symbol `func_0012DE60` no longer exists;
+nothing referenced it (deadness scan: 0 refs) and the .ld pins no per-symbol
+addresses, so removing it is link-safe. `make split` reclassified its `.s`
+into `code/_generated/matchings/989snd/ee/989snd_mid/`.
+
+- `make` + `cmp build/boot_elf.elf assets/boot_elf.elf` byte-for-byte after
+  the change (and after a forced object rebuild with the stale
+  nonmatchings `.s` removed). Count 671 -> 670.
