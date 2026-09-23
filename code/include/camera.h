@@ -25,16 +25,24 @@ struct CamBlender {
     s16 state;            // 0x00: transition status (caller compares against 1 and 2)
     u8 type;              // 0x02: nonzero while a staged transform is pending commit
     u8 reqType;           // 0x03: requested blend type
-    u8 pad_04[0x14];
-    float reqQuatInterpAdd; // 0x18: requested quaternion interp increment
-    u8 pad_1C[8];
-    float reqPosInterpAdd;  // 0x24: requested position interp increment
-    u8 pad_28[0x28];
+    u8 pad_04[0xC];
+    u32 field_10;         // 0x10: zeroed when a direct (mode 0) camera is committed
+    f32 quatInterp;       // 0x14: latched copy of reqQuatInterpAdd
+    f32 reqQuatInterpAdd; // 0x18: requested quaternion interp increment
+    u32 field_1C;         // 0x1C: zeroed when a direct (mode 0) camera is committed
+    f32 posInterp;        // 0x20: latched copy of reqPosInterpAdd
+    f32 reqPosInterpAdd;  // 0x24: requested position interp increment
+    u8 pad_28[8];
+    CameraQuad pose1;     // 0x30: low 64 bits latched from activeCam1
+    CameraQuad pose0;     // 0x40: low 64 bits latched from activeCam0
     CameraQuad activeCam0;  // 0x50
     CameraQuad activeCam1;  // 0x60
-    u8 pad_70[0x14];
+    PolarSm polar;        // 0x70: azimuth/elevation/radius filled by Camera_Pos2Polar3d
+    u32 blendStep;        // 0x7C: scaled interp frame count (func_001FA6C0 arg)
+    f32 blendStepInv;     // 0x80: 1.0f / blendStep float
     u32 reqInterpFrames;    // 0x84: interpolation frame count for the polar blend
-    u8 pad_88[0x38];
+    u8 pad_88[0x28];
+    CameraQuad blendWork;   // 0xB0: work slot written by the per-frame transform
     CameraQuad pendingCam0; // 0xC0
     CameraQuad pendingCam1; // 0xD0
 };

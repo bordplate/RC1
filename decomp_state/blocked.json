@@ -1,372 +1,384 @@
 [
-  {
-    "id": "code/game/camera.cpp:func_001EBF10",
-    "source": "code/game/camera.cpp",
-    "asm": "code/_generated/nonmatchings/game/camera/func_001EBF10.s",
-    "name": "func_001EBF10",
-    "status": "blocked",
-    "date": "2026-09-23",
-    "vram": "0x1EBF10",
-    "size": "0x300",
-    "note": "Camera-switch staging (192 instrs). A verified C form matches the semantics, the 0x70 frame (forced by a CameraQuad* newPosQuad=&pNewCam->posQuad local used in the dPath copy+END), and the currentCamera hi+%lo addressing form (forced by a Camera* cameraAlias=&currentCamera + zero-byte '+r' barrier used ONLY in the polar block, so the prologue materializes both full(s0) and hi(s4) and blend/stateUpd use addiu base,hi,%lo while polar/END use the full base). dPath emits beq/beql/beq/bnel, state s16 emits lh, and a fresh pCurCam->activation.deactivate==5 read emits the original lh D reload. The remaining 176-vs-192 gap is pure register allocation: EGC permutes the callee-saved assignment (hi cam in s4 vs the original s1; pCurCam in s3 vs s4; pNewCam+0x30 in s5 vs s3) and compiles the dPath 'deactivate<=5' as slti D,6; bnel (2) where the original has beql D,5 (1). Tried (all parity-safe, none closed it): the scoped-register-transfer pinning (pCurCam->$20, newPosQuad->$19) which made it WORSE (frame 0x70->0x80, +s6, redundant daddu, reverted); -fno-schedule-insns (174, worse); struct/local-pointer/type/branch variants. last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected the dPath constants to D==3/M==3 (a real semantic bug in the first draft \u2014 M==1 is dead in dPath) and recommended the cameraAlias partition; both applied and mechanically diffed, the s-reg permutation + slti-vs-beql gap remains. expert (GPT-6 Astra) invoked 2026-09-23: confirmed the hypotheses and the alias/pinning experiments. Retain INCLUDE_ASM; full-ELF parity preserved. See notes/camera_func_001EBF10.md (re-attempt: the C form is correct except the s-reg permutation).",
-    "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected the dPath equality tests (D==3, D<=5, M==3, M!=6 \u2014 the first draft had D==1/M==1, a real semantic bug) and recommended the cameraAlias split for the polar block; both applied and mechanically compiled/diffed. The dPath fix corrected semantics (no count change); the alias fixed the currentCamera addressing form. The residual s-register permutation (hi cam s4 vs s1; pCurCam s3 vs s4; pNew+0x30 s5 vs s3) and the slti-vs-beql 'deactivate<=5' remain a register-allocator/scheduler difference not controllable from C source. expert (GPT-6 Astra) invoked 2026-09-23 earlier: same conclusions, recommended the alias partition (worked) and pinning (tested, worse)."
-  },
-  {
-    "id": "code/game/menu_callbacks.cpp:menu_restoreSelection",
-    "source": "code/game/menu_callbacks.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu_callbacks/menu_restoreSelection.s",
-    "name": "menu_restoreSelection",
-    "status": "blocked",
-    "date": "2026-09-16",
-    "note": "The menuPostCallbackIndex (0x15EEB0) store only matches as a constant-address cast: the original interleaves 'li v1,3' between the menuStateData base's lui/addiu and keeps the store as an in-place 'lui at; sw v1,%lo(at)' pair that only ps2eeas's in-place expansion of a constant-address store pseudo emits. Every symbolic form was probed and fails (plain .data store, *(int*)&sym, -mno-split-addresses, -fno-schedule-insns, both scheduler passes off): EGC emits the high-16 split as a separately scheduled load (base $a1) or makes the base an unsplittable la that forbids the interleave. See notes/menu_func_002088A8.md (2026-09-16 table). Static data addresses are forbidden in source (overlay-system compatibility), so the C form was reverted to INCLUDE_ASM; the generated asm references the named symbol and is overlay-safe. Siblings 0x2089A8 and 0x208EB8 share this blocker and still use the MENU_POST_CALLBACK_INDEX_ADDRESS define. Escalations invoked 2026-09-16 on this exact target: expert (GPT-6 Astra) and last-resort-decompiler (GPT-5.6 Sol) both failed with 'The usage limit has been reached' (quota); recorded per AGENTS.md."
-  },
-  {
-    "id": "code/game/help.cpp:func_001FDD50",
-    "source": "code/game/help.cpp",
-    "asm": "code/_generated/nonmatchings/game/help/func_001FDD50.s",
-    "name": "func_001FDD50",
-    "status": "blocked",
-    "date": "2026-09-05",
-    "note": "NOT a function: 4-byte unreachable dead-code tail of msg_string__Fi (EGC 2.95.2 artifact). The instruction 'sh zero, 0x38(v0)' at 0x1FDD50 sits after msg_string's 'jr ra; addiu sp' epilogue; verified unreachable (no jal/j references anywhere in the binary, jumptable jtbl_001E7A20 entries checked, Ghidra has no function at this address). No C function can compile to a bare store + nop with no return, and the true C form of msg_string that regenerates it (an extra store before the return that EGC schedules dead after the jr) was not found: the matched early-return form of msg_string__Fi emits no dead bytes, and local-variable forms miscompile the body (bltz/move). Its INCLUDE_ASM is retained deliberately to supply the 8 bytes (sh + nop) so the full ELF stays byte-for-byte. Generalization: ~46 similar 4-byte 'functions' across the binary (addiu sp / sw / sh / lw / daddu + nop) are dead tails of the preceding function \u2014 see decomp_state/notes/help_msg_string__Fi.md."
-  },
-  {
-    "id": "code/game/vuchain.cpp:func_00233880",
-    "source": "code/game/vuchain.cpp",
-    "asm": "code/_generated/nonmatchings/game/vuchain/func_00233880.s",
-    "name": "func_00233880",
-    "status": "blocked",
-    "date": "2026-09-13",
-    "note": "NOT a function: 4-byte unreachable fragment `sw v0,-0x3FE0($28)` (GPREL store of v0 to vu1ChainTail 0x162C20) at 0x233880, the EGC dead-store tail of the now-matched VU1_addDataRef__FPvi (0x233830, fc74a0b). Exact layout: jr ra; sw head(0x160F00) in the jr delay slot (ALIVE); nop (.align pad); sw tail (DEAD); nop. Unreachable (no jal/j target, Ghidra has no function there). Last-resort GPT-5.6 Sol invoked 2026-09-13: no C route remains \u2014 EGC deletes statements written after a return; two reachable stores before the return land before/in the delay slot (not past the alignment nop); pointer-return forms fire a tail store but break the matched body allocation (load #4 v0 vs a0, extra move); an 80-byte parent cannot match because its 80th word would occupy the 0x23387C alignment nop. Reproducing the fragment needs explicit assembly or a different compiler artifact. Orphan INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
-  },
-  {
-    "id": "code/game/framebuf.cpp:PutDispBuffer__Fv",
-    "source": "code/game/framebuf.cpp",
-    "asm": "code/_generated/nonmatchings/game/framebuf/PutDispBuffer__Fv.s",
-    "name": "PutDispBuffer__Fv",
-    "status": "blocked",
-    "correction": "2026-09-06: function length is 36 bytes (40 includes padding). Free C++ void PutDispBuffer(void) mangles correctly without a class or asm label. -fno-schedule-insns2 and -fargument-noalias-global still fail prologue ordering. See notes/compiler_retests_2026_09_06.md.",
-    "vram": "0x001FB2A8",
-    "file_offset": "0xFC228",
-    "size": 40,
-    "note": "C form identified and verified at the instruction level EXCEPT one prologue-scheduling difference. Body is func_00121E40(*(void**)0x15EEB8) - func_00121E40 is an alabel (real linkable symbol) in code/_generated/sce/lib.s, D_0015EEB8 is a writable pointer in section .lit4. Using the constant-cast idiom (*(void**)0x15EEB8, NOT the named symbol) makes EGC emit the correct 'lui a0,%hi; lw a0,%lo(a0)' base-register form (named symbol gives 'lui v0; lw a0,0(v0)' - wrong base reg). BUT the original order is: addiu sp; lui a0; lw a0; sq ra,0(sp); jal; nop; lq; jr; addiu - i.e. the argument lui/lw are scheduled BEFORE the ra save. EGC 2.95.2 (project flags) always emits the prologue 'addiu sp; sq ra' as a fixed unit at the top, then the body (lui/lw/jal), giving: addiu; sq; lui; lw; jal; nop; lq; jr; addiu. The sq ra cannot be moved after the body loads with any C form tried (direct cast, named symbol, temp variable). This is an EGC prologue-scheduling difference vs the original Insomniac compiler, not a source-structure issue. Blocker: EGC emits sq ra before the argument materialization; original delays it after. See decomp_state/notes/framebuf_PutDispBuffer.md",
-    "reason": "EGC prologue scheduling: sq ra emitted before arg lui/lw; original interleaves them",
-    "blocked_date": "2026-09-05"
-  },
-  {
-    "id": "code/game/movie/vibuf.cpp:viBufDelete__FP5ViBuf",
-    "source": "code/game/movie/vibuf.cpp",
-    "asm": "code/_generated/nonmatchings/game/movie/vibuf/viBufDelete__FP5ViBuf.s",
-    "name": "viBufDelete__FP5ViBuf",
-    "status": "blocked",
-    "reason": "EGC constant-store addressing: original stores *(int*)0x1000B410/B420/B430 via lui/ori/sw (3 instr each, regs a0/a1/v0), but EGC emits compact lui $at + sw zero,negoff($at) (2 instr each). Body is setD4_CHCR(5); 3 constant stores; func_00118980(self->sema); return 1. All non-store instructions match (19 vs 22 words). Could not force the lui/ori/sw 3-instr form with natural C; deferred.",
-    "blocked_date": "2026-09-05"
-  },
-  {
-    "id": "code/game/camera.cpp:ExecuteCamPostUpdFuncs",
-    "source": "code/game/camera.cpp",
-    "asm": "code/_generated/nonmatchings/game/camera/ExecuteCamPostUpdFuncs.s",
-    "name": "ExecuteCamPostUpdFuncs",
-    "status": "blocked",
-    "date": "2026-09-07",
-    "vram": "0x001EBCF0",
-    "size": 108,
-    "reason": "NOSPLIT counter re-lui/hoist requires -mno-split-addresses, but that fuses the out-of-gp-window array base into `la` (high->s1); original array is explicit lui v0;addiu s1. 106/108 best.",
-    "note": "for(i=0;i<CamPostUpdRoutineCnt(0x15EF8C);i++) CamPostUpdRoutines[0x1892B0][i](); cnt=0. BEST=106/108: symbolic counter __attribute__((section(.data))) + symbolic array + -mno-split-addresses (decomp_state/probes/camera_execpostupd_v2.cpp). Counter is IN gp window -> NOSPLIT gives lui/lw re-materialized 3x (front/back/store), hoisted before the saves, frame 0x30: MATCHES. Array is OUTSIDE gp window -> NOSPLIT emits `la $17,sym` (fused: lui s1,hi; addiu s1,s1,lo) but original is explicit (lui v0,hi; addiu s1,v0,lo); the ONLY 2 diffs are 0x1EBD10/14 (lui+addiu high reg s1 vs v0). PLAIN (no NOSPLIT, v2) gives the correct explicit array (high v0) but caches the counter high into s2 (frame 0x40, `move s2,v1`, back-edge/store reuse s2 no re-lui) - wrong. Root: counter needs NOSPLIT (re-lui+hoist) while the out-of-gp-window array needs PLAIN (explicit la); single per-TU flag cannot do both, and the array is outside the gp window so NOSPLIT always fuses it via `la`. Tried v1-v14 (cast/symbol/volatile/param/constant-array/inline-reg-asm) + scheduler & gcse flags: constant-address counter (v1) is a single RTL movsi that reload pass parks AFTER the saves (6 prologue diffs, not hoisted); volatile (v14) 30 diffs; constant-array (v12/v13) reshuffles loop regs (10 diffs); -fno-schedule-insns/2 and -fno-gcse worse; -fno-gcse-lm/-fno-cprop-registers unsupported by EGC 2.95.2. last-resort GPT-5.6 Sol used: confirmed the 106/108 NOSPLIT route and that the counter prologue is fully fixed by symbolic+.data+NOSPLIT; its register-asm/inline-asm array fixes change the loop register allocation (10 diffs) and do not match. func_001EBD60 is no longer an orphan INCLUDE_ASM: resolved 2026-09-22 as dead-tail byte preservation via file-scope asm in camera.cpp (see decomp_state/notes/camera_func_001EBD60.md); it is not a decompilation target and has no blocked entry. camera.cpp's remaining functions are all INCLUDE_ASM (plus the flag-independent file-scope dead-tail asm), so a per-TU flag is safe but moot without a full match. See decomp_state/notes/camera_ExecuteCamPostUpdFuncs.md."
-  },
-  {
-    "id": "code/game/draw.cpp:func_001F4248",
-    "source": "code/game/draw.cpp",
-    "asm": "code/_generated/nonmatchings/game/draw/func_001F4248.s",
-    "name": "func_001F4248",
-    "status": "blocked",
-    "date": "2026-09-07",
-    "note": "Guard-load RTL split in EGC 2.95.2: constant-based guard (*(int*)0x15F618) reaches reload as one indivisible mem op, so the scheduler keeps 'sq ra' in the prologue and pulls the epilogue 'lq ra' into the bnez delay slot -> 14 words vs 13 (load form lui v0/lw v0 is otherwise exact). Symbol-based guard (section .lit4 / int[] / struct / static / &-cast) gets the goal schedule (sq in branch ds, no redundant lq, 13 words) but EGC emits the lui ABOVE 'addiu sp' and allocates the value to v1 (lw v1/bnez v1) instead of v0. Plain in-window extern -> single gp-relative lw (12 words). Exhausted: C/C++, -O0/1/3, -fno-schedule-insns{,2}, -mno-split-addresses, -G0, -ffixed-v1, -fforce-addr/-fforce-mem, -frerun-*, regmove/GCSE/peephole/CSE/caller-saves disabled, ~20 source forms. last-resort GPT-5.6 Sol (2026-09-07) confirmed via RTL dumps (high/low ops fixed v0/v1 pre-schedule vs indivisible const mem op) and found no escape; recommended retaining the fallback. See notes/draw_func_001F4248.md."
-  },
-  {
-    "id": "code/game/bloaders.cpp:func_001E93A8",
-    "source": "code/game/bloaders.cpp",
-    "asm": "code/_generated/nonmatchings/game/bloaders/func_001E93A8.s",
-    "name": "func_001E93A8",
-    "status": "blocked",
-    "date": "2026-09-08",
-    "note": "NOT a function: 4-byte unreachable dead-code tail of LoadDebugFont (addiu sp,sp,0x10 at 0x1E93A8 / file 0xEA328, after the parent's jr ra; <addiu sp,sp,0x40> epilogue, with a 4-byte nop gap at 0x1E93A4). Not a duplicate of the parent's 0x40 deallocation (unlike sibling tails 0x12EC00/0x23ACB0) and not expressible in C: any local accounting for 0x10 changes the parent frame to 0x50, breaking the verified -0x40 prologue and +0x40 epilogue; EGC 2.95.2 emits no dead addiu after jr ra in any tested form. Raw-ELF scan: no jal/j targets 0x1E93A8 (words 0x0C07A4EA/0x0807A4EA absent); Ghidra has no function there. Parent matched 2026-09-08. last-resort GPT-5.6 Sol used: tested the dead volatile-local form (first diff at 0x1E9338, frame -0x50) and confirmed no C form regenerates the tail; recommended retaining the fallback. INCLUDE_ASM retained to supply the 8 bytes; clean build + cmp OK. See notes/bloaders_LoadDebugFont.md."
-  },
-  {
-    "id": "code/game/menu_callbacks.cpp:func_00208840",
-    "source": "code/game/menu_callbacks.cpp",
-    "asm": "code/_generated/nonmatchings/game/menu_callbacks/func_00208840.s",
-    "name": "func_00208840",
-    "status": "blocked",
-    "date": "2026-09-09",
-    "vram": "0x00208840",
-    "size": 100,
-    "note": "menu_dispatchCallback (0x208840, 100B): state=*0x15EEB0; 0x1A0438_table[state](); D_00161280=*0x161280+1 (gp-rel store); state2=*0x15EEB0; if(state2!=state) *0x161280=0 (abs). SOLVED: the two *0x15EEB0 loads must NOT CSE-merge (natural form shares a base reg -> 3-save 0x30 frame, 108B). Forcing the mat into a HARD reg (`register int addr asm(\"$16\")==0x15EEB0; int state=*(int*)addr;`) creates a CSE cost TIE (COST(const)=2 == COST(hard reg)=2) that stops the merge -> two self-overwrite lui/lw pairs + 2-save 0x20 frame, matching. RESIDUAL (4 words, prologue only): best candidate (k1) matches 21/25 words, ALL body+epilogue byte-identical; only the prologue save order/placement differs. Candidate RTL (gen_prologue, present before sched2) emits [sq ra, sq s0] and sched2 places both BEFORE load1 (sq ra pos3, sq s0 pos5). Original emits [sq s0 early (pos3, after T-hi), sq ra LATE (pos7, after load1)]. Save ORDER [s0,ra] vs [ra,s0] is the compiler's natural order in some matched fns (main, RefreshPointLight, videoDecDelete, voBufGetData) but [ra,s0] in others (LoadDebugFont, memcard_TestChecksum, func_0021EAF0/222F58) - so it is RTL-specific, not fixed. TRIED (all still 4-word under default scheduling): mat in $16/$25/$2/$3/$12/$15; load-RESULT into $16 (frame 0x30); state2 forced to $3; statement reordering; zero-byte `asm volatile(\\\"\\\":\\\"+r\\\"(state))` and input-only and `$ra`-clobber forms (8 words, worse); table base forced to $3 (6 words, funcptr->v1); table returns int (17); dispatch returns int (4, same); flags -fsched-interblock/-fno-sched-interblock/-fsched-spec/-fno-sched-spec (no change). FLAG CONFLICT: this fn needs sched2 ENABLED (default or -fno-schedule-insns) for the interleaved saves + a0 funcptr + T-before-load1; under the segment's production flag -fno-schedule-insns2 it is 7 words off (saves bunched, load1 before T, funcptr v0). Sibling menu_restoreSelection (same menu_callbacks Splat segment 0x109798..0x10984F) requires -fno-schedule-insns2, so a Splat boundary split would be needed - but is pointless until the 4-word save order is solved. last-resort GPT-5.6 Sol used: diagnosed as a sched2/prologue-thread save-UID tie-break; its concrete variants (zero-byte dep, $ra clobber, fixed-table-reg, callback/dispatch return-type, sched-flag matrix) were all tested and none beat the 4-word diff. INCLUDE_ASM(func_00208840) retained. See decomp_state/notes/menu_dispatchCallback.md."
-  },
-  {
-    "id": "code/game/draw.cpp:func_001F21A8",
-    "source": "code/game/draw.cpp",
-    "asm": "code/_generated/nonmatchings/game/draw/func_001F21A8.s",
-    "name": "func_001F21A8",
-    "status": "blocked",
-    "date": "2026-09-09",
-    "vram": "0x001F21A8",
-    "size": 4,
-    "note": "Dead tail of func_001F2070, not a function: unreachable 4-byte fragment (sw $zero,0x1B0($v0)) 8-aligned right after the parent's jr ra/addiu epilogue (nop at +4, nop at +4 after). Nothing jumps to it; Ghidra has no function/xrefs there. The store reuses v0=0x190000 (stale %hi of D_0018CF10 loaded at 0x1F2120 for the divisor); target 0x1901B0 = D_0018CF10+0x32A0, zeroed .data, no symbol. 12+ C forms probed with the project EGC (field f1B0/f12A0/f32A0 same or separate struct type, int/float, separate symbol at 0x1901B0, int array, constant-address cast, double store, page-anchor D_00190000 representation, -fno-schedule-insns/2 variants, source-order permutations): EGC either emits a base fixup (addiu) or a second lui so the store becomes a 2-instruction LIVE store before the jr (316B), or uses at/v1 as base; it never emits a post-epilogue dead store from a 256B-frame function. Parent func_001F2070 matched 308/308 without the store statement; this INCLUDE_ASM supplies the 8 bytes (nop/sw/nop via .align 3 boundaries) and keeps full boot parity. last-resort GPT-5.6 Sol invoked 2026-09-09: confirmed no pure C form exists (the intermediate v0=0x190000 has no corresponding C pointer value; EGC terminates after the jr delay slot for all tested forms) and recommended retaining the orphan. See decomp_state/notes/draw_func_001F2070.md."
-  },
-  {
-    "id": "code/game/vuchain.cpp:func_00233C88",
-    "source": "code/game/vuchain.cpp",
-    "asm": "code/_generated/nonmatchings/game/vuchain/func_00233C88.s",
-    "name": "func_00233C88",
-    "status": "blocked",
-    "date": "2026-09-14",
-    "note": "NOT a function: 4-byte unreachable fragment `sw $2,-0x3FE0($28)` (GPREL store of v0 to vu1ChainTail 0x162C20) at 0x233C88, the EGC dead-store tail of the now-matched VU1_gsRegsAlt__Fv (0x233C28). Exact layout: jr ra; sw head(0x160F00) in the jr delay slot (ALIVE); nop (.align pad); sw tail (DEAD); nop. Unreachable (no jal/j target, Ghidra has no function there). Probed with full builds 2026-09-14: the void two-store form (vu1ChainHeadStore = newHead; vu1ChainTail = newHead;) keeps BOTH stores alive (sw tail before the jr, sw store in the delay slot) - no dead tail; the return-value form (return newHead;) fires the dead tail but reserves v0 across the body, moving the tag v0->a1 and the block address v1->v0 with an extra move v0,v1 (10-word body diff). Last-resort GPT-5.6 Sol invoked 2026-09-14 on this exact target: no C route remains - a store immediately after jr is the executed delay slot, not dead; the required tail sits after jr; <delay-slot store>; .align nop, where source scheduling cannot place a reachable side effect; statements after a return are deleted. Identical instruction word and GPREL target to the blocked func_00233880 (VU1_addDataRef's tail). Orphan INCLUDE_ASM retained deliberately to supply the 8 bytes (its .align 3 supplies the 0x233C84 pad). See notes/vuchain_VU1_gsRegsAlt__Fv.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_mid.c:func_0012DE60",
-    "source": "code/989snd/ee/989snd_mid.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/func_0012DE60.s",
-    "name": "func_0012DE60",
-    "status": "blocked",
-    "date": "2026-09-17",
-    "note": "NOT a function: 0xC-byte unreachable dead tail after snd_FlushSoundCommands (0x12DC80-0x12DE5F, 0x50 frame). The parent returns at 0x12DE58 with its complete addiu sp,sp,0x50 in the jr delay slot; the orphan at 0x12DE60 (file 0x2EDE0) holds addiu sp,sp,0x10; nop; addiu sp,sp,0x10, with alignment padding at 0x12DE6C. Deadness: Ghidra has no function at 0x12DE60 and no xrefs; raw-ELF scan finds 0 jal/j target 0x12DE60 (jal 0x3004B798 / j 0x2004B798 absent from the whole file); the parent's branches do not reach it. Not regenerable: local EGC 2.95.2 v2.73a (-G8 -O2 -snas) probes emit exactly one reachable frame restoration and never a dead addiu sp,sp,N after the epilogue (a 0x40 frame emits a single addiu sp,sp,0x40, not split), matching the sibling func_0012EC00 t1-t10 experiments; scheduler flags cannot synthesize missing epilogue RTL. A standalone C function would have no return and corrupt sp. Same-TU two-deallocate tails also at func_0012E270/0012E198/0012EF58. last-resort GPT-5.6 Sol used (2026-09-17): confirmed no credible C/flag route remains; retain the orphan INCLUDE_ASM. INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See decomp_state/notes/989snd_snd_FlushSoundCommands.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_mid.c:snd_BankLoadByLoc",
-    "source": "code/989snd/ee/989snd_mid.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/snd_BankLoadByLoc.s",
-    "name": "snd_BankLoadByLoc",
-    "status": "blocked",
-    "date": "2026-09-17",
-    "note": "The callback-arg global 0x15ED00 (gp window) is accessed in 5 forms: absolute store, RPC-6th-arg register load (SIGNED split lui 0x16;addiu -4864, adjacent at call site, NOT hoisted), two separate GPREL loads (if-check + early-return), absolute poll. Best candidate (constant store/RPC/poll + GPREL if/early-return + early-return-as-fresh-load + do-while) = 20 diffs, 336 vs 340, correct frame (0x50). UNSOLVABLE: RPC arg as a CONSTANT gets the wrong UNSIGNED split (lui 0x15;ori 0xED00) + hoisted lui; as a .data SYMBOL it gets the signed split but EGC LICM's %hi to the stat-loop preheader and keeps it live -> frame 0x60 (repro'd with 1/2/4 same-addr syms, volatile, array-decay). No qualifier/cast/indirection/register-asm/flag yields signed+unhoisted+frame-0x50. Second gap: a scheduling nop at 0x12e050 (between poll lw and back-test beq); asm volatile(nop) is moved by .set reorder into the beq DELAY slot, not the pre-beq position. Flags tried: -mno-split-addresses (breaks, 78 diffs), -fno-schedule-insns (26), -fno-strength-reduce (71/frame 0x60). last-resort GPT-5.6 Sol used: array-decay (71/0x60), register asm($9)+barrier (C89 parse error), -fno-strength/-rerun-loop-opt/-gcse (71/0x60), bound nop (moved to delay slot) -- none closes the diffs. Only near-match (v12) relies on forbidden static data-address constants and still has 20 diffs. Kept INCLUDE_ASM. See decomp_state/notes/989snd_snd_BankLoadByLoc.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_mid.c:func_0012E078",
-    "source": "code/989snd/ee/989snd_mid.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/func_0012E078.s",
-    "name": "func_0012E078",
-    "status": "blocked",
-    "date": "2026-09-18",
-    "note": "NOT a function: 12-byte unreachable dead tail after blocked snd_BankLoadByLoc (0x12DF20, 0x50 frame; parent epilogue jr ra; addiu sp,sp,0x50 ends 0x12E073). Fragment words 0x27BD0060/0x00000000/0x27BD0050 at 0x12E078 (file 0x2EFF8); the 0x12E084 nop is alignment outside the fragment. Deadness verified: Ghidra no function/no xrefs; raw scan of core.text+.text finds no jal/j/relative-branch target; no jump-table word in .lit/.data. Part of a 15-fragment family of dead addiu-sp tails in this TU (unit sizes do NOT match parent frames). Cross-game confirmation: Deadlocked (reference/SCUS_974.65) shows the identical artifact with identical per-function sequences (snd_StopSound tail 0x40,0x40,0x20,0x30 despite a different frame) and .mdebug symbol sizes that exclude the tail bytes (gap between symbols). Local EGC 2.95.2 never emits dead addiu sp,sp,N (t1-t10 2026-09-17; fresh p1-p5 2026-09-18: multi-return, tail-call, trailing-statement forms all clean). Parent snd_BankLoadByLoc blocked 2026-09-17, closing the regenerate-with-parent route. last-resort GPT-5.6 Sol used (2026-09-18, full dossier): confirmed no credible C/declaration/flag route (scheduling flags cannot synthesize missing RTL; standalone C function impossible; inline asm = byte injection). INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See decomp_state/notes/989snd_func_0012E078.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E198",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E198.s",
-    "name": "func_0012E198",
-    "status": "blocked",
-    "date": "2026-09-18",
-    "note": "NOT a function: 12-byte unreachable dead-code tail after the byte-matched snd_BankLoadFromEE_CB (0x12E088, frame 0x50; epilogue balanced at 0x12E194). Fragment is 'addiu sp,sp,0x50; nop; addiu sp,sp,0x50' (0x12E198-0x12E1A3) with no prologue/return/branch; second member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-18 with new raw-ELF scanner tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E198 across core.text/.text and all data sections; Ghidra has no function there and zero xrefs (scanner sanity: finds exactly Ghidra's 6 jal xrefs on adjacent 0x12E1A8). The matched parent compiles all 272 bytes and emits no tail. Escalations 2026-09-18 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag or parent-plus-fragment restructuring exists (merging needs two post-return sp adjustments EGC deletes; standalone function needs a terminator; folding into snd_ResolveBankXREFS impossible since all 6 callers enter at 0x12E1A8; flags cannot synthesize missing RTL; inline asm == the fallback). Retain INCLUDE_ASM to supply the 12 bytes and keep full-ELF parity. See notes/989snd_func_0012E198.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E270",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E270.s",
-    "name": "func_0012E270",
-    "status": "blocked",
-    "date": "2026-09-19",
-    "note": "NOT a function: 12-byte unreachable dead-code tail (16-byte gap incl. alignment nop) after the byte-matched snd_SetPlaybackMode (0x12E240, 0x30 bytes, frame 0x20; epilogue balanced at 0x12E26C). Fragment is 'addiu sp,sp,0x10; nop; addiu sp,sp,0x10' (0x12E270-0x12E27B) with no prologue/return/branch; third member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with the corrected raw-ELF scanner tools/deadness_scan.py (branch opcodes fixed to 4-7/20-23; the pre-fix 12-15 range is andi/ori/xori/lui and had given a false positive from a lui at 0x12A26C): 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E270 across core.text/.text and all data sections; Ghidra has no function there and zero xrefs (scanner sanity: 0x12E1A8 still exactly 6 jal xrefs; sibling 0x12E198 still 0 refs). The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict missing RTL, no credible C/declaration/qualifier/flag/assembler route remains (standalone function needs a terminator; folding into snd_SetMixerMode impossible since all callers enter at 0x12E280; exotic forms are byte-injection equivalent). Retain INCLUDE_ASM to supply the bytes and keep full-ELF parity. See notes/989snd_func_0012E270.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E2F8",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E2F8.s",
-    "name": "func_0012E2F8",
-    "status": "blocked",
-    "date": "2026-09-19",
-    "note": "NOT a function: 12-byte unreachable dead-code tail (16-byte gap incl. alignment nop) after the byte-matched snd_SetGroupVoiceRange (0x12E2B8, 0x3C bytes, frame 0x20; epilogue balanced at 0x12E2F3). Fragment is 'addiu sp,sp,0x30; nop; addiu sp,sp,0x30' (0x12E2F8-0x12E303) with no prologue/return/branch; fourth blocked member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); units (0x30,0x30) do not match the parent's 0x20 frame. Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E2F8 across core.text/.text and all data sections; whole-ELF raw jal-word search zero hits; Ghidra has no function there and zero xrefs (scanner sanity: exactly Ghidra's 2 jal xrefs on adjacent live 0x12E308). The matched parent compiles all 60 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict not regeneratable, no materially distinct C form/declaration/qualifier/flag/assembler/Splat route remains (standalone function needs a terminator; the +0x30 adjustments cannot come from live RTL without altering the matched parent; inline asm == the fallback). Retain INCLUDE_ASM to supply the bytes and keep full-ELF parity. See notes/989snd_func_0012E2F8.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_pre.c:snd_StartSoundSystem",
-    "source": "code/989snd/ee/989snd_pre.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_pre/snd_StartSoundSystem.s",
-    "name": "snd_StartSoundSystem",
-    "status": "blocked",
-    "date": "2026-09-19",
-    "note": "Binds the 989 IOP sound-server RPCs (0x123456 command, 0x123457 CD), spinning until bound, then resets CD callback state and sends a 4-byte CD stream-status command. Last-resort GPT-5.6 Sol used: it disproved the initial spin-loop-padding-as-unfixable-compiler-artifact diagnosis and gave a working form. With per-phase waits + an asm volatile barrier placed IMMEDIATELY AFTER each bind (not at init) + ret as the countdown register + data=ret before the if + fixed-register locals (wait->s2/minus->s1 phase1, wait->s1/minus->s0 phase2), EGC 2.95.2 reproduces BOTH spin-loop bodies byte-for-byte (the 5-nop padding, the runtime addiu v0,waitreg,-1 in the bgez delay slot, bgez(0x07) not bgezl, sw v0,0(sp) stores) and the exact 600-byte/150-word length. REMAINS BLOCKED at 28 straight-line scheduling diffs: prologue lui/sq/li/sw interleaving (idx 21-32), loop-1 -1 materialization point (idx 42), loop-2 setup order (idx 83-88), a loop-2 errStr/srcFile register swap s2/s3 (idx 96-97), and final-block reorder + v0/v1 swap (idx 123-137). -fno-schedule-insns (81) / -fno-schedule-insns2 / -mno-split-addresses / -G0 / -fno-gcse all made it worse or no help; the original was built WITH the default scheduler, so these tie-breaks are not controllable by C structure or the tested flags. Best 28-diff candidate saved in the note. Reverted to INCLUDE_ASM. See decomp_state/notes/989snd_snd_StartSoundSystem.md.\n[2026-09-20: merged the two stale pre-TU-split keys (989snd.c:3 and :7) into this entry.] 600-byte (0x258) sound-system startup at VMA 0x12DA28 (first 989snd definition, fileoff 0x2E9A8). Structure fully understood and a C candidate compiles in place, but EGC 2.95.2 -G8 -O2 does not reproduce the original prologue and the difference cascades from word 9 (0x12DA4C). Specific mismatches, all EGC codegen decisions not controllable from C: (1) prologue s-register assignment + sq-save order differ (orig: lui s0,0x16 page, minus->s1 in the jal delay slot, sq s0 at word 9; candidate: lui s1,0x16 page, minus->s4 HOISTED to the prologue word 25, sq s0 at word 28); (2) the original does NOT constant-fold the countdown - it keeps 10000 in s2 and forms addiu v0,s2,-1 at runtime in the bgez delay slot - while the candidate folds data=timeout-1 to a literal addiu s0,0,9999 even with declare-then-assign (int timeout; timeout=10000;); (3) the original stores buffer slots [0] GPREL and [1] ABSOLUTE (lui at,0x16; sw r,lo(at)) but the candidate emits all-GPREL (3 words short). Tried: last-resort countdown-structure fix (spin starts at timeout-1 unconditionally, data as loop var, per-phase timeout/minus blocks) - applied, moved 544->580 bytes but prologue still diverges; statement reordering, block vs function scoping, declaration forms, section attributes, declare-then-assign. Net 580 vs 600 bytes. Reverted to INCLUDE_ASM (line 7); full boot ELF parity intact. Escalations on this exact target: expert (GPT-6 Astra) 2026-09-18 and last-resort-decompiler (GPT-5.6 Sol) 2026-09-18; last-resort's structural countdown fix was implemented and mechanically tested (did not resolve the prologue allocation). See decomp_state/notes/989snd_snd_StartSoundSystem.md.\n[Merged 2026-09-20 from the duplicate pre-TU-split entry; its additions:] last-resort GPT-5.6 Sol used (2026-09-16); expert GPT-6 Astra used (2026-09-18). 600-byte size matches with 5-NOP loop bodies + no commandBuffer1 local (s8=hi(cmd1) CSE) + int snd_SendIOPCommandAndWait + .data snd_cdCallbackArg + .data *2 buffer slots (abs [1] stores), but 95 word diffs remain: (a) EGC won't reproduce the prologue v0,v1,a1,a2,a3,t0 value alloc with *2 slots stored through $at absolute (it keeps *2 addrs in base registers, shifting the 38-word prologue run 0x12DA34-0x12DAC8); the plain [2]-array form keeps the prologue but emits [1] as GPREL16 (size mismatch). (b) delay spin: original uses bnel branch-likely with the countdown decrement in the delay slot + a pre-decrement; EGC emits bne with the decrement before the branch (nop delay slot) and folds the pre-decrement. Tried while(buf--)/pre-decrement-while/for/-fno-schedule-insns2 \u2014 all bne. 2026-09-18 additions: CRITICAL gotcha \u2014 the C body MUST be the first 989snd definition (line 7) with all its declarations hoisted to the top, else it links ~0x1188 bytes late (0x11FBB0) and shows a whole-TU diff despite a matching prologue. Also the original forms 9999 as `addiu v0,s2,-1` (s2=10000) in the bgez delay slot; plain `data=timeout-1` folds to a literal `li 9999`. expert's tail reorder shrank to 584B and `data=timeout;data--` overflows .core_text; post-decrement loop compares to 0 not -1 so can't emit the bnel. See notes/989snd_snd_StartSoundSystem.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E350",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E350.s",
-    "name": "func_0012E350",
-    "status": "blocked",
-    "date": "2026-09-19",
-    "note": "NOT a function: 20-byte unreachable dead-code tail (24-byte gap incl. alignment nop) after the byte-matched snd_PlaySoundVolPanPMPB (0x12E308, 0x48 bytes, frame 0x30; epilogue balanced at 0x12E34C: lq ra / jr ra / addiu sp,sp,0x30 delay slot). Fragment is 'addiu sp,sp,0x10; nop' x3 (0x12E350-0x12E363) with no prologue/return/branch; next function snd_StopSound (matched, frame 0x20) starts at 0x12E368; seventh member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E350 across core.text/.text and all data sections; Ghidra has no function there and zero xrefs. The matched parent compiles all 72 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict missing compiler RTL, no credible C/declaration/qualifier/flag/assembler route remains (standalone function needs a terminator; folding into snd_StopSound impossible since all callers enter at 0x12E368; exotic forms are byte-injection equivalent). Retain INCLUDE_ASM to supply the bytes and keep full-ELF parity. See notes/989snd_func_0012E350.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E398",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E398.s",
-    "name": "func_0012E398",
-    "status": "blocked",
-    "date": "2026-09-19",
-    "note": "NOT a function: 28-byte unreachable dead-code tail (32-byte gap incl. alignment nop) after the byte-matched snd_StopSound (0x12E368, 48 bytes, frame 0x20; epilogue balanced at 0x12E394: lq ra / jr ra / addiu sp,sp,0x20 delay slot). Fragment is 'addiu sp,sp,0x40; nop; addiu sp,sp,0x40; nop; addiu sp,sp,0x20; nop; addiu sp,sp,0x30' (0x12E398-0x12E3B3) with no prologue/return/branch; next function snd_StopAllSounds (matched, frame 0x10) starts at 0x12E3B8; eighth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E398 across core.text/.text and all data sections (scanner sanity: finds exactly the 2 jal xrefs on each adjacent live function); Ghidra has no function there and zero xrefs. The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag/assembler route remains (standalone function needs a terminator; folding into snd_StopSound/snd_StopAllSounds impossible since all callers enter at 0x12E368/0x12E3B8; flags/assembler cannot synthesize absent RTL; inline asm / .text word array is byte-injection equivalent). Retain INCLUDE_ASM to supply the 28 bytes and keep full-ELF parity. See notes/989snd_func_0012E398.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E478",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E478.s",
-    "name": "func_0012E478",
-    "status": "blocked",
-    "date": "2026-09-19",
-    "note": "NOT a function: 68-byte unreachable dead-code tail (72-byte gap incl. alignment nop) after the byte-matched snd_SoundIsStillPlaying_CB (0x12E448, 48 bytes, frame 0x20; epilogue balanced at 0x12E474: lq ra / jr ra / addiu sp,sp,0x20 delay slot). Fragment is 8x 'addiu sp,sp,0x20; nop' + 'addiu sp,sp,0x30' (0x12E478-0x12E4BB) with no prologue/return/branch; next function snd_SetSoundParams_CB (matched, frame 0x30) starts at 0x12E4C0; ninth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E478 across core.text/.text and all data sections (scanner sanity: finds the 3 jal xrefs on the parent at 0x12E448 and the 2 jal xrefs on the next function at 0x12E4C0); Ghidra has no function there and zero xrefs. The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag/assembler route remains \u2014 missing compiler RTL, EGC emits only reachable frame restorations, standalone function needs a terminator, byte injection is the fallback under another spelling. Retained INCLUDE_ASM supplies the bytes; full-ELF parity preserved."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E508",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E508.s",
-    "name": "func_0012E508",
-    "status": "blocked",
-    "date": "2026-09-19",
-    "note": "NOT a function: 60-byte unreachable dead-code tail (64-byte gap incl. alignment nop) after the byte-matched snd_SetSoundParams_CB (0x12E4C0, 48 bytes, frame 0x30; epilogue balanced at 0x12E504: lq ra,32(sp) / jr ra / addiu sp,sp,0x30 delay slot). Fragment is 6x 'addiu sp,sp,0x20; nop' + 2x 'addiu sp,sp,0x10' (0x12E508-0x12E543) with no prologue/return/branch; next function snd_SendIOPCommandAndWait starts 8-aligned at 0x12E548; tenth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E508 across core.text/.text and all data sections (scanner sanity: finds the 2 jal xrefs on the parent at 0x12E4C0 and the 3 jal xrefs on the next function at 0x12E548); Ghidra has no function there and zero xrefs. The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag/assembler route remains - missing compiler RTL, EGC emits only reachable frame restorations, standalone function needs a terminator, byte injection is the fallback under another spelling. Retained INCLUDE_ASM supplies the bytes; full-ELF parity preserved."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:snd_SendIOPCommandNoWait",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/snd_SendIOPCommandNoWait.s",
-    "name": "snd_SendIOPCommandNoWait",
-    "status": "blocked",
-    "date": "2026-09-20",
-    "note": "EGC allocator difference at 9-s-register demand: local EGC (SN 2.73a) hoists the spin-loop constants (256, 1, string base) to the top of the loop body (live across the flush call) and gives them call-safe s-regs s4/s5/s6, spilling the incoming command/data/done params to the stack (frame 0xD0); the original keeps all four params in s7/s1/s6/s8 and reloads the constants between calls (frame 0xC0). The C body is fully understood and matches in control flow, fast-path layout, the ternary tail idiom, and the copy loop (see note). Exhausted: guard/loop structure variants (151-157 diffs), decl order, initializers, flags (-fno-schedule-insns/2, -O1, -G0, -fno-move-all-movables, -fno-strength-reduce, -fno-gcse, -fno-expensive-optimizations, -fomit-frame-pointer, -fno-caller-saves), the Deadlocked debug-symbol-shaped source with natural %4 idiom (171/149, last-resort GPT-5.6 Sol recommendation), and register-variable pinning (164, miscompiles). Shared typed declarations (SndCommandBuffer, wrapper signatures, named string symbols) were kept and re-verified by full parity. INCLUDE_ASM retained.",
-    "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-20: recommended the debug-symbol-shaped source (x/was_caching/y/msg/msg_size + natural modulo idiom); tested (171 else form / 149 no-else), same constant-hoisting allocation, no match. expert (GPT-6 Astra) invoked earlier the same day; its pass-flag and register-variable recommendations were all tested and failed.",
-    "evidence": "decomp_state/notes/989snd_snd_SendIOPCommandNoWait.md"
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012EC00",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012EC00.s",
-    "name": "func_0012EC00",
-    "status": "blocked",
-    "date": "2026-09-05",
-    "note": "NOT a function: 4-byte unreachable dead-code tail of snd_StopAllStreams (addiu sp,sp,0x10 at 0x12EC00 / file 0x2FB80, right after the parent's jr ra; <addiu sp,sp,0x10> epilogue; parent frame is 0x10 so this is a dead duplicate deallocate). Local EGC 2.95.2 v2.73a never emits a dead addiu sp,sp,N (only dead stores; /tmp/opencode/tail_exp t1-t10). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/989snd_snd_StopAllStreams.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:snd_PlayVAGStreamByLocEx_CB",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/snd_PlayVAGStreamByLocEx_CB.s",
-    "name": "snd_PlayVAGStreamByLocEx_CB",
-    "status": "blocked",
-    "date": "2026-09-20",
-    "note": "Local EGC 2.95.2 COMBINE pass keeps the offset-4 (data[1]=a1) argument copy that Insomniac's build folded: an extra 'move $v1,$a1' + 'sw $v1,4(sp)' (original stores data[1] as a direct 'sw $5,4(sp)'). Minimal reps (minirepro{,2,3}.c) prove the index-1 store is the invariant non-fold for every register/order/array-size. last-resort-decompiler (GPT-5.6 Sol) found a selective-volatile-array + named-$12-register form that removes the copy (100 bytes, tail byte-exact) but leaves a head-schedule + in-place-andi register-allocation gap of 9 word-diffs (-fno-schedule-insns2) / 13 (default); ~20 statement orders, int/u32, DL order, unsigned casts, all scheduler flags tested. expert (named-$5 idiom, -fno-regmove) also tested, both worse. No matching source/flag form with this toolchain; kept INCLUDE_ASM. See notes/989snd_snd_PlayVAGStreamByLocEx_CB.md. last-resort GPT-5.6 Sol used."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012EF58",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012EF58.s",
-    "name": "func_0012EF58",
-    "status": "blocked",
-    "date": "2026-09-20",
-    "note": "NOT a function: unreachable 12-byte dead tail `addiu sp,sp,0x20; nop; addiu sp,sp,0x20` at 0x12EF58 (file 0x2FED8) after the byte-matched parent snd_StreamSafeCdCallback (0x12EF28, 0x30 bytes, frame 0x10; epilogue lq ra / jr ra / addiu sp,sp,0x10 in delay slot ends 0x12EF57). Member of the 15-fragment 989snd dead-tail family (units 0x20,0x20 do not equal the parent's 0x10 frame); family table + Deadlocked .mdebug gap evidence + local-EGC t1-t10/p1-p5 probes in notes/989snd_func_0012E078.md. Deadness verified 2026-09-20 with the corrected full EE branch map (tools/deadness_scan.py 0x12EF58 -> 0 references: no jal/j, no relative branch of any EE encoding (beq/beqz/b, bne/bnez, blez, bgtz, regimm bltz/bgez/bltzl/bgezl/bgezal rt 0/1/2/3/17, COP0 bc0f/bc0t fmt=2, COP1 bc1f/bc1t/bc1fl/bc1tl fmt=2, beql/bnel/blezl/bgtzl) targeting it, no 32/64-bit data word equal to it in any non-text section); Ghidra has no function at or containing 0x12EF58 and zero xrefs; scanner positive controls confirmed the newly covered bgez/bgezal/bc0f/bc1* checks fire on live targets. last-resort GPT-5.6 Sol used (2026-09-20): no credible C/flag/assembler route remains - the blocker is missing RTL (EGC emits no post-epilogue stack restoration; a standalone C function cannot be 3 words with no return; flags cannot synthesize RTL; only byte-injection equivalent to the fallback); it also supplied the deadness-scan opcode correction committed separately. INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See notes/989snd_func_0012EF58.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012F020",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012F020.s",
-    "name": "func_0012F020",
-    "status": "blocked",
-    "date": "2026-09-20",
-    "note": "NOT a function: unreachable 68-byte dead tail of 9 units `addiu sp,sp,N; nop` (N = 0x10,0x20,0x10,0x20,0x20,0x10,0x10,0x10,0x10) at 0x12F020 (file 0x2FFA0) after the byte-matched parent snd_AutoReverb (0x12EFE0, 0x3C bytes, frame 0x20; epilogue lq ra / jr ra / addiu sp,sp,0x20 delay slot balanced at 0x12F01C). Thirteenth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); byte-count-identical 68-byte/9-unit shape to the blocked func_0012E478 sibling; unit sequence not derivable from the parent body (frame 0x20). Deadness verified 2026-09-20 with tools/deadness_scan.py 0x12F020 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); positive control 0x12F068 finds its one jal at 0x23AC5C; Ghidra has no function at or containing 0x12F020, parent body ends at 0x12F01B, zero xrefs; matched parent compiles all 60 bytes and emits no tail. last-resort GPT-5.6 Sol used (2026-09-20) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (missing RTL: EGC emits only reachable epilogue stack restorations and deletes trailing RTL; standalone function needs a terminator; flags transform but cannot synthesize the 9 missing adjustments + nops; 9-unit size adds no untested mechanism vs blocked func_0012E478). Retain INCLUDE_ASM to supply the 0x44 bytes; full-ELF parity preserved. See notes/989snd_func_0012F020.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012F0D0",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012F0D0.s",
-    "name": "func_0012F0D0",
-    "status": "blocked",
-    "date": "2026-09-20",
-    "note": "NOT a function: unreachable 12-byte dead tail of 2 units `addiu sp,sp,N; nop` (N = 0x10, 0x20) at 0x12F0D0 (file 0x30050) after the byte-matched parent snd_ResetMovieSound (0x12F0A8, 36 bytes, frame 0x10; epilogue lq ra / jr ra / addiu sp,sp,0x10 delay slot balanced at 0x12F0CC). Fourteenth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); unit sequence not derivable from the parent body (same-shape sibling snd_CloseMovieSound carries a different tail). Deadness verified 2026-09-20 with tools/deadness_scan.py 0x12F0D0 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); positive control 0x12F0E0 finds its one jal at 0x23AC98; Ghidra has no function at or containing 0x12F0D0, parent body ends at 0x12F0CB, zero xrefs; matched parent compiles all 36 bytes and emits no tail. last-resort GPT-5.6 Sol used (2026-09-20) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (missing RTL: EGC's dead-code elimination removes the two post-return stack-restoration operations; standalone function needs a terminator; flags transform but cannot synthesize the adjustments; volatile/barrier/multi-return/alloca forms alter reachable flow or the matched prologue). Retain INCLUDE_ASM to supply the 12 bytes; full-ELF parity preserved. See notes/989snd_func_0012F0D0.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_post.c:func_0012F140",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012F140.s",
-    "name": "func_0012F140",
-    "status": "blocked",
-    "date": "2026-09-20",
-    "note": "NOT a function: unreachable 4-byte dead tail (single unit `addiu sp,sp,0x10` plus alignment nop) at 0x12F140 (file 0x300C0) after the byte-matched parent snd_StartMovieSound (0x12F108, 0x38 bytes, frame 0x30; epilogue lq ra / jr ra / addiu sp,sp,0x30 delay slot balanced at 0x12F13F). Fifteenth and final member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); unit (0x10) not derivable from the parent body (0x30 frame) and differs from same-shape sibling tails. Deadness verified 2026-09-20 with tools/deadness_scan.py 0x12F140 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); positive controls 0x12F108 (parent) finds its one jal at 0x23ACF0 and 0x12F148 (next function) finds its one jal at 0x23AF9C, both matching Ghidra; Ghidra has no function at or containing 0x12F140, parent body ends at 0x12F13F, zero xrefs; matched parent compiles all 0x38 bytes and emits no tail. last-resort GPT-5.6 Sol used (2026-09-20) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (missing RTL: EGC dead-code elimination removes the post-return stack restoration; a standalone function needs a terminator and cannot fall through into snd_UpdateMovieADPCM; scheduler/-G/address-splitting/GNU-vs-SN choices transform existing RTL and cannot synthesize the adjustment; volatile/barrier/multi-return/alloca forms alter reachable flow or the matched prologue). Retain INCLUDE_ASM to supply the 4 bytes; full-ELF parity preserved. See notes/989snd_func_0012F140.md."
-  },
-  {
-    "id": "code/game/actuator.cpp:actuator_CalcPower",
-    "source": "code/game/actuator.cpp",
-    "asm": "code/_generated/nonmatchings/game/actuator/actuator_CalcPower.s",
-    "name": "actuator_CalcPower",
-    "status": "blocked",
-    "date": "2026-09-21",
-    "note": "Two independent hard blockers, both confirmed; expert (GPT-6 Astra) and last-resort GPT-5.6 Sol both invoked, their reconstructions applied. (A) SAVED-REGISTER+FRAME ALLOCATION (the gate): original s3=numpower(sp+0x20), s4=numscale(sp+0x10), s5=ret, s6=AWhi, frame 0xC0. Corrected natural source compiles to s3=ret,s4=numpower,s5=numscale,s6=AWhi, frame 0xB0 (s3/s4/s5 cyclically permuted; -fno-schedule-insns and decl reordering do NOT change it - RTL-driven). A register-asm() force reproduces the register NAMES but is a non-clean hack and still leaves frame 0xB0 and swaps the numpower/numscale stack slots -> 243/261 words differ; needs the exact original local layout. (B) SWITCH-TABLE SECTION PLACEMENT: original dispatch references jtbl_001E7640, a 6-word table in .data with ABSOLUTE (non-relocatable) case-body addresses; EGC always emits a C switch table to .rdata (-> .text), so an ordinary switch misplaces the table (2 dispatch words differ) and an external computed-goto cannot work (absolute entries). Only fragile linker-script surgery (split .data blob around 0x1E7640 + inject actuator.o(.rodata) into .data) would fix it; no hook in the auto-generated ldscript. Prior-session logic errors corrected (count increment selects numpower/numscale; pos=timer/(on+off) division; case5 real FP; lifeSpan signed test) - see note decomp_state/notes/actuator_actuator_CalcPower.md for the corrected start-point candidate."
-  },
-  {
-    "id": "code/game/actuator.cpp:func_001E9120",
-    "source": "code/game/actuator.cpp",
-    "asm": "code/_generated/nonmatchings/game/actuator/func_001E9120.s",
-    "name": "func_001E9120",
-    "status": "blocked",
-    "date": "2026-09-21",
-    "note": "NOT a function: single-unit 4-byte unreachable dead-tail fragment `addiu sp,sp,0x20` (word 0x27BD0020) at 0x1E9120 (file 0xEA0A0), a compiler-emitted dead stack-adjustment of the blocked parent actuator_CalcPower (0x1E8D08, 0x414). Layout: parent epilogue `jr ra`(0x1E9114) / `addiu sp,sp,0xC0` ALIVE in the jr delay slot (0x1E9118) / alignment nop (0x1E911C) / [DEAD addiu sp,sp,0x20](0x1E9120) / alignment nop (0x1E9124) / texResetCursor__Fv matched (0x1E9128). Deadness verified 2026-09-21: tools/deadness_scan.py 0x1E9120 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); Ghidra has no function at or containing 0x1E9120, zero xrefs. The 0x20 unit does not match the parent 0xC0 frame (consistent with the 989snd/Deadlocked dead-tail family where tail units differ from the parent frame; Deadlocked .mdebug sizes exclude the tail bytes as linker gap bytes). Local EGC 2.95.2 never emits a dead addiu sp,sp,N as a standalone function (t1-t10 + multi-return/tail-call/trailing p1-p5 all fail; EGC deletes post-return statements and a standalone function needs a terminator). last-resort GPT-5.6 Sol used (2026-09-21) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (a standalone function cannot compile to only a positive stack adjustment; regenerating via the parent is not credible - the parent already balanced its 0xC0 epilogue and is independently blocked by register/frame allocation + switch-table placement, so it cannot supply the artifact; naked/inline-assembler/data-word forms rejected as byte-injection equivalents to the retained fallback). Retain INCLUDE_ASM to supply the 4 bytes; full-ELF parity preserved. See notes/989snd_func_0012E078.md (family) and notes/actuator_actuator_CalcPower.md (parent)."
-  },
-  {
-    "id": "code/game/actuator.cpp:func_001E9148",
-    "source": "code/game/actuator.cpp",
-    "asm": "code/_generated/nonmatchings/game/actuator/func_001E9148.s",
-    "name": "func_001E9148",
-    "status": "blocked",
-    "date": "2026-09-21",
-    "note": "NOT a function: 28-byte (0x1C) unreachable multi-unit dead-tail cluster of four positive stack adjustments `addiu sp,sp,0x40/0xA0/0x10/0x130` interleaved with nops at 0x1E9148 (file 0xEA0C8-0xEA0DF), compiler-emitted material placed in the inter-symbol gap. Layout: texResetCursor__Fv (MATCHED, 0x1E9128, frameless, ends 0x1E913F with complete jr ra / sw v0 delay slot, emits NO stack adjustment) / 8 bytes explicit padding nops (0x1E9140-0x1E9147) / [DEAD 4-unit cluster](0x1E9148-0x1E9163) / alignment nop (0x1E9164, outside the 0x1C range) / LoadPifAsPSMT8H (bloaders.cpp, next real function, 0x1E9168). The four units (0x40,0xA0,0x10,0x130) do not describe one function frame and do not correspond to the matched frameless predecessor; no identifiable parent can absorb them without altering matched code. Deadness verified 2026-09-21: tools/deadness_scan.py 0x1E9148 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); Ghidra has no function at or containing 0x1E9148, zero xrefs. Local EGC 2.95.2 never emits dead addiu sp,sp,N as a standalone function (t1-t10 + multi-return/tail-call/trailing p1-p5 all fail; EGC deletes post-return statements and a standalone function needs a terminator). last-resort GPT-5.6 Sol used (2026-09-21) on this exact target: block confirmed, missing-RTL (not scheduling/assembler), no credible C/declaration/qualifier/flag/assembler route (a positive sp adjustment comes from stack-restoration RTL requiring a frame + terminator; multiple-return/alloca/volatile/barrier forms produce reachable flow or shared epilogues; the matched frameless predecessor emits no restoration RTL; naked/inline-assembler/.word/linker-insertion forms rejected as byte-injection equivalents). Retain INCLUDE_ASM to supply the 28 bytes (+ alignment nop); full-ELF parity preserved. Same shape as blocked 989snd multi-unit tails (notes/989snd_func_0012E078.md) and Deadlocked .mdebug gap-bytes precedent."
-  },
-  {
-    "id": "code/game/bloaders.cpp:LoadPifAsPSMT8H",
-    "source": "code/game/bloaders.cpp",
-    "asm": "code/_generated/nonmatchings/game/bloaders/LoadPifAsPSMT8H.s",
-    "name": "LoadPifAsPSMT8H",
-    "status": "blocked",
-    "date": "2026-09-21",
-    "note": "PSM T8H debug-font PIF loader (0x1E9168, 0x1D0, 116 words). A C candidate reproduces the ENTIRE body byte-for-byte: both `jal log2dim`(0x1f97a0) calls with `sra pal,size,8` in call-1's delay slot and `sw v0,pp.uLog` in call-2's delay slot; the `addiu size-reg,sp,96` that REUSES the size register as the image base; the dead `mult uSize,vSize` that stores uSize (not the product) to pp.tSize[0]; the two sceGsSetDefLoadImage(0x122330)/FlushCache(0x118a80)/sceGsExecLoadImage(0x122658)/sceGsSyncPath(0x120558) sequences with identical a0-a3/t0-t3 argument setup; and the whole 64-bit PIF-header OR chain (dsll32 for palShift<<37 / clutFormat<<51 / 1<<63, dsll for tbw<<14 / uLog<<26 / vLog<<30, lui 0x1b0, li 0x8000+dsll 0x13 for 1<<34) plus the three trailing sd stores. Frame 0x120 matches. The ONLY difference is the prologue: EGC 2.95.2 emits the parameter sq/move sequence with s1 BEFORE s0 (`sq s4,sq s2,move s4,sq s1,move s2,sq s0,move s1,sq ra,move s0,sq s3`), whereas the original has s0 before s1 (`sq s4,sq s2,move s4,sq s0,move s2,move s0,sq s1,sq ra,move s1,sq s3`). The natural (unpinned) C form also mis-assigns the s-registers (offset->s0, source->s1, size->s2, dest->s3, palShift->s4 instead of the original source->s0, size->s1, dest->s2, palShift->s3, offset->s4). Tested: (1) callee int return types (sceGsSetDef/Exec/SyncPath) - no effect; (2) typed formals PifHeader*/u64* - no effect; (3) explicit `register asm($16-$20)` pinning + zero-byte asm constraint - fixes the s-register ASSIGNMENT but the prologue still emits s1 before s0; (4) -fno-schedule-insns - no effect; (5) pinned-declaration reordering (both s0/s1 orders) - no effect. The prologue sq/move ordering is an EGC register-allocation/scheduler heuristic not controllable from C source. last-resort GPT-5.6 Sol invoked 2026-09-21; it recommended the callee-return-type, typed-formal, and register-pinning forms all of which were mechanically tested; the prologue schedule remains a hard difference. Retain the generated assembly."
-  },
-  {
-    "id": "code/game/boot.cpp:ParseBin__Fv",
-    "source": "code/game/boot.cpp",
-    "asm": "code/_generated/nonmatchings/game/boot/ParseBin__Fv.s",
-    "name": "ParseBin__Fv",
-    "status": "blocked",
-    "date": "2026-09-22",
-    "vram": "0x12D8F8",
-    "size": "0xDC",
-    "note": "Level-load table parser (levelRoot 0x15EE4C): per iteration the original runs setup(TOP) -> entrypoint -> copy -> advance, with TOP a SINGLE two-predecessor block (prologue b + advance fall-through) placed LAST in memory after the copy body, a lean no-nop prologue (levelRoot->v1, base->t0), len loaded to v0 then copied to v1, s->a0, qword bound->a2, and the advance as an in-place single-t0 ping-pong. The high-level structure is reproducible in C (p16: single TOP, two bounds, three bnezl alignment tests, word d=a1 / qword d=v1), but EGC always emits the TOP block FIRST (setup-first) for the correct while(true) form, while the original places it LAST; the do-while form (p21, best at 43/55) gets copy-first layout but changes the iteration order and duplicates the setup (initial + loop) so it never yields a single TOP. The copy-first + single-TOP combination the original has is EGC block-ordering, not a C construct. Also unmatchable: levelRoot/base in a0 (not v1/t0), s in a2 (not a0), qword bound in a3 (not a2), advance in two registers (not single t0), and the len v0->v1 copy. Exhausted: 24+ C variants (if/else-if, ||/&& chains, goto, per-branch bounds, for, do-while, entrypoint as body vs condition, plain extern vs .data) and flags (-fno-schedule-insns/2, -fno-delayed-branch, -mno-split-addresses). See notes/boot_ParseBin__Fv.md. INCLUDE_ASM retained (overlay-safe).",
-    "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-22: recommended a rotated while whose TOP setup is a comma-expression loop condition with the entrypoint assignment as the first body statement (tested as p22) plus a ternary-condition variant (p24), both with the .data symbol + -mno-split-addresses. Both produced a different CFG (entrypoint test fused into the first alignment-branch delay slot; beq t1,0 first-pass-first check) and did not improve on p21: p22/p23 = 47/55, p24 = 54/55. The form treats the entrypoint check as the loop condition, but the original keeps it a separate body block after TOP, so the rotated-condition form cannot reproduce the original CFG. No match. expert (GPT-6 Astra) invoked earlier: corrected the branch-likely delay-slot misread and identified the asymmetric iterator lifetimes (p16 form); decomp-researcher confirmed no codebase idiom to copy."
-  },
-  {
-    "id": "code/game/camera.cpp:Camera_ActivationCheckPriority",
-    "source": "code/game/camera.cpp",
-    "asm": "code/_generated/nonmatchings/game/camera/Camera_ActivationCheckPriority.s",
-    "name": "Camera_ActivationCheckPriority",
-    "status": "blocked",
-    "date": "2026-09-23",
-    "vram": "0x1EC210",
-    "size": "0x1C8",
-    "note": "Two independent blockers, neither closable from C source. (A) First switch in all decompiled C: EGC emits the 8-case jump table as an orphan camera.o(.rodata) (32B) the Splat script has no input for (only camera.o(.text)); link yields a MALFORMED ELF ('section extending past end of file'), +48 bytes, ~280KB scattered diffs. Original table is static .data @0x1E7730 (data.data.o); my table @0x24D370 (word30/32 lui 0x24/addiu 0xd370 vs orig lui 0x1e/addiu 0x7730). (B) Body codegen: best u8* form = 118 words vs 114 (4 extra) with ~73 diffs \u2014 prologue store/move scheduling (w1-17), priority-load register allocation (orig pCompare->pri->v1 via s0, pCam->pri->v0 via s2, sltu v0,v0,v1; EGC swaps), GrindPath stride (0x14 struct -> li 20;mult vs orig sll idx,5; 0x20 struct fixes stride but total still exceeds), linked-branch deltas (bltz/bltzl, beqz/beqzl). word48 is sltu in BOTH (funct 0x2b) \u2014 an earlier slt read was wrong; it is allocation, not signedness. Verified layout kept in source: UpdateCam+0x74 activationType(int), +0x7C priority(u8), +0x7D activate(u8), +0x7E deactivate(s16); heroCamData 0x13F350 (+0x80 pos/+0x560 pPath/+0x570 eopTime/+0x2284 desiredCam); GrindPath 0x20 stride; importCameraTable 0x15EF90 (absolute), grindPaths 0x15EF00 (gp-rel, .extern seed). Retain INCLUDE_ASM; full-ELF parity preserved. See notes/camera_Camera_ActivationCheckPriority.md.",
-    "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected word48 to sltu (not slt), reversed the priority-load allocation doc, and gave four source fixes (GrindPath 0x20; act-before-test + input-only barrier; shared ret+break normalization for cases 0/1/2/4; cache collMode; repolarity case-7 tail) plus exact .data split boundaries (file 0xE86B0..0xE86D0 / VRAM 0x1E7730..0x1E7750) for the table. All source fixes applied and mechanically diffed -> WORSE (90 diffs, 120 words): the ret+break shape does not reproduce the original CFG and adds instructions; reverted. The .data split for BLOCKER A was not applied (invasive; body does not match regardless). expert (GPT-6 Astra) invoked 2026-09-23 earlier: same conclusions (rodata addressable via data split; sltu was a misdiagnosis)."
-  },
-  {
-    "id": "code/game/camera.cpp:UpdateAllCameras__Fi",
-    "source": "code/game/camera.cpp",
-    "asm": "code/_generated/nonmatchings/game/camera/UpdateAllCameras__Fi.s",
-    "name": "UpdateAllCameras__Fi",
-    "status": "blocked",
-    "date": "2026-09-23",
-    "vram": "0x1EC420",
-    "size": "0x110",
-    "note": "66/68 words match byte-for-byte; ONLY two swapped hi `lui` in the prologue remain (0x1EC454/58). Loop and tail both fully match. LOOP: the three `pCam+=0xA0` are ONE source `pCam++` that EGC duplicated into the taken-delay slots of the two beqls (mutually-exclusive copies: A(*pUsed==0)->I1, B(pCam==cur)->I3, C(r==0)->I2, D(r!=0)->I3; each path advances once) \u2014 so the source is the simple chained `&&` with a single `pCam++`. TAIL: matched after correcting call signatures (func_001EBF10 is ONE-arg, ExecuteCamPostUpdFuncs is ZERO-arg, the collWithHero vtable callback is ONE-arg void(*)(UpdateCam*), `coll` computed BEFORE Camera_handleCollWithHero so it coalesces into $s1/$17 for `lw $17,0xC($2); jalr $17`, and the 0x14 second arg = sizeof(UpdateCamVtbl) is the SAME constant the vtbl-index `mult` reuses into one `li $5,20`; lPos copies as float* pos/dst pointers give the $f1/$f0 assignment + x,y,z order with z in the ExecuteCamPostUpdFuncs delay slot). REMAINING: the two independent hi `lui`s are emitted in declaration order (pCam-hi/$2 then pUsed-hi/$3) by EGC 2.95.2 in every form tried, but the original emits pUsed-hi/$3 first while keeping pCam->$2 (it decouples hi-emit order from register/declaration order). Register assignment and the lo order (pCam-lo then pUsed-lo) are identical; only the two hi words are swapped. C form preserved at notes/camera_UpdateAllCameras__Fi.candidate.cpp (272 bytes, ndiff 2). See notes/camera_UpdateAllCameras__Fi.md.",
-    "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23 on this exact target: it correctly diagnosed the tail (the earlier drafts had wrong arg counts driving the tail's register allocation) and the corrected signatures/order closed the tail completely (280->272 bytes, tail byte-for-byte). For the prologue it recommended retesting the pCam/pUsed initialization orders and documenting the two scheduler flags before claiming a wall; all four were applied and mechanically diffed (pCam-first, pUsed-first, init-pUsed-first, -fno-schedule-insns, -fno-schedule-insns2) \u2014 none emits the original's pUsed-hi-first order with the correct pCam->$2 assignment, and both scheduler flags break the already-matched loop (33/22 diffs). expert (GPT-6 Astra) invoked earlier the same day provided the branch-likely taken-delay-slot insight that unlocked the loop. The residual 2 hi-lui order is a register-allocator/scheduler difference not controllable from C source. Retain INCLUDE_ASM; full-ELF parity preserved."
-  },
-  {
-    "id": "code/game/camera.cpp:func_001EC710",
-    "source": "code/game/camera.cpp",
-    "asm": "code/_generated/nonmatchings/game/camera/func_001EC710.s",
-    "name": "func_001EC710",
-    "status": "blocked",
-    "date": "2026-09-23",
-    "vram": "0x1EC710",
-    "size": "0xDC",
-    "note": "No-arg void camera-transition helper (called twice from Camera_TransitionFrame 0x1EC8A0 on the pending-transform path). Normalizes the level fwd/side/up vectors (*(u32**)(0x13F350+0x2080)+0xC0/D0/E0), stores fwd/up into camTransState +0x90/+0xA0, calls Camera_Pos2Polar3d((PolarSm*)(+0x70),(+0xC0),(0x13F350+0x80),&fwd,&side,&up), and copies +0xD0->+0xB0. The four 128-bit (lq/sq) constant-base data accesses were the documented DImode folding blocker, but the 2026-09-23 tied read/write empty-asm barrier (asm volatile(\"\": \"+r\"(dst)) after computing the pointer, plus register pins for the 128-bit data and base) DEFEATS the folding and matches the prologue, all three FastVecNormalize calls, store2, and the copy's register choices byte-for-byte. Residual 10 diffs are PURE instruction-ORDER scheduler tie-breaks (store1 addiu/lq order, call-arg setup interleaved with store2's sq, final-copy sq vs lq ra order); -fno-schedule-insns[2] makes it worse. See decomp_state/notes/camera_func_001EC710.md. last-resort GPT-5.6 Sol used: it supplied the barrier recommendation (tested, defeats the folding); the scheduler tie-breaks remain."
-  }
+ {
+  "id": "code/game/camera.cpp:func_001EBF10",
+  "source": "code/game/camera.cpp",
+  "asm": "code/_generated/nonmatchings/game/camera/func_001EBF10.s",
+  "name": "func_001EBF10",
+  "status": "blocked",
+  "date": "2026-09-23",
+  "vram": "0x1EBF10",
+  "size": "0x300",
+  "note": "Camera-switch staging (192 instrs). A verified C form matches the semantics, the 0x70 frame (forced by a CameraQuad* newPosQuad=&pNewCam->posQuad local used in the dPath copy+END), and the currentCamera hi+%lo addressing form (forced by a Camera* cameraAlias=&currentCamera + zero-byte '+r' barrier used ONLY in the polar block, so the prologue materializes both full(s0) and hi(s4) and blend/stateUpd use addiu base,hi,%lo while polar/END use the full base). dPath emits beq/beql/beq/bnel, state s16 emits lh, and a fresh pCurCam->activation.deactivate==5 read emits the original lh D reload. The remaining 176-vs-192 gap is pure register allocation: EGC permutes the callee-saved assignment (hi cam in s4 vs the original s1; pCurCam in s3 vs s4; pNewCam+0x30 in s5 vs s3) and compiles the dPath 'deactivate<=5' as slti D,6; bnel (2) where the original has beql D,5 (1). Tried (all parity-safe, none closed it): the scoped-register-transfer pinning (pCurCam->$20, newPosQuad->$19) which made it WORSE (frame 0x70->0x80, +s6, redundant daddu, reverted); -fno-schedule-insns (174, worse); struct/local-pointer/type/branch variants. last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected the dPath constants to D==3/M==3 (a real semantic bug in the first draft \u2014 M==1 is dead in dPath) and recommended the cameraAlias partition; both applied and mechanically diffed, the s-reg permutation + slti-vs-beql gap remains. expert (GPT-6 Astra) invoked 2026-09-23: confirmed the hypotheses and the alias/pinning experiments. Retain INCLUDE_ASM; full-ELF parity preserved. See notes/camera_func_001EBF10.md (re-attempt: the C form is correct except the s-reg permutation).",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected the dPath equality tests (D==3, D<=5, M==3, M!=6 \u2014 the first draft had D==1/M==1, a real semantic bug) and recommended the cameraAlias split for the polar block; both applied and mechanically compiled/diffed. The dPath fix corrected semantics (no count change); the alias fixed the currentCamera addressing form. The residual s-register permutation (hi cam s4 vs s1; pCurCam s3 vs s4; pNew+0x30 s5 vs s3) and the slti-vs-beql 'deactivate<=5' remain a register-allocator/scheduler difference not controllable from C source. expert (GPT-6 Astra) invoked 2026-09-23 earlier: same conclusions, recommended the alias partition (worked) and pinning (tested, worse)."
+ },
+ {
+  "id": "code/game/menu_callbacks.cpp:menu_restoreSelection",
+  "source": "code/game/menu_callbacks.cpp",
+  "asm": "code/_generated/nonmatchings/game/menu_callbacks/menu_restoreSelection.s",
+  "name": "menu_restoreSelection",
+  "status": "blocked",
+  "date": "2026-09-16",
+  "note": "The menuPostCallbackIndex (0x15EEB0) store only matches as a constant-address cast: the original interleaves 'li v1,3' between the menuStateData base's lui/addiu and keeps the store as an in-place 'lui at; sw v1,%lo(at)' pair that only ps2eeas's in-place expansion of a constant-address store pseudo emits. Every symbolic form was probed and fails (plain .data store, *(int*)&sym, -mno-split-addresses, -fno-schedule-insns, both scheduler passes off): EGC emits the high-16 split as a separately scheduled load (base $a1) or makes the base an unsplittable la that forbids the interleave. See notes/menu_func_002088A8.md (2026-09-16 table). Static data addresses are forbidden in source (overlay-system compatibility), so the C form was reverted to INCLUDE_ASM; the generated asm references the named symbol and is overlay-safe. Siblings 0x2089A8 and 0x208EB8 share this blocker and still use the MENU_POST_CALLBACK_INDEX_ADDRESS define. Escalations invoked 2026-09-16 on this exact target: expert (GPT-6 Astra) and last-resort-decompiler (GPT-5.6 Sol) both failed with 'The usage limit has been reached' (quota); recorded per AGENTS.md."
+ },
+ {
+  "id": "code/game/help.cpp:func_001FDD50",
+  "source": "code/game/help.cpp",
+  "asm": "code/_generated/nonmatchings/game/help/func_001FDD50.s",
+  "name": "func_001FDD50",
+  "status": "blocked",
+  "date": "2026-09-05",
+  "note": "NOT a function: 4-byte unreachable dead-code tail of msg_string__Fi (EGC 2.95.2 artifact). The instruction 'sh zero, 0x38(v0)' at 0x1FDD50 sits after msg_string's 'jr ra; addiu sp' epilogue; verified unreachable (no jal/j references anywhere in the binary, jumptable jtbl_001E7A20 entries checked, Ghidra has no function at this address). No C function can compile to a bare store + nop with no return, and the true C form of msg_string that regenerates it (an extra store before the return that EGC schedules dead after the jr) was not found: the matched early-return form of msg_string__Fi emits no dead bytes, and local-variable forms miscompile the body (bltz/move). Its INCLUDE_ASM is retained deliberately to supply the 8 bytes (sh + nop) so the full ELF stays byte-for-byte. Generalization: ~46 similar 4-byte 'functions' across the binary (addiu sp / sw / sh / lw / daddu + nop) are dead tails of the preceding function \u2014 see decomp_state/notes/help_msg_string__Fi.md."
+ },
+ {
+  "id": "code/game/vuchain.cpp:func_00233880",
+  "source": "code/game/vuchain.cpp",
+  "asm": "code/_generated/nonmatchings/game/vuchain/func_00233880.s",
+  "name": "func_00233880",
+  "status": "blocked",
+  "date": "2026-09-13",
+  "note": "NOT a function: 4-byte unreachable fragment `sw v0,-0x3FE0($28)` (GPREL store of v0 to vu1ChainTail 0x162C20) at 0x233880, the EGC dead-store tail of the now-matched VU1_addDataRef__FPvi (0x233830, fc74a0b). Exact layout: jr ra; sw head(0x160F00) in the jr delay slot (ALIVE); nop (.align pad); sw tail (DEAD); nop. Unreachable (no jal/j target, Ghidra has no function there). Last-resort GPT-5.6 Sol invoked 2026-09-13: no C route remains \u2014 EGC deletes statements written after a return; two reachable stores before the return land before/in the delay slot (not past the alignment nop); pointer-return forms fire a tail store but break the matched body allocation (load #4 v0 vs a0, extra move); an 80-byte parent cannot match because its 80th word would occupy the 0x23387C alignment nop. Reproducing the fragment needs explicit assembly or a different compiler artifact. Orphan INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md."
+ },
+ {
+  "id": "code/game/framebuf.cpp:PutDispBuffer__Fv",
+  "source": "code/game/framebuf.cpp",
+  "asm": "code/_generated/nonmatchings/game/framebuf/PutDispBuffer__Fv.s",
+  "name": "PutDispBuffer__Fv",
+  "status": "blocked",
+  "correction": "2026-09-06: function length is 36 bytes (40 includes padding). Free C++ void PutDispBuffer(void) mangles correctly without a class or asm label. -fno-schedule-insns2 and -fargument-noalias-global still fail prologue ordering. See notes/compiler_retests_2026_09_06.md.",
+  "vram": "0x001FB2A8",
+  "file_offset": "0xFC228",
+  "size": 40,
+  "note": "C form identified and verified at the instruction level EXCEPT one prologue-scheduling difference. Body is func_00121E40(*(void**)0x15EEB8) - func_00121E40 is an alabel (real linkable symbol) in code/_generated/sce/lib.s, D_0015EEB8 is a writable pointer in section .lit4. Using the constant-cast idiom (*(void**)0x15EEB8, NOT the named symbol) makes EGC emit the correct 'lui a0,%hi; lw a0,%lo(a0)' base-register form (named symbol gives 'lui v0; lw a0,0(v0)' - wrong base reg). BUT the original order is: addiu sp; lui a0; lw a0; sq ra,0(sp); jal; nop; lq; jr; addiu - i.e. the argument lui/lw are scheduled BEFORE the ra save. EGC 2.95.2 (project flags) always emits the prologue 'addiu sp; sq ra' as a fixed unit at the top, then the body (lui/lw/jal), giving: addiu; sq; lui; lw; jal; nop; lq; jr; addiu. The sq ra cannot be moved after the body loads with any C form tried (direct cast, named symbol, temp variable). This is an EGC prologue-scheduling difference vs the original Insomniac compiler, not a source-structure issue. Blocker: EGC emits sq ra before the argument materialization; original delays it after. See decomp_state/notes/framebuf_PutDispBuffer.md",
+  "reason": "EGC prologue scheduling: sq ra emitted before arg lui/lw; original interleaves them",
+  "blocked_date": "2026-09-05"
+ },
+ {
+  "id": "code/game/movie/vibuf.cpp:viBufDelete__FP5ViBuf",
+  "source": "code/game/movie/vibuf.cpp",
+  "asm": "code/_generated/nonmatchings/game/movie/vibuf/viBufDelete__FP5ViBuf.s",
+  "name": "viBufDelete__FP5ViBuf",
+  "status": "blocked",
+  "reason": "EGC constant-store addressing: original stores *(int*)0x1000B410/B420/B430 via lui/ori/sw (3 instr each, regs a0/a1/v0), but EGC emits compact lui $at + sw zero,negoff($at) (2 instr each). Body is setD4_CHCR(5); 3 constant stores; func_00118980(self->sema); return 1. All non-store instructions match (19 vs 22 words). Could not force the lui/ori/sw 3-instr form with natural C; deferred.",
+  "blocked_date": "2026-09-05"
+ },
+ {
+  "id": "code/game/camera.cpp:ExecuteCamPostUpdFuncs",
+  "source": "code/game/camera.cpp",
+  "asm": "code/_generated/nonmatchings/game/camera/ExecuteCamPostUpdFuncs.s",
+  "name": "ExecuteCamPostUpdFuncs",
+  "status": "blocked",
+  "date": "2026-09-07",
+  "vram": "0x001EBCF0",
+  "size": 108,
+  "reason": "NOSPLIT counter re-lui/hoist requires -mno-split-addresses, but that fuses the out-of-gp-window array base into `la` (high->s1); original array is explicit lui v0;addiu s1. 106/108 best.",
+  "note": "for(i=0;i<CamPostUpdRoutineCnt(0x15EF8C);i++) CamPostUpdRoutines[0x1892B0][i](); cnt=0. BEST=106/108: symbolic counter __attribute__((section(.data))) + symbolic array + -mno-split-addresses (decomp_state/probes/camera_execpostupd_v2.cpp). Counter is IN gp window -> NOSPLIT gives lui/lw re-materialized 3x (front/back/store), hoisted before the saves, frame 0x30: MATCHES. Array is OUTSIDE gp window -> NOSPLIT emits `la $17,sym` (fused: lui s1,hi; addiu s1,s1,lo) but original is explicit (lui v0,hi; addiu s1,v0,lo); the ONLY 2 diffs are 0x1EBD10/14 (lui+addiu high reg s1 vs v0). PLAIN (no NOSPLIT, v2) gives the correct explicit array (high v0) but caches the counter high into s2 (frame 0x40, `move s2,v1`, back-edge/store reuse s2 no re-lui) - wrong. Root: counter needs NOSPLIT (re-lui+hoist) while the out-of-gp-window array needs PLAIN (explicit la); single per-TU flag cannot do both, and the array is outside the gp window so NOSPLIT always fuses it via `la`. Tried v1-v14 (cast/symbol/volatile/param/constant-array/inline-reg-asm) + scheduler & gcse flags: constant-address counter (v1) is a single RTL movsi that reload pass parks AFTER the saves (6 prologue diffs, not hoisted); volatile (v14) 30 diffs; constant-array (v12/v13) reshuffles loop regs (10 diffs); -fno-schedule-insns/2 and -fno-gcse worse; -fno-gcse-lm/-fno-cprop-registers unsupported by EGC 2.95.2. last-resort GPT-5.6 Sol used: confirmed the 106/108 NOSPLIT route and that the counter prologue is fully fixed by symbolic+.data+NOSPLIT; its register-asm/inline-asm array fixes change the loop register allocation (10 diffs) and do not match. func_001EBD60 is no longer an orphan INCLUDE_ASM: resolved 2026-09-22 as dead-tail byte preservation via file-scope asm in camera.cpp (see decomp_state/notes/camera_func_001EBD60.md); it is not a decompilation target and has no blocked entry. camera.cpp's remaining functions are all INCLUDE_ASM (plus the flag-independent file-scope dead-tail asm), so a per-TU flag is safe but moot without a full match. See decomp_state/notes/camera_ExecuteCamPostUpdFuncs.md."
+ },
+ {
+  "id": "code/game/draw.cpp:func_001F4248",
+  "source": "code/game/draw.cpp",
+  "asm": "code/_generated/nonmatchings/game/draw/func_001F4248.s",
+  "name": "func_001F4248",
+  "status": "blocked",
+  "date": "2026-09-07",
+  "note": "Guard-load RTL split in EGC 2.95.2: constant-based guard (*(int*)0x15F618) reaches reload as one indivisible mem op, so the scheduler keeps 'sq ra' in the prologue and pulls the epilogue 'lq ra' into the bnez delay slot -> 14 words vs 13 (load form lui v0/lw v0 is otherwise exact). Symbol-based guard (section .lit4 / int[] / struct / static / &-cast) gets the goal schedule (sq in branch ds, no redundant lq, 13 words) but EGC emits the lui ABOVE 'addiu sp' and allocates the value to v1 (lw v1/bnez v1) instead of v0. Plain in-window extern -> single gp-relative lw (12 words). Exhausted: C/C++, -O0/1/3, -fno-schedule-insns{,2}, -mno-split-addresses, -G0, -ffixed-v1, -fforce-addr/-fforce-mem, -frerun-*, regmove/GCSE/peephole/CSE/caller-saves disabled, ~20 source forms. last-resort GPT-5.6 Sol (2026-09-07) confirmed via RTL dumps (high/low ops fixed v0/v1 pre-schedule vs indivisible const mem op) and found no escape; recommended retaining the fallback. See notes/draw_func_001F4248.md."
+ },
+ {
+  "id": "code/game/bloaders.cpp:func_001E93A8",
+  "source": "code/game/bloaders.cpp",
+  "asm": "code/_generated/nonmatchings/game/bloaders/func_001E93A8.s",
+  "name": "func_001E93A8",
+  "status": "blocked",
+  "date": "2026-09-08",
+  "note": "NOT a function: 4-byte unreachable dead-code tail of LoadDebugFont (addiu sp,sp,0x10 at 0x1E93A8 / file 0xEA328, after the parent's jr ra; <addiu sp,sp,0x40> epilogue, with a 4-byte nop gap at 0x1E93A4). Not a duplicate of the parent's 0x40 deallocation (unlike sibling tails 0x12EC00/0x23ACB0) and not expressible in C: any local accounting for 0x10 changes the parent frame to 0x50, breaking the verified -0x40 prologue and +0x40 epilogue; EGC 2.95.2 emits no dead addiu after jr ra in any tested form. Raw-ELF scan: no jal/j targets 0x1E93A8 (words 0x0C07A4EA/0x0807A4EA absent); Ghidra has no function there. Parent matched 2026-09-08. last-resort GPT-5.6 Sol used: tested the dead volatile-local form (first diff at 0x1E9338, frame -0x50) and confirmed no C form regenerates the tail; recommended retaining the fallback. INCLUDE_ASM retained to supply the 8 bytes; clean build + cmp OK. See notes/bloaders_LoadDebugFont.md."
+ },
+ {
+  "id": "code/game/menu_callbacks.cpp:func_00208840",
+  "source": "code/game/menu_callbacks.cpp",
+  "asm": "code/_generated/nonmatchings/game/menu_callbacks/func_00208840.s",
+  "name": "func_00208840",
+  "status": "blocked",
+  "date": "2026-09-09",
+  "vram": "0x00208840",
+  "size": 100,
+  "note": "menu_dispatchCallback (0x208840, 100B): state=*0x15EEB0; 0x1A0438_table[state](); D_00161280=*0x161280+1 (gp-rel store); state2=*0x15EEB0; if(state2!=state) *0x161280=0 (abs). SOLVED: the two *0x15EEB0 loads must NOT CSE-merge (natural form shares a base reg -> 3-save 0x30 frame, 108B). Forcing the mat into a HARD reg (`register int addr asm(\"$16\")==0x15EEB0; int state=*(int*)addr;`) creates a CSE cost TIE (COST(const)=2 == COST(hard reg)=2) that stops the merge -> two self-overwrite lui/lw pairs + 2-save 0x20 frame, matching. RESIDUAL (4 words, prologue only): best candidate (k1) matches 21/25 words, ALL body+epilogue byte-identical; only the prologue save order/placement differs. Candidate RTL (gen_prologue, present before sched2) emits [sq ra, sq s0] and sched2 places both BEFORE load1 (sq ra pos3, sq s0 pos5). Original emits [sq s0 early (pos3, after T-hi), sq ra LATE (pos7, after load1)]. Save ORDER [s0,ra] vs [ra,s0] is the compiler's natural order in some matched fns (main, RefreshPointLight, videoDecDelete, voBufGetData) but [ra,s0] in others (LoadDebugFont, memcard_TestChecksum, func_0021EAF0/222F58) - so it is RTL-specific, not fixed. TRIED (all still 4-word under default scheduling): mat in $16/$25/$2/$3/$12/$15; load-RESULT into $16 (frame 0x30); state2 forced to $3; statement reordering; zero-byte `asm volatile(\\\"\\\":\\\"+r\\\"(state))` and input-only and `$ra`-clobber forms (8 words, worse); table base forced to $3 (6 words, funcptr->v1); table returns int (17); dispatch returns int (4, same); flags -fsched-interblock/-fno-sched-interblock/-fsched-spec/-fno-sched-spec (no change). FLAG CONFLICT: this fn needs sched2 ENABLED (default or -fno-schedule-insns) for the interleaved saves + a0 funcptr + T-before-load1; under the segment's production flag -fno-schedule-insns2 it is 7 words off (saves bunched, load1 before T, funcptr v0). Sibling menu_restoreSelection (same menu_callbacks Splat segment 0x109798..0x10984F) requires -fno-schedule-insns2, so a Splat boundary split would be needed - but is pointless until the 4-word save order is solved. last-resort GPT-5.6 Sol used: diagnosed as a sched2/prologue-thread save-UID tie-break; its concrete variants (zero-byte dep, $ra clobber, fixed-table-reg, callback/dispatch return-type, sched-flag matrix) were all tested and none beat the 4-word diff. INCLUDE_ASM(func_00208840) retained. See decomp_state/notes/menu_dispatchCallback.md."
+ },
+ {
+  "id": "code/game/draw.cpp:func_001F21A8",
+  "source": "code/game/draw.cpp",
+  "asm": "code/_generated/nonmatchings/game/draw/func_001F21A8.s",
+  "name": "func_001F21A8",
+  "status": "blocked",
+  "date": "2026-09-09",
+  "vram": "0x001F21A8",
+  "size": 4,
+  "note": "Dead tail of func_001F2070, not a function: unreachable 4-byte fragment (sw $zero,0x1B0($v0)) 8-aligned right after the parent's jr ra/addiu epilogue (nop at +4, nop at +4 after). Nothing jumps to it; Ghidra has no function/xrefs there. The store reuses v0=0x190000 (stale %hi of D_0018CF10 loaded at 0x1F2120 for the divisor); target 0x1901B0 = D_0018CF10+0x32A0, zeroed .data, no symbol. 12+ C forms probed with the project EGC (field f1B0/f12A0/f32A0 same or separate struct type, int/float, separate symbol at 0x1901B0, int array, constant-address cast, double store, page-anchor D_00190000 representation, -fno-schedule-insns/2 variants, source-order permutations): EGC either emits a base fixup (addiu) or a second lui so the store becomes a 2-instruction LIVE store before the jr (316B), or uses at/v1 as base; it never emits a post-epilogue dead store from a 256B-frame function. Parent func_001F2070 matched 308/308 without the store statement; this INCLUDE_ASM supplies the 8 bytes (nop/sw/nop via .align 3 boundaries) and keeps full boot parity. last-resort GPT-5.6 Sol invoked 2026-09-09: confirmed no pure C form exists (the intermediate v0=0x190000 has no corresponding C pointer value; EGC terminates after the jr delay slot for all tested forms) and recommended retaining the orphan. See decomp_state/notes/draw_func_001F2070.md."
+ },
+ {
+  "id": "code/game/vuchain.cpp:func_00233C88",
+  "source": "code/game/vuchain.cpp",
+  "asm": "code/_generated/nonmatchings/game/vuchain/func_00233C88.s",
+  "name": "func_00233C88",
+  "status": "blocked",
+  "date": "2026-09-14",
+  "note": "NOT a function: 4-byte unreachable fragment `sw $2,-0x3FE0($28)` (GPREL store of v0 to vu1ChainTail 0x162C20) at 0x233C88, the EGC dead-store tail of the now-matched VU1_gsRegsAlt__Fv (0x233C28). Exact layout: jr ra; sw head(0x160F00) in the jr delay slot (ALIVE); nop (.align pad); sw tail (DEAD); nop. Unreachable (no jal/j target, Ghidra has no function there). Probed with full builds 2026-09-14: the void two-store form (vu1ChainHeadStore = newHead; vu1ChainTail = newHead;) keeps BOTH stores alive (sw tail before the jr, sw store in the delay slot) - no dead tail; the return-value form (return newHead;) fires the dead tail but reserves v0 across the body, moving the tag v0->a1 and the block address v1->v0 with an extra move v0,v1 (10-word body diff). Last-resort GPT-5.6 Sol invoked 2026-09-14 on this exact target: no C route remains - a store immediately after jr is the executed delay slot, not dead; the required tail sits after jr; <delay-slot store>; .align nop, where source scheduling cannot place a reachable side effect; statements after a return are deleted. Identical instruction word and GPREL target to the blocked func_00233880 (VU1_addDataRef's tail). Orphan INCLUDE_ASM retained deliberately to supply the 8 bytes (its .align 3 supplies the 0x233C84 pad). See notes/vuchain_VU1_gsRegsAlt__Fv.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_mid.c:func_0012DE60",
+  "source": "code/989snd/ee/989snd_mid.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/func_0012DE60.s",
+  "name": "func_0012DE60",
+  "status": "blocked",
+  "date": "2026-09-17",
+  "note": "NOT a function: 0xC-byte unreachable dead tail after snd_FlushSoundCommands (0x12DC80-0x12DE5F, 0x50 frame). The parent returns at 0x12DE58 with its complete addiu sp,sp,0x50 in the jr delay slot; the orphan at 0x12DE60 (file 0x2EDE0) holds addiu sp,sp,0x10; nop; addiu sp,sp,0x10, with alignment padding at 0x12DE6C. Deadness: Ghidra has no function at 0x12DE60 and no xrefs; raw-ELF scan finds 0 jal/j target 0x12DE60 (jal 0x3004B798 / j 0x2004B798 absent from the whole file); the parent's branches do not reach it. Not regenerable: local EGC 2.95.2 v2.73a (-G8 -O2 -snas) probes emit exactly one reachable frame restoration and never a dead addiu sp,sp,N after the epilogue (a 0x40 frame emits a single addiu sp,sp,0x40, not split), matching the sibling func_0012EC00 t1-t10 experiments; scheduler flags cannot synthesize missing epilogue RTL. A standalone C function would have no return and corrupt sp. Same-TU two-deallocate tails also at func_0012E270/0012E198/0012EF58. last-resort GPT-5.6 Sol used (2026-09-17): confirmed no credible C/flag route remains; retain the orphan INCLUDE_ASM. INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See decomp_state/notes/989snd_snd_FlushSoundCommands.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_mid.c:snd_BankLoadByLoc",
+  "source": "code/989snd/ee/989snd_mid.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/snd_BankLoadByLoc.s",
+  "name": "snd_BankLoadByLoc",
+  "status": "blocked",
+  "date": "2026-09-17",
+  "note": "The callback-arg global 0x15ED00 (gp window) is accessed in 5 forms: absolute store, RPC-6th-arg register load (SIGNED split lui 0x16;addiu -4864, adjacent at call site, NOT hoisted), two separate GPREL loads (if-check + early-return), absolute poll. Best candidate (constant store/RPC/poll + GPREL if/early-return + early-return-as-fresh-load + do-while) = 20 diffs, 336 vs 340, correct frame (0x50). UNSOLVABLE: RPC arg as a CONSTANT gets the wrong UNSIGNED split (lui 0x15;ori 0xED00) + hoisted lui; as a .data SYMBOL it gets the signed split but EGC LICM's %hi to the stat-loop preheader and keeps it live -> frame 0x60 (repro'd with 1/2/4 same-addr syms, volatile, array-decay). No qualifier/cast/indirection/register-asm/flag yields signed+unhoisted+frame-0x50. Second gap: a scheduling nop at 0x12e050 (between poll lw and back-test beq); asm volatile(nop) is moved by .set reorder into the beq DELAY slot, not the pre-beq position. Flags tried: -mno-split-addresses (breaks, 78 diffs), -fno-schedule-insns (26), -fno-strength-reduce (71/frame 0x60). last-resort GPT-5.6 Sol used: array-decay (71/0x60), register asm($9)+barrier (C89 parse error), -fno-strength/-rerun-loop-opt/-gcse (71/0x60), bound nop (moved to delay slot) -- none closes the diffs. Only near-match (v12) relies on forbidden static data-address constants and still has 20 diffs. Kept INCLUDE_ASM. See decomp_state/notes/989snd_snd_BankLoadByLoc.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_mid.c:func_0012E078",
+  "source": "code/989snd/ee/989snd_mid.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/func_0012E078.s",
+  "name": "func_0012E078",
+  "status": "blocked",
+  "date": "2026-09-18",
+  "note": "NOT a function: 12-byte unreachable dead tail after blocked snd_BankLoadByLoc (0x12DF20, 0x50 frame; parent epilogue jr ra; addiu sp,sp,0x50 ends 0x12E073). Fragment words 0x27BD0060/0x00000000/0x27BD0050 at 0x12E078 (file 0x2EFF8); the 0x12E084 nop is alignment outside the fragment. Deadness verified: Ghidra no function/no xrefs; raw scan of core.text+.text finds no jal/j/relative-branch target; no jump-table word in .lit/.data. Part of a 15-fragment family of dead addiu-sp tails in this TU (unit sizes do NOT match parent frames). Cross-game confirmation: Deadlocked (reference/SCUS_974.65) shows the identical artifact with identical per-function sequences (snd_StopSound tail 0x40,0x40,0x20,0x30 despite a different frame) and .mdebug symbol sizes that exclude the tail bytes (gap between symbols). Local EGC 2.95.2 never emits dead addiu sp,sp,N (t1-t10 2026-09-17; fresh p1-p5 2026-09-18: multi-return, tail-call, trailing-statement forms all clean). Parent snd_BankLoadByLoc blocked 2026-09-17, closing the regenerate-with-parent route. last-resort GPT-5.6 Sol used (2026-09-18, full dossier): confirmed no credible C/declaration/flag route (scheduling flags cannot synthesize missing RTL; standalone C function impossible; inline asm = byte injection). INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See decomp_state/notes/989snd_func_0012E078.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012E198",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E198.s",
+  "name": "func_0012E198",
+  "status": "blocked",
+  "date": "2026-09-18",
+  "note": "NOT a function: 12-byte unreachable dead-code tail after the byte-matched snd_BankLoadFromEE_CB (0x12E088, frame 0x50; epilogue balanced at 0x12E194). Fragment is 'addiu sp,sp,0x50; nop; addiu sp,sp,0x50' (0x12E198-0x12E1A3) with no prologue/return/branch; second member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-18 with new raw-ELF scanner tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E198 across core.text/.text and all data sections; Ghidra has no function there and zero xrefs (scanner sanity: finds exactly Ghidra's 6 jal xrefs on adjacent 0x12E1A8). The matched parent compiles all 272 bytes and emits no tail. Escalations 2026-09-18 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag or parent-plus-fragment restructuring exists (merging needs two post-return sp adjustments EGC deletes; standalone function needs a terminator; folding into snd_ResolveBankXREFS impossible since all 6 callers enter at 0x12E1A8; flags cannot synthesize missing RTL; inline asm == the fallback). Retain INCLUDE_ASM to supply the 12 bytes and keep full-ELF parity. See notes/989snd_func_0012E198.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012E270",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E270.s",
+  "name": "func_0012E270",
+  "status": "blocked",
+  "date": "2026-09-19",
+  "note": "NOT a function: 12-byte unreachable dead-code tail (16-byte gap incl. alignment nop) after the byte-matched snd_SetPlaybackMode (0x12E240, 0x30 bytes, frame 0x20; epilogue balanced at 0x12E26C). Fragment is 'addiu sp,sp,0x10; nop; addiu sp,sp,0x10' (0x12E270-0x12E27B) with no prologue/return/branch; third member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with the corrected raw-ELF scanner tools/deadness_scan.py (branch opcodes fixed to 4-7/20-23; the pre-fix 12-15 range is andi/ori/xori/lui and had given a false positive from a lui at 0x12A26C): 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E270 across core.text/.text and all data sections; Ghidra has no function there and zero xrefs (scanner sanity: 0x12E1A8 still exactly 6 jal xrefs; sibling 0x12E198 still 0 refs). The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict missing RTL, no credible C/declaration/qualifier/flag/assembler route remains (standalone function needs a terminator; folding into snd_SetMixerMode impossible since all callers enter at 0x12E280; exotic forms are byte-injection equivalent). Retain INCLUDE_ASM to supply the bytes and keep full-ELF parity. See notes/989snd_func_0012E270.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012E2F8",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E2F8.s",
+  "name": "func_0012E2F8",
+  "status": "blocked",
+  "date": "2026-09-19",
+  "note": "NOT a function: 12-byte unreachable dead-code tail (16-byte gap incl. alignment nop) after the byte-matched snd_SetGroupVoiceRange (0x12E2B8, 0x3C bytes, frame 0x20; epilogue balanced at 0x12E2F3). Fragment is 'addiu sp,sp,0x30; nop; addiu sp,sp,0x30' (0x12E2F8-0x12E303) with no prologue/return/branch; fourth blocked member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); units (0x30,0x30) do not match the parent's 0x20 frame. Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E2F8 across core.text/.text and all data sections; whole-ELF raw jal-word search zero hits; Ghidra has no function there and zero xrefs (scanner sanity: exactly Ghidra's 2 jal xrefs on adjacent live 0x12E308). The matched parent compiles all 60 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict not regeneratable, no materially distinct C form/declaration/qualifier/flag/assembler/Splat route remains (standalone function needs a terminator; the +0x30 adjustments cannot come from live RTL without altering the matched parent; inline asm == the fallback). Retain INCLUDE_ASM to supply the bytes and keep full-ELF parity. See notes/989snd_func_0012E2F8.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_pre.c:snd_StartSoundSystem",
+  "source": "code/989snd/ee/989snd_pre.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_pre/snd_StartSoundSystem.s",
+  "name": "snd_StartSoundSystem",
+  "status": "blocked",
+  "date": "2026-09-19",
+  "note": "Binds the 989 IOP sound-server RPCs (0x123456 command, 0x123457 CD), spinning until bound, then resets CD callback state and sends a 4-byte CD stream-status command. Last-resort GPT-5.6 Sol used: it disproved the initial spin-loop-padding-as-unfixable-compiler-artifact diagnosis and gave a working form. With per-phase waits + an asm volatile barrier placed IMMEDIATELY AFTER each bind (not at init) + ret as the countdown register + data=ret before the if + fixed-register locals (wait->s2/minus->s1 phase1, wait->s1/minus->s0 phase2), EGC 2.95.2 reproduces BOTH spin-loop bodies byte-for-byte (the 5-nop padding, the runtime addiu v0,waitreg,-1 in the bgez delay slot, bgez(0x07) not bgezl, sw v0,0(sp) stores) and the exact 600-byte/150-word length. REMAINS BLOCKED at 28 straight-line scheduling diffs: prologue lui/sq/li/sw interleaving (idx 21-32), loop-1 -1 materialization point (idx 42), loop-2 setup order (idx 83-88), a loop-2 errStr/srcFile register swap s2/s3 (idx 96-97), and final-block reorder + v0/v1 swap (idx 123-137). -fno-schedule-insns (81) / -fno-schedule-insns2 / -mno-split-addresses / -G0 / -fno-gcse all made it worse or no help; the original was built WITH the default scheduler, so these tie-breaks are not controllable by C structure or the tested flags. Best 28-diff candidate saved in the note. Reverted to INCLUDE_ASM. See decomp_state/notes/989snd_snd_StartSoundSystem.md.\n[2026-09-20: merged the two stale pre-TU-split keys (989snd.c:3 and :7) into this entry.] 600-byte (0x258) sound-system startup at VMA 0x12DA28 (first 989snd definition, fileoff 0x2E9A8). Structure fully understood and a C candidate compiles in place, but EGC 2.95.2 -G8 -O2 does not reproduce the original prologue and the difference cascades from word 9 (0x12DA4C). Specific mismatches, all EGC codegen decisions not controllable from C: (1) prologue s-register assignment + sq-save order differ (orig: lui s0,0x16 page, minus->s1 in the jal delay slot, sq s0 at word 9; candidate: lui s1,0x16 page, minus->s4 HOISTED to the prologue word 25, sq s0 at word 28); (2) the original does NOT constant-fold the countdown - it keeps 10000 in s2 and forms addiu v0,s2,-1 at runtime in the bgez delay slot - while the candidate folds data=timeout-1 to a literal addiu s0,0,9999 even with declare-then-assign (int timeout; timeout=10000;); (3) the original stores buffer slots [0] GPREL and [1] ABSOLUTE (lui at,0x16; sw r,lo(at)) but the candidate emits all-GPREL (3 words short). Tried: last-resort countdown-structure fix (spin starts at timeout-1 unconditionally, data as loop var, per-phase timeout/minus blocks) - applied, moved 544->580 bytes but prologue still diverges; statement reordering, block vs function scoping, declaration forms, section attributes, declare-then-assign. Net 580 vs 600 bytes. Reverted to INCLUDE_ASM (line 7); full boot ELF parity intact. Escalations on this exact target: expert (GPT-6 Astra) 2026-09-18 and last-resort-decompiler (GPT-5.6 Sol) 2026-09-18; last-resort's structural countdown fix was implemented and mechanically tested (did not resolve the prologue allocation). See decomp_state/notes/989snd_snd_StartSoundSystem.md.\n[Merged 2026-09-20 from the duplicate pre-TU-split entry; its additions:] last-resort GPT-5.6 Sol used (2026-09-16); expert GPT-6 Astra used (2026-09-18). 600-byte size matches with 5-NOP loop bodies + no commandBuffer1 local (s8=hi(cmd1) CSE) + int snd_SendIOPCommandAndWait + .data snd_cdCallbackArg + .data *2 buffer slots (abs [1] stores), but 95 word diffs remain: (a) EGC won't reproduce the prologue v0,v1,a1,a2,a3,t0 value alloc with *2 slots stored through $at absolute (it keeps *2 addrs in base registers, shifting the 38-word prologue run 0x12DA34-0x12DAC8); the plain [2]-array form keeps the prologue but emits [1] as GPREL16 (size mismatch). (b) delay spin: original uses bnel branch-likely with the countdown decrement in the delay slot + a pre-decrement; EGC emits bne with the decrement before the branch (nop delay slot) and folds the pre-decrement. Tried while(buf--)/pre-decrement-while/for/-fno-schedule-insns2 \u2014 all bne. 2026-09-18 additions: CRITICAL gotcha \u2014 the C body MUST be the first 989snd definition (line 7) with all its declarations hoisted to the top, else it links ~0x1188 bytes late (0x11FBB0) and shows a whole-TU diff despite a matching prologue. Also the original forms 9999 as `addiu v0,s2,-1` (s2=10000) in the bgez delay slot; plain `data=timeout-1` folds to a literal `li 9999`. expert's tail reorder shrank to 584B and `data=timeout;data--` overflows .core_text; post-decrement loop compares to 0 not -1 so can't emit the bnel. See notes/989snd_snd_StartSoundSystem.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012E350",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E350.s",
+  "name": "func_0012E350",
+  "status": "blocked",
+  "date": "2026-09-19",
+  "note": "NOT a function: 20-byte unreachable dead-code tail (24-byte gap incl. alignment nop) after the byte-matched snd_PlaySoundVolPanPMPB (0x12E308, 0x48 bytes, frame 0x30; epilogue balanced at 0x12E34C: lq ra / jr ra / addiu sp,sp,0x30 delay slot). Fragment is 'addiu sp,sp,0x10; nop' x3 (0x12E350-0x12E363) with no prologue/return/branch; next function snd_StopSound (matched, frame 0x20) starts at 0x12E368; seventh member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E350 across core.text/.text and all data sections; Ghidra has no function there and zero xrefs. The matched parent compiles all 72 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict missing compiler RTL, no credible C/declaration/qualifier/flag/assembler route remains (standalone function needs a terminator; folding into snd_StopSound impossible since all callers enter at 0x12E368; exotic forms are byte-injection equivalent). Retain INCLUDE_ASM to supply the bytes and keep full-ELF parity. See notes/989snd_func_0012E350.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012E398",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E398.s",
+  "name": "func_0012E398",
+  "status": "blocked",
+  "date": "2026-09-19",
+  "note": "NOT a function: 28-byte unreachable dead-code tail (32-byte gap incl. alignment nop) after the byte-matched snd_StopSound (0x12E368, 48 bytes, frame 0x20; epilogue balanced at 0x12E394: lq ra / jr ra / addiu sp,sp,0x20 delay slot). Fragment is 'addiu sp,sp,0x40; nop; addiu sp,sp,0x40; nop; addiu sp,sp,0x20; nop; addiu sp,sp,0x30' (0x12E398-0x12E3B3) with no prologue/return/branch; next function snd_StopAllSounds (matched, frame 0x10) starts at 0x12E3B8; eighth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E398 across core.text/.text and all data sections (scanner sanity: finds exactly the 2 jal xrefs on each adjacent live function); Ghidra has no function there and zero xrefs. The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag/assembler route remains (standalone function needs a terminator; folding into snd_StopSound/snd_StopAllSounds impossible since all callers enter at 0x12E368/0x12E3B8; flags/assembler cannot synthesize absent RTL; inline asm / .text word array is byte-injection equivalent). Retain INCLUDE_ASM to supply the 28 bytes and keep full-ELF parity. See notes/989snd_func_0012E398.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012E478",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E478.s",
+  "name": "func_0012E478",
+  "status": "blocked",
+  "date": "2026-09-19",
+  "note": "NOT a function: 68-byte unreachable dead-code tail (72-byte gap incl. alignment nop) after the byte-matched snd_SoundIsStillPlaying_CB (0x12E448, 48 bytes, frame 0x20; epilogue balanced at 0x12E474: lq ra / jr ra / addiu sp,sp,0x20 delay slot). Fragment is 8x 'addiu sp,sp,0x20; nop' + 'addiu sp,sp,0x30' (0x12E478-0x12E4BB) with no prologue/return/branch; next function snd_SetSoundParams_CB (matched, frame 0x30) starts at 0x12E4C0; ninth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E478 across core.text/.text and all data sections (scanner sanity: finds the 3 jal xrefs on the parent at 0x12E448 and the 2 jal xrefs on the next function at 0x12E4C0); Ghidra has no function there and zero xrefs. The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag/assembler route remains \u2014 missing compiler RTL, EGC emits only reachable frame restorations, standalone function needs a terminator, byte injection is the fallback under another spelling. Retained INCLUDE_ASM supplies the bytes; full-ELF parity preserved."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012E508",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E508.s",
+  "name": "func_0012E508",
+  "status": "blocked",
+  "date": "2026-09-19",
+  "note": "NOT a function: 60-byte unreachable dead-code tail (64-byte gap incl. alignment nop) after the byte-matched snd_SetSoundParams_CB (0x12E4C0, 48 bytes, frame 0x30; epilogue balanced at 0x12E504: lq ra,32(sp) / jr ra / addiu sp,sp,0x30 delay slot). Fragment is 6x 'addiu sp,sp,0x20; nop' + 2x 'addiu sp,sp,0x10' (0x12E508-0x12E543) with no prologue/return/branch; next function snd_SendIOPCommandAndWait starts 8-aligned at 0x12E548; tenth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-19 with tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E508 across core.text/.text and all data sections (scanner sanity: finds the 2 jal xrefs on the parent at 0x12E4C0 and the 3 jal xrefs on the next function at 0x12E548); Ghidra has no function there and zero xrefs. The matched parent compiles all 48 bytes and emits no tail. Escalation 2026-09-19 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag/assembler route remains - missing compiler RTL, EGC emits only reachable frame restorations, standalone function needs a terminator, byte injection is the fallback under another spelling. Retained INCLUDE_ASM supplies the bytes; full-ELF parity preserved."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:snd_SendIOPCommandNoWait",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/snd_SendIOPCommandNoWait.s",
+  "name": "snd_SendIOPCommandNoWait",
+  "status": "blocked",
+  "date": "2026-09-20",
+  "note": "EGC allocator difference at 9-s-register demand: local EGC (SN 2.73a) hoists the spin-loop constants (256, 1, string base) to the top of the loop body (live across the flush call) and gives them call-safe s-regs s4/s5/s6, spilling the incoming command/data/done params to the stack (frame 0xD0); the original keeps all four params in s7/s1/s6/s8 and reloads the constants between calls (frame 0xC0). The C body is fully understood and matches in control flow, fast-path layout, the ternary tail idiom, and the copy loop (see note). Exhausted: guard/loop structure variants (151-157 diffs), decl order, initializers, flags (-fno-schedule-insns/2, -O1, -G0, -fno-move-all-movables, -fno-strength-reduce, -fno-gcse, -fno-expensive-optimizations, -fomit-frame-pointer, -fno-caller-saves), the Deadlocked debug-symbol-shaped source with natural %4 idiom (171/149, last-resort GPT-5.6 Sol recommendation), and register-variable pinning (164, miscompiles). Shared typed declarations (SndCommandBuffer, wrapper signatures, named string symbols) were kept and re-verified by full parity. INCLUDE_ASM retained.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-20: recommended the debug-symbol-shaped source (x/was_caching/y/msg/msg_size + natural modulo idiom); tested (171 else form / 149 no-else), same constant-hoisting allocation, no match. expert (GPT-6 Astra) invoked earlier the same day; its pass-flag and register-variable recommendations were all tested and failed.",
+  "evidence": "decomp_state/notes/989snd_snd_SendIOPCommandNoWait.md"
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012EC00",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012EC00.s",
+  "name": "func_0012EC00",
+  "status": "blocked",
+  "date": "2026-09-05",
+  "note": "NOT a function: 4-byte unreachable dead-code tail of snd_StopAllStreams (addiu sp,sp,0x10 at 0x12EC00 / file 0x2FB80, right after the parent's jr ra; <addiu sp,sp,0x10> epilogue; parent frame is 0x10 so this is a dead duplicate deallocate). Local EGC 2.95.2 v2.73a never emits a dead addiu sp,sp,N (only dead stores; /tmp/opencode/tail_exp t1-t10). INCLUDE_ASM retained to supply the bytes. See decomp_state/notes/989snd_snd_StopAllStreams.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:snd_PlayVAGStreamByLocEx_CB",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/snd_PlayVAGStreamByLocEx_CB.s",
+  "name": "snd_PlayVAGStreamByLocEx_CB",
+  "status": "blocked",
+  "date": "2026-09-20",
+  "note": "Local EGC 2.95.2 COMBINE pass keeps the offset-4 (data[1]=a1) argument copy that Insomniac's build folded: an extra 'move $v1,$a1' + 'sw $v1,4(sp)' (original stores data[1] as a direct 'sw $5,4(sp)'). Minimal reps (minirepro{,2,3}.c) prove the index-1 store is the invariant non-fold for every register/order/array-size. last-resort-decompiler (GPT-5.6 Sol) found a selective-volatile-array + named-$12-register form that removes the copy (100 bytes, tail byte-exact) but leaves a head-schedule + in-place-andi register-allocation gap of 9 word-diffs (-fno-schedule-insns2) / 13 (default); ~20 statement orders, int/u32, DL order, unsigned casts, all scheduler flags tested. expert (named-$5 idiom, -fno-regmove) also tested, both worse. No matching source/flag form with this toolchain; kept INCLUDE_ASM. See notes/989snd_snd_PlayVAGStreamByLocEx_CB.md. last-resort GPT-5.6 Sol used."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012EF58",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012EF58.s",
+  "name": "func_0012EF58",
+  "status": "blocked",
+  "date": "2026-09-20",
+  "note": "NOT a function: unreachable 12-byte dead tail `addiu sp,sp,0x20; nop; addiu sp,sp,0x20` at 0x12EF58 (file 0x2FED8) after the byte-matched parent snd_StreamSafeCdCallback (0x12EF28, 0x30 bytes, frame 0x10; epilogue lq ra / jr ra / addiu sp,sp,0x10 in delay slot ends 0x12EF57). Member of the 15-fragment 989snd dead-tail family (units 0x20,0x20 do not equal the parent's 0x10 frame); family table + Deadlocked .mdebug gap evidence + local-EGC t1-t10/p1-p5 probes in notes/989snd_func_0012E078.md. Deadness verified 2026-09-20 with the corrected full EE branch map (tools/deadness_scan.py 0x12EF58 -> 0 references: no jal/j, no relative branch of any EE encoding (beq/beqz/b, bne/bnez, blez, bgtz, regimm bltz/bgez/bltzl/bgezl/bgezal rt 0/1/2/3/17, COP0 bc0f/bc0t fmt=2, COP1 bc1f/bc1t/bc1fl/bc1tl fmt=2, beql/bnel/blezl/bgtzl) targeting it, no 32/64-bit data word equal to it in any non-text section); Ghidra has no function at or containing 0x12EF58 and zero xrefs; scanner positive controls confirmed the newly covered bgez/bgezal/bc0f/bc1* checks fire on live targets. last-resort GPT-5.6 Sol used (2026-09-20): no credible C/flag/assembler route remains - the blocker is missing RTL (EGC emits no post-epilogue stack restoration; a standalone C function cannot be 3 words with no return; flags cannot synthesize RTL; only byte-injection equivalent to the fallback); it also supplied the deadness-scan opcode correction committed separately. INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See notes/989snd_func_0012EF58.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012F020",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012F020.s",
+  "name": "func_0012F020",
+  "status": "blocked",
+  "date": "2026-09-20",
+  "note": "NOT a function: unreachable 68-byte dead tail of 9 units `addiu sp,sp,N; nop` (N = 0x10,0x20,0x10,0x20,0x20,0x10,0x10,0x10,0x10) at 0x12F020 (file 0x2FFA0) after the byte-matched parent snd_AutoReverb (0x12EFE0, 0x3C bytes, frame 0x20; epilogue lq ra / jr ra / addiu sp,sp,0x20 delay slot balanced at 0x12F01C). Thirteenth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); byte-count-identical 68-byte/9-unit shape to the blocked func_0012E478 sibling; unit sequence not derivable from the parent body (frame 0x20). Deadness verified 2026-09-20 with tools/deadness_scan.py 0x12F020 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); positive control 0x12F068 finds its one jal at 0x23AC5C; Ghidra has no function at or containing 0x12F020, parent body ends at 0x12F01B, zero xrefs; matched parent compiles all 60 bytes and emits no tail. last-resort GPT-5.6 Sol used (2026-09-20) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (missing RTL: EGC emits only reachable epilogue stack restorations and deletes trailing RTL; standalone function needs a terminator; flags transform but cannot synthesize the 9 missing adjustments + nops; 9-unit size adds no untested mechanism vs blocked func_0012E478). Retain INCLUDE_ASM to supply the 0x44 bytes; full-ELF parity preserved. See notes/989snd_func_0012F020.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012F0D0",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012F0D0.s",
+  "name": "func_0012F0D0",
+  "status": "blocked",
+  "date": "2026-09-20",
+  "note": "NOT a function: unreachable 12-byte dead tail of 2 units `addiu sp,sp,N; nop` (N = 0x10, 0x20) at 0x12F0D0 (file 0x30050) after the byte-matched parent snd_ResetMovieSound (0x12F0A8, 36 bytes, frame 0x10; epilogue lq ra / jr ra / addiu sp,sp,0x10 delay slot balanced at 0x12F0CC). Fourteenth member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); unit sequence not derivable from the parent body (same-shape sibling snd_CloseMovieSound carries a different tail). Deadness verified 2026-09-20 with tools/deadness_scan.py 0x12F0D0 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); positive control 0x12F0E0 finds its one jal at 0x23AC98; Ghidra has no function at or containing 0x12F0D0, parent body ends at 0x12F0CB, zero xrefs; matched parent compiles all 36 bytes and emits no tail. last-resort GPT-5.6 Sol used (2026-09-20) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (missing RTL: EGC's dead-code elimination removes the two post-return stack-restoration operations; standalone function needs a terminator; flags transform but cannot synthesize the adjustments; volatile/barrier/multi-return/alloca forms alter reachable flow or the matched prologue). Retain INCLUDE_ASM to supply the 12 bytes; full-ELF parity preserved. See notes/989snd_func_0012F0D0.md."
+ },
+ {
+  "id": "code/989snd/ee/989snd_post.c:func_0012F140",
+  "source": "code/989snd/ee/989snd_post.c",
+  "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012F140.s",
+  "name": "func_0012F140",
+  "status": "blocked",
+  "date": "2026-09-20",
+  "note": "NOT a function: unreachable 4-byte dead tail (single unit `addiu sp,sp,0x10` plus alignment nop) at 0x12F140 (file 0x300C0) after the byte-matched parent snd_StartMovieSound (0x12F108, 0x38 bytes, frame 0x30; epilogue lq ra / jr ra / addiu sp,sp,0x30 delay slot balanced at 0x12F13F). Fifteenth and final member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md); unit (0x10) not derivable from the parent body (0x30 frame) and differs from same-shape sibling tails. Deadness verified 2026-09-20 with tools/deadness_scan.py 0x12F140 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); positive controls 0x12F108 (parent) finds its one jal at 0x23ACF0 and 0x12F148 (next function) finds its one jal at 0x23AF9C, both matching Ghidra; Ghidra has no function at or containing 0x12F140, parent body ends at 0x12F13F, zero xrefs; matched parent compiles all 0x38 bytes and emits no tail. last-resort GPT-5.6 Sol used (2026-09-20) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (missing RTL: EGC dead-code elimination removes the post-return stack restoration; a standalone function needs a terminator and cannot fall through into snd_UpdateMovieADPCM; scheduler/-G/address-splitting/GNU-vs-SN choices transform existing RTL and cannot synthesize the adjustment; volatile/barrier/multi-return/alloca forms alter reachable flow or the matched prologue). Retain INCLUDE_ASM to supply the 4 bytes; full-ELF parity preserved. See notes/989snd_func_0012F140.md."
+ },
+ {
+  "id": "code/game/actuator.cpp:actuator_CalcPower",
+  "source": "code/game/actuator.cpp",
+  "asm": "code/_generated/nonmatchings/game/actuator/actuator_CalcPower.s",
+  "name": "actuator_CalcPower",
+  "status": "blocked",
+  "date": "2026-09-21",
+  "note": "Two independent hard blockers, both confirmed; expert (GPT-6 Astra) and last-resort GPT-5.6 Sol both invoked, their reconstructions applied. (A) SAVED-REGISTER+FRAME ALLOCATION (the gate): original s3=numpower(sp+0x20), s4=numscale(sp+0x10), s5=ret, s6=AWhi, frame 0xC0. Corrected natural source compiles to s3=ret,s4=numpower,s5=numscale,s6=AWhi, frame 0xB0 (s3/s4/s5 cyclically permuted; -fno-schedule-insns and decl reordering do NOT change it - RTL-driven). A register-asm() force reproduces the register NAMES but is a non-clean hack and still leaves frame 0xB0 and swaps the numpower/numscale stack slots -> 243/261 words differ; needs the exact original local layout. (B) SWITCH-TABLE SECTION PLACEMENT: original dispatch references jtbl_001E7640, a 6-word table in .data with ABSOLUTE (non-relocatable) case-body addresses; EGC always emits a C switch table to .rdata (-> .text), so an ordinary switch misplaces the table (2 dispatch words differ) and an external computed-goto cannot work (absolute entries). Only fragile linker-script surgery (split .data blob around 0x1E7640 + inject actuator.o(.rodata) into .data) would fix it; no hook in the auto-generated ldscript. Prior-session logic errors corrected (count increment selects numpower/numscale; pos=timer/(on+off) division; case5 real FP; lifeSpan signed test) - see note decomp_state/notes/actuator_actuator_CalcPower.md for the corrected start-point candidate."
+ },
+ {
+  "id": "code/game/actuator.cpp:func_001E9120",
+  "source": "code/game/actuator.cpp",
+  "asm": "code/_generated/nonmatchings/game/actuator/func_001E9120.s",
+  "name": "func_001E9120",
+  "status": "blocked",
+  "date": "2026-09-21",
+  "note": "NOT a function: single-unit 4-byte unreachable dead-tail fragment `addiu sp,sp,0x20` (word 0x27BD0020) at 0x1E9120 (file 0xEA0A0), a compiler-emitted dead stack-adjustment of the blocked parent actuator_CalcPower (0x1E8D08, 0x414). Layout: parent epilogue `jr ra`(0x1E9114) / `addiu sp,sp,0xC0` ALIVE in the jr delay slot (0x1E9118) / alignment nop (0x1E911C) / [DEAD addiu sp,sp,0x20](0x1E9120) / alignment nop (0x1E9124) / texResetCursor__Fv matched (0x1E9128). Deadness verified 2026-09-21: tools/deadness_scan.py 0x1E9120 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); Ghidra has no function at or containing 0x1E9120, zero xrefs. The 0x20 unit does not match the parent 0xC0 frame (consistent with the 989snd/Deadlocked dead-tail family where tail units differ from the parent frame; Deadlocked .mdebug sizes exclude the tail bytes as linker gap bytes). Local EGC 2.95.2 never emits a dead addiu sp,sp,N as a standalone function (t1-t10 + multi-return/tail-call/trailing p1-p5 all fail; EGC deletes post-return statements and a standalone function needs a terminator). last-resort GPT-5.6 Sol used (2026-09-21) on this exact target: block confirmed, no credible C/declaration/qualifier/flag/assembler route (a standalone function cannot compile to only a positive stack adjustment; regenerating via the parent is not credible - the parent already balanced its 0xC0 epilogue and is independently blocked by register/frame allocation + switch-table placement, so it cannot supply the artifact; naked/inline-assembler/data-word forms rejected as byte-injection equivalents to the retained fallback). Retain INCLUDE_ASM to supply the 4 bytes; full-ELF parity preserved. See notes/989snd_func_0012E078.md (family) and notes/actuator_actuator_CalcPower.md (parent)."
+ },
+ {
+  "id": "code/game/actuator.cpp:func_001E9148",
+  "source": "code/game/actuator.cpp",
+  "asm": "code/_generated/nonmatchings/game/actuator/func_001E9148.s",
+  "name": "func_001E9148",
+  "status": "blocked",
+  "date": "2026-09-21",
+  "note": "NOT a function: 28-byte (0x1C) unreachable multi-unit dead-tail cluster of four positive stack adjustments `addiu sp,sp,0x40/0xA0/0x10/0x130` interleaved with nops at 0x1E9148 (file 0xEA0C8-0xEA0DF), compiler-emitted material placed in the inter-symbol gap. Layout: texResetCursor__Fv (MATCHED, 0x1E9128, frameless, ends 0x1E913F with complete jr ra / sw v0 delay slot, emits NO stack adjustment) / 8 bytes explicit padding nops (0x1E9140-0x1E9147) / [DEAD 4-unit cluster](0x1E9148-0x1E9163) / alignment nop (0x1E9164, outside the 0x1C range) / LoadPifAsPSMT8H (bloaders.cpp, next real function, 0x1E9168). The four units (0x40,0xA0,0x10,0x130) do not describe one function frame and do not correspond to the matched frameless predecessor; no identifiable parent can absorb them without altering matched code. Deadness verified 2026-09-21: tools/deadness_scan.py 0x1E9148 -> 0 references (full EE branch map: no jal/j, no relative branch of any encoding, no 32/64-bit data word in any non-text section); Ghidra has no function at or containing 0x1E9148, zero xrefs. Local EGC 2.95.2 never emits dead addiu sp,sp,N as a standalone function (t1-t10 + multi-return/tail-call/trailing p1-p5 all fail; EGC deletes post-return statements and a standalone function needs a terminator). last-resort GPT-5.6 Sol used (2026-09-21) on this exact target: block confirmed, missing-RTL (not scheduling/assembler), no credible C/declaration/qualifier/flag/assembler route (a positive sp adjustment comes from stack-restoration RTL requiring a frame + terminator; multiple-return/alloca/volatile/barrier forms produce reachable flow or shared epilogues; the matched frameless predecessor emits no restoration RTL; naked/inline-assembler/.word/linker-insertion forms rejected as byte-injection equivalents). Retain INCLUDE_ASM to supply the 28 bytes (+ alignment nop); full-ELF parity preserved. Same shape as blocked 989snd multi-unit tails (notes/989snd_func_0012E078.md) and Deadlocked .mdebug gap-bytes precedent."
+ },
+ {
+  "id": "code/game/bloaders.cpp:LoadPifAsPSMT8H",
+  "source": "code/game/bloaders.cpp",
+  "asm": "code/_generated/nonmatchings/game/bloaders/LoadPifAsPSMT8H.s",
+  "name": "LoadPifAsPSMT8H",
+  "status": "blocked",
+  "date": "2026-09-21",
+  "note": "PSM T8H debug-font PIF loader (0x1E9168, 0x1D0, 116 words). A C candidate reproduces the ENTIRE body byte-for-byte: both `jal log2dim`(0x1f97a0) calls with `sra pal,size,8` in call-1's delay slot and `sw v0,pp.uLog` in call-2's delay slot; the `addiu size-reg,sp,96` that REUSES the size register as the image base; the dead `mult uSize,vSize` that stores uSize (not the product) to pp.tSize[0]; the two sceGsSetDefLoadImage(0x122330)/FlushCache(0x118a80)/sceGsExecLoadImage(0x122658)/sceGsSyncPath(0x120558) sequences with identical a0-a3/t0-t3 argument setup; and the whole 64-bit PIF-header OR chain (dsll32 for palShift<<37 / clutFormat<<51 / 1<<63, dsll for tbw<<14 / uLog<<26 / vLog<<30, lui 0x1b0, li 0x8000+dsll 0x13 for 1<<34) plus the three trailing sd stores. Frame 0x120 matches. The ONLY difference is the prologue: EGC 2.95.2 emits the parameter sq/move sequence with s1 BEFORE s0 (`sq s4,sq s2,move s4,sq s1,move s2,sq s0,move s1,sq ra,move s0,sq s3`), whereas the original has s0 before s1 (`sq s4,sq s2,move s4,sq s0,move s2,move s0,sq s1,sq ra,move s1,sq s3`). The natural (unpinned) C form also mis-assigns the s-registers (offset->s0, source->s1, size->s2, dest->s3, palShift->s4 instead of the original source->s0, size->s1, dest->s2, palShift->s3, offset->s4). Tested: (1) callee int return types (sceGsSetDef/Exec/SyncPath) - no effect; (2) typed formals PifHeader*/u64* - no effect; (3) explicit `register asm($16-$20)` pinning + zero-byte asm constraint - fixes the s-register ASSIGNMENT but the prologue still emits s1 before s0; (4) -fno-schedule-insns - no effect; (5) pinned-declaration reordering (both s0/s1 orders) - no effect. The prologue sq/move ordering is an EGC register-allocation/scheduler heuristic not controllable from C source. last-resort GPT-5.6 Sol invoked 2026-09-21; it recommended the callee-return-type, typed-formal, and register-pinning forms all of which were mechanically tested; the prologue schedule remains a hard difference. Retain the generated assembly."
+ },
+ {
+  "id": "code/game/boot.cpp:ParseBin__Fv",
+  "source": "code/game/boot.cpp",
+  "asm": "code/_generated/nonmatchings/game/boot/ParseBin__Fv.s",
+  "name": "ParseBin__Fv",
+  "status": "blocked",
+  "date": "2026-09-22",
+  "vram": "0x12D8F8",
+  "size": "0xDC",
+  "note": "Level-load table parser (levelRoot 0x15EE4C): per iteration the original runs setup(TOP) -> entrypoint -> copy -> advance, with TOP a SINGLE two-predecessor block (prologue b + advance fall-through) placed LAST in memory after the copy body, a lean no-nop prologue (levelRoot->v1, base->t0), len loaded to v0 then copied to v1, s->a0, qword bound->a2, and the advance as an in-place single-t0 ping-pong. The high-level structure is reproducible in C (p16: single TOP, two bounds, three bnezl alignment tests, word d=a1 / qword d=v1), but EGC always emits the TOP block FIRST (setup-first) for the correct while(true) form, while the original places it LAST; the do-while form (p21, best at 43/55) gets copy-first layout but changes the iteration order and duplicates the setup (initial + loop) so it never yields a single TOP. The copy-first + single-TOP combination the original has is EGC block-ordering, not a C construct. Also unmatchable: levelRoot/base in a0 (not v1/t0), s in a2 (not a0), qword bound in a3 (not a2), advance in two registers (not single t0), and the len v0->v1 copy. Exhausted: 24+ C variants (if/else-if, ||/&& chains, goto, per-branch bounds, for, do-while, entrypoint as body vs condition, plain extern vs .data) and flags (-fno-schedule-insns/2, -fno-delayed-branch, -mno-split-addresses). See notes/boot_ParseBin__Fv.md. INCLUDE_ASM retained (overlay-safe).",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-22: recommended a rotated while whose TOP setup is a comma-expression loop condition with the entrypoint assignment as the first body statement (tested as p22) plus a ternary-condition variant (p24), both with the .data symbol + -mno-split-addresses. Both produced a different CFG (entrypoint test fused into the first alignment-branch delay slot; beq t1,0 first-pass-first check) and did not improve on p21: p22/p23 = 47/55, p24 = 54/55. The form treats the entrypoint check as the loop condition, but the original keeps it a separate body block after TOP, so the rotated-condition form cannot reproduce the original CFG. No match. expert (GPT-6 Astra) invoked earlier: corrected the branch-likely delay-slot misread and identified the asymmetric iterator lifetimes (p16 form); decomp-researcher confirmed no codebase idiom to copy."
+ },
+ {
+  "id": "code/game/camera.cpp:Camera_ActivationCheckPriority",
+  "source": "code/game/camera.cpp",
+  "asm": "code/_generated/nonmatchings/game/camera/Camera_ActivationCheckPriority.s",
+  "name": "Camera_ActivationCheckPriority",
+  "status": "blocked",
+  "date": "2026-09-23",
+  "vram": "0x1EC210",
+  "size": "0x1C8",
+  "note": "Two independent blockers, neither closable from C source. (A) First switch in all decompiled C: EGC emits the 8-case jump table as an orphan camera.o(.rodata) (32B) the Splat script has no input for (only camera.o(.text)); link yields a MALFORMED ELF ('section extending past end of file'), +48 bytes, ~280KB scattered diffs. Original table is static .data @0x1E7730 (data.data.o); my table @0x24D370 (word30/32 lui 0x24/addiu 0xd370 vs orig lui 0x1e/addiu 0x7730). (B) Body codegen: best u8* form = 118 words vs 114 (4 extra) with ~73 diffs \u2014 prologue store/move scheduling (w1-17), priority-load register allocation (orig pCompare->pri->v1 via s0, pCam->pri->v0 via s2, sltu v0,v0,v1; EGC swaps), GrindPath stride (0x14 struct -> li 20;mult vs orig sll idx,5; 0x20 struct fixes stride but total still exceeds), linked-branch deltas (bltz/bltzl, beqz/beqzl). word48 is sltu in BOTH (funct 0x2b) \u2014 an earlier slt read was wrong; it is allocation, not signedness. Verified layout kept in source: UpdateCam+0x74 activationType(int), +0x7C priority(u8), +0x7D activate(u8), +0x7E deactivate(s16); heroCamData 0x13F350 (+0x80 pos/+0x560 pPath/+0x570 eopTime/+0x2284 desiredCam); GrindPath 0x20 stride; importCameraTable 0x15EF90 (absolute), grindPaths 0x15EF00 (gp-rel, .extern seed). Retain INCLUDE_ASM; full-ELF parity preserved. See notes/camera_Camera_ActivationCheckPriority.md.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected word48 to sltu (not slt), reversed the priority-load allocation doc, and gave four source fixes (GrindPath 0x20; act-before-test + input-only barrier; shared ret+break normalization for cases 0/1/2/4; cache collMode; repolarity case-7 tail) plus exact .data split boundaries (file 0xE86B0..0xE86D0 / VRAM 0x1E7730..0x1E7750) for the table. All source fixes applied and mechanically diffed -> WORSE (90 diffs, 120 words): the ret+break shape does not reproduce the original CFG and adds instructions; reverted. The .data split for BLOCKER A was not applied (invasive; body does not match regardless). expert (GPT-6 Astra) invoked 2026-09-23 earlier: same conclusions (rodata addressable via data split; sltu was a misdiagnosis)."
+ },
+ {
+  "id": "code/game/camera.cpp:UpdateAllCameras__Fi",
+  "source": "code/game/camera.cpp",
+  "asm": "code/_generated/nonmatchings/game/camera/UpdateAllCameras__Fi.s",
+  "name": "UpdateAllCameras__Fi",
+  "status": "blocked",
+  "date": "2026-09-23",
+  "vram": "0x1EC420",
+  "size": "0x110",
+  "note": "66/68 words match byte-for-byte; ONLY two swapped hi `lui` in the prologue remain (0x1EC454/58). Loop and tail both fully match. LOOP: the three `pCam+=0xA0` are ONE source `pCam++` that EGC duplicated into the taken-delay slots of the two beqls (mutually-exclusive copies: A(*pUsed==0)->I1, B(pCam==cur)->I3, C(r==0)->I2, D(r!=0)->I3; each path advances once) \u2014 so the source is the simple chained `&&` with a single `pCam++`. TAIL: matched after correcting call signatures (func_001EBF10 is ONE-arg, ExecuteCamPostUpdFuncs is ZERO-arg, the collWithHero vtable callback is ONE-arg void(*)(UpdateCam*), `coll` computed BEFORE Camera_handleCollWithHero so it coalesces into $s1/$17 for `lw $17,0xC($2); jalr $17`, and the 0x14 second arg = sizeof(UpdateCamVtbl) is the SAME constant the vtbl-index `mult` reuses into one `li $5,20`; lPos copies as float* pos/dst pointers give the $f1/$f0 assignment + x,y,z order with z in the ExecuteCamPostUpdFuncs delay slot). REMAINING: the two independent hi `lui`s are emitted in declaration order (pCam-hi/$2 then pUsed-hi/$3) by EGC 2.95.2 in every form tried, but the original emits pUsed-hi/$3 first while keeping pCam->$2 (it decouples hi-emit order from register/declaration order). Register assignment and the lo order (pCam-lo then pUsed-lo) are identical; only the two hi words are swapped. C form preserved at notes/camera_UpdateAllCameras__Fi.candidate.cpp (272 bytes, ndiff 2). See notes/camera_UpdateAllCameras__Fi.md.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23 on this exact target: it correctly diagnosed the tail (the earlier drafts had wrong arg counts driving the tail's register allocation) and the corrected signatures/order closed the tail completely (280->272 bytes, tail byte-for-byte). For the prologue it recommended retesting the pCam/pUsed initialization orders and documenting the two scheduler flags before claiming a wall; all four were applied and mechanically diffed (pCam-first, pUsed-first, init-pUsed-first, -fno-schedule-insns, -fno-schedule-insns2) \u2014 none emits the original's pUsed-hi-first order with the correct pCam->$2 assignment, and both scheduler flags break the already-matched loop (33/22 diffs). expert (GPT-6 Astra) invoked earlier the same day provided the branch-likely taken-delay-slot insight that unlocked the loop. The residual 2 hi-lui order is a register-allocator/scheduler difference not controllable from C source. Retain INCLUDE_ASM; full-ELF parity preserved."
+ },
+ {
+  "id": "code/game/camera.cpp:func_001EC710",
+  "source": "code/game/camera.cpp",
+  "asm": "code/_generated/nonmatchings/game/camera/func_001EC710.s",
+  "name": "func_001EC710",
+  "status": "blocked",
+  "date": "2026-09-23",
+  "vram": "0x1EC710",
+  "size": "0xDC",
+  "note": "No-arg void camera-transition helper (called twice from Camera_TransitionFrame 0x1EC8A0 on the pending-transform path). Normalizes the level fwd/side/up vectors (*(u32**)(0x13F350+0x2080)+0xC0/D0/E0), stores fwd/up into camTransState +0x90/+0xA0, calls Camera_Pos2Polar3d((PolarSm*)(+0x70),(+0xC0),(0x13F350+0x80),&fwd,&side,&up), and copies +0xD0->+0xB0. The four 128-bit (lq/sq) constant-base data accesses were the documented DImode folding blocker, but the 2026-09-23 tied read/write empty-asm barrier (asm volatile(\"\": \"+r\"(dst)) after computing the pointer, plus register pins for the 128-bit data and base) DEFEATS the folding and matches the prologue, all three FastVecNormalize calls, store2, and the copy's register choices byte-for-byte. Residual 10 diffs are PURE instruction-ORDER scheduler tie-breaks (store1 addiu/lq order, call-arg setup interleaved with store2's sq, final-copy sq vs lq ra order); -fno-schedule-insns[2] makes it worse. See decomp_state/notes/camera_func_001EC710.md. last-resort GPT-5.6 Sol used: it supplied the barrier recommendation (tested, defeats the folding); the scheduler tie-breaks remain."
+ },
+ {
+  "id": "code/game/camera.cpp:func_001EC8A0",
+  "source": "code/game/camera.cpp",
+  "asm": "code/_generated/nonmatchings/game/camera/func_001EC8A0.s",
+  "name": "func_001EC8A0",
+  "status": "blocked",
+  "date": "2026-09-23",
+  "vram": "0x1EC8A0",
+  "size": "0x254",
+  "note": "Camera blend per-frame driver (596 bytes). Best candidate cand10 = 592/596 with -fno-gcse: prologue+frame(0xB0,no s6), s4 base, mode==0 dispatch 128-bit copy, and the whole mode==1 dispatch body (3x FastVecNormalize over levelCamData.vecBlock 0x13F350+0x2080, Camera_Pos2Polar3d, blendWork lq/sq copy) match byte-for-byte; the two tail pose copies match the original's materialized addiu/lq/sq shape only via the pinned-copy form (CameraQuad* dst/src + '+r' barriers + register CameraQuad val asm(\"$2\")). Residual = EGC scheduler/allocator, not source form: (1) EGC hoists the polar base addiu s4,s4,112 into the tail bnezl delay slot, clobbering the invariant s4 so the cluster base computes base+0x80 (orig base+0x10 in v1) and the else branch reuses clobbered s4 instead of materializing s0=s4+0x70; pins pPos->$3/pPol->$16 are partially ignored. (2) Tail d-slots duplicate the state-store hi lui v0,0x18 where the original duplicates the mode load lbu a1,3(s4) (7 copies). (3) Tail register permutation: orig lui v1,0x18;li v0,3;sh v0,0x71b0(v1);move a0,a1;bnez a0 vs EGC li v1,3;addiu a2,v0,0x71b0;sh v1,0x71b0(v0);lbu v0,3(a2);bnezl v0. (4) Pose-copy base regs a0/v1 vs orig a0/a1 (dst/src swap). Tried cand1-10: baseline, pinned copies+LevelCamData.vecBlock struct (required: array+cast folds), volatile TRANS_REQ_TYPE (reloads mode per compare, wrong), -fno-gcse (fixes s6 GCSE hi-cache; local type prop to 0), direct-symbol bases (wrong offsets), memory-read type (fixes sb but polar hoist), pins ($20 is s4 not s0 - fixed in cand10), -fno-schedule-insns (131 diffs, orig used default scheduler), -fno-cse-follow-jumps (no s6 fix). A match would need camera.o PRIVATE_COMPILE_FLAGS=-fno-gcse (recompiles all matched camera TUs). Retain INCLUDE_ASM; full-ELF parity preserved. See notes/camera_func_001EC8A0.md.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: recommended -fno-gcse (mechanically verified: fixes the s6 hi-cache / 0xC0-frame blocker), pin pLast->$21 and pBlend->$20, read reqType into a local before the state=3 store, and the +0x10/+0x70 sub-views. All applied (cand5/cand10); frame/prologue/dispatch fixed, residual polar-base hoisting + tail d-slot distribution + register permutation remain unmatchable from C source with EGC 2.95.2."
+ }
 ]
