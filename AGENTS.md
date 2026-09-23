@@ -211,6 +211,19 @@ Cross-directory/nested includes and command-line flag overrides are not fully
 tracked: use a clean verification (or `make -B`) after such experiments.
 After renaming symbols, rerun split and force the affected objects to rebuild.
 
+Intra-TU function addresses follow SOURCE ORDER, not per-symbol pins (verified
+2026-09-23, camera.cpp): the Splat `.ld` places each object's `.text` as one
+contiguous block (e.g. `camera.o(.text)`), so a function's final address is the
+pinned section base plus the sum of the sizes of the functions that precede it
+in the object (which follow source order, 8-byte aligned). There is no
+per-function address pin. Consequence: when replacing an `INCLUDE_ASM` with a C
+body, keep the new definition at the SAME source position (or move any
+type/`extern` declarations it needs to above it — declarations emit no code and
+do not affect layout). Relocating the function within the TU rotates the
+addresses of every later function in that object and breaks full parity even
+though the function's own bytes are correct; the standalone `decomp_probe.py`
+will still match because it pins only that one symbol.
+
 The compiler is correct, but compiler flags may not necessarily match what Insomniac used yet. Try to identify compiler flags when you encounter a larger function that otherwise won't match. Update this when you're confident compiler flags are correct.
 
 Observed EGC 2.95.2 scheduling habits (with the project flags): in small
