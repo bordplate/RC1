@@ -1,29 +1,33 @@
 #include "common.h"
 #include "types.h"
+#include "camera.h"
 
 extern u8 backupCam[];
 extern u8 backupCamData[];
 extern u32 curCam __attribute__((section(".data")));
 
-// A 128-bit (16-byte) quadword. On the R5900 EGC lowers a `mode(TI)` value to
-// lq/sq (128-bit) transfers; a plain 64-bit `long` lowers to ld/sd instead.
-typedef unsigned int CameraQuad __attribute__((mode(TI)));
+// 0x189650: per-camera control working area; the source buffer sits at
+// camControlWork - 0x280 (0x1893D0), which backs up into backupCamData.
+extern u8 camControlWork[] __attribute__((section(".data")));
 
-// Camera transition state block (0xE0 bytes at 0x1871B0). Holds the active
-// camera transform (+0x50/+0x60) and the pending transform (+0xC0/+0xD0) the
-// level camera code stages before a mode switch; each is a 16-byte quadword.
-struct CameraTransState {
-    u16 state;        // 0x00: transition status (caller compares against 1 and 2)
-    u8 mode;          // 0x02: nonzero while a staged transform is pending commit
-    u8 pendingMode;   // 0x03: staged camera mode (read by the caller)
-    u8 pad_04[0x4C];
-    CameraQuad activeCam0;  // 0x50
-    CameraQuad activeCam1;  // 0x60
-    u8 pad_70[0x50];
-    CameraQuad pendingCam0; // 0xC0
-    CameraQuad pendingCam1; // 0xD0
+// 0x20-byte import-camera entry; pVar points at per-level import data whose
+// +0x1D byte selects the switch blend behavior.
+struct ImportCamera {
+    float pos[3];
+    int type;
+    float rot[3];
+    u32 pVar;
 };
-extern CameraTransState camTransState __attribute__((section(".data")));
+// Level-provided pointer to the import-camera table (0 in boot).
+extern ImportCamera* importCameraTable __attribute__((section(".data")));
+// 0x18C32C, 8 bytes before OcclUpdate: nonzero while the occlusion subsystem
+// stages its own camera transform, in which case camera switches and
+// occlusion-visibility setup skip committing to currentCamera. Unconfirmed.
+extern int occlCamStaged __attribute__((section(".data")));
+// 0x15ED84: current level id; the polar/pos blend falls back to 0.01f on level 1.
+extern int currentLevelId __attribute__((section(".data")));
+// 0x1FA6D0 (fastfunc): truncates its float argument toward zero. C linkage.
+extern "C" int func_001FA6D0(float x);
 
 // C linkage: this entry point is referenced by the original unmangled camera API.
 extern "C" void BackupCurrentCam(void) {
@@ -118,7 +122,7 @@ struct vec4;
 // parameter is declared int only so the symbol mangles to (int, UpdateCam*);
 // it holds an UpdateCam* at runtime). Mode 0 keeps the hero-collision moby
 // spawned, any other value clears it. Deadlocked reads the equivalent camera
-// `type` at this spot, 6 bytes before UpdateCam::camType.
+// `type` at this spot, 6 bytes before UpdateCam::funcIdx.
 #define CAM_COLL_MODE_OFF 0x86
 // Bytes from the collision-state block back to the camera position (Camera)
 // handed to the moby spawn.
@@ -158,15 +162,39 @@ void Camera_handleCollWithHero(int camPtr, UpdateCam* pCam) {
     }
 }
 
+// 12-byte camera activation block at UpdateCam+0x78; the blend/activation
+// fields match Deadlocked's CameraControlActivation, minus its leading
+// activationType.
+struct CameraControlActivation {
+    float blendSpeed;   // 0x78
+    char priority;      // 0x7C
+    char activate;      // 0x7D
+    s16 deactivate;     // 0x7E: switch dispatch value (1-6)
+    s16 repCam;         // 0x80: unconfirmed, Deadlocked name
+    s16 orgCam;         // 0x82: unconfirmed, Deadlocked name
+};
+
 // 0xA0-byte camera state block (see UpdateAllCameras__Fi iteration and
 // BackupCurrentCam); per-level behavior is selected through lvlCamVtbl.
 struct UpdateCam {
-    char pad_00[0x8C];
-    short camType;
-    char pad_8E[0x12];
+    CameraQuad mtx0;    // 0x00
+    CameraQuad mtx1;    // 0x10
+    CameraQuad mtx2;    // 0x20
+    CameraQuad posQuad; // 0x30: vec4 position
+    char pad_40[0x24];  // 0x40..0x64: rot/polar data, layout unconfirmed
+    float lPos[3];      // 0x64
+    u32 control;        // 0x70: camera control data (low 32 bits)
+    char pad_74[4];
+    CameraControlActivation activation; // 0x78
+    s16 importCameraIdx; // 0x84
+    s16 collMode;        // 0x86
+    s16 pad_88[2];
+    s16 funcIdx;         // 0x8C
+    s16 active;          // 0x8E
+    char pad_90[0x10];
 };
 
-// One lvl.camvtbl entry (0x14 bytes), indexed by UpdateCam::camType; each
+// One lvl.camvtbl entry (0x14 bytes), indexed by UpdateCam::funcIdx; each
 // level overlay supplies its own table at the same address.
 struct UpdateCamVtbl {
     int field_0x00;
@@ -178,17 +206,28 @@ struct UpdateCamVtbl {
 extern UpdateCamVtbl lvlCamVtbl[];
 
 void Camera_runSetupToNewCam(UpdateCam* cam) {
-    void (*fn)(UpdateCam*) = lvlCamVtbl[cam->camType].runSetupToNewCam;
+    void (*fn)(UpdateCam*) = lvlCamVtbl[cam->funcIdx].runSetupToNewCam;
     if (fn)
         fn(cam);
 }
 
+// Stages the switch to pNewCam: dispatches on the current camera's deactivate
+// value and the import-camera flag, optionally copies the 0x40-byte transform,
+// retargets currentCamera's UpdateCam slots and control buffers, and updates the
+// blender state. Deadlocked names this Camera_switchToNewCam (RC1 predates its
+// trailing bool parameter).
+// BLOCKED on the EGC 2.95.2 register allocator: the verified C form (see
+// decomp_state/notes/camera_func_001EBF10.md) matches the semantics, frame
+// (0x70), and currentCamera hi+%lo addressing, but EGC permutes the s-reg
+// assignment (hi cam in s4 vs the original s1; pCurCam/pNewCam+0x30 swapped)
+// and schedules the D-path `deactivate<=5` as slti+bnel instead of beql,
+// leaving a 16-instruction gap. Kept as assembly until a matching form is found.
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBF10);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_ActivationCheckPriority);
 
 void Camera_Exit(UpdateCam* cam) {
-    void (*fn)(UpdateCam*) = lvlCamVtbl[cam->camType].exit;
+    void (*fn)(UpdateCam*) = lvlCamVtbl[cam->funcIdx].exit;
     if (fn)
         fn(cam);
 }

@@ -1,4 +1,14 @@
 {
+  "code/game/camera.cpp:225:func_001EBF10": {
+    "status": "blocked",
+    "date": "2026-09-23",
+    "name": "Camera_switchToNewCam__FP9UpdateCam",
+    "vram": "0x1EBF10",
+    "size": "0x300",
+    "asm": "code/_generated/nonmatchings/game/camera/func_001EBF10.s",
+    "note": "Camera-switch staging (192 instrs). A verified C form matches the semantics, the 0x70 frame (forced by a CameraQuad* newPosQuad=&pNewCam->posQuad local used in the dPath copy+END), and the currentCamera hi+%lo addressing form (forced by a Camera* cameraAlias=&currentCamera + zero-byte '+r' barrier used ONLY in the polar block, so the prologue materializes both full(s0) and hi(s4) and blend/stateUpd use addiu base,hi,%lo while polar/END use the full base). dPath emits beq/beql/beq/bnel, state s16 emits lh, and a fresh pCurCam->activation.deactivate==5 read emits the original lh D reload. The remaining 176-vs-192 gap is pure register allocation: EGC permutes the callee-saved assignment (hi cam in s4 vs the original s1; pCurCam in s3 vs s4; pNewCam+0x30 in s5 vs s3) and compiles the dPath 'deactivate<=5' as slti D,6; bnel (2) where the original has beql D,5 (1). Tried (all parity-safe, none closed it): the scoped-register-transfer pinning (pCurCam->$20, newPosQuad->$19) which made it WORSE (frame 0x70->0x80, +s6, redundant daddu, reverted); -fno-schedule-insns (174, worse); struct/local-pointer/type/branch variants. last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected the dPath constants to D==3/M==3 (a real semantic bug in the first draft — M==1 is dead in dPath) and recommended the cameraAlias partition; both applied and mechanically diffed, the s-reg permutation + slti-vs-beql gap remains. expert (GPT-6 Astra) invoked 2026-09-23: confirmed the hypotheses and the alias/pinning experiments. Retain INCLUDE_ASM; full-ELF parity preserved. See notes/camera_func_001EBF10.md (re-attempt: the C form is correct except the s-reg permutation).",
+    "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-23: corrected the dPath equality tests (D==3, D<=5, M==3, M!=6 — the first draft had D==1/M==1, a real semantic bug) and recommended the cameraAlias split for the polar block; both applied and mechanically compiled/diffed. The dPath fix corrected semantics (no count change); the alias fixed the currentCamera addressing form. The residual s-register permutation (hi cam s4 vs s1; pCurCam s3 vs s4; pNew+0x30 s5 vs s3) and the slti-vs-beql 'deactivate<=5' remain a register-allocator/scheduler difference not controllable from C source. expert (GPT-6 Astra) invoked 2026-09-23 earlier: same conclusions, recommended the alias partition (worked) and pinning (tested, worse)."
+  },
   "code/game/menu_callbacks.cpp:28:menu_restoreSelection": {
     "status": "blocked",
     "date": "2026-09-16",

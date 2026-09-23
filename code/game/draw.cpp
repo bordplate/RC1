@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "camera.h"
 
 #define DRAW_TEXTURE_DMA_STATE_COUNT 20
 #define DRAW_TEXTURE_DMA_STATE_INITIAL 1
@@ -29,21 +30,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0CE0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F2068);
 
-struct Camera {
-    float f00;
-    char pad_04[0x3C];
-    float matrix[16];
-    char pad_80[0xC0];
-    float f140;
-    float f144;
-    float f148;
-    char pad_14C[0x64];
-    float f1B0;
-};
-
-extern Camera currentCamera;
-extern Camera drawCamera;
-
 // C linkage: these helpers are handwritten VU assembly in the generated
 // fast-function region, so their entry points are not cfront-mangled.
 extern "C" void draw_loadViewMatrix(void* a0);
@@ -57,9 +43,9 @@ void projectWorldPoint(float* out, float* vec) {
     float s4[4];
     float r4[4];
     draw_loadViewMatrix(v);
-    v[12] = -currentCamera.f140 * 1024.0f;
-    v[13] = -currentCamera.f144 * 1024.0f;
-    v[14] = -currentCamera.f148 * 1024.0f;
+    v[12] = -currentCamera.pos * 1024.0f;
+    v[13] = -currentCamera.posY * 1024.0f;
+    v[14] = -currentCamera.posZ * 1024.0f;
     draw_transformMatrix(m, currentCamera.matrix, v);
     draw_scaleVector(s4, vec, 1024.0f);
     s4[3] = 1.0f;
