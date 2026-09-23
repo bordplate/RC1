@@ -167,8 +167,8 @@ void Camera_handleCollWithHero(int camPtr, UpdateCam* pCam) {
 // activationType.
 struct CameraControlActivation {
     float blendSpeed;   // 0x78
-    char priority;      // 0x7C
-    char activate;      // 0x7D
+    u8 priority;        // 0x7C: unsigned; compared with sltu
+    u8 activate;        // 0x7D: nonzero while the camera may activate
     s16 deactivate;     // 0x7E: switch dispatch value (1-6)
     s16 repCam;         // 0x80: unconfirmed, Deadlocked name
     s16 orgCam;         // 0x82: unconfirmed, Deadlocked name
@@ -184,7 +184,7 @@ struct UpdateCam {
     char pad_40[0x24];  // 0x40..0x64: rot/polar data, layout unconfirmed
     float lPos[3];      // 0x64
     u32 control;        // 0x70: camera control data (low 32 bits)
-    char pad_74[4];
+    int activationType; // 0x74: switch dispatch value (0-7)
     CameraControlActivation activation; // 0x78
     s16 importCameraIdx; // 0x84
     s16 collMode;        // 0x86
@@ -224,6 +224,14 @@ void Camera_runSetupToNewCam(UpdateCam* cam) {
 // leaving a 16-instruction gap. Kept as assembly until a matching form is found.
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBF10);
 
+// Camera priority/activation arbitration (0x1EC210). Dispatches the per-level
+// activationCheck callback, then switches on pCam->activationType (0x74) to
+// compare camera priorities, the import camera's cuboid, and the hero's
+// grind-path state. Kept as assembly: EGC emits the 8-case switch jump table in
+// an orphan camera.o(.rodata) that the Splat split has no home for (the original
+// table is static data at 0x1E7730 in .data), and the body's register allocation
+// and CFG scheduling do not match. See
+// decomp_state/notes/camera_Camera_ActivationCheckPriority.md.
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_ActivationCheckPriority);
 
 void Camera_Exit(UpdateCam* cam) {
