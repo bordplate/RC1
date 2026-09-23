@@ -89,8 +89,17 @@ the +16 word stride (0xC0→0xD0) rules out a contiguous 16-byte copy. Both
 ## Scope note
 
 `code/game/camera.cpp` is all `INCLUDE_ASM` except `BackupCurrentCam`. The
-remaining ~19 camera targets that read this cam-transition-state struct (0x1871B0)
-with 8-byte constant-base accesses are subject to the same DImode folding gap and
-should be blocked by reference to this note rather than re-investigated
-individually. A match requires the original build's flag set (one that disables
-DImode split/folding — no such option exists in this cc1) or a future EGC variant.
+remaining camera targets that read this cam-transition-state struct (0x1871B0)
+with 128-bit constant-base accesses were assumed subject to the same DImode
+folding gap.
+
+**CORRECTION (2026-09-23, func_001EC710):** the folding part of this gap IS
+defeatable with a tied read/write empty-asm barrier — see
+decomp_state/notes/camera_func_001EC710.md and the 2026-09-23 entry in
+AGENTS.md. `asm volatile("" : "+r"(dst))` after computing the pointer defeats
+the constant-base folding and forces the materialized `addiu; lq/sq 0(reg)`
+form. What remains for these targets is pure instruction-ORDER scheduler
+tie-breaks (data/base register choice, store/epilogue scheduling), which the
+local EGC 2.95.2 default scheduler orders differently from the original build.
+So these targets should be approached with the barrier form first; a full match
+may still be blocked on the scheduler.
