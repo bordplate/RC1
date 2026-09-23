@@ -231,9 +231,28 @@ functions that end with independent stores plus a constant return, the stores
 are emitted in SOURCE statement order and the last one is pulled into the
 `jr $ra` delay slot, while a `addiu $v0,$0,N` for the return value is hoisted
 above the stores. Reordering assignments in the C source flips which store
-lands in the delay slot, so match the original store sequence by choosing the
-statement order accordingly (see decomp_state/notes/strfile_func_0023BA48.md).
-
+ lands in the delay slot, so match the original store sequence by choosing the
+ statement order accordingly (see decomp_state/notes/strfile_func_0023BA48.md).
+ 
+ Observation observed 2026-09-23 (branch-likely taken-delay-slot duplication):
+ when a loop's SINGLE iterator increment (`p++`) appears in the original as
+ SEVERAL copies sitting in the taken-delay slots of the loop's `beql`/`bgezl`
+ tests plus one on the fall-through, the copies are mutually exclusive (a
+ branch-likely delay slot runs ONLY on its taken edge, so each path executes
+ exactly one copy) — the source has ONE increment, not N. Do not "match" the
+ N copies with N source increments (that over-advances the pointer and breaks
+ register allocation); write the one increment at the loop-body end and let
+ EGC duplicate it into the taken-delay slots. Verified on camera
+ UpdateAllCameras__Fi (0x1EC420): the chained `if (a && b && (r=f())!=0)` do-while
+ with a single `p++` reproduces the three-copy `p+=stride` layout byte-for-byte.
+ The same investigation hit a residual prologue wall: two independent absolute
+ address `lui`s whose HI emit order the original decouples from the
+ declaration/register order (pUsed-hi before pCam-hi while pCam stays in $2) —
+ EGC 2.95.2 emits them in declaration order in every form tried (both declaration
+ orders, init orders, both scheduler flags, a register pin), so 2 swapped hi
+ `lui`s can remain a blocker even with loop+tail fully matched (see
+ decomp_state/notes/camera_UpdateAllCameras__Fi.md).
+ 
 Exception observed 2026-09-04: when both trailing stores are CONSTANT stores
 sharing one %hi/%lo-computed global base (e.g. zeroing two struct fields),
 EGC emitted them in REVERSE source order instead — the first statement's store
