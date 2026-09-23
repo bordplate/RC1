@@ -7,6 +7,12 @@
 // lq/sq (128-bit) transfers; a plain 64-bit `long` lowers to ld/sd instead.
 typedef unsigned int CameraQuad __attribute__((mode(TI)));
 
+// 16-byte float4 vector; the same 16 bytes as CameraQuad but addressed as
+// individual floats (lwc1/swc1) by the camera transition/blend code.
+struct Vec4 {
+    float x, y, z, w;
+};
+
 // Polar orientation of a camera: azimuth/elevation in radians about the
 // forward/up axes and the distance from the reference point. Filled by
 // Camera_Pos2Polar3d.

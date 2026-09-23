@@ -256,6 +256,14 @@ Camera_stagePendingTransform__Fv = 0x1ec7f0;
 Camera_commitPendingTransform__Fv = 0x1ec868;
 camTransState = 0x1871b0;
 camPosOffset = 0x13f490;
+func_002133D0 = 0x002133d0;
+func_002144D8 = 0x002144d8;
+func_001FA400 = 0x001fa400;
+func_001FA4F8 = 0x001fa4f8;
+func_001FA2B8 = 0x001fa2b8;
+D_0015ED60 = 0x0015ed60;
+D_0018C318 = 0x0018c318;
+D_00187290 = 0x00187290;
 
 // mobyfunc
 DeleteMoby = 0x20c828;

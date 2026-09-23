@@ -181,7 +181,7 @@ struct UpdateCam {
     CameraQuad mtx0;    // 0x00
     CameraQuad mtx1;    // 0x10
     CameraQuad mtx2;    // 0x20
-    CameraQuad posQuad; // 0x30: vec4 position
+    Vec4 posQuad;       // 0x30: vec4 position (addressed as floats)
     char pad_40[0x24];  // 0x40..0x64: rot/polar data, layout unconfirmed
     float lPos[3];      // 0x64
     u32 control;        // 0x70: camera control data (low 32 bits)
@@ -363,7 +363,102 @@ void Camera_commitPendingTransform(void) {
     );
 }
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC8A0);
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ECAF8);
+// 64-byte matrix written by the transition orientation helpers.
+struct CameraMatrix {
+    CameraQuad q[4];
+};
+// 0x50-byte stack workspace for the transition step: quat at sp+0x00 (the
+// 128-bit quad staged from the target camera), mat at sp+0x10 (orientation).
+// The EE vector callees are passed sp and sp+0x10 as work buffers.
+struct CamTransitionWork {
+    CameraQuad quat;  // sp+0x00
+    CameraMatrix mat; // sp+0x10
+};
+// Sub-view of CamBlender at +0x10: the transition-progress scalars and the
+// pose/active-cam quads viewed as float vectors. The caller passes
+// camTransState + 0x10.
+struct CamBlendStep {
+    f32 field_10;         // +0x00 (CamBlender.field_10): quat progress 0..1
+    f32 quatInterp;       // +0x04 (CamBlender.quatInterp)
+    f32 reqQuatInterpAdd; // +0x08
+    f32 field_1C;         // +0x0C (CamBlender.field_1C): pos progress 0..1
+    f32 posInterp;        // +0x10 (CamBlender.posInterp)
+    f32 reqPosInterpAdd;  // +0x14
+    u8 pad_18[8];
+    Vec4 pose1;           // +0x20 (CamBlender.pose1)
+    Vec4 pose0;           // +0x30 (CamBlender.pose0)
+    Vec4 activeCam0;      // +0x40 (CamBlender.activeCam0)
+    Vec4 activeCam1;      // +0x50 (CamBlender.activeCam1)
+};
+// Struct whose +0x14 u32 is the occlusion-staged flag (occlCamStaged,
+// 0x18C32C); the original loads the base (0x18C318) into s3 and reads +0x14.
+struct D18C318_t {
+    u8 pad_14[0x14];
+    u32 flag; // +0x14
+};
+extern f32 D_0015ED60;
+extern struct D18C318_t D_0018C318;
+extern CameraMatrix D_00187290;
+// 16-byte quad at 0x187080 (== &currentCamera.pos); the original names this
+// data symbol "Camera", which collides with struct Camera, so bind it via a
+// symbol override.
+extern CameraQuad camPos16 asm("Camera");
+
+extern "C" float func_002133D0(float a, float b, float t);
+extern "C" void func_002144D8(CameraQuad* dst, UpdateCam* src);
+extern "C" void func_001FA400(float factor, Vec4* p50, Vec4* p20, CameraQuad* sp);
+extern "C" void func_001FA4F8(Vec4* p50, CameraMatrix* buf);
+extern "C" void func_001FA2B8(CameraMatrix* dst, const CameraMatrix* src);
+
+// Per-frame camera transition step: lerps the active position quad toward the
+// target by smoothstep(pos progress), updates orientation via the EE vector
+// helpers, and advances the two clamped progress scalars. Returns 1 when both
+// progress scalars have reached 1.0 (transition complete).
+int Camera_TransitionStep(UpdateCam* pTarget, CamBlendStep* pB) asm("func_001ECAF8");
+
+int Camera_TransitionStep(UpdateCam* pTarget_, CamBlendStep* pB_) {
+    register UpdateCam* pTarget asm("$16") = pTarget_;
+    CamBlendStep* pB = pB_;
+
+    if (pB->field_1C == 1.0f && pB->field_10 == 1.0f)
+        return 1;
+
+    f32 factor = func_002133D0(0.0f, 1.0f, pB->field_1C);
+    FastVecAdd((void*)&pB->pose0, (void*)&camPosOffset, (void*)&pB->pose0);
+
+    pB->activeCam0.x = pB->pose0.x + (pTarget->posQuad.x - pB->pose0.x) * factor;
+    pB->activeCam0.y = pB->pose0.y + (pTarget->posQuad.y - pB->pose0.y) * factor;
+    pB->activeCam0.z = pB->pose0.z + (pTarget->posQuad.z - pB->pose0.z) * factor;
+
+    if (D_0018C318.flag == 0) {
+        register CameraQuad* dst asm("$3") = &camPos16;
+        register CameraQuad* src asm("$4") = (CameraQuad*)&pB->activeCam0;
+        asm volatile("" : "+r"(dst), "+r"(src));
+        register CameraQuad value asm("$2") = *src;
+        *dst = value;
+    }
+
+    CamTransitionWork work;
+    func_002144D8(&work.quat, pTarget);
+    f32 f2 = func_002133D0(0.0f, 1.0f, pB->field_10);
+    func_001FA400(f2, &pB->activeCam1, &pB->pose1, &work.quat);
+    func_001FA4F8(&pB->activeCam1, &work.mat);
+    register f32 scale asm("$f0") = D_0015ED60;
+    if (D_0018C318.flag == 0) {
+        func_001FA2B8(&D_00187290, &work.mat);
+        scale = D_0015ED60;
+    }
+    f32 nc = pB->field_1C + pB->posInterp * scale;
+    pB->field_1C = nc;
+    if (1.0f < nc)
+        pB->field_1C = 1.0f;
+    scale = D_0015ED60;
+    f32 nn = pB->field_10 + pB->quatInterp * scale;
+    pB->field_10 = nn;
+    if (1.0f < nn)
+        pB->field_10 = 1.0f;
+    return 0;
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ECCD8);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED2B0);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED360);
