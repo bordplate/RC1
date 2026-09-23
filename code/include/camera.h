@@ -7,6 +7,15 @@
 // lq/sq (128-bit) transfers; a plain 64-bit `long` lowers to ld/sd instead.
 typedef unsigned int CameraQuad __attribute__((mode(TI)));
 
+// Polar orientation of a camera: azimuth/elevation in radians about the
+// forward/up axes and the distance from the reference point. Filled by
+// Camera_Pos2Polar3d.
+struct PolarSm {
+    float azimuth;
+    float elevation;
+    float radius;
+};
+
 // Camera blender/transition state block (0xE0 bytes), nested at +0x270 of
 // struct Camera. The camTransState symbol points at currentCamera.blender.
 // Holds the active camera transform (+0x50/+0x60) and the pending transform

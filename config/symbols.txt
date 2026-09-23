@@ -247,6 +247,7 @@ DrawDebugProfiler = 0x001f39d0;
 Camera_ActivationCheckPriority = 0x01ec210;
 Camera_Exit__FP9UpdateCam = 0x1ec3d8;
 UpdateAllCameras__Fi = 0x1ec420;
+Camera_Pos2Polar3d__FP7PolarSmP4vec4N41 = 0x1ec530;
 Camera_runSetupToNewCam__FP9UpdateCam = 0x1ebec8;
 Camera_handleCollWithHero__FiP9UpdateCam = 0x1ebe68;
 GameCamera = 0x187194;

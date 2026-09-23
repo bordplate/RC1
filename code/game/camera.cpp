@@ -1,6 +1,7 @@
 #include "common.h"
 #include "types.h"
 #include "camera.h"
+#include "mobyutil.h"
 
 extern u8 backupCam[];
 extern u8 backupCamData[];
@@ -242,7 +243,64 @@ void Camera_Exit(UpdateCam* cam) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", UpdateAllCameras__Fi);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC530);
+// C linkage: unmangled entry point (Splat placeholder func_00214890) defined
+// as an INCLUDE_ASM in mobyutil.cpp; the call target is that exact symbol.
+extern "C" void func_00214890(float ang, vec4* dest, vec4* fwd, vec4* up);
+
+// Converts the camera position relative to center into a polar orientation in
+// res. The forward/side-projected angle is PIHALF - asin(dot/length) (length
+// clamped away from zero), signed by the side dot, and written to azimuth;
+// func_00214890 rebuilds a vector from that azimuth, whose up-projection feeds
+// elevation (signed by the up dot) and whose full length feeds radius.
+// Deadlocked twin Camera_Pos2Polar3d.
+//
+// EGC 2.95.2 float-register allocation: the PIHALF constant must live in $f21
+// (so 0.0 falls to $f22 and the second asin subtraction folds in-place into
+// $f21), yet its load stays late (right before the first asin) instead of
+// hoisting into the prologue. An UNINITIALIZED $f21 register variable reserves
+// the FPR without forcing an early load; the zero-byte "+f" barrier keeps the
+// second subtraction in-place in $f21, and the operand-free barrier after the
+// final dot stops `ang = -pihalf` from hoisting across it.
+void Camera_Pos2Polar3d(PolarSm* res, vec4* pos, vec4* center,
+                        vec4* fwd, vec4* side, vec4* up) {
+    vec4 v0, upn, v1, v1n, tmp;
+    float r, r1, len1, ang, d1, r2, len0, d2;
+    // Uninitialized on purpose: reserves $f21 for PIHALF without hoisting load.
+    register float pihalf asm("$f21");
+
+    FastVecSub(&v0, pos, center);
+    r = FastVecDot(&v0, up);
+    FastVecNormalize(&upn, up, r);
+    FastVecSub(&v1, &v0, &upn);
+    r1 = FastVecDot(fwd, &v1);
+    len1 = FastVecLength(&v1);
+    if (len1 == 0.0f)
+        len1 = 0.0001f;
+    pihalf = 1.5707964f;
+    ang = pihalf - FastArcSin(r1 / len1);
+    FastVecNormalize(&v1n, &v1, 1.0f);
+    d1 = FastVecDot(side, &v1n);
+    if (d1 < 0.0f)
+        ang = -ang;
+    res->azimuth = ang;
+    func_00214890(ang, &tmp, fwd, up);
+    r2 = FastVecDot(&tmp, &v0);
+    len0 = FastVecLength(&v0);
+    if (len0 == 0.0f)
+        len0 = 0.0001f;
+    pihalf -= FastArcSin(r2 / len0);
+    // Keep the subtraction in-place in $f21 (t overwrites PIHALF).
+    asm volatile("" : "+f"(pihalf));
+    FastVecNormalize(&v1n, &v0, 1.0f);
+    d2 = FastVecDot(up, &v1n);
+    // Stop `ang = -pihalf` below from hoisting across the dot.
+    asm volatile("");
+    ang = -pihalf;
+    if (d2 < 0.0f)
+        ang = pihalf;
+    res->elevation = ang;
+    res->radius = FastVecLength(&v0);
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC710);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC7F0);
 // Commits the staged camera transform when a mode switch is pending: copies
