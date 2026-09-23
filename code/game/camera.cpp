@@ -158,12 +158,6 @@ void Camera_handleCollWithHero(int camPtr, UpdateCam* pCam) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_runSetupToNewCam__FP9UpdateCam);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBF10);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_ActivationCheckPriority);
-
 // 0xA0-byte camera state block (see UpdateAllCameras__Fi iteration and
 // BackupCurrentCam); per-level behavior is selected through lvlCamVtbl.
 struct UpdateCam {
@@ -182,6 +176,16 @@ struct UpdateCamVtbl {
     void (*exit)(UpdateCam*);
 };
 extern UpdateCamVtbl lvlCamVtbl[];
+
+void Camera_runSetupToNewCam(UpdateCam* cam) {
+    void (*fn)(UpdateCam*) = lvlCamVtbl[cam->camType].runSetupToNewCam;
+    if (fn)
+        fn(cam);
+}
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EBF10);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/camera", Camera_ActivationCheckPriority);
 
 void Camera_Exit(UpdateCam* cam) {
     void (*fn)(UpdateCam*) = lvlCamVtbl[cam->camType].exit;

@@ -1979,5 +1979,13 @@
     "size": 96,
     "matched_date": "2026-09-23",
     "note": "Hero-camera collision-moby gate. Reads a 16-bit camera mode (CAM_COLL_MODE_OFF=0x86, six bytes before UpdateCam::camType; the equivalent Deadlocked camera `type`) from the camera entry passed in a0 (declared int for the (int, UpdateCam*) mangling; holds an UpdateCam* at runtime). Mode 0 spawns the collision moby via the stub func_001E9448, passing the camera position as the hoisted base minus CAM_POS_BACK_OFF=0x50, when camCollState.pCamColl is null; any other mode clears it via DeleteMoby. State is the camCollState block at 0x1870D0 (new symbol) with the moby pointer at +0xC4 (GameCamera, 0x187194); moby pointers are below 0x10000000 so they are 32-bit. EGC reuses one hoisted base register for pCamColl (+0xC4) and the spawn position (-0x50). 24/24 words match; full boot parity passes. See notes/camera_Camera_handleCollWithHero__FiP9UpdateCam.md."
+  },
+  "code/game/camera.cpp:180:Camera_runSetupToNewCam__FP9UpdateCam": {
+    "name": "Camera_runSetupToNewCam__FP9UpdateCam",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001EBEC8",
+    "size": 68,
+    "matched_date": "2026-09-23",
+    "note": "Per-level camera setup dispatch. Reads UpdateCam::camType (s16 at +0x8C), indexes lvlCamVtbl (entry stride 0x14; the EGC/EE build uses 32-bit function pointers, so the 5-field entry is int+4 fp = 20 bytes) and calls the non-null runSetupToNewCam slot at +0x8 with the camera entry as its single argument. Byte-for-byte identical to the sibling Camera_Exit (0x1EC3D8) except the slot offset (0x8 vs 0x10). Standalone decomp_probe matched 68/68; full boot ELF cmp byte-identical. Note: the struct UpdateCam/UpdateCamVtbl and 'extern lvlCamVtbl' had to be moved above the function so it stays at its original source position (0x1EBEC8); the .ld places camera.o(.text) as one block so function addresses follow source order, and moving a function within the TU rotates every later address."
   }
 }
