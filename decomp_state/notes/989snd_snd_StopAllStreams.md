@@ -40,7 +40,7 @@ No mangling involved (pure C file, unmangled symbol).
 - This is the same reloc pattern as every other wrapper in the file
   (snd_StopSound, snd_PauseVAGStream, ...) — identical mechanism, not a fluke.
 
-## The dead tail (func_0012EC00) — blocked, INCLUDE_ASM retained
+## The dead tail (func_0012EC00) — matched as inline asm (2026-09-24)
 
 ```
 0x12EBD0: ...
@@ -63,9 +63,11 @@ help_msg_string__Fi.md for the systemic ~46-fragment analysis).
   `jr ra`). No C form produces a dead `addiu sp,sp,N`: the simple wrapper
   (t2) compiles byte-identical for the 11-word body but emits no tail at all,
   and no double-deallocate construct found reproduces the extra dealloc.
-- Therefore the orphan `INCLUDE_ASM(..., func_0012EC00)` is retained to supply
-  the 4 bytes, and the queue entry is blocked (precedent: func_001FDD50,
-  func_00233880).
+- Therefore the 4 bytes are supplied by raw asm. Converted 2026-09-24 to
+  top-level inline asm at the INCLUDE_ASM's source position in
+  code/989snd/ee/989snd_post.c (`addiu $sp,$sp,0x10` plus the alignment
+  nop); the INCLUDE_ASM and blocked.json entry were removed. Deadness
+  re-verified with tools/deadness_scan.py (0 references).
 
 ## Verification
 

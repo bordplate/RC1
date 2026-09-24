@@ -78,7 +78,17 @@ void snd_SetPlaybackMode(int mode) {
     snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_PLAYBACK_MODE, 0x4, (char*)buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E270);
+// Unreachable dead tail the original compiler emitted after
+// snd_SetPlaybackMode: two 0x10 stack deallocations plus the
+// alignment nop before snd_SetMixerMode. EGC 2.95.2 never
+// regenerates a dead frame deallocation after the epilogue
+// (probed; see decomp_state/notes/989snd_func_0012E270.md), so
+// the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
 
 void snd_SetMixerMode(int channel_mode, int reverb_mode) {
     int buf[2];
@@ -95,7 +105,17 @@ void snd_SetGroupVoiceRange(int group, int min, int max) {
     snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_GROUP_VOICE_RANGE, 0xC, (char*)buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E2F8);
+// Unreachable dead tail the original compiler emitted after
+// snd_SetGroupVoiceRange: two 0x30 stack deallocations plus the
+// alignment nop before snd_PlaySoundVolPanPMPB. EGC 2.95.2 never
+// regenerates a dead frame deallocation after the epilogue
+// (probed; see decomp_state/notes/989snd_func_0012E2F8.md), so
+// the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x30");
+asm("nop");
+asm("addiu $sp,$sp,0x30");
+asm("nop");
 
 void snd_PlaySoundVolPanPMPB(int bank, int sound, int vol, int pan,
                              int pitch_mod, int bend, SndCompleteProc cb,
@@ -110,14 +130,40 @@ void snd_PlaySoundVolPanPMPB(int bank, int sound, int vol, int pan,
     snd_SendIOPCommandNoWait(SND_IOP_CMD_PLAY_SOUND, 0x18, (char*)buf, cb, user_data);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E350);
+// Unreachable dead tail the original compiler emitted after
+// snd_PlaySoundVolPanPMPB: three 0x10 stack deallocations plus
+// the alignment nop before snd_StopSound. EGC 2.95.2 never
+// regenerates a dead frame deallocation after the epilogue
+// (probed; see decomp_state/notes/989snd_func_0012E350.md), so
+// the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
 
 void snd_StopSound(int handle) {
     int data = handle;
     snd_SendIOPCommandNoWait(SND_IOP_CMD_STOP_SOUND, 4, (char*)&data, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E398);
+// Unreachable dead tail the original compiler emitted after
+// snd_StopSound: 0x40, 0x40, 0x20, 0x30 stack deallocations
+// plus the alignment nop before snd_StopAllSounds. EGC 2.95.2
+// never regenerates a dead frame deallocation after the
+// epilogue (probed; see decomp_state/notes/989snd_func_0012E398.md),
+// so the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x40");
+asm("nop");
+asm("addiu $sp,$sp,0x40");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x30");
+asm("nop");
 
 void snd_StopAllSounds(void) {
     snd_SendIOPCommandNoWait(SND_IOP_CMD_STOP_ALL_SOUNDS, 0, 0, 0, 0);
@@ -141,7 +187,32 @@ void snd_SoundIsStillPlaying_CB(int handle, SndCompleteProc cb, u64 user_data) {
     snd_SendIOPCommandNoWait(SND_IOP_CMD_SOUND_IS_STILL_PLAYING, 0x4, (char*)buf, cb, user_data);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E478);
+// Unreachable dead tail the original compiler emitted after
+// snd_SoundIsStillPlaying_CB: eight 0x20 stack deallocations
+// and one 0x30, plus the alignment nop before
+// snd_SetSoundParams_CB. EGC 2.95.2 never regenerates a dead
+// frame deallocation after the epilogue (probed; see
+// decomp_state/notes/989snd_func_0012E478.md), so the bytes
+// are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x30");
+asm("nop");
 
 void snd_SetSoundParams_CB(int handle, int mask, int vol, int pan,
                            int pitch_mod, int bend, SndCompleteProc cb,
@@ -156,7 +227,30 @@ void snd_SetSoundParams_CB(int handle, int mask, int vol, int pan,
     snd_SendIOPCommandNoWait(SND_IOP_CMD_SET_SOUND_PARAMS, 0x18, (char*)buf, cb, user_data);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E508);
+// Unreachable dead tail the original compiler emitted after
+// snd_SetSoundParams_CB: six 0x20 stack deallocations and two
+// 0x10, plus the alignment nop before snd_SendIOPCommandAndWait.
+// EGC 2.95.2 never regenerates a dead frame deallocation after
+// the epilogue (probed; see
+// decomp_state/notes/989snd_func_0012E508.md), so the bytes
+// are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
 
 // IOP RPC result region for a synchronous command: the three return words
 // that snd_GotReturns validates after the call.
@@ -287,7 +381,15 @@ void snd_StopAllStreams(void) {
     snd_SendIOPCommandNoWait(SND_IOP_CMD_STOP_ALL_STREAMS, 0, 0, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012EC00);
+// Unreachable dead tail the original compiler emitted after
+// snd_StopAllStreams: one 0x10 stack deallocation plus the
+// alignment nop before snd_PlayVAGStreamByLocEx_CB. EGC 2.95.2
+// never regenerates a dead frame deallocation after the epilogue
+// (probed; see decomp_state/notes/989snd_snd_StopAllStreams.md),
+// so the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
 
 INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_PlayVAGStreamByLocEx_CB);
 
@@ -425,7 +527,17 @@ int snd_StreamSafeCdCallback(int callback) {
     return old;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012EF58);
+// Unreachable dead tail the original compiler emitted after
+// snd_StreamSafeCdCallback: two 0x20 stack deallocations plus
+// the alignment nop before snd_SetReverbEx. EGC 2.95.2 never
+// regenerates a dead frame deallocation after the epilogue
+// (probed; see decomp_state/notes/989snd_func_0012EF58.md), so
+// the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
 
 void snd_SetReverbEx(int core, int type, int depth, int delay, int feedback) {
     int buf[5];
@@ -453,7 +565,32 @@ void snd_AutoReverb(int core, int depth, int delta_time, int channel_flags) {
     snd_SendIOPCommandNoWait(SND_IOP_CMD_AUTO_REVERB, 0x10, (char*)buf, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012F020);
+// Unreachable dead tail the original compiler emitted after
+// snd_AutoReverb: 0x10, 0x20, 0x10, 0x20, 0x20, 0x10, 0x10,
+// 0x10, 0x10 stack deallocations plus the alignment nop before
+// snd_InitMovieSound. EGC 2.95.2 never regenerates a dead frame
+// deallocation after the epilogue (probed; see
+// decomp_state/notes/989snd_func_0012F020.md), so the bytes
+// are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
 
 void snd_InitMovieSound(int sizeOfIOPBuffer, int sizeOfSPUBuffer, int volumeLevel,
                         int panCenter, int volumeGroup, int type) {
@@ -471,7 +608,17 @@ void snd_ResetMovieSound(void) {
     snd_SendIOPCommandAndWait(SND_IOP_CMD_RESET_MOVIE_SOUND, 0, 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012F0D0);
+// Unreachable dead tail the original compiler emitted after
+// snd_ResetMovieSound: a 0x10 and a 0x20 stack deallocation
+// plus the alignment nop before snd_CloseMovieSound. EGC 2.95.2
+// never regenerates a dead frame deallocation after the epilogue
+// (probed; see decomp_state/notes/989snd_func_0012F0D0.md), so
+// the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
+asm("addiu $sp,$sp,0x20");
+asm("nop");
 
 void snd_CloseMovieSound(void) {
     snd_SendIOPCommandAndWait(SND_IOP_CMD_CLOSE_MOVIE_SOUND, 0, 0);
@@ -488,7 +635,15 @@ void snd_StartMovieSound(int iopBuffer, int iopBufferSize, int iopPausePosition,
     snd_SendIOPCommandAndWait(SND_IOP_CMD_START_MOVIE_SOUND, 0x14, buf);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012F140);
+// Unreachable dead tail the original compiler emitted after
+// snd_StartMovieSound: one 0x10 stack deallocation plus the
+// alignment nop before snd_UpdateMovieADPCM. EGC 2.95.2 never
+// regenerates a dead frame deallocation after the epilogue
+// (probed; see decomp_state/notes/989snd_func_0012F140.md), so
+// the bytes are preserved with raw asm.
+asm(".align 3");
+asm("addiu $sp,$sp,0x10");
+asm("nop");
 
 void snd_UpdateMovieADPCM(int data_size, int offset) {
     int buf[2];
