@@ -256,6 +256,7 @@ Camera_stagePendingTransform__Fv = 0x1ec7f0;
 Camera_commitPendingTransform__Fv = 0x1ec868;
 camTransState = 0x1871b0;
 camPosOffset = 0x13f490;
+levelCamData = 0x13f350;
 func_002133D0 = 0x002133d0;
 func_002144D8 = 0x002144d8;
 func_001FA400 = 0x001fa400;
@@ -514,6 +515,7 @@ FastVecDist = 0x1f9b48;
 FastVecNormalize = 0x001f9bf8;
 FastVecAdd = 0x1f9a10;
 FastVecSub = 0x01f9a28;
+FastVecScale = 0x01f9a68;
 FastVecCross = 0x01f9ad8;
 FastAbsF = 0x1f99c0;
 

@@ -126,13 +126,69 @@ struct vec4;
 // handed to the moby spawn.
 #define CAM_POS_BACK_OFF 0x50
 
+// Per-level camera data block at 0x13F350 (0x2310 bytes, all zero in boot).
+// The space transition setup zero-clears the whole block
+// (func_001E9B10: FastMemSet(levelCamData, 0, 0x2310)); level overlays supply
+// their own copy at the same address. camPosOffset (0x13F490) is the block
+// field at +0x140 (inner +0x120). The compiler materializes f98/pCollMoby/fA8
+// through the inner block base (levelCamData+0x20), so inner is a distinct
+// sub-block in the source.
+struct LevelCamInner {
+    char pad_00[0x60];    // +0x20
+    f32 dir80[4];         // +0x80 direction; dir80[2] (+0x88) seeds lastMobyZ
+    char pad_70[8];       // +0x90
+    f32 f98;              // +0x98 pushed into camCollState.ring[4] each frame
+    char pad_7C[0x1F4];   // +0x9C
+    f32 dir290[4];        // +0x290 (0x13F5E0) source of camCollState.aCur
+    char pad_280[0x5C];   // +0x2A0
+    u32 pCollMoby;        // +0x2FC level-placed collision moby (32-bit slot)
+    char pad_2E0[0x1D84]; // +0x300
+    int i2084;            // +0x2084 (0x1413D4)
+    char pad_2068[0x1FC]; // +0x2088
+    int i2284;            // +0x2284 (0x1415D4)
+    char pad_2268[0x88];  // +0x2288
+};
+struct LevelCamData {
+    char pad_00[0x20];
+    LevelCamInner inner;  // +0x20, 0x22F0 bytes
+};
+extern LevelCamData levelCamData __attribute__((section(".data")));
+
 // Camera-collision state block at 0x1870D0; the current collision moby
 // (GameCamera, 0x187194) sits at +0xC4. Moby pointers live below 0x10000000
 // so the block stores/compares them as 32-bit values. The spawn reuses the
 // single hoisted base register, so its position argument is a base offset.
+// Updated every frame by Camera_updateCollState from levelCamData: a
+// smoothed collision direction/position set, a 5-slot history ring for
+// levelCamData.f98, and per-frame tracking of the level's collision moby.
 struct CamCollState {
-    char pad_c4[0xC4];
+    float f00;             // +0x00 levelCamData.dir80[0]
+    float f04;             // +0x04 levelCamData.dir80[1]
+    float f08;             // +0x08 smoothed toward levelCamData.dir80[2]
+    float f0C;             // +0x0C levelCamData.dir80[2]
+    float off10;           // +0x10 Cam_InterpValues offset state for f08
+    char pad_14[0xC];      // +0x14
+    Vec4 dir20;            // +0x20 collision direction vector
+    CameraQuad aCur;       // +0x30 current normalized level direction
+    CameraQuad aPrev;      // +0x40 previous frame's aCur
+    float off50;           // +0x50 Cam_InterpValues offset state for dir20.x
+    float off54;           // +0x54 ... dir20.y
+    float off58;           // +0x58 ... dir20.z
+    char pad_5C[4];        // +0x5C
+    CameraQuad v60;        // +0x60 copy of levelCamData.dir80 (last frame's)
+    CameraQuad v70;        // +0x70 dir80 - v60, then overwritten by normalize(a)
+    CameraQuad v80;        // +0x80 v70 - b, normalized in place
+    CameraQuad b;          // +0x90 normalize(a) scaled by |dir80 - v60|
+    float fA0;             // +0xA0 |dir80 - v60|
+    float fA4;             // +0xA4 pre-normalization length of v80
+    float fA8;             // +0xA8 |dir80 - v60| (duplicate of fA0)
+    float ring[5];         // +0xAC history of levelCamData.f98, shifted per frame
+    char pad_C0[4];        // +0xC0
     MobyInstance* pCamColl; // +0xC4 -> 0x187194
+    char pad_CC[12];       // +0xC8
+    u32 pCollMoby;         // +0xD4 level's collision moby (32-bit slot)
+    float lastMobyZ;       // +0xD8 last observed pCollMoby pos.z
+    float mobyZDelta;      // +0xDC per-frame pos.z delta
 };
 extern CamCollState camCollState __attribute__((section(".data")));
 
@@ -587,6 +643,23 @@ void Camera_OffsetTick(CamOffsetRec* p, int which) {
         p->elapsed = 0;
     }
 }
+// Per-frame camera-collision update from levelCamData. Normalizes
+// levelCamData.dir290 (scaled by -1.0f) into a stack vec, shifts it into the
+// aCur/aPrev pair, and smooths the collision direction (camCollState.dir20)
+// toward it with Cam_InterpValues. Re-normalizes levelCamData.dir80 in place
+// and derives the v60/v70/v80/b chain (v70 = dir80 - v60; b = normalized a
+// scaled by dot(v70, a); v80 = v70 - b, normalized in place), caching the
+// intermediate dot and length. Maintains the 5-slot f98 history ring, writes
+// levelCamData.dir80 components into f00/f04 (and smooths f08 toward
+// dir80[3] via Cam_InterpValues unless i2284 == 0x50 with i2084 != 0x11), and
+// tracks levelCamData.pCollMoby's oClass/pos.z when it is set.
+//
+// BLOCKED (EGC 2.95.2 scheduling): a C form reproduces the original register
+// structure (s5=camCollState, s7=%hi, s6=&levelCamData.inner.dir290, 208-byte
+// frame) but the prologue save/interleave order (f20 hoisted into the first
+// jal delay slot), the materialized aCur/aPrev address registers, the
+// count-up ring loop (a0 moving, a3 hi), and the s1=&t / s0=&v80 allocation
+// do not match. See decomp_state/notes/camera_func_001ED470.md.
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED470);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED7F0);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED940);
