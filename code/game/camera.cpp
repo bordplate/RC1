@@ -21,10 +21,6 @@ struct ImportCamera {
 };
 // Level-provided pointer to the import-camera table (0 in boot).
 extern ImportCamera* importCameraTable __attribute__((section(".data")));
-// 0x18C32C, 8 bytes before OcclUpdate: nonzero while the occlusion subsystem
-// stages its own camera transform, in which case camera switches and
-// occlusion-visibility setup skip committing to currentCamera. Unconfirmed.
-extern int occlCamStaged __attribute__((section(".data")));
 // 0x15ED84: current level id; the polar/pos blend falls back to 0.01f on level 1.
 extern int currentLevelId __attribute__((section(".data")));
 // 0x1FA6D0 (fastfunc): truncates its float argument toward zero. C linkage.
@@ -363,10 +359,6 @@ void Camera_commitPendingTransform(void) {
     );
 }
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EC8A0);
-// 64-byte matrix written by the transition orientation helpers.
-struct CameraMatrix {
-    CameraQuad q[4];
-};
 // 0x50-byte stack workspace for the transition step: quat at sp+0x00 (the
 // 128-bit quad staged from the target camera), mat at sp+0x10 (orientation).
 // The EE vector callees are passed sp and sp+0x10 as work buffers.
@@ -390,19 +382,20 @@ struct CamBlendStep {
     Vec4 activeCam0;      // +0x40 (CamBlender.activeCam0)
     Vec4 activeCam1;      // +0x50 (CamBlender.activeCam1)
 };
-// Struct whose +0x14 u32 is the occlusion-staged flag (occlCamStaged,
-// 0x18C32C); the original loads the base (0x18C318) into s3 and reads +0x14.
-struct D18C318_t {
+// 0x18C318: occlusion camera state. +0x14 (occlCamStaged, 0x18C32C) is
+// nonzero while the occlusion subsystem stages its own camera transform, in
+// which case camera switches and occlusion-visibility setup skip committing
+// to currentCamera. The original loads the base into s3 and reads +0x14.
+struct OcclCamState {
     u8 pad_14[0x14];
-    u32 flag; // +0x14
+    u32 staged; // +0x14 (occlCamStaged)
 };
-extern f32 D_0015ED60;
-extern struct D18C318_t D_0018C318;
-extern CameraMatrix D_00187290;
-// 16-byte quad at 0x187080 (== &currentCamera.pos); the original names this
-// data symbol "Camera", which collides with struct Camera, so bind it via a
-// symbol override.
-extern CameraQuad camPos16 asm("Camera");
+// 0x15ED60: per-frame transition step scale; the first word of a nine-word
+// parameter table (0x15ED60-0x15ED80) that func_00214970 writes at level
+// start, keyed on videoModePal (1.0f for NTSC, 1.1f for PAL). Scales the
+// camera transition progress increments and space-transition alpha ramps.
+extern f32 transStepScale;
+extern struct OcclCamState occlCamState;
 
 extern "C" float func_002133D0(float a, float b, float t);
 extern "C" void func_002144D8(CameraQuad* dst, UpdateCam* src);
@@ -430,8 +423,8 @@ int Camera_TransitionStep(UpdateCam* pTarget_, CamBlendStep* pB_) {
     pB->activeCam0.y = pB->pose0.y + (pTarget->posQuad.y - pB->pose0.y) * factor;
     pB->activeCam0.z = pB->pose0.z + (pTarget->posQuad.z - pB->pose0.z) * factor;
 
-    if (D_0018C318.flag == 0) {
-        register CameraQuad* dst asm("$3") = &camPos16;
+    if (occlCamState.staged == 0) {
+        register CameraQuad* dst asm("$3") = (CameraQuad*)&currentCamera.pos;
         register CameraQuad* src asm("$4") = (CameraQuad*)&pB->activeCam0;
         asm volatile("" : "+r"(dst), "+r"(src));
         register CameraQuad value asm("$2") = *src;
@@ -443,16 +436,16 @@ int Camera_TransitionStep(UpdateCam* pTarget_, CamBlendStep* pB_) {
     f32 f2 = func_002133D0(0.0f, 1.0f, pB->field_10);
     func_001FA400(f2, &pB->activeCam1, &pB->pose1, &work.quat);
     func_001FA4F8(&pB->activeCam1, &work.mat);
-    register f32 scale asm("$f0") = D_0015ED60;
-    if (D_0018C318.flag == 0) {
-        func_001FA2B8(&D_00187290, &work.mat);
-        scale = D_0015ED60;
+    register f32 scale asm("$f0") = transStepScale;
+    if (occlCamState.staged == 0) {
+        func_001FA2B8(&currentCamera.orientMtx, &work.mat);
+        scale = transStepScale;
     }
     f32 nc = pB->field_1C + pB->posInterp * scale;
     pB->field_1C = nc;
     if (1.0f < nc)
         pB->field_1C = 1.0f;
-    scale = D_0015ED60;
+    scale = transStepScale;
     f32 nn = pB->field_10 + pB->quatInterp * scale;
     pB->field_10 = nn;
     if (1.0f < nn)

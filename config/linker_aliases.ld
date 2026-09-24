@@ -115,7 +115,6 @@ currentCamera = 0x00186F40;
 drawCamera = 0x0018CF10;
 importCameraTable = 0x0015EF90;
 camControlWork = 0x00189650;
-occlCamStaged = 0x0018C32C;
 drawOcclusionEnabled = 0x0015F49C;
 fontSmallGlyphs = 0x001DF050;
 fontMediumGlyphs = 0x001DF3F0;

@@ -261,9 +261,9 @@ func_002144D8 = 0x002144d8;
 func_001FA400 = 0x001fa400;
 func_001FA4F8 = 0x001fa4f8;
 func_001FA2B8 = 0x001fa2b8;
-D_0015ED60 = 0x0015ed60;
-D_0018C318 = 0x0018c318;
-D_00187290 = 0x00187290;
+transStepScale = 0x0015ed60;
+occlCamState = 0x0018c318;
+occlCamStaged = 0x0018c32c;
 
 // mobyfunc
 DeleteMoby = 0x20c828;
@@ -425,7 +425,6 @@ OcclInvalidGrid = 0x15f64c;
 OcclMode = 0x015f648;
 ResetDrawGlobals = 0x01f37e8;
 OcclOct = 0x015f644;
-Camera = 0x187080;
 UpdateOcclusion__Fv = 0x1f2c10;
 OcclUpdate = 0x18c334;
 InitViewContext__Fv = 0x1f2c60;

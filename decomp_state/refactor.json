@@ -7,6 +7,7 @@
     "category": "style",
     "description": "Placeholder names in Camera_TransitionStep to resolve once their meaning/owners are confirmed: D_0015ED60 (transition step scale f32), D_0018C318 (base whose +0x14 is occlCamStaged 0x18C32C), D_00187290 (64-byte orientation matrix), and camPos16 asm(\"Camera\") (data symbol 0x187080 == &currentCamera.pos, which collides with struct Camera and is currently bound via a symbol override). Renaming must preserve the matched codegen: the occlusion flag must stay a base+0x14 read (base kept in s3), D_00187290 must stay a 64-byte CameraMatrix, and the 128-bit copy to Camera must keep its pinned dst=$3/src=$4/value=$2 form. See notes/camera_func_001ECAF8.md.",
     "evidence": "notes/camera_func_001ECAF8.md",
-    "status": "open"
+    "status": "done",
+    "resolved": "2026-09-24: placeholders renamed (transStepScale, occlCamState/staged, currentCamera.orientMtx, &currentCamera.pos); standalone Camera symbol removed; object diff shows only field-offset LO16 immediates that link to the same values; full boot ELF cmp passes. See notes/camera_func_001ECAF8.md."
   }
 ]

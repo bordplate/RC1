@@ -1,4 +1,5 @@
 #include "common.h"
+#include "camera.h"
 #include "mobyfunc.h"
 #include "mobyutil.h"
 #include "types.h"
@@ -30,16 +31,13 @@ struct SoundData {
     u8 pad_0x44[0x2C];
 };
 
-// Listener camera position; the first 16 bytes are the vec4 the 3D sound
-// distance math reads.
-extern vec4 Camera __attribute__((section(".data")));
-
 int sound_GetFade(SoundDef* sd, float dist, float minRange, float maxRange);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_GetFade__FP8SoundDeffff);
 
 int sound_GetFade(SoundData* channel, vec4* pos) {
-    float dist = FastVecDist(pos, &Camera);
+    // Listener position: the 16-byte camera position quad (currentCamera.pos).
+    float dist = FastVecDist(pos, (vec4*)&currentCamera.pos);
     SoundDef* sd = channel->def;
     return sound_GetFade(sd, dist, sd->minRange, sd->maxRange);
 }

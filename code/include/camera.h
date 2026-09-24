@@ -22,6 +22,12 @@ struct PolarSm {
     float radius;
 };
 
+// 64-byte (four CameraQuad) orientation matrix. The transition helpers stage
+// one on the stack and commit it with func_001FA2B8.
+struct CameraMatrix {
+    CameraQuad q[4];
+};
+
 // Camera blender/transition state block (0xE0 bytes), nested at +0x270 of
 // struct Camera. The camTransState symbol points at currentCamera.blender.
 // Holds the active camera transform (+0x50/+0x60) and the pending transform
@@ -70,7 +76,10 @@ struct Camera {
     float f1B0;
     char pad_1B4[0xBC];
     CamBlender blender;    // 0x270
-    char pad_350[0x48];
+    // 0x350: orientation matrix committed by the camera transition (identity
+    // on camera reset); the occlusion setup reads it as the camera transform.
+    CameraMatrix orientMtx; // 0x350
+    char pad_390[8];        // 0x390
     u32 camTimer;          // 0x398
 };
 
