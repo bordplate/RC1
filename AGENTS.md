@@ -114,7 +114,25 @@ end-of-file `.extern` is accepted by both assemblers). menu.cpp migrated to
 SN this way (menu_isSelectionCountZero__Fv); see
 decomp_state/notes/sn_toolchain_assemblers.md. To enumerate which functions
 in a TU mismatch under a candidate assembler, use
-`tools/tu_assembler_diff.py <obj> <linked-candidate-elf>`.
+ `tools/tu_assembler_diff.py <obj> <linked-candidate-elf>`.
+
+Mixed-address-mode globals (probe-verified 2026-09-24, snd_BankLoadByLoc,
+0x12DF20): a single in-window 4-byte global that the original reads GPREL in
+some places and absolute self-based in others within ONE function cannot be
+reproduced in a GNU-assembler TU (gas expands every bare pseudo GPREL from the
+end-of-file `.extern`, and `.data` gives a split/cached-hi form, never the
+original's self-based `lui r; lw r,off(r)` / `lui at; sw`). Match it in an
+SN-assembler TU via a Splat boundary split: declare the global once plain
+(unseeded → self-based absolute for those accesses) and once per GPREL access
+site as a `.extern`-seeded alias in `config/linker_aliases.ld` at the same
+address. The test and the return of `if (x != C) return x;` must be TWO
+aliases: with one, EEGCC CSEs the return into `move v0,v1`, but the original
+reloads the word in the bne delay slot; `volatile` forces the reload too but
+flips the branch direction (beq-to-loop + extra materialized exit). A
+`while (x==C) f();` that the original lays out as a do-while (call first,
+load/compare at loop end) must be written `do f(); while (x==C);` or EEGCC
+hoists a pre-check `bne` + dead `lq` (+0x10 bytes). See
+decomp_state/notes/989snd_snd_BankLoadByLoc.md.
 
 The compiler classifies small data by declaration size/section, not eventual
 RAM address. Extern-only `.sdata` declarations did not force the historical

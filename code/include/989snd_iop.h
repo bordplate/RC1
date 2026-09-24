@@ -8,6 +8,7 @@
 // (reference/dl/989snd/ee/989snd.c) issues the same opcode it does so from
 // the same-named wrapper, which is how each name below was confirmed.
 enum {
+    SND_IOP_CMD_CD_BANK_LOAD_BY_LOC = 0x03,
     SND_IOP_CMD_UNLOAD_BANK = 0x06,
     SND_IOP_CMD_RESOLVE_BANK_XREFS = 0x08,
     SND_IOP_CMD_SET_MASTER_VOLUME = 0x09,

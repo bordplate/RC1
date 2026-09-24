@@ -132,24 +132,6 @@
     "note": "NOT a function: 0xC-byte unreachable dead tail after snd_FlushSoundCommands (0x12DC80-0x12DE5F, 0x50 frame). The parent returns at 0x12DE58 with its complete addiu sp,sp,0x50 in the jr delay slot; the orphan at 0x12DE60 (file 0x2EDE0) holds addiu sp,sp,0x10; nop; addiu sp,sp,0x10, with alignment padding at 0x12DE6C. Deadness: Ghidra has no function at 0x12DE60 and no xrefs; raw-ELF scan finds 0 jal/j target 0x12DE60 (jal 0x3004B798 / j 0x2004B798 absent from the whole file); the parent's branches do not reach it. Not regenerable: local EGC 2.95.2 v2.73a (-G8 -O2 -snas) probes emit exactly one reachable frame restoration and never a dead addiu sp,sp,N after the epilogue (a 0x40 frame emits a single addiu sp,sp,0x40, not split), matching the sibling func_0012EC00 t1-t10 experiments; scheduler flags cannot synthesize missing epilogue RTL. A standalone C function would have no return and corrupt sp. Same-TU two-deallocate tails also at func_0012E270/0012E198/0012EF58. last-resort GPT-5.6 Sol used (2026-09-17): confirmed no credible C/flag route remains; retain the orphan INCLUDE_ASM. INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See decomp_state/notes/989snd_snd_FlushSoundCommands.md."
   },
   {
-    "id": "code/989snd/ee/989snd_mid.c:snd_BankLoadByLoc",
-    "source": "code/989snd/ee/989snd_mid.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/snd_BankLoadByLoc.s",
-    "name": "snd_BankLoadByLoc",
-    "status": "blocked",
-    "date": "2026-09-17",
-    "note": "The callback-arg global 0x15ED00 (gp window) is accessed in 5 forms: absolute store, RPC-6th-arg register load (SIGNED split lui 0x16;addiu -4864, adjacent at call site, NOT hoisted), two separate GPREL loads (if-check + early-return), absolute poll. Best candidate (constant store/RPC/poll + GPREL if/early-return + early-return-as-fresh-load + do-while) = 20 diffs, 336 vs 340, correct frame (0x50). UNSOLVABLE: RPC arg as a CONSTANT gets the wrong UNSIGNED split (lui 0x15;ori 0xED00) + hoisted lui; as a .data SYMBOL it gets the signed split but EGC LICM's %hi to the stat-loop preheader and keeps it live -> frame 0x60 (repro'd with 1/2/4 same-addr syms, volatile, array-decay). No qualifier/cast/indirection/register-asm/flag yields signed+unhoisted+frame-0x50. Second gap: a scheduling nop at 0x12e050 (between poll lw and back-test beq); asm volatile(nop) is moved by .set reorder into the beq DELAY slot, not the pre-beq position. Flags tried: -mno-split-addresses (breaks, 78 diffs), -fno-schedule-insns (26), -fno-strength-reduce (71/frame 0x60). last-resort GPT-5.6 Sol used: array-decay (71/0x60), register asm($9)+barrier (C89 parse error), -fno-strength/-rerun-loop-opt/-gcse (71/0x60), bound nop (moved to delay slot) -- none closes the diffs. Only near-match (v12) relies on forbidden static data-address constants and still has 20 diffs. Kept INCLUDE_ASM. See decomp_state/notes/989snd_snd_BankLoadByLoc.md."
-  },
-  {
-    "id": "code/989snd/ee/989snd_mid.c:func_0012E078",
-    "source": "code/989snd/ee/989snd_mid.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_mid/func_0012E078.s",
-    "name": "func_0012E078",
-    "status": "blocked",
-    "date": "2026-09-18",
-    "note": "NOT a function: 12-byte unreachable dead tail after blocked snd_BankLoadByLoc (0x12DF20, 0x50 frame; parent epilogue jr ra; addiu sp,sp,0x50 ends 0x12E073). Fragment words 0x27BD0060/0x00000000/0x27BD0050 at 0x12E078 (file 0x2EFF8); the 0x12E084 nop is alignment outside the fragment. Deadness verified: Ghidra no function/no xrefs; raw scan of core.text+.text finds no jal/j/relative-branch target; no jump-table word in .lit/.data. Part of a 15-fragment family of dead addiu-sp tails in this TU (unit sizes do NOT match parent frames). Cross-game confirmation: Deadlocked (reference/SCUS_974.65) shows the identical artifact with identical per-function sequences (snd_StopSound tail 0x40,0x40,0x20,0x30 despite a different frame) and .mdebug symbol sizes that exclude the tail bytes (gap between symbols). Local EGC 2.95.2 never emits dead addiu sp,sp,N (t1-t10 2026-09-17; fresh p1-p5 2026-09-18: multi-return, tail-call, trailing-statement forms all clean). Parent snd_BankLoadByLoc blocked 2026-09-17, closing the regenerate-with-parent route. last-resort GPT-5.6 Sol used (2026-09-18, full dossier): confirmed no credible C/declaration/flag route (scheduling flags cannot synthesize missing RTL; standalone C function impossible; inline asm = byte injection). INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See decomp_state/notes/989snd_func_0012E078.md."
-  },
-  {
     "id": "code/989snd/ee/989snd_post.c:func_0012E198",
     "source": "code/989snd/ee/989snd_post.c",
     "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E198.s",

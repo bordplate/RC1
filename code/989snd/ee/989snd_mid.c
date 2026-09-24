@@ -75,7 +75,3 @@ asm(
     "    .set reorder\n"
     "    .set at\n"
 );
-
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_mid", snd_BankLoadByLoc);
-
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_mid", func_0012E078);

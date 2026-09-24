@@ -2022,5 +2022,14 @@
     "size": 176,
     "matched_date": "2026-09-24",
     "note": "Per-frame camera blend dispatch (Deadlocked twin name): steps the active camera toward the target via Camera_TransitionStep (pos/quat, camTransState+0x10) when type==0 else via the polar step func_001ECCD8 (camTransState+0x70); when done and occlCamState.staged==0 commits pTgt's orientMtx quads + posQuad to currentCamera (orientMtx 0x187290, pos 0x187080 = orientMtx-0x210) then clears state/type. Three EGC 2.95.2 quirks: (1) a tied zero-byte barrier (asm volatile with a +r constraint on pTgt) in the else arm forces the polar call's move a0,s0 (otherwise a0 is reused on both paths); the if must be normal-first (polar-first flips to beqz + polar fall-through). (2) Merge source order state-then-type: EGC maps [M1,M2] to ds=M2 (duplicated), tail=[M2,M1], bnel->M1. (3) 128-bit copy family pattern: d0 $3 / value $2 / d2 $6 / s3 $4 pins + tied barriers + a bare empty-asm boundary after each sq; d3 stays relative ((u8*)d0-0x210) to keep the original addiu -0x210. See decomp_state/notes/camera_func_001ED2B0.md."
+  },
+  "code/989snd/ee/989snd_mid_byloc.c:55:snd_BankLoadByLoc": {
+    "name": "snd_BankLoadByLoc",
+    "original_name": "snd_BankLoadByLoc",
+    "source": "code/989snd/ee/989snd_mid_byloc.c",
+    "vram": "0x0012DF20",
+    "size": 340,
+    "matched_date": "2026-09-24",
+    "note": "CD bank-load-by-location RPC (opcode 0x03, 8-byte {loc,offset} params, 4-byte result word snd_cdCallbackArg=0x15ED00): waits for the CD RPC server to be idle, preloads the result word with the 0xFFFFFFFF sentinel, issues sceSifCallRpc, then spins FlushCache until the IOP writes a real result, returning it; reports an error string and returns 0 when a load is pending, the CD is still streaming (snd_StreamSafeCdSync CHECK==1), or the call itself fails (snd_cdLoadError=0x106). The IOP result word is accessed through THREE names in this TU (ps2eeas): the unseeded snd_cdCallbackArg expands self-based absolute (sentinel store, & for the RPC arg, polling-loop load) while two seeded .extern aliases (snd_cdCallbackArgGp test / snd_cdCallbackArgGpRet return, config/linker_aliases.ld, both 0x15ED00) expand GPREL; the test and return must be separate aliases or EEGCC CSEs the return load into a move instead of the original's bne-delay-slot reload. Moved from 989snd_mid.c (GNU assembler, where no named form can emit the self-based absolutes) into its own Splat boundary TU at file offset 0x2EEA0; the 0x60/0x50 dead-tail fragment func_0012E078 following the function is preserved as raw asm."
   }
 }
