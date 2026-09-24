@@ -2013,5 +2013,14 @@
     "size": 116,
     "matched_date": "2026-09-23",
     "note": "Stages pendingCam0=pendingCam1 copies of the active quads and adds camPosOffset (0x13F490) to pendingCam0 when reqType==2 via FastVecAdd (0x1F9A10). Matched with pinned src0 $3 / val $2 / reqType $4 (int) / constant $2 (disjoint live range) plus a tied barrier between lbu and li. See notes/camera_Camera_stagePendingTransform__Fv.md"
+  },
+  "code/game/camera.cpp:480:Camera_BlendCams": {
+    "name": "Camera_BlendCams",
+    "original_name": "func_001ED2B0",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001ED2B0",
+    "size": 176,
+    "matched_date": "2026-09-24",
+    "note": "Per-frame camera blend dispatch (Deadlocked twin name): steps the active camera toward the target via Camera_TransitionStep (pos/quat, camTransState+0x10) when type==0 else via the polar step func_001ECCD8 (camTransState+0x70); when done and occlCamState.staged==0 commits pTgt's orientMtx quads + posQuad to currentCamera (orientMtx 0x187290, pos 0x187080 = orientMtx-0x210) then clears state/type. Three EGC 2.95.2 quirks: (1) a tied zero-byte barrier (asm volatile with a +r constraint on pTgt) in the else arm forces the polar call's move a0,s0 (otherwise a0 is reused on both paths); the if must be normal-first (polar-first flips to beqz + polar fall-through). (2) Merge source order state-then-type: EGC maps [M1,M2] to ds=M2 (duplicated), tail=[M2,M1], bnel->M1. (3) 128-bit copy family pattern: d0 $3 / value $2 / d2 $6 / s3 $4 pins + tied barriers + a bare empty-asm boundary after each sq; d3 stays relative ((u8*)d0-0x210) to keep the original addiu -0x210. See decomp_state/notes/camera_func_001ED2B0.md."
   }
 }

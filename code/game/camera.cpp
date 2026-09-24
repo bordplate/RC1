@@ -382,6 +382,16 @@ struct CamBlendStep {
     Vec4 activeCam0;      // +0x40 (CamBlender.activeCam0)
     Vec4 activeCam1;      // +0x50 (CamBlender.activeCam1)
 };
+// Sub-view of CamBlender at +0x70: the polar-blend parameters stepped by the
+// per-frame polar transition (func_001ECCD8). The caller passes
+// camTransState + 0x70.
+struct CamBlendPolar {
+    PolarSm polar;         // +0x00 (CamBlender.polar): azimuth/elevation/radius
+    u32 blendStep;         // +0x0C (CamBlender.blendStep)
+    f32 blendStepInv;      // +0x10 (CamBlender.blendStepInv)
+    u32 reqInterpFrames;   // +0x14 (CamBlender.reqInterpFrames)
+    u8 pad_18[8];          // +0x18 (CamBlender.pad_88 prefix)
+};
 // 0x18C318: occlusion camera state. +0x14 (occlCamStaged, 0x18C32C) is
 // nonzero while the occlusion subsystem stages its own camera transform, in
 // which case camera switches and occlusion-visibility setup skip committing
@@ -408,6 +418,13 @@ extern "C" void func_001FA2B8(CameraMatrix* dst, const CameraMatrix* src);
 // helpers, and advances the two clamped progress scalars. Returns 1 when both
 // progress scalars have reached 1.0 (transition complete).
 int Camera_TransitionStep(UpdateCam* pTarget, CamBlendStep* pB) asm("func_001ECAF8");
+// Per-frame polar camera transition step: advances the polar blend of
+// camTransState (azimuth/elevation/radius) toward the target camera and
+// commits the staged result. Returns 1 when the blend is complete. The boot
+// ELF is stripped, so the entry point is the unmangled Splat placeholder
+// func_001ECCD8 (still INCLUDE_ASM); pin it with a symbol override rather
+// than assuming C linkage.
+int func_001ECCD8(UpdateCam* pTarget, CamBlendPolar* pB) asm("func_001ECCD8");
 
 int Camera_TransitionStep(UpdateCam* pTarget_, CamBlendStep* pB_) {
     register UpdateCam* pTarget asm("$16") = pTarget_;
@@ -453,7 +470,77 @@ int Camera_TransitionStep(UpdateCam* pTarget_, CamBlendStep* pB_) {
     return 0;
 }
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ECCD8);
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED2B0);
+// Bytes from the orientMtx base (0x187290) down to currentCamera.pos
+// (0x187080); the original computes the fourth copy destination with
+// `addiu -0x210` from the base register, so it must stay a runtime-relative
+// offset.
+#define CAM_POS_BEHIND_ORIENT_OFF 0x210
+// Per-frame camera blend dispatch (Camera_BlendCams in Deadlocked): steps the
+// active camera toward the target through the pos/quat transition
+// (Camera_TransitionStep) when the blend type is 0, otherwise through the
+// polar transition (func_001ECCD8). When a step reports the blend complete
+// and the occlusion subsystem has not staged its own transform
+// (occlCamState.staged), commits the target's orientation matrix quads to
+// currentCamera.orientMtx and the target's position quad to
+// currentCamera.pos, then clears the blend state. The boot-ELF entry point is
+// the unmangled Splat placeholder (the binary is stripped), so pin it with a
+// symbol override instead of the cfront-mangled
+// Camera_BlendCams__FP9UpdateCam.
+void Camera_BlendCams(UpdateCam* pTarget) asm("func_001ED2B0");
+
+void Camera_BlendCams(UpdateCam* pTarget) {
+    register UpdateCam* pTgt asm("$16") = pTarget;
+    CamBlender* pBlend = &camTransState;
+    int done;
+    if (pBlend->type == 0)
+        done = Camera_TransitionStep(pTgt, (CamBlendStep*)&pBlend->field_10);
+    else
+    {
+        // Force EGC to materialize pTgt into a0 for the polar call
+        // (`move a0,s0`); without the tied barrier it reuses the incoming
+        // a0 on both paths.
+        asm volatile("" : "+r"(pTgt));
+        done = func_001ECCD8(pTgt, (CamBlendPolar*)&pBlend->polar);
+    }
+    if (done != 0) {
+        if (occlCamState.staged == 0) {
+            register CameraQuad* d0 asm("$3") = (CameraQuad*)&currentCamera.orientMtx;
+            asm volatile("" : "+r"(d0));
+            register CameraQuad value asm("$2") = pTgt->mtx0;
+            *d0 = value;
+            asm volatile("");
+            CameraQuad* d1 = d0 + 1;
+            asm volatile("" : "+r"(d1));
+            CameraQuad* s1 = (CameraQuad*)pTgt + 1;
+            asm volatile("" : "+r"(s1));
+            value = *s1;
+            *d1 = value;
+            asm volatile("");
+            register CameraQuad* d2 asm("$6") = d0 + 2;
+            asm volatile("" : "+r"(d2));
+            CameraQuad* s2 = (CameraQuad*)pTgt + 2;
+            asm volatile("" : "+r"(s2));
+            value = *s2;
+            *d2 = value;
+            asm volatile("");
+            // The fourth slot is currentCamera.pos; keep the relative form
+            // (CAM_POS_BEHIND_ORIENT_OFF below the orientMtx base) rather
+            // than the address so EGC keeps the original `addiu -0x210`.
+            CameraQuad* d3 = (CameraQuad*)((u8*)d0 - CAM_POS_BEHIND_ORIENT_OFF);
+            asm volatile("" : "+r"(d3));
+            register CameraQuad* s3 asm("$4") = (CameraQuad*)pTgt + 3;
+            asm volatile("" : "+r"(s3));
+            value = *s3;
+            *d3 = value;
+        }
+        // EGC duplicates the last of the two merge stores into the staged
+        // branch's delay slot and points the branch at the first; the
+        // original (type=0 in the delay slot and after the copy, state=0 at
+        // the merge) needs this state/type source order.
+        pBlend->state = 0;
+        pBlend->type = 0;
+    }
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED360);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED470);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED7F0);
