@@ -26,6 +26,11 @@ extern "C" float func_001FA6C0(int x); // int -> float
 extern "C" int func_001FA6D0(float x); // float -> int
 // C linkage: handwritten VU fast cosine in the generated fast-function region.
 extern "C" float FastCos(float x);
+// C linkage: wraps an angle into its principal range; fast-function region.
+extern "C" float FastNormalizeAngle(float x);
+// C++ linkage (mangles to FastDecTimer__FRi): decrements the frame counter and
+// returns its 0/1/2 phase; implementation in the generated fast-function region.
+int FastDecTimer(int& x);
 #endif
 
 #endif

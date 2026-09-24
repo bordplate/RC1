@@ -2,6 +2,7 @@
 #include "types.h"
 #include "camera.h"
 #include "mobyutil.h"
+#include "actuator.h"
 
 extern u8 backupCam[];
 extern u8 backupCamData[];
@@ -541,7 +542,51 @@ void Camera_BlendCams(UpdateCam* pTarget) {
         pBlend->type = 0;
     }
 }
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED360);
+// 16-byte per-axis camera offset timer. Two slots live in currentCamera's pad
+// region (0x1870A0/0x1870B0) and are passed in by the caller; each drives one
+// orientation axis of the decaying position oscillation applied below.
+struct CamOffsetRec {
+    float amp;      // +0x00 oscillation amplitude
+    float result;   // +0x04 computed offset magnitude
+    int total;      // +0x08 remaining timer frames (decremented each tick)
+    int elapsed;    // +0x0C elapsed frames
+};
+
+// Advances one axis of the decaying position oscillation: decrements the offset
+// timer, scales the selected orientation axis (q[2] for which=0, q[0] for
+// which=1) by amp*cos(2*total)*ratio^2, and adds the result to the camera
+// position. Colliding with the hero in mode 6 cancels the oscillation.
+void Camera_OffsetTick(CamOffsetRec* p, int which) asm("func_001ED360");
+
+void Camera_OffsetTick(CamOffsetRec* p, int which) {
+    if (curCam != 0 && ((UpdateCam*)curCam)->collMode == 6) {
+        p->total = 0;
+        p->elapsed = 0;
+        return;
+    }
+    if (p->total != 0) {
+        if (p->elapsed < p->total)
+            p->elapsed = p->total;
+        FastDecTimer(p->total);
+        float ratio = func_001FA6C0(p->total) / func_001FA6C0(p->elapsed);
+        float totalF = func_001FA6C0(p->total);
+        float ang = FastNormalizeAngle(totalF + totalF);
+        float c = FastCos(ang);
+        float v = p->amp;
+        v *= c;
+        v *= ratio;
+        float r = v * ratio;
+        p->result = r;
+        Vec4 vec;
+        if (which == 0)
+            FastVecNormalize(&vec, &currentCamera.orientMtx.q[2], r);
+        else
+            FastVecNormalize(&vec, &currentCamera.orientMtx.q[0], r);
+        FastVecAdd(&currentCamera.pos, &currentCamera.pos, &vec);
+    } else {
+        p->elapsed = 0;
+    }
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED470);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED7F0);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED940);
