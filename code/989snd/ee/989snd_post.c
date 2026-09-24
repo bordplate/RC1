@@ -43,7 +43,17 @@ extern int snd_batchIndex;
 void snd_PrepareReturnBuffer(int* buf, int index);
 extern void snd_SendCurrentBatch(void);
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", func_0012E198);
+// Unreachable dead tail the original compiler emitted after
+// snd_BankLoadFromEE_CB (989snd_bankload.c): two 0x50 stack deallocations
+// matching its 0x50 frame, plus the alignment nop before
+// snd_ResolveBankXREFS. EGC 2.95.2 never regenerates a dead frame
+// deallocation after the epilogue (probed; see
+// decomp_state/notes/989snd_func_0012E198.md), so the bytes are preserved
+// with raw asm.
+asm("addiu $sp,$sp,0x50");
+asm("nop");
+asm("addiu $sp,$sp,0x50");
+asm("nop");
 
 void snd_ResolveBankXREFS(void) {
     snd_SendIOPCommandNoWait(SND_IOP_CMD_RESOLVE_BANK_XREFS, 0, 0, 0, 0);

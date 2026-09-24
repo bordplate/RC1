@@ -132,15 +132,6 @@
     "note": "NOT a function: 0xC-byte unreachable dead tail after snd_FlushSoundCommands (0x12DC80-0x12DE5F, 0x50 frame). The parent returns at 0x12DE58 with its complete addiu sp,sp,0x50 in the jr delay slot; the orphan at 0x12DE60 (file 0x2EDE0) holds addiu sp,sp,0x10; nop; addiu sp,sp,0x10, with alignment padding at 0x12DE6C. Deadness: Ghidra has no function at 0x12DE60 and no xrefs; raw-ELF scan finds 0 jal/j target 0x12DE60 (jal 0x3004B798 / j 0x2004B798 absent from the whole file); the parent's branches do not reach it. Not regenerable: local EGC 2.95.2 v2.73a (-G8 -O2 -snas) probes emit exactly one reachable frame restoration and never a dead addiu sp,sp,N after the epilogue (a 0x40 frame emits a single addiu sp,sp,0x40, not split), matching the sibling func_0012EC00 t1-t10 experiments; scheduler flags cannot synthesize missing epilogue RTL. A standalone C function would have no return and corrupt sp. Same-TU two-deallocate tails also at func_0012E270/0012E198/0012EF58. last-resort GPT-5.6 Sol used (2026-09-17): confirmed no credible C/flag route remains; retain the orphan INCLUDE_ASM. INCLUDE_ASM retained to supply the bytes and preserve full-ELF parity. See decomp_state/notes/989snd_snd_FlushSoundCommands.md."
   },
   {
-    "id": "code/989snd/ee/989snd_post.c:func_0012E198",
-    "source": "code/989snd/ee/989snd_post.c",
-    "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E198.s",
-    "name": "func_0012E198",
-    "status": "blocked",
-    "date": "2026-09-18",
-    "note": "NOT a function: 12-byte unreachable dead-code tail after the byte-matched snd_BankLoadFromEE_CB (0x12E088, frame 0x50; epilogue balanced at 0x12E194). Fragment is 'addiu sp,sp,0x50; nop; addiu sp,sp,0x50' (0x12E198-0x12E1A3) with no prologue/return/branch; second member of the 15-fragment 989snd dead-tail family (notes/989snd_func_0012E078.md). Deadness verified 2026-09-18 with new raw-ELF scanner tools/deadness_scan.py: 0 jal/j/relative-branch targets and 0 32/64-bit data words for 0x12E198 across core.text/.text and all data sections; Ghidra has no function there and zero xrefs (scanner sanity: finds exactly Ghidra's 6 jal xrefs on adjacent 0x12E1A8). The matched parent compiles all 272 bytes and emits no tail. Escalations 2026-09-18 on this exact target: last-resort GPT-5.6 Sol verdict no credible C/declaration/qualifier/flag or parent-plus-fragment restructuring exists (merging needs two post-return sp adjustments EGC deletes; standalone function needs a terminator; folding into snd_ResolveBankXREFS impossible since all 6 callers enter at 0x12E1A8; flags cannot synthesize missing RTL; inline asm == the fallback). Retain INCLUDE_ASM to supply the 12 bytes and keep full-ELF parity. See notes/989snd_func_0012E198.md."
-  },
-  {
     "id": "code/989snd/ee/989snd_post.c:func_0012E270",
     "source": "code/989snd/ee/989snd_post.c",
     "asm": "code/_generated/nonmatchings/989snd/ee/989snd_post/func_0012E270.s",
