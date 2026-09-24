@@ -141,9 +141,10 @@ callee-saved GPR rather than `&b`. This matches the sibling camera-collision blo
   produced a match or beat v16 (59).
 
 ## Probe command
+Best candidate (v16) preserved at `decomp_state/notes/camera_func_001ED7F0.candidate.cpp`.
 ```sh
 source .venv/bin/activate
-python3 tools/decomp_probe.py working/camera_func_001ED7F0/probe_v16.cpp \
+python3 tools/decomp_probe.py decomp_state/notes/camera_func_001ED7F0.candidate.cpp \
   code/_generated/nonmatchings/game/camera/func_001ED7F0.s Camera_checkCollLine__Fv \
   --define camCollStaged=0x15f624 --define func_001F0B58=0x1f0b58 --define func_002135F0=0x2135f0 \
   --out /tmp/opencode/camcoll-v16
