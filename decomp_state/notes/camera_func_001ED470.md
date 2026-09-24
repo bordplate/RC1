@@ -156,4 +156,5 @@ named `levelCamData` symbol). Full boot ELF parity preserved
 byte-for-byte). Shared declarations retained: `LevelCamData` /
 `levelCamData` (0x13F350), `CamCollState` / `camCollState` (0x1870D0, used by
 the matched function at camera.cpp:208), `FastVecScale` (0x1F9A68, common.h).
-Best C candidate preserved at working/camera_func_001ED470/camera_s6anchor.cpp.
+Best C candidate (the S6-anchor form, whole-file state) preserved at
+decomp_state/notes/camera_func_001ED470.candidate.cpp.
