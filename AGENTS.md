@@ -1120,3 +1120,8 @@ record and continue; the notification is not part of the completion oracle.
 Update this document (AGENTS.md) as you learn about the project, and new and better 
 strategies to progress with decompilation. If a piece of documentation is outdate or
 inaccurate you should fix it and commit the change in its own commit. 
+
+# Other decomp projects
+
+You can search and pull from these decompilation projects to merge changes and avoid redundant work:
+reference/Lombyte - An RC1 `SCUS_971.99` decompilation effort
