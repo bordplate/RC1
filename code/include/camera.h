@@ -59,6 +59,16 @@ struct CamBlender {
     CameraQuad pendingCam1; // 0xD0
 };
 
+// 16-byte per-axis camera offset timer (Camera_OffsetTick state); two slots
+// live at +0x160/+0x170 of struct Camera and drive the two orientation axes of
+// the decaying position oscillation.
+struct CamOffsetRec {
+    float amp;      // +0x00 oscillation amplitude
+    float result;   // +0x04 computed offset magnitude
+    int total;      // +0x08 remaining timer frames (decremented each tick)
+    int elapsed;    // +0x0C elapsed frames
+};
+
 // 0x186F40 (currentCamera) and 0x18CF10 (drawCamera); the level camera code
 // indexes the per-slot UpdateCam block through pCurrentUpdCam/pLastUpdCam.
 struct Camera {
@@ -69,7 +79,11 @@ struct Camera {
     float pos;             // 0x140: camera position x
     float posY;            // 0x144
     float posZ;            // 0x148
-    char pad_14C[0x34];
+    char pad_14C[4];
+    PolarSm rot;           // 0x150: azimuth/elevation/radius decomposed from orientMtx
+    char pad_15C[4];
+    CamOffsetRec offset0;  // 0x160: first offset-timer axis
+    CamOffsetRec offset1;  // 0x170: second offset-timer axis
     u32 pCurrentUpdCam;    // 0x180: current UpdateCam slot (low 32 bits)
     u32 pLastUpdCam;       // 0x184: previous UpdateCam slot (low 32 bits)
     char pad_188[0x28];

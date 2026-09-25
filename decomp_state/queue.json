@@ -273,13 +273,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:func_001EDAA8",
-    "source": "code/game/camera.cpp",
-    "asm": "code/_generated/nonmatchings/game/camera/func_001EDAA8.s",
-    "name": "func_001EDAA8",
-    "status": "todo"
-  },
-  {
     "id": "code/game/camera.cpp:func_001EDC30",
     "source": "code/game/camera.cpp",
     "asm": "code/_generated/nonmatchings/game/camera/func_001EDC30.s",

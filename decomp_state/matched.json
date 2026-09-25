@@ -2057,5 +2057,14 @@
     "size": 72,
     "matched_date": "2026-09-25",
     "note": "Per-frame screen-fade update (direct ancestor of Deadlocked's Camera_HandleScreenFade; called from the level-cam update 0x1EDAA8 between the camTimer bump and Camera_updateCollMode). Consumes currentCamera.screenFade (Camera+0x258, 0x187198) from the global screenFade (0x15F43C): next = screenFade - cur; when next <= 0 both are cleared. The original mixes address modes on 0x15F43C inside this one function (GPREL load + GPREL consume store in branch delay slots, self-based absolute zero store in the tail); reproduced with the plain screenFade symbol (unseeded -> absolute under ps2eeas) plus the seeded screenFadeGp alias (config/linker_aliases.ld), same mechanism as snd_BankLoadByLoc. EGC emitted the original 18-word layout (mtc1 interleaved between the currentCamera lui/addiu, both delay-slot stores, the at-based absolute pair) with default camera-TU flags on the first candidate. See notes/camera_Camera_HandleScreenFade.md."
+  },
+  "code/game/camera.cpp:806:UpdateCamera__Fv": {
+    "name": "UpdateCamera__Fv",
+    "original_name": "func_001EDAA8",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001EDAA8",
+    "size": 392,
+    "matched_date": "2026-09-25",
+    "note": "Per-frame single-camera update (UpdateCamera). Last blocker was the tail: func_001ED7F0 takes ZERO args (the original leaves a0 stale from the prior Camera_OffsetTick); declaring it (CamOffsetRec*) made EGC set up a0 -> 396 bytes. textScreenActive needs a two-register lui/lw (inline-asm pinned to $3). The four orientMtx/pos 128-bit copies use the Camera_BlendCams pin recipe; the tail base pointer is left un-pinned for the scratch-lui form. Full boot ELF parity passes. See notes/camera_func_001EDAA8.md."
   }
 }

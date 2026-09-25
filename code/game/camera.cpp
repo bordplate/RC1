@@ -624,16 +624,6 @@ void Camera_BlendCams(UpdateCam* pTarget) {
         pBlend->type = 0;
     }
 }
-// 16-byte per-axis camera offset timer. Two slots live in currentCamera's pad
-// region (0x1870A0/0x1870B0) and are passed in by the caller; each drives one
-// orientation axis of the decaying position oscillation applied below.
-struct CamOffsetRec {
-    float amp;      // +0x00 oscillation amplitude
-    float result;   // +0x04 computed offset magnitude
-    int total;      // +0x08 remaining timer frames (decremented each tick)
-    int elapsed;    // +0x0C elapsed frames
-};
-
 // Advances one axis of the decaying position oscillation: decrements the offset
 // timer, scales the selected orientation axis (q[2] for which=0, q[0] for
 // which=1) by amp*cos(2*total)*ratio^2, and adds the result to the camera
@@ -772,5 +762,126 @@ void Camera_HandleScreenFade(void) {
         }
     }
 }
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDAA8);
+// GameMode (0x15F604) vendor mode: matches bmain.cpp's GAME_MODE values and
+// Deadlocked's GAME_MODE_VENDOR (5); the text-screen early return below only
+// applies while the vendor mode is active.
+#define GAME_MODE_VENDOR 5
+extern u32 GameMode;
+// 0x1E6400: nonzero while a text screen is up (vendor mode); UpdateCamera
+// returns early before updating the camera while it is active.
+extern int textScreenActive;
+// 0x15EDB4: nonzero while the orientation matrix needs a rebuild; when set,
+// UpdateCamera crosses the orientMtx quads to re-derive the third axis.
+extern unsigned char orientRebuildFlag;
+// C linkage: unmangled Splat-placeholder callees. func_001ED7F0 takes no
+// arguments (it overwrites a0 on entry); the offset1 value the prior
+// Camera_OffsetTick leaves in a0 is intentionally left stale for it.
+extern "C" void func_001EC8A0(void* pLastUpdCam);
+extern "C" void func_001ED470(void);
+extern "C" void func_001ED7F0(void);
+extern "C" void func_001FA298(CameraMatrix* dst, const CameraMatrix* src);
+extern "C" void func_00214598(const CameraMatrix* src, PolarSm* polar);
+extern "C" void func_001EE4B0(void* pos);
+// Per-frame multi-camera update (INCLUDE_ASM above). The boot call is a bare
+// `jal; nop` with no a0 setup, so declare it zero-arg and pin the mangled
+// symbol; a (int) prototype would materialize an a0 load.
+void UpdateAllCameras(void) asm("UpdateAllCameras__Fi");
+
+// Per-frame single-camera update: bumps the camera timer, refreshes the screen
+// fade / collision mode / occlusion camera, and (unless the occlusion subsystem
+// has staged its own transform) commits the current UpdateCam's orientation
+// matrix quads and position quad into currentCamera. In vendor mode with an
+// active text screen it clears the transition state and returns early. When the
+// orientation-rebuild flag is set, crosses the orientMtx quads to re-derive the
+// third axis. Deadlocked names the equivalent UpdateCamera.
+//
+// EGC 2.95.2 128-bit copy scheduling: the four orientMtx/pos quad copies must
+// emit lq/sq with every field address materialized in its own addiu (dst in
+// a1/a0/a1/a0, src in v1/s1/v1/v1, value in v0). Natural C forms fold the
+// offsets into the lq/sq, so the copy block pins each pointer/value to a
+// disjoint register with a tied barrier and a zero-byte barrier between copies,
+// as in Camera_BlendCams. The textScreenActive load must stay a two-register
+// `lui v0; lw v1` (base v0, value v1); a plain or named form emits base==value,
+// so it is a short inline-asm pair.
+void UpdateCamera(void) {
+    if (GameMode == GAME_MODE_VENDOR) {
+        register int tsa asm("$3");
+        asm volatile(
+            "lui $2, %%hi(textScreenActive)\n\t"
+            "lw  $3, %%lo(textScreenActive)($2)\n\t"
+            : "=r"(tsa)
+        );
+        if (tsa != 0)
+            return;
+        camTransState.state = 0;
+        camTransState.type = 0;
+    }
+    currentCamera.camTimer++;
+    Camera_HandleScreenFade();
+    Camera_updateCollMode();
+    func_001ED470();
+    UpdateAllCameras();
+    register UpdateCam* pCurr asm("$17") = (UpdateCam*)currentCamera.pCurrentUpdCam;
+    if ((unsigned short)(currentCamera.blender.state - 1) < 2) {
+        func_001EC8A0((void*)currentCamera.pLastUpdCam);
+    }
+    if (currentCamera.blender.state == 3) {
+        Camera_BlendCams(pCurr);
+    } else if (occlCamState.staged == 0) {
+        {
+            register CameraQuad* pd asm("$5") = (CameraQuad*)&currentCamera.pos;
+            asm volatile("" : "+r"(pd));
+            register CameraQuad* ps asm("$3") = (CameraQuad*)&pCurr->posQuad;
+            asm volatile("" : "+r"(ps));
+            register CameraQuad val asm("$2") = *ps;
+            *pd = val;
+        }
+        asm volatile("");
+        {
+            register CameraQuad* pd asm("$4") = (CameraQuad*)&currentCamera.orientMtx;
+            asm volatile("" : "+r"(pd));
+            register CameraQuad val asm("$2") = pCurr->mtx0;
+            *pd = val;
+        }
+        asm volatile("");
+        {
+            register CameraQuad* pd asm("$5") = (CameraQuad*)&currentCamera.orientMtx.q[1];
+            asm volatile("" : "+r"(pd));
+            register CameraQuad* ps asm("$3") = (CameraQuad*)&pCurr->mtx1;
+            asm volatile("" : "+r"(ps));
+            register CameraQuad val asm("$2") = *ps;
+            *pd = val;
+        }
+        asm volatile("");
+        {
+            register CameraQuad* pd asm("$4") = (CameraQuad*)&currentCamera.orientMtx.q[2];
+            asm volatile("" : "+r"(pd));
+            register CameraQuad* ps asm("$3") = (CameraQuad*)&pCurr->mtx2;
+            asm volatile("" : "+r"(ps));
+            register CameraQuad val asm("$2") = *ps;
+            *pd = val;
+        }
+    }
+    if (occlCamState.staged == 0) {
+        CameraMatrix work;
+        func_001FA298(&work, &currentCamera.orientMtx);
+        func_00214598(&work, &currentCamera.rot);
+    }
+    CamOffsetRec* pOff = &currentCamera.offset0;
+    Camera_OffsetTick(pOff, 0);
+    Camera_OffsetTick(pOff + 1, 1);
+    func_001ED7F0();
+    func_001EE4B0((void*)((unsigned char*)pOff - 0x20));
+    if (orientRebuildFlag != 0) {
+        // Re-derive one orientMtx axis from the other two (q[1] = q[2] x q[0]).
+        // The three 16-byte quads are reached from the &offset0 base — already
+        // in a register from the Camera_OffsetTick calls above — as
+        // q[0]=+0x1F0, q[1]=+0x200, q[2]=+0x210 (&offset0+0x1F0 == &orientMtx,
+        // Camera+0x350). A direct field access would materialize a fresh
+        // absolute lui/addiu instead of the original's base+offset and break
+        // parity.
+        unsigned char* pB = (unsigned char*)pOff;
+        FastVecCross((void*)(pB + 0x200), (void*)(pB + 0x210), (void*)(pB + 0x1F0));
+    }
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDC30);

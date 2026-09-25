@@ -23,6 +23,9 @@ extern "C" void FastVecNormalize(void* dest, void* src, float w);
 // C linkage: handwritten fast function in game/fastfunc; scales the 16-byte
 // vector at src by w (f12), storing xyz at dst and copying w unchanged.
 extern "C" void FastVecScale(void* dest, void* src, float w);
+// C linkage: handwritten fast function in game/fastfunc; stores a x b in the
+// 16-byte vector at dest (a in a1, b in a2).
+extern "C" void FastVecCross(void* dest, void* a, void* b);
 // C++ linkage (mangles to FastArcSin__Ff): fast arcsine in game/fastfunc.
 float FastArcSin(float x);
 #endif
