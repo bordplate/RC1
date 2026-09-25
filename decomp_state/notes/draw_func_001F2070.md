@@ -44,7 +44,7 @@ disassembly constants were correct all along.
    0x7FB100B0 (op 0x1F minor 0x1D); objdump/EER alias $17 as "s1". The
    words are byte-identical to the original — do not chase the mnemonic.
 
-## Dead tail func_001F21A8 (retained orphan)
+## Dead tail func_001F21A8 (inline-asm byte preservation)
 
 After the parent's epilogue the original contains, 8-aligned:
 
@@ -79,9 +79,19 @@ last-resort GPT-5.6 Sol (2026-09-09) confirmed: the intermediate value
 v0 = 0x190000 has no corresponding C pointer value — symbolic accesses
 materialize the complete address or create another HI16 temporary — and
 no tested source/scheduling form emits anything after the `jr` delay slot.
-Recommendation (adopted): match the parent without the store statement,
-retain the orphan INCLUDE_ASM (it supplies the 8 bytes; the two nops come
-from the .align 3 boundaries), and block func_001F21A8 as a dead tail.
+Original 2026-09-09 resolution: match the parent without the store
+statement and retain the orphan INCLUDE_ASM, blocking func_001F21A8 as a
+dead tail.
+
+2026-09-25 update (current): per the AGENTS.md dead-tail policy (and the
+func_001F2068 / func_001F0BC8 precedent), the orphan INCLUDE_ASM in
+code/game/draw_post.cpp was converted to a raw-asm byte-preservation block
+that emits the exact two words `0xAC4001B0` (sw $zero,0x1B0($v0)) and
+`0x00000000` (nop) via `.align 3` + `nonmatching`/`glabel`, reproducing the
+generated layout. The parent (projectWorldPoint) stays matched with no store
+statement. The stale blocked.json entry (`code/game/draw.cpp:func_001F21A8`,
+a wrong-file key that never suppressed the draw_post.cpp target) was removed
+— dead tails are inline asm, not blockers. Full boot ELF cmp passes.
 
 Probes: decomp_state/probes/draw_func_001F2070_v4.cpp is the matched form
 (v1–v3, v5–v12 are comparison variants).

@@ -30,7 +30,26 @@ void projectWorldPoint(float* out, float* vec) {
     out[1] = r4[1] * 16.0f;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post", func_001F21A8);
+// Unreachable dead tail the original compiler emitted after
+// projectWorldPoint: a store of zero to 0x1B0 of the live v0, plus the
+// alignment nop before draw_noopA. EGC 2.95.2 never regenerates a dead store
+// after the epilogue (probed; see decomp_state/notes/989snd_func_0012DF18.md),
+// so the bytes are preserved with raw asm. The .align 3 and the
+// nonmatching/glabel pair reproduce the generated assembly's layout (one
+// alignment nop before the fragment).
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F21A8, 0x4\n"
+    "glabel func_001F21A8\n"
+    "    .word 0xAC4001B0\n"
+    "endlabel func_001F21A8\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 void draw_noopA(void) {
 }
