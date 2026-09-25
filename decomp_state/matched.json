@@ -2101,5 +2101,14 @@
     "size": 88,
     "matched_date": "2026-09-25",
     "note": "Pointer-relocation fixup for a loaded data chunk: obj=*(base+index*4+0x48); if obj->firstReloc(s32 @+0x14) nonzero make it absolute (obj+firstReloc); then for relocCount(u8 @+0x10) entries add obj base to each s32 @+0x1C. Leaf, no frame, no calls. Codegen: relocCount loop must be a do-while inside the if (a plain while hoists the arr addiu above the beqz -> 3-word prologue diff); relocCount read sign-extended via (s32)(u8). SN TU, default flags. Renamed from placeholder func_002032E0 to relocateObjectPointers (registered in config/symbols.txt); asm(\"relocateObjectPointers\") label keeps the unmangled symbol the three generated pause_post2 callers (func_002256E8/func_00225E70/func_00226848) reference. Clean full boot ELF parity passes. See notes/loaders_func_002032E0.md."
+  },
+  "code/game/vuchain.cpp:208:Vif1ChainCmd__Fi": {
+    "name": "Vif1ChainCmd",
+    "original_name": "func_00233F78",
+    "source": "code/game/vuchain.cpp",
+    "vram": "0x00233F78",
+    "size": 52,
+    "matched_date": "2026-09-25",
+    "note": "VIF1 chain command appender: appends the 16-byte packet [cmd + 0x90000000, 0, 0, 0] to the VU1 chain (head from *vu1ChainHead at 0x160F00) and advances the head by one packet (head+4 words). The draw pipeline (Transition_DefaultDraw, DrawDebugProfiler, space func_0022F288) calls it with VIF1 command values 0x2010000/0x2020000/0x2040000/0x2080000 to intersperse VIF1 commands among VU1 draw data. Name+semantics recovered from the Deadlocked debug symbols (Vif1ChainCmd__Fi; its body is byte-identical). Codegen: the head must stay two live values (base = original head for the 4 packet stores, head advanced to head+4 for the store-back) so EGC emits the move-to-base (daddu $5,$2,$0) + addiu-in-loaded-register (addiu $2,$2,0x10) + absolute head-advance store (lui/sw through the .data name, NOT the vu1ChainHeadStore alias); a single head variable CSEs the base and drops the move (48 vs 52 bytes), and storing the advance through the alias gives a GP-relative store instead of the original absolute one. SN TU with -mno-split-addresses. Clean full boot ELF parity passes. See notes/vuchain_Vif1ChainCmd__Fi.md."
   }
 }

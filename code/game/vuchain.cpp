@@ -196,4 +196,22 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233E00);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233F00);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/vuchain", func_00233F78);
+// Append a VIF1 chain command packet [cmd + 0x90000000, 0, 0, 0] to the VU1
+// chain and advance the head by one 16-byte packet. The draw pipeline calls it
+// with VIF1 command values (0x2010000/0x2020000/0x2040000/0x2080000) to
+// intersperse VIF1 commands among the VU1 draw data. Name recovered from the
+// Deadlocked debug symbols.
+// Codegen: the head must stay two live values (base = original head for the
+// packet stores, head advanced to head+4 for the store-back) so EGC emits the
+// move-to-base + addiu-in-loaded-register the original uses; a single head
+// variable CSEs the base and drops the move (48 bytes).
+void Vif1ChainCmd(int cmd) {
+    u32* head = (u32*)vu1ChainHead;
+    u32* base = head;
+    head = head + 4;
+    vu1ChainHead = head;
+    base[0] = cmd + 0x90000000;
+    base[1] = 0;
+    base[2] = 0;
+    base[3] = 0;
+}

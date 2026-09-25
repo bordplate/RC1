@@ -722,6 +722,7 @@ VU1_sendChain__Fv = 0x02336a0;
 VU1_swapChain__Fv = 0x0233630;
 VU1_initChain__Fv = 0x02335d0;
 VU1_setScissor__Fiiii = 0x233a40;
+Vif1ChainCmd__Fi = 0x233f78;
 vu1GsRegsNormal = 0x001de3c0;
 vu1GsRegsAlt = 0x001de3f0;
 vu1GsRegsFont = 0x0013cf10;
