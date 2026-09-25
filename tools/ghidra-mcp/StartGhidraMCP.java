@@ -103,6 +103,8 @@ public class StartGhidraMCP extends GhidraScript {
                 response = decompileByAddress(query.get("address"));
             } else if (path.equals("/create_function")) {
                 response = createFunction(query.get("address"), query.get("name"));
+            } else if (path.equals("/extend_function")) {
+                response = extendFunction(query.get("address"), query.get("end"));
             } else if (path.equals("/disassemble_function")) {
                 response = disassemble(query.get("address"));
             } else if (path.equals("/get_function_by_address")) {
@@ -308,6 +310,30 @@ public class StartGhidraMCP extends GhidraScript {
                 + " body " + function.getBody().getMinAddress() + " - " + function.getBody().getMaxAddress();
         } catch (Exception e) {
             return "Create failed: " + e.getMessage();
+        } finally {
+            program.endTransaction(transaction, success);
+        }
+    }
+
+    private String extendFunction(String entryText, String endText) {
+        Function function = functionAt(entryText);
+        if (function == null) {
+            return "No function found at " + entryText;
+        }
+        Address end = address(endText);
+        String name = function.getName();
+        int transaction = program.startTransaction("Headless GhidraMCP extend function");
+        boolean success = false;
+        try {
+            AddressSet newBody = new AddressSet(function.getEntryPoint(), end);
+            program.getFunctionManager().removeFunction(function.getEntryPoint());
+            Function rebuilt = program.getFunctionManager().createFunction(
+                name, program.getGlobalNamespace(), function.getEntryPoint(), newBody, SourceType.USER_DEFINED);
+            success = true;
+            return "Rebuilt " + rebuilt.getName() + " body " + rebuilt.getBody().getMinAddress()
+                + " - " + rebuilt.getBody().getMaxAddress();
+        } catch (Exception e) {
+            return "Extend failed: " + e.getMessage();
         } finally {
             program.endTransaction(transaction, success);
         }
