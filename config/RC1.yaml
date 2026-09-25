@@ -138,6 +138,8 @@ segments:
     - [0xef5d0, asm, game/cmecpu]
     - [0xf0948, asm, game/collproc]
     - [0xf1b08, cpp, game/draw]
+    - [0xf1c60, cpp, game/draw_occl]
+    - [0xf2ff0, cpp, game/draw_post]
     - [0xf8a18, asm, game/drawquad]
     - [0xfa5c8, asm, game/fastfunc]
     - [0xfb7e0, cpp, game/framebuf]

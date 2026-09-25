@@ -9,7 +9,8 @@ struct PAD {
     u8 pad_0x00[0x18E];
     s16 field_18e;
     u32 field_190;
-    u8 pad_0x194[0x10];
+    u8 pad_0x194[0xC];
+    u32 field_1A0;
     int pressedButtons;
 };
 

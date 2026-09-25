@@ -107,4 +107,45 @@ extern CamBlender camTransState __attribute__((section(".data")));
 // level-provided (zero in boot).
 extern CameraQuad camPosOffset __attribute__((section(".data")));
 
+// 0x18C318: occlusion camera debug-sampler state. +0x14 (occlCamStaged) is
+// nonzero while the occlusion subsystem stages its own camera transform, in
+// which case camera switches and occlusion-visibility setup skip committing
+// to currentCamera. The remaining fields are driven by the occlusion debug
+// sampler state machine (state/subState) fed by the pad button masks.
+struct OcclCamState {
+    u8 pad_04[4];
+    u32 bits1; // +0x04: per-subState bitfield toggled by the case 2 sampler
+    u32 bits0; // +0x08: per-subState bitfield toggled by the case 0 sampler
+    u32 state; // +0x0C: main sampler state (0..5)
+    u32 subState; // +0x10: sub sampler state (0..10)
+    u32 staged; // +0x14 (occlCamStaged)
+    u32 step1; // +0x18: 0..7 wrap counter (case 1 subState 1)
+    u32 step2; // +0x1C: 0..2 wrap counter (case 1 subState 2, case 6)
+    u32 flagA; // +0x20: toggle (case 1 subState 3)
+    u32 flagB; // +0x24: toggle (case 1 subState 4)
+    u32 flagC; // +0x28: toggle gating the fog params (case 1 subState 5)
+    u32 stepD; // +0x2C: 0..2 wrap counter (case 6)
+    u32 flagE; // +0x30: toggle (case 1 subState 7)
+    u32 flagF; // +0x34: toggle gating the camera scale (case 1 subState 8)
+    u32 stepG; // +0x38: -1..0x24 wrap counter (case 1 subState 9)
+    u32 index; // +0x3C: 0..0x10 wrap index (case 1 subState 10)
+    u8 pad_40[0x44]; // +0x40..+0x83
+    f32 angleA; // +0x84: FastSubRots(occlCamVecFloatA - posZ, radius)
+    f32 angleB; // +0x88: FastSubRots(FastArcTan result, radius)
+    f32 angleC; // +0x8C: FastArcTan(dy, dz)
+    f32 angleD; // +0x90: occlCamVecFloatA - posZ
+    s32 posIntX; // +0x94: (int)pos >> 2
+    s32 posIntY; // +0x98: (int)posY >> 2
+    s32 posIntZ; // +0x9C: (int)posZ >> 2
+    u8 pad_a0[4]; // +0xA0..+0xA3
+    u32 bgColorCache; // +0xA4: flushed to occlBgColorReturn on 0x500
+    u8 pad_a8[0x48]; // +0xA8..+0xEF
+    u32 toggleH; // +0xF0: toggle (case 5 subState 0)
+    u32 toggleI; // +0xF4: toggle (case 5 subState 1)
+    u8 logFlag0; // +0xF8: 0x6e/0x79 sampler log flag
+    u8 logFlag1; // +0xF9: 0x6e/0x79 sampler log flag
+    u8 pad_fa[6]; // +0xFA..+0xFF
+};
+extern struct OcclCamState occlCamState;
+
 #endif

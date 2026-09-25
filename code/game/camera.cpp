@@ -477,18 +477,11 @@ struct CamBlendPolar {
 };
 // 0x18C318: occlusion camera state. +0x14 (occlCamStaged, 0x18C32C) is
 // nonzero while the occlusion subsystem stages its own camera transform, in
-// which case camera switches and occlusion-visibility setup skip committing
-// to currentCamera. The original loads the base into s3 and reads +0x14.
-struct OcclCamState {
-    u8 pad_14[0x14];
-    u32 staged; // +0x14 (occlCamStaged)
-};
 // 0x15ED60: per-frame transition step scale; the first word of a nine-word
 // parameter table (0x15ED60-0x15ED80) that func_00214970 writes at level
 // start, keyed on videoModePal (1.0f for NTSC, 1.1f for PAL). Scales the
 // camera transition progress increments and space-transition alpha ramps.
 extern f32 transStepScale;
-extern struct OcclCamState occlCamState;
 
 extern "C" float func_002133D0(float a, float b, float t);
 extern "C" void func_002144D8(CameraQuad* dst, UpdateCam* src);

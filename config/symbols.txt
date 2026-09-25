@@ -780,3 +780,61 @@ LightTies = 0x0237370;
 
 // vendor
 setupViewContext = 0x00239750;
+
+// occlusion-cam debug sampler callees (hand-assembled segments)
+strlen = 0x001166CC;
+fptodp = 0x00120478;
+sceOpen = 0x0011BC80;
+sceClose = 0x0011BF08;
+sceLseek = 0x0011C088;
+sceRead = 0x0011C2C0;
+sceWrite = 0x0011C520;
+func_001F9B20 = 0x001F9B20;
+func_001FA6C0 = 0x001FA6C0;
+
+// occlusion-cam debug sampler data
+occlCamSubStateTable = 0x0015F010;
+occlFogCtr0 = 0x0015F484;
+occlFogCtr1 = 0x0015F485;
+occlFogCtr2 = 0x0015F486;
+occlFogNear = 0x0015F488;
+occlFogFar = 0x0015F48C;
+occlFogParam0 = 0x0015F490;
+occlFogParam1 = 0x0015F494;
+occlFlag0 = 0x0015F640;
+occlSampleCount = 0x0015F654;
+occlSamplePoints = 0x001940E0;
+occlValueTable = 0x0013D428;
+occlU16TableA = 0x0018640E;
+occlU16TableB = 0x001DFFBE;
+occlCamParam0 = 0x001518D0;
+occlCamParam1 = 0x001518D2;
+occlCharTable = 0x0014C050;
+occlCharArray = 0x0015FC08;
+occlDefaultCount = 0x0015ED98;
+occlSampleDefaults = 0x001E77C0;
+occlPathPrefix = 0x001E77D8;
+occlSampleDeltasName = 0x001E77F8;
+occlAddSampleFmt = 0x001E7810;
+occlStartPtFmt = 0x001E7830;
+occlPathFmt = 0x0015F020;
+occlSemiOne = 0x0015F030;
+occlSampleName = 0x0015F038;
+occlCamScale0 = 0x0018CF00;
+occlCamScale1 = 0x0018CF04;
+occlCamScale2 = 0x0018CF08;
+occlCamScale3 = 0x0018CF0C;
+occlColor0 = 0x0018CF3C;
+occlColor1 = 0x0018CF40;
+occlColor2 = 0x0018CF44;
+occlFogFarSet = 0x00160EC0;
+occlFogCount = 0x0015FF30;
+occlFogNearSet = 0x00160F70;
+occlFogDensitySet = 0x001603E4;
+occlFogMode = 0x001600BC;
+occlCamVec = 0x0013F3D0;
+occlCamVecFloatA = 0x0013F3D8;
+occlCamVecFloatB = 0x0013F3E8;
+occlCamParamBase = 0x00151780;
+occlU16TableABase = 0x001863D0;
+occlU16TableBBase = 0x001DFFB0;
