@@ -884,4 +884,26 @@ void UpdateCamera(void) {
         FastVecCross((void*)(pB + 0x200), (void*)(pB + 0x210), (void*)(pB + 0x1F0));
     }
 }
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDC30);
+// Unreachable dead tail the original compiler emitted after
+// UpdateCamera: a `move v0,a1`, a 0x20 stack deallocation, and a zero store
+// to a1+4, with no prologue or return and nothing reaching it (0 xrefs; no
+// Ghidra function). EGC 2.95.2 does not regenerate this RTL, so the bytes are
+// preserved with raw asm at this source position.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001EDC30, 0x1C\n"
+    "glabel func_001EDC30\n"
+    "    .word 0x00a0102d\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0020\n"
+    "    .word 0x00000000\n"
+    "    .word 0x00000000\n"
+    "    .word 0x00000000\n"
+    "    .word 0xac400004\n"
+    "endlabel func_001EDC30\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
