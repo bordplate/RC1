@@ -56,6 +56,7 @@ hudMessageTimer = 0x0015F8F8;
 tieLightData = 0x001E3200;
 tieLightData2 = 0x001E4400;
 currentCamera = 0x00186F40;
+effectRibbon = 0x00187300;
 drawCamera = 0x0018CF10;
 lvlCamVtbl = 0x001E8C00;
 drawOcclusionEnabled = 0x0015F49C;
@@ -242,6 +243,7 @@ wad_GetSectors_FiiPv = 0x12f208;
 DrawRectOverlay_FiiiiUl = 0x01f52a0;
 
 DrawDebugProfiler = 0x001f39d0;
+projectWorldPoint__FPfT0 = 0x001f2070;
 
 // camera 
 Camera_ActivationCheckPriority = 0x01ec210;
@@ -813,6 +815,7 @@ occlU16TableA = 0x0018640E;
 occlU16TableB = 0x001DFFBE;
 occlCamParam0 = 0x001518D0;
 occlCamParam1 = 0x001518D2;
+occlViewParams = 0x0013E500;
 occlCharTable = 0x0014C050;
 occlCharArray = 0x0015FC08;
 occlDefaultCount = 0x0015ED98;
