@@ -2083,5 +2083,14 @@
     "size": 116,
     "matched_date": "2026-09-25",
     "note": "Font text request submitter: records {x, y, field_0x08, fontTextCursor} in fontTextSlots[fontTextSlotIndex], bumps the index, then fontTextCursor += sprintf(fontTextCursor, \"%s\", text) + 1 (fontTextFormat at 0x15F008 holds the LE bytes of \"%s\"; 0x116248 is the SDK sprintf per Lombyte's mdebug-recovered names, confirmed in our address space). Codegen: cursor store must precede index store; the ret+1 needs the explicit `count` local; direct subscripts reproduce the re-materialized address pair; unspecified-size fontTextFormat array gives the absolute format-address lui/addiu. GNU TU (--assembler=gnu). Field_0x08 and the [20] slot count are inferred (overlay-only caller, unbounded zero data region). Full boot ELF parity passes. See notes/draw_func_001F0BD0.md."
+  },
+  "code/game/draw.cpp:129:fontTextSubmitCentered": {
+    "name": "fontTextSubmitCentered",
+    "original_name": "func_001F0C50",
+    "source": "code/game/draw.cpp",
+    "vram": "0x001F0C50",
+    "size": 140,
+    "matched_date": "2026-09-25",
+    "note": "Measures the pixel width of a font string (sum of fontCharWidths entries indexed by c-0x20, clamping c>=0x60 to index 0x20), submits it via fontTextSubmit centered on x (drawn at x-width/2), and returns that centered left edge. Codegen tiebreaks: the parameter must be unsigned char* so the guard if(*text) and while(*p) emit lbu (a char* param or a cast on a boolean test keeps lb); the width select must be written as int w=c; if(c>=0x60) w=0x20; (preload the register value then conditionally overwrite with the constant) to make EGC hoist li t3,32 and emit sltiu+movn (ternary / w=0x20; if(c<0x60) w=c forms emit sltu+movz with an inlined 32); x-=sum>>1 gives a single sra (sum/2 emits a 3-instr rounding idiom); p=text is declared before the if so move t0,a3 lands in the beqz delay slot. The 8 bytes at 0x1F0C48 are fontTextSubmit's dead 0x30 frame dealloc (its own 0x10 epilogue is the addiu sp,sp,16 in the jr delay slot), preserved with raw asm; the real code starts at 0x1F0C50. Named fontCharWidths=0x189DC0 in config/symbols.txt. Full boot ELF parity passes."
   }
 }

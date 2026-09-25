@@ -65,6 +65,11 @@ extern char* fontTextCursor;
 extern int fontTextSlotIndex;
 extern const char fontTextFormat[];
 
+// Per-character glyph widths for the font: entry i holds the advance width
+// of character i + 0x20, so text is measured as fontCharWidths[c - 0x20].
+// Only indices 0x00-0x5F are read (wider characters clamp to 0x20).
+extern int fontCharWidths[];
+
 // C linkage: 0x116248 is the SDK sprintf, generated code
 // (code/_generated/glibc.s) with an unmangled entry point.
 extern "C" int sprintf(char* str, const char* format, ...);
@@ -93,7 +98,50 @@ void fontTextSubmit(int x, int y, int field_0x08, char* text) {
     fontTextCursor += count;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0C48);
+// Unreachable dead tail the original compiler emitted after fontTextSubmit:
+// a 0x30 stack deallocation matching no frame (fontTextSubmit's own 0x10
+// epilogue is the addiu sp,sp,16 in its jr delay slot at 0x1F0C40), plus the
+// alignment nop before func_001F0C50. EGC 2.95.2 never regenerates a dead
+// frame deallocation after the epilogue, so the bytes are preserved with raw
+// asm. The .align 3 reproduces the alignment nop at 0x1F0C44.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F0C48, 0x8\n"
+    "glabel func_001F0C48\n"
+    "    .word 0x27bd0030\n"
+    "    .word 0x00000000\n"
+    "endlabel func_001F0C48\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+
+// Measures the pixel width of a font string (sum of fontCharWidths entries,
+// indexed by c - 0x20 with c >= 0x60 clamped to index 0x20), then submits it
+// via fontTextSubmit centered on x: the text is drawn at x - width/2, and
+// that centered left edge is returned. The real code starts at 0x1F0C50,
+// after the dead tail above.
+int fontTextSubmitCentered(int x, int y, int field_0x08, unsigned char* text)
+    asm("func_001F0C50");
+
+int fontTextSubmitCentered(int x, int y, int field_0x08, unsigned char* text) {
+    int sum = 0;
+    unsigned char* p = text;
+    if (*text) {
+        do {
+            unsigned char c = *p++ - 0x20;
+            int w = c;
+            if (c >= 0x60)
+                w = 0x20;
+            sum += fontCharWidths[w];
+        } while (*p);
+    }
+    x -= sum >> 1;
+    fontTextSubmit(x, y, field_0x08, (char*)text);
+    return x;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0CE0);
 
