@@ -140,11 +140,22 @@ struct LevelCamInner {
     f32 f98;              // +0x98 pushed into camCollState.ring[4] each frame
     char pad_7C[0x1F4];   // +0x9C
     f32 dir290[4];        // +0x290 (0x13F5E0) source of camCollState.aCur
-    char pad_280[0x5C];   // +0x2A0
+    char pad_280[0x50];   // +0x2A0
+    f32 f2F0;             // +0x2F0 z threshold; collision flag when < currentCamera.posZ
+    char pad_2D4[0x8];    // +0x2F4
     u32 pCollMoby;        // +0x2FC level-placed collision moby (32-bit slot)
-    char pad_2E0[0x1D84]; // +0x300
+    char pad_2E0[0xFE4];  // +0x300
+    u8 c12E4;             // +0x12E4 mode select: clears collMode
+    u8 c12E5;             // +0x12E5 mode select: collMode 0x100
+    u8 c12E6;             // +0x12E6 mode select: collMode 0x300
+    char pad_12C7[4];     // +0x12E7
+    u8 c12EB;             // +0x12EB mode select: collMode 0xB00
+    u8 c12EC;             // +0x12EC mode select: collMode 0xD00
+    char pad_12CD[0xD97]; // +0x12ED
     int i2084;            // +0x2084 (0x1413D4)
-    char pad_2068[0x1FC]; // +0x2088
+    char pad_2068[4];     // +0x2088
+    u32 i208C;            // +0x208C state index gating the collision flag
+    char pad_2070[0x1F4]; // +0x2090
     int i2284;            // +0x2284 (0x1415D4)
     char pad_2268[0x88];  // +0x2288
 };
@@ -183,7 +194,7 @@ struct CamCollState {
     float fA4;             // +0xA4 pre-normalization length of v80
     float fA8;             // +0xA8 |dir80 - v60| (duplicate of fA0)
     float ring[5];         // +0xAC history of levelCamData.f98, shifted per frame
-    char pad_C0[4];        // +0xC0
+    int collMode;          // +0xC0 selected collision mode (0x100/0x300/0xB00/0xD00/0)
     MobyInstance* pCamColl; // +0xC4 -> 0x187194
     char pad_CC[12];       // +0xC8
     u32 pCollMoby;         // +0xD4 level's collision moby (32-bit slot)
@@ -191,6 +202,9 @@ struct CamCollState {
     float mobyZDelta;      // +0xDC per-frame pos.z delta
 };
 extern CamCollState camCollState __attribute__((section(".data")));
+extern int camCollFlag;
+extern int camCollFlagPrev;
+extern int camCollMode;
 
 struct UpdateCam;
 // func_001E9448 is a boot-ELF stub (jr $ra) for the hero-collision moby
@@ -662,7 +676,47 @@ void Camera_OffsetTick(CamOffsetRec* p, int which) {
 // do not match. See decomp_state/notes/camera_func_001ED470.md.
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED470);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED7F0);
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED940);
+// camCollState's address is taken into a long-lived local (set first, used only
+// in the mode chain below) so EGC hoists the base into the prologue and keeps
+// the level-cam reads on the original registers; using the global directly
+// materializes the base at point of use and breaks the byte match.
+void Camera_updateCollMode(void) asm("func_001ED940");
+
+void Camera_updateCollMode(void) {
+    CamCollState* q;
+
+    q = &camCollState;
+    camCollFlag = 0x14;
+    if ((u32)(levelCamData.inner.i208C - 0x11) < 2U ||
+        levelCamData.inner.i2084 == 0x73) {
+        camCollFlag = 0x34;
+    }
+    if (levelCamData.inner.i208C != 0x11 &&
+        levelCamData.inner.f2F0 < currentCamera.posZ) {
+        camCollFlag = 0x14;
+    }
+    camCollFlagPrev = camCollFlag;
+    camCollFlag |= 0x80;
+    camCollMode = 0xB4;
+    if (levelCamData.inner.c12E5 != 0) {
+        q->collMode = 0x100;
+        camCollMode = 0x1B4;
+    } else if (levelCamData.inner.c12EB != 0) {
+        q->collMode = 0xB00;
+        camCollMode = 0xBB4;
+    } else if (levelCamData.inner.c12E6 != 0) {
+        q->collMode = 0x300;
+        camCollMode = 0x3B4;
+    } else if (levelCamData.inner.c12EC != 0) {
+        q->collMode = 0xD00;
+        camCollMode = 0xDB4;
+    } else if (levelCamData.inner.c12E4 != 0) {
+        q->collMode = 0;
+        camCollMode = 0xB4;
+    } else {
+        camCollMode = q->collMode | 0xB4;
+    }
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDA60);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDAA8);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDC30);

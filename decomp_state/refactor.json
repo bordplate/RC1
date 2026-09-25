@@ -3,11 +3,25 @@
     "id": "camera_Camera_TransitionStep",
     "file": "code/game/camera.cpp",
     "function": "func_001ECAF8",
-    "addresses": ["0x1ECAF8"],
+    "addresses": [
+      "0x1ECAF8"
+    ],
     "category": "style",
     "description": "Placeholder names in Camera_TransitionStep to resolve once their meaning/owners are confirmed: D_0015ED60 (transition step scale f32), D_0018C318 (base whose +0x14 is occlCamStaged 0x18C32C), D_00187290 (64-byte orientation matrix), and camPos16 asm(\"Camera\") (data symbol 0x187080 == &currentCamera.pos, which collides with struct Camera and is currently bound via a symbol override). Renaming must preserve the matched codegen: the occlusion flag must stay a base+0x14 read (base kept in s3), D_00187290 must stay a 64-byte CameraMatrix, and the 128-bit copy to Camera must keep its pinned dst=$3/src=$4/value=$2 form. See notes/camera_func_001ECAF8.md.",
     "evidence": "notes/camera_func_001ECAF8.md",
     "status": "done",
     "resolved": "2026-09-24: placeholders renamed (transStepScale, occlCamState/staged, currentCamera.orientMtx, &currentCamera.pos); standalone Camera symbol removed; object diff shows only field-offset LO16 immediates that link to the same values; full boot ELF cmp passes. See notes/camera_func_001ECAF8.md."
+  },
+  {
+    "id": "camera_Camera_updateCollMode",
+    "file": "code/game/camera.cpp",
+    "function": "Camera_updateCollMode",
+    "addresses": [
+      "0x1ED940"
+    ],
+    "category": "style",
+    "description": "Collision flag/mode literals (0x14, 0x34, 0x80, 0xB4 base, 0x100/0x300/0xB00/0xD00 collMode select, 0x73, 0x11, 2) should become named constants once their semantics are confirmed. The byte match currently relies on the raw literals; renaming must preserve the exact per-branch constant values and the collMode|0xB4 fold so camera.o stays parity-identical.",
+    "evidence": "matched.json:code/game/camera.cpp:685:Camera_updateCollMode; reference/Lombyte/src/textbin/fun_001ed940.c",
+    "status": "open"
   }
 ]

@@ -2040,5 +2040,13 @@
     "size": 268,
     "matched_date": "2026-09-24",
     "note": "Camera sway: per-axis (CamOffsetRec* p, int which) decaying position oscillation. Cancels on hero collision mode 6; else clamps elapsed to total, FastDecTimer(total), magnitude amp*cos(2*total)*(total/elapsed)^2, adds normalize(q[2] if which==0 else q[0])*result to currentCamera.pos. Key codegen: positive-path `if (total!=0){...} else {elapsed=0;}` (NOT an early return) fixes the branch-direction inversion; 3 i2f calls (numerator total, elapsed denom, angle total) with totalF+totalF CSE; reset-block stores in reverse order (total then elapsed); curCam needs .data section attr. FastNormalizeAngle + FastDecTimer__FRi added to actuator.h. last-resort-decompiler supplied the if/else structure. camera.o default flags; full boot parity passes. See notes/camera_func_001ED360.md."
+  },
+  "code/game/camera.cpp:685:Camera_updateCollMode": {
+    "name": "Camera_updateCollMode",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001ED940",
+    "size": 288,
+    "matched_date": "2026-09-25",
+    "note": "Per-frame camera collision-mode/flag update (sym func_001ED940). Sets camCollFlag from levelCamData.inner.i208C/i2084 (with a < currentCamera.posZ z-threshold on f2F0), then camCollFlagPrev=flag, flag|=0x80, and selects camCollState.collMode/camCollMode from the level flags c12E5/EB/E6/EC/E4 (mode = collMode|0xB4). Codegen keys: taking &camCollState into a long-lived local `q` (set first, used only in the mode chain) makes EGC hoist that base into the prologue and keep the level-cam reads on a1/a3; using the global directly materializes the base at point of use and breaks the match. The c12E4 test compiles to a beqzl likely-branch because the else-only collMode load lands in the annulled delay slot of the full if/else-if CFG. Source shape mirrors reference/Lombyte/src/textbin/fun_001ed940.c. Full boot parity passes. See notes/camera_Camera_updateCollMode.md."
   }
 }
