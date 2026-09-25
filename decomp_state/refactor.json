@@ -21,7 +21,8 @@
     ],
     "category": "style",
     "description": "Collision flag/mode literals (0x14, 0x34, 0x80, 0xB4 base, 0x100/0x300/0xB00/0xD00 collMode select, 0x73, 0x11, 2) should become named constants once their semantics are confirmed. The byte match currently relies on the raw literals; renaming must preserve the exact per-branch constant values and the collMode|0xB4 fold so camera.o stays parity-identical.",
-    "evidence": "matched.json:code/game/camera.cpp:685:Camera_updateCollMode; reference/Lombyte/src/textbin/fun_001ed940.c",
-    "status": "open"
+    "evidence": "matched.json:code/game/camera.cpp:685:Camera_updateCollMode; reference/Lombyte/src/textbin/fun_001ed940.c; reference/dl/game_dl/camera.cpp Cam_HandleHotspots; reference/dl/game_dl/guber/Hero.h",
+    "status": "done",
+    "resolved": "2026-09-25: semantics confirmed via Deadlocked's Cam_HandleHotspots (direct descendant; same values plus a 0x1000 bit, hero water states SWIM/SURF/WADE): literals named CAM_COLL_FLAG_LAND/WATER/ACTIVE, CAM_COLL_MODE_BASE, CAM_HOTSPOT_LAVA/DEATH_SAND/QUICK_SAND/ICE_WATER/WATER, CAM_HERO_STATE_TYPE_WATER(_SPAN), CAM_HERO_STATE_WADE; per-branch hotspot|base folds unchanged; LevelCamInner fields renamed (hotSpot*, heroState/heroStateType, waterHeight). Verified: tu_assembler_diff camera.o 26/26 match, full boot ELF cmp passes. See notes/camera_Camera_updateCollMode.md."
   }
 ]

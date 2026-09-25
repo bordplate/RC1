@@ -141,20 +141,20 @@ struct LevelCamInner {
     char pad_7C[0x1F4];   // +0x9C
     f32 dir290[4];        // +0x290 (0x13F5E0) source of camCollState.aCur
     char pad_280[0x50];   // +0x2A0
-    f32 f2F0;             // +0x2F0 z threshold; collision flag when < currentCamera.posZ
+    f32 waterHeight;      // +0x2F0 water-surface z; land flag when camera is above it
     char pad_2D4[0x8];    // +0x2F4
     u32 pCollMoby;        // +0x2FC level-placed collision moby (32-bit slot)
     char pad_2E0[0xFE4];  // +0x300
-    u8 c12E4;             // +0x12E4 mode select: clears collMode
-    u8 c12E5;             // +0x12E5 mode select: collMode 0x100
-    u8 c12E6;             // +0x12E6 mode select: collMode 0x300
+    u8 hotSpotWater;      // +0x12E4 hotspot select: water (clears collMode)
+    u8 hotSpotLava;       // +0x12E5 hotspot select: lava
+    u8 hotSpotQuickSand;  // +0x12E6 hotspot select: quicksand
     char pad_12C7[4];     // +0x12E7
-    u8 c12EB;             // +0x12EB mode select: collMode 0xB00
-    u8 c12EC;             // +0x12EC mode select: collMode 0xD00
+    u8 hotSpotDeathSand;  // +0x12EB hotspot select: death sand
+    u8 hotSpotIceWater;   // +0x12EC hotspot select: ice water
     char pad_12CD[0xD97]; // +0x12ED
-    int i2084;            // +0x2084 (0x1413D4)
+    int heroState;        // +0x2084 (0x1413D4) hero state mirrored for camera collision
     char pad_2068[4];     // +0x2088
-    u32 i208C;            // +0x208C state index gating the collision flag
+    u32 heroStateType;    // +0x208C hero state type mirrored for camera collision
     char pad_2070[0x1F4]; // +0x2090
     int i2284;            // +0x2284 (0x1415D4)
     char pad_2268[0x88];  // +0x2288
@@ -194,7 +194,8 @@ struct CamCollState {
     float fA4;             // +0xA4 pre-normalization length of v80
     float fA8;             // +0xA8 |dir80 - v60| (duplicate of fA0)
     float ring[5];         // +0xAC history of levelCamData.f98, shifted per frame
-    int collMode;          // +0xC0 selected collision mode (0x100/0x300/0xB00/0xD00/0)
+    int collMode;          // +0xC0 selected hotspot mode (CAM_HOTSPOT_*, set by
+                           //     Camera_updateCollMode)
     MobyInstance* pCamColl; // +0xC4 -> 0x187194
     char pad_CC[12];       // +0xC8
     u32 pCollMoby;         // +0xD4 level's collision moby (32-bit slot)
@@ -665,7 +666,7 @@ void Camera_OffsetTick(CamOffsetRec* p, int which) {
 // scaled by dot(v70, a); v80 = v70 - b, normalized in place), caching the
 // intermediate dot and length. Maintains the 5-slot f98 history ring, writes
 // levelCamData.dir80 components into f00/f04 (and smooths f08 toward
-// dir80[3] via Cam_InterpValues unless i2284 == 0x50 with i2084 != 0x11), and
+// dir80[3] via Cam_InterpValues unless i2284 == 0x50 with heroState != 0x11), and
 // tracks levelCamData.pCollMoby's oClass/pos.z when it is set.
 //
 // BLOCKED (EGC 2.95.2 scheduling): a C form reproduces the original register
@@ -676,6 +677,30 @@ void Camera_OffsetTick(CamOffsetRec* p, int which) {
 // do not match. See decomp_state/notes/camera_func_001ED470.md.
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED470);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001ED7F0);
+// Camera-collision flags and hotspot modes written every frame by
+// Camera_updateCollMode; nothing in the boot ELF reads the three globals
+// (level overlays do). Deadlocked's Cam_HandleHotspots is the direct
+// descendant: the same values plus a 0x1000 bit (0x1004/0x1024/0x10A4), and
+// the hero water states are HERO_TYPE_SWIM/SURF (state type 0x11/0x12) and
+// HERO_STATE_WADE (state 0x72 there, 0x73 here).
+//
+// Sphere-collision flag (camCollFlag), its pre-active copy
+// (camCollFlagPrev), and bump/hotspot mode (camCollMode = hotspot | base):
+#define CAM_COLL_FLAG_LAND 0x14      // default flag
+#define CAM_COLL_FLAG_WATER 0x34     // hero in a water state
+#define CAM_COLL_FLAG_ACTIVE 0x80    // OR'd in after saving the pre-active copy
+#define CAM_COLL_MODE_BASE 0xB4
+// Hotspot modes; the first set levelCamData.hotSpot* flag wins.
+#define CAM_HOTSPOT_LAVA 0x100
+#define CAM_HOTSPOT_DEATH_SAND 0xB00
+#define CAM_HOTSPOT_QUICK_SAND 0x300
+#define CAM_HOTSPOT_ICE_WATER 0xD00
+#define CAM_HOTSPOT_WATER 0
+// Hero water states mirrored into levelCamData: state type 0x11 or the next
+// one (0x11/0x12 in Deadlocked's HERO_TYPE_ENUM, SWIM/SURF), or state 0x73.
+#define CAM_HERO_STATE_TYPE_WATER 0x11
+#define CAM_HERO_STATE_TYPE_WATER_SPAN 2
+#define CAM_HERO_STATE_WADE 0x73
 // camCollState's address is taken into a long-lived local (set first, used only
 // in the mode chain below) so EGC hoists the base into the prologue and keeps
 // the level-cam reads on the original registers; using the global directly
@@ -686,35 +711,36 @@ void Camera_updateCollMode(void) {
     CamCollState* q;
 
     q = &camCollState;
-    camCollFlag = 0x14;
-    if ((u32)(levelCamData.inner.i208C - 0x11) < 2U ||
-        levelCamData.inner.i2084 == 0x73) {
-        camCollFlag = 0x34;
+    camCollFlag = CAM_COLL_FLAG_LAND;
+    if ((u32)(levelCamData.inner.heroStateType - CAM_HERO_STATE_TYPE_WATER) <
+        CAM_HERO_STATE_TYPE_WATER_SPAN ||
+        levelCamData.inner.heroState == CAM_HERO_STATE_WADE) {
+        camCollFlag = CAM_COLL_FLAG_WATER;
     }
-    if (levelCamData.inner.i208C != 0x11 &&
-        levelCamData.inner.f2F0 < currentCamera.posZ) {
-        camCollFlag = 0x14;
+    if (levelCamData.inner.heroStateType != CAM_HERO_STATE_TYPE_WATER &&
+        levelCamData.inner.waterHeight < currentCamera.posZ) {
+        camCollFlag = CAM_COLL_FLAG_LAND;
     }
     camCollFlagPrev = camCollFlag;
-    camCollFlag |= 0x80;
-    camCollMode = 0xB4;
-    if (levelCamData.inner.c12E5 != 0) {
-        q->collMode = 0x100;
-        camCollMode = 0x1B4;
-    } else if (levelCamData.inner.c12EB != 0) {
-        q->collMode = 0xB00;
-        camCollMode = 0xBB4;
-    } else if (levelCamData.inner.c12E6 != 0) {
-        q->collMode = 0x300;
-        camCollMode = 0x3B4;
-    } else if (levelCamData.inner.c12EC != 0) {
-        q->collMode = 0xD00;
-        camCollMode = 0xDB4;
-    } else if (levelCamData.inner.c12E4 != 0) {
-        q->collMode = 0;
-        camCollMode = 0xB4;
+    camCollFlag |= CAM_COLL_FLAG_ACTIVE;
+    camCollMode = CAM_COLL_MODE_BASE;
+    if (levelCamData.inner.hotSpotLava != 0) {
+        q->collMode = CAM_HOTSPOT_LAVA;
+        camCollMode = CAM_HOTSPOT_LAVA | CAM_COLL_MODE_BASE;
+    } else if (levelCamData.inner.hotSpotDeathSand != 0) {
+        q->collMode = CAM_HOTSPOT_DEATH_SAND;
+        camCollMode = CAM_HOTSPOT_DEATH_SAND | CAM_COLL_MODE_BASE;
+    } else if (levelCamData.inner.hotSpotQuickSand != 0) {
+        q->collMode = CAM_HOTSPOT_QUICK_SAND;
+        camCollMode = CAM_HOTSPOT_QUICK_SAND | CAM_COLL_MODE_BASE;
+    } else if (levelCamData.inner.hotSpotIceWater != 0) {
+        q->collMode = CAM_HOTSPOT_ICE_WATER;
+        camCollMode = CAM_HOTSPOT_ICE_WATER | CAM_COLL_MODE_BASE;
+    } else if (levelCamData.inner.hotSpotWater != 0) {
+        q->collMode = CAM_HOTSPOT_WATER;
+        camCollMode = CAM_COLL_MODE_BASE;
     } else {
-        camCollMode = q->collMode | 0xB4;
+        camCollMode = q->collMode | CAM_COLL_MODE_BASE;
     }
 }
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDA60);
