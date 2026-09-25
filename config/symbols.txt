@@ -427,6 +427,9 @@ InitMemSlots__Fv = 0x2015d8;
 InitOnce__Fv = 0x201650;
 MemSlots = 0x001940c4;
 
+// game/loaders.cpp
+relocateObjectPointers = 0x2032e0;
+
 CreatePart = 0x217a30;
 UpdateParts = 0x217b88;
 PartProc = 0x217c18;

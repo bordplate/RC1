@@ -2092,5 +2092,14 @@
     "size": 140,
     "matched_date": "2026-09-25",
     "note": "Measures the pixel width of a font string (sum of fontCharWidths entries indexed by c-0x20, clamping c>=0x60 to index 0x20), submits it via fontTextSubmit centered on x (drawn at x-width/2), and returns that centered left edge. Codegen tiebreaks: the parameter must be unsigned char* so the guard if(*text) and while(*p) emit lbu (a char* param or a cast on a boolean test keeps lb); the width select must be written as int w=c; if(c>=0x60) w=0x20; (preload the register value then conditionally overwrite with the constant) to make EGC hoist li t3,32 and emit sltiu+movn (ternary / w=0x20; if(c<0x60) w=c forms emit sltu+movz with an inlined 32); x-=sum>>1 gives a single sra (sum/2 emits a 3-instr rounding idiom); p=text is declared before the if so move t0,a3 lands in the beqz delay slot. The 8 bytes at 0x1F0C48 are fontTextSubmit's dead 0x30 frame dealloc (its own 0x10 epilogue is the addiu sp,sp,16 in the jr delay slot), preserved with raw asm; the real code starts at 0x1F0C50. Named fontCharWidths=0x189DC0 in config/symbols.txt. Full boot ELF parity passes."
+  },
+  "code/game/loaders.cpp:38:relocateObjectPointers": {
+    "name": "relocateObjectPointers",
+    "original_name": "func_002032E0",
+    "source": "code/game/loaders.cpp",
+    "vram": "0x002032E0",
+    "size": 88,
+    "matched_date": "2026-09-25",
+    "note": "Pointer-relocation fixup for a loaded data chunk: obj=*(base+index*4+0x48); if obj->firstReloc(s32 @+0x14) nonzero make it absolute (obj+firstReloc); then for relocCount(u8 @+0x10) entries add obj base to each s32 @+0x1C. Leaf, no frame, no calls. Codegen: relocCount loop must be a do-while inside the if (a plain while hoists the arr addiu above the beqz -> 3-word prologue diff); relocCount read sign-extended via (s32)(u8). SN TU, default flags. Renamed from placeholder func_002032E0 to relocateObjectPointers (registered in config/symbols.txt); asm(\"relocateObjectPointers\") label keeps the unmangled symbol the three generated pause_post2 callers (func_002256E8/func_00225E70/func_00226848) reference. Clean full boot ELF parity passes. See notes/loaders_func_002032E0.md."
   }
 }
