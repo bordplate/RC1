@@ -27,6 +27,17 @@ extern int currentLevelId __attribute__((section(".data")));
 // 0x1FA6D0 (fastfunc): truncates its float argument toward zero. C linkage.
 extern "C" int func_001FA6D0(float x);
 
+// 0x15F43C: global screen fade value; draw renders it as the black
+// full-screen overlay (alpha = value * 128, clamped at 1.0). The original
+// Camera_HandleScreenFade mixes address modes on this word: the load and the
+// consume store are GP-relative, while the final zero store is a self-based
+// absolute pair. In this SN-assembler TU the plain symbol expands absolute
+// (unseeded single-pass) and the seeded alias (config/linker_aliases.ld)
+// expands GPREL, so both names map to 0x15F43C.
+extern float screenFade;
+extern float screenFadeGp;
+asm(".extern screenFadeGp, 4");
+
 // C linkage: this entry point is referenced by the original unmangled camera API.
 extern "C" void BackupCurrentCam(void) {
     u8* dst = backupCam;
@@ -743,6 +754,23 @@ void Camera_updateCollMode(void) {
         camCollMode = q->collMode | CAM_COLL_MODE_BASE;
     }
 }
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDA60);
+// Per-frame screen-fade update (direct ancestor of Deadlocked's
+// Camera_HandleScreenFade, called from the level-cam update between the
+// camera timer bump and the hotspot check): the camera's own fade value is
+// consumed from the global screen fade; when the global can no longer cover
+// it, both are cleared. The unmangled asm label keeps the Splat symbol pin.
+void Camera_HandleScreenFade(void) asm("func_001EDA60");
+
+void Camera_HandleScreenFade(void) {
+    float cur = currentCamera.screenFade;
+    if (cur != 0.0f) {
+        float next = screenFadeGp - cur;
+        screenFadeGp = next;
+        if (next <= 0.0f) {
+            currentCamera.screenFade = 0.0f;
+            screenFade = 0.0f;
+        }
+    }
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDAA8);
 INCLUDE_ASM("code/_generated/nonmatchings/game/camera", func_001EDC30);

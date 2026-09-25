@@ -315,6 +315,7 @@ OcclVisibility = 0x00193fc0;
 // Boot overlay state and resident asset records, recovered by startlevel.
 bootLevelActive = 0x0015F5E8;
 drawFrameCount = 0x0015F438;
+screenFade = 0x0015F43C;
 gameLanguage = 0x0015ED88;
 bootImageBuffer = 0x0015EF5C;
 requestedVideoMode = 0x0016034C;

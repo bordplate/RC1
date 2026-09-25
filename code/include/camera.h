@@ -74,7 +74,10 @@ struct Camera {
     u32 pLastUpdCam;       // 0x184: previous UpdateCam slot (low 32 bits)
     char pad_188[0x28];
     float f1B0;
-    char pad_1B4[0xBC];
+    char pad_1B4[0xA4];
+    float screenFade;      // 0x258: per-camera screen fade consumed from the
+                           // global screenFade each frame (Camera_HandleScreenFade)
+    char pad_25C[0x14];
     CamBlender blender;    // 0x270
     // 0x350: orientation matrix committed by the camera transition (identity
     // on camera reset); the occlusion setup reads it as the camera transform.

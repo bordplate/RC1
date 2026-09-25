@@ -32,6 +32,7 @@ snd_cdCallbackArgGp = 0x0015ED00;
 snd_cdCallbackArgGpRet = 0x0015ED00;
 camCollModeGp = 0x0015EF98;
 camCollFlagGp = 0x0015EF9C;
+screenFadeGp = 0x0015F43C;
 menuSelectionCount = 0x0015FD64;
 menuSelectionState = 0x001413DC;
 drawTextureDmaState = 0x0018A2B0;
