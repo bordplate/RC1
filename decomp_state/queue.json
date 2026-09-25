@@ -287,13 +287,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/draw.cpp:func_001F0BD0",
-    "source": "code/game/draw.cpp",
-    "asm": "code/_generated/nonmatchings/game/draw/func_001F0BD0.s",
-    "name": "func_001F0BD0",
-    "status": "todo"
-  },
-  {
     "id": "code/game/draw.cpp:func_001F0C48",
     "source": "code/game/draw.cpp",
     "asm": "code/_generated/nonmatchings/game/draw/func_001F0C48.s",

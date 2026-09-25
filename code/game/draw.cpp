@@ -41,7 +41,57 @@ asm(
     "    .set at\n"
 );
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0BD0);
+// Font text buffer state: fontTextCursor points into the 2KB font data
+// buffer at 0x18A300 and advances past each submitted text;
+// fontTextSlotIndex selects the next fontTextSlots request entry;
+// fontTextFormat holds the "%s" format passed to sprintf.
+typedef struct {
+    int x;
+    int y;
+    int field_0x08;
+    char* textStart;
+} FontTextSlot;
+
+// The slot count is not provable from the boot ELF: the array sits in a
+// run of zero data with no visible bound, and fontTextSlotIndex is
+// incremented without wrap. 20 matches the drawTextureDmaState count just
+// before it; the size only appears in this declaration and affects no
+// codegen (EGC emits no bounds checks).
+#define FONT_TEXT_SLOT_COUNT 20
+
+extern FontTextSlot fontTextSlots[FONT_TEXT_SLOT_COUNT]
+    __attribute__((section(".data")));
+extern char* fontTextCursor;
+extern int fontTextSlotIndex;
+extern const char fontTextFormat[];
+
+// C linkage: 0x116248 is the SDK sprintf, generated code
+// (code/_generated/glibc.s) with an unmangled entry point.
+extern "C" int sprintf(char* str, const char* format, ...);
+
+// Records a font text draw request in the next fontTextSlots entry (the
+// position x/y, the unknown field_0x08, and the current fontTextCursor as
+// textStart), then appends the sprintf-formatted text to the font data
+// buffer at fontTextCursor and advances the cursor past it, including the
+// NUL terminator.
+//
+// Symbol override: the generated caller still references the Splat
+// placeholder name for this entry point.
+void fontTextSubmit(int x, int y, int field_0x08, char* text)
+    asm("func_001F0BD0");
+
+void fontTextSubmit(int x, int y, int field_0x08, char* text) {
+    int index = fontTextSlotIndex;
+
+    fontTextSlots[index].x = x;
+    fontTextSlots[index].y = y;
+    fontTextSlots[index].field_0x08 = field_0x08;
+    fontTextSlots[index].textStart = fontTextCursor;
+    fontTextSlotIndex = index + 1;
+
+    int count = sprintf(fontTextCursor, fontTextFormat, text) + 1;
+    fontTextCursor += count;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0C48);
 

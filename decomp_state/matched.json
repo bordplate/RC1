@@ -2074,5 +2074,14 @@
     "size": 64,
     "matched_date": "2026-09-25",
     "note": "Stores 1 into drawTextureDmaState (0x18A2B0, 20 ints) from index 19 down to 0 in a do-while. 0x40 bytes: 15 instruction words + 1 alignment nop. Its dead tail func_001F0BC8 (addiu sp,sp,0x2A0; nop, matches no frame) is emitted by the file-scope raw-asm block below it in draw.cpp; see notes/draw_func_001F0BC8.md."
+  },
+  "code/game/draw.cpp:83:fontTextSubmit": {
+    "name": "fontTextSubmit",
+    "original_name": "func_001F0BD0",
+    "source": "code/game/draw.cpp",
+    "vram": "0x001F0BD0",
+    "size": 116,
+    "matched_date": "2026-09-25",
+    "note": "Font text request submitter: records {x, y, field_0x08, fontTextCursor} in fontTextSlots[fontTextSlotIndex], bumps the index, then fontTextCursor += sprintf(fontTextCursor, \"%s\", text) + 1 (fontTextFormat at 0x15F008 holds the LE bytes of \"%s\"; 0x116248 is the SDK sprintf per Lombyte's mdebug-recovered names, confirmed in our address space). Codegen: cursor store must precede index store; the ret+1 needs the explicit `count` local; direct subscripts reproduce the re-materialized address pair; unspecified-size fontTextFormat array gives the absolute format-address lui/addiu. GNU TU (--assembler=gnu). Field_0x08 and the [20] slot count are inferred (overlay-only caller, unbounded zero data region). Full boot ELF parity passes. See notes/draw_func_001F0BD0.md."
   }
 }
