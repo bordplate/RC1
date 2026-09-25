@@ -20,7 +20,26 @@ void draw_resetTextureDmaState(void) {
     } while (count >= 0);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0BC8);
+// Unreachable dead tail the original compiler emitted after
+// draw_resetTextureDmaState: a 0x2A0 stack deallocation matching no frame,
+// plus the alignment nop before func_001F0BD0. EGC 2.95.2 never regenerates
+// a dead frame deallocation after the epilogue (probed; see
+// decomp_state/notes/989snd_func_0012DF18.md), so the bytes are preserved
+// with raw asm. The .align 3 and the nonmatching/glabel pair reproduce the
+// generated assembly's layout (one alignment nop before the fragment).
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F0BC8, 0x4\n"
+    "glabel func_001F0BC8\n"
+    "    .word 0x27bd02a0\n"
+    "endlabel func_001F0BC8\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw", func_001F0BD0);
 

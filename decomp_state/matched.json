@@ -2066,5 +2066,13 @@
     "size": 392,
     "matched_date": "2026-09-25",
     "note": "Per-frame single-camera update (UpdateCamera). Last blocker was the tail: func_001ED7F0 takes ZERO args (the original leaves a0 stale from the prior Camera_OffsetTick); declaring it (CamOffsetRec*) made EGC set up a0 -> 396 bytes. textScreenActive needs a two-register lui/lw (inline-asm pinned to $3). The four orientMtx/pos 128-bit copies use the Camera_BlendCams pin recipe; the tail base pointer is left un-pinned for the scratch-lui form. Full boot ELF parity passes. See notes/camera_func_001EDAA8.md."
+  },
+  "code/game/draw.cpp:11:draw_resetTextureDmaState__Fv": {
+    "name": "draw_resetTextureDmaState__Fv",
+    "source": "code/game/draw.cpp",
+    "vram": "0x001F0B88",
+    "size": 64,
+    "matched_date": "2026-09-25",
+    "note": "Stores 1 into drawTextureDmaState (0x18A2B0, 20 ints) from index 19 down to 0 in a do-while. 0x40 bytes: 15 instruction words + 1 alignment nop. Its dead tail func_001F0BC8 (addiu sp,sp,0x2A0; nop, matches no frame) is emitted by the file-scope raw-asm block below it in draw.cpp; see notes/draw_func_001F0BC8.md."
   }
 }
