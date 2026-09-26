@@ -23,7 +23,7 @@ void projectWorldPoint(float* out, float* vec) {
     draw_scaleVector(s4, vec, 1024.0f);
     s4[3] = 1.0f;
     draw_transformVector(r4, s4, m);
-    float scale = drawCamera.f00 / r4[3];
+    float scale = drawCamera.mtx0[0] / r4[3];
     out[2] = r4[2] * 0.0009765625f;
     r4[0] = r4[0] * scale + 2048.0f;
     r4[1] = r4[1] * scale + 2048.0f;

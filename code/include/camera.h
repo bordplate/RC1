@@ -72,10 +72,18 @@ struct CamOffsetRec {
 // 0x186F40 (currentCamera) and 0x18CF10 (drawCamera); the level camera code
 // indexes the per-slot UpdateCam block through pCurrentUpdCam/pLastUpdCam.
 struct Camera {
-    float f00;
-    char pad_04[0x3C];
+    // First 4x4: the camera basis written by UpdateDrawCamera. Rows are
+    // [ -q1x, -q2x, q0x, 0 ], [ -q1y, -q2y, q0y, 0 ], [ -q1z, -q2z, q0z, 0 ],
+    // [ 0, 0, 0, 1 ] where q0-q2 are the staged orientation quads; entry 0
+    // doubles as the perspective scale used by projectWorldPoint.
+    float mtx0[16];        // 0x00
     float matrix[16];      // 0x40
-    char pad_80[0xC0];
+    // Derived 4x4 slots maintained by UpdateDrawCamera from the camera and the
+    // view context (viewCtx): mtx2 = camera x fMtx with the hvdf row blend,
+    // mtx3 = camera x field_40, mtx4 = field_40 guard-scaled rows x mtx0.
+    float mtx2[16];        // 0x80
+    float mtx3[16];        // 0xC0
+    float mtx4[16];        // 0x100
     float pos;             // 0x140: camera position x
     float posY;            // 0x144
     float posZ;            // 0x148
@@ -103,6 +111,42 @@ struct Camera {
 extern Camera currentCamera;
 extern Camera drawCamera;
 extern CamBlender camTransState __attribute__((section(".data")));
+
+// 0x18CD00: view context block shared by InitViewContext, UpdateViewContext
+// and UpdateDrawCamera. Field names follow the descendant layout in
+// reference/dl (ViewContext); field_40 is the float 4x4 applied before fMtx
+// and the source of the two guard-scaled rows, its name is not yet resolved.
+struct ViewCtx {
+    u32 pad_00[0x10];
+    CameraMatrix field_40; // 0x40
+    u32 pad_80[0x10];
+    CameraMatrix fMtx;     // 0xC0
+    CameraMatrix nfMtx;    // 0x100
+    CameraMatrix hMtx;     // 0x140
+    u32 pad_180[0x20];
+    float hvdf[4];         // 0x1A0: 3-vector blended into the mtx2 row scales
+    u32 pad_1B0[0x10];
+    float guardX;          // 0x1C0: scale for the two field_40 rows
+    u32 pad_1C4[0x3C];
+};
+extern ViewCtx viewCtx;
+
+// C linkage: handwritten VU polar builders in the generated sce/lib region
+// (aliases in config/linker_aliases.ld). Each rotates the 64-byte CameraMatrix
+// in place (dst == src) about one polar axis; the init variant fills the 4
+// quads with (0, 0, 0, 1) first.
+extern "C" void camPolarInit(CameraMatrix* m);
+extern "C" void camPolarRot0(CameraMatrix* dst, CameraMatrix* src, float angle);
+extern "C" void camPolarRot1(CameraMatrix* dst, CameraMatrix* src, float angle);
+extern "C" void camPolarRot2(CameraMatrix* dst, CameraMatrix* src, float angle);
+
+// C linkage: handwritten VU matrix/vector helpers in the generated
+// fast-function region (aliases in config/linker_aliases.ld).
+// draw_transformMatrix: 64-byte 4x4 multiply, dst[i] = dot(cols[i], rows[i])
+// per 16-byte row. draw_scaleQuad: full 16-byte vector scale by f12 (the
+// FastVecScale variant that also scales the w component).
+extern "C" void draw_transformMatrix(void* dst, void* cols, void* rows);
+extern "C" void draw_scaleQuad(void* dst, void* src, float w);
 // 0x13F490: 16-byte camera position offset added to staged camera quads;
 // level-provided (zero in boot).
 extern CameraQuad camPosOffset __attribute__((section(".data")));
