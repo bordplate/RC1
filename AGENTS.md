@@ -1017,9 +1017,17 @@ also use `-mno-split-addresses`; `menu_post_mid.cpp` and
    endDisplay). `permcb.o` uses `-mno-split-addresses`
   (required by vsync_callback: its named in-window `frm_vsync_cnt` /
   `frm_clock_time` globals must become self-based `lui/ld` absolute loads; the
-  flag is safe there because permcb.cpp holds only that one function). This
-  preserves every prior menu match and full boot parity. Sound-library and
-  other files retain defaults.
+   flag is safe there because permcb.cpp holds only that one function).
+   `draw_post_reset.o` (the draw_post Splat segment split at 0xf3140,
+   2026-09-26) uses `-mno-split-addresses` (required by
+   ResetVideoPipeline__Fv: the `vifChainFlags=0` store and the `textureCursorEnd`
+   load must stay standalone self-based absolute pairs, and the flag turns the
+   `.data` aliases at those addresses into unsplittable pseudos ps2eeas expands
+   in place — a full memory barrier also forces the pair but disturbs the
+   prologue and the trailing GP-store delay slots; the flag breaks the 67
+   sibling draw_post functions, hence the Splat segment split). This
+   preserves every prior menu match and full boot parity. Sound-library and
+   other files retain defaults.
 It does NOT establish the original build's flags. Revalidate future candidates
 with their owning TU's flag, and do not apply either scheduler flag globally.
 When adjacent functions require conflicting verified flags, prefer this Splat
