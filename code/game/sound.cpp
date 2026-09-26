@@ -50,7 +50,31 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_update);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", sound_loadBankByLocation__Fi);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022D798);
+// The 0x70-byte sound channel slots start at audioState+0x70 (see SoundData).
+// This routine indexes the slots from the audioState base with a 0x70 byte
+// stride, so every field offset is +0x70 relative to SoundData (status
+// 0x04->0x74, pMoby 0x18->0x88, field_0x1C->0x8C).
+struct SoundChannelView {
+    u8 pad_0x00[0x74];
+    u8 status;         // +0x74: 0 free, 4 pending-kill, 6 ?, 7 active
+    u8 pad_0x75[0x13];
+    void* pMoby;       // +0x88
+    void* pAmbient;    // +0x8C
+};
+extern u8 audioState[];
+
+void sound_KillChannel(int i) {
+    if (i < 0) return;
+    SoundChannelView* ch = (SoundChannelView*)((u8*)audioState + i * 0x70);
+    u8 status = ch->status;
+    if (status == 7) {
+        ch->pMoby = 0;
+        ch->pAmbient = 0;
+        ch->status = 0;
+    } else if (status != 0 && status != 6) {
+        ch->status = 4;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/sound", func_0022D7F0);
 

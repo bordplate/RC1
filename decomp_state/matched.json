@@ -2118,5 +2118,14 @@
     "size": 156,
     "matched_date": "2026-09-26",
     "note": "VIF1/DMAC/GS/VU1 video pipeline reset (VU1_syncChain timeout recovery). textureCursorEnd saved across SetPalMode. The vifChainFlags zero store and textureCursorEnd load must be standalone self-based absolute pairs; a .data alias + -mno-split-addresses on this isolated Splat segment/TU forces the absolute pseudo (a memory barrier also worked but disturbed the prologue and tail-store delay slots). The two trailing GP stores are written before the call whose delay slot holds them (this EGC schedules a store into the delay slot of the call it precedes). Full boot parity passes. See notes/draw_ResetVideoPipeline__Fv.md."
+  },
+  "code/game/sound.cpp:66:sound_KillChannel__Fi": {
+    "name": "sound_KillChannel__Fi",
+    "original_name": "func_0022D798",
+    "source": "code/game/sound.cpp",
+    "vram": "0x0022D798",
+    "size": 84,
+    "matched_date": "2026-09-26",
+    "note": "Releases a 3D sound channel by slot index. Channels are 0x70-byte SoundData slots at audioState+0x70, but this routine indexes from the audioState base with a 0x70 byte stride so field offsets are +0x70 (status 0x74, pMoby 0x88, pAmbient 0x8C). The three zero-stores must be written pMoby,pAmbient,status so EGC's three-constant-store permutation emits the original status;pMoby;jr;<pAmbient> tail. See notes/sound_sound_KillChannel__Fi.md."
   }
 }
