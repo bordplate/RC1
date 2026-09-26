@@ -1,5 +1,17 @@
 [
   {
+    "id": "code/game/effects.cpp:func_001EE328",
+    "source": "code/game/effects.cpp",
+    "asm": "code/_generated/nonmatchings/game/effects/func_001EE328.s",
+    "name": "func_001EE338",
+    "status": "blocked",
+    "date": "2026-09-26",
+    "vram": "0x1EE338",
+    "size": "0x16C",
+    "note": "Occlusion-debug sprite drawer (real entry 0x1EE338; Splat func_001EE328 range includes a 16B dead-tail of func_001EE008). A verified C form matches the semantics and, after the last-resort semantic correction (the p+0x20 field is a pointer `object`; the compared byte is at object+0x20, NOT count+0x20; the three beql skip-edges carry lw count in their taken-delay slots purely to feed the i<count bound), the loop body and all three beql delay-slot dataflows. The residual 356-vs-364 (2-word) gap is pure register allocation: EGC 2.95.2 permutes the callee-saved assignment (base s7 vs the original s3; %hi(0x189300) s3 vs s5; 0xFE/0xFD s6/s5 vs s7/s6) and allocates the initial base/ovp to s0/s2 instead of s2/s0, so it emits ONE base move instead of the original's 3-daddu rotation (s3=base(s2), s2=&ovp(s0), s0=p(s3)). Tried: no pins; i-only; i+ptp; i+ptp+ovp; pin 0xFE->$23/0xFD->$22 (base->s5, %hi stays s3, swapped); base pointer pinned $19 (count access uses s3 not s2, 83 diffs); base pointer unpinned (base s2 initial but ovp->s3, no rotation, 81); source reorder; nested-if shape (72); -fno-schedule-insns (360, 71) / -fno-schedule-insns2 (360, 83). Best: 356B/67 diffs (old state-int semantics, wrong beqz) or 356B/72 diffs (corrected object-pointer semantics, correct beql). Same allocator-permutation class as camera_func_001EBF10. Retain INCLUDE_ASM; full-ELF parity preserved. See notes/effects_func_001EE328.md.",
+    "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-26: found the real semantic bug (p+0x20 is a pointer `object`, byte at object+0x20, NOT count+0x20; delay-slot count loads feed the loop bound) and prescribed the corrected RTL + pin matrix. Applied and mechanically diffed: beql/delay-slot dataflow now matches, but the s-register permutation (base s7 vs s3; %hi s3 vs s5; 0xFE/0xFD s6/s5 vs s7/s6) and the missing 3-daddu rotation remain a register-allocator difference not controllable from C source."
+  },
+  {
     "id": "code/game/camera.cpp:func_001EBF10",
     "source": "code/game/camera.cpp",
     "asm": "code/_generated/nonmatchings/game/camera/func_001EBF10.s",
