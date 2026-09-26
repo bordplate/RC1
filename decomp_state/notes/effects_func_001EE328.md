@@ -63,3 +63,34 @@ declare `base` as a pointer pinned to $19 (count access then used s3 not s2,
   controllable from C source. Confirmed the same class of blocker as
   camera_func_001EBF10.
 - Retain `INCLUDE_ASM`; full-ELF parity preserved.
+
+## Dead tail func_001EE4A8 (inline-asm byte preservation, 2026-09-26)
+
+After the parent's epilogue (`jr ra` 0x1EE49C, `addiu sp,sp,0xC0`
+0x1EE4A0, padding nop 0x1EE4A4) the original contains, 8-aligned:
+
+```
+0x1EE4A8: addiu sp,sp,0xA0   (0x27BD00A0)
+0x1EE4AC: nop (alignment padding before func_001EE4B0)
+```
+
+No prologue, no return, no branch — cannot be a function. The 0xA0 unit
+matches no live frame (parent frame is 0xC0), consistent with the
+dead-tail family whose unit sizes are not derivable from the body
+(notes/989snd_func_0012E078.md).
+
+Deadness (verified 2026-09-26): `tools/deadness_scan.py 0x1EE4A8` ->
+0 references; Ghidra (headless) has no function at or containing
+0x1EE4A8.
+
+Resolution: the orphan `INCLUDE_ASM(..., func_001EE4A8)` in effects.cpp
+was converted at its source position to a raw-asm byte-preservation
+block per the AGENTS.md dead-tail policy, same form as the draw_post /
+draw_occl tails (2026-09-25): `.section .text`, `.align 3`,
+`nonmatching`/`glabel` pair (keeps `func_001EE4A8` and the
+`.NON_MATCHING` alias defined in the object so the regenerated linker
+script pins stay valid), `.word 0x27BD00A0`, `endlabel`, `.word
+0x00000000` (the alignment nop, keeping the layout independent of
+assembler 8-alignment behavior). `make split` reclassified
+func_001EE4A8.s to `code/_generated/matchings/game/effects/`; full boot
+ELF cmp passes.
