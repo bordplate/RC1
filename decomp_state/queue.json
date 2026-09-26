@@ -322,9 +322,9 @@
     "status": "todo"
   },
   {
-    "id": "code/game/draw.cpp:func_001F2260",
-    "source": "code/game/draw.cpp",
-    "asm": "code/_generated/nonmatchings/game/draw/func_001F2260.s",
+    "id": "code/game/draw_post_post.cpp:func_001F2260",
+    "source": "code/game/draw_post_post.cpp",
+    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F2260.s",
     "name": "func_001F2260",
     "status": "todo"
   },
