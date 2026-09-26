@@ -2127,5 +2127,13 @@
     "size": 84,
     "matched_date": "2026-09-26",
     "note": "Releases a 3D sound channel by slot index. Channels are 0x70-byte SoundData slots at audioState+0x70, but this routine indexes from the audioState base with a 0x70 byte stride so field offsets are +0x70 (status 0x74, pMoby 0x88, pAmbient 0x8C). The three zero-stores must be written pMoby,pAmbient,status so EGC's three-constant-store permutation emits the original status;pMoby;jr;<pAmbient> tail. See notes/sound_sound_KillChannel__Fi.md."
+  },
+  "code/989snd/ee/989snd_post.c:309:snd_SendIOPCommandNoWait": {
+    "name": "snd_SendIOPCommandNoWait",
+    "source": "code/989snd/ee/989snd_post.c",
+    "vram": "0x0012E6E0",
+    "size": 704,
+    "matched_date": "2026-09-27",
+    "note": "IOP no-wait command dispatch: fast synchronous fire-and-forget sceSifCallRpc when batch idle + no payload + no callback, else append to the current command batch after spinning for room (4-byte aligned, SND_BATCH_MAX_COMMANDS cap), update the per-stream return table (done/u_data) and snd_PostMessage. Match needs four levers: direct-array while test (keeps entry/backedge num-check split + both alignment nops), data_size/command pinned to $17/$23, block-local rpc pinned to $16 with comma-expression loop test (splits &snd_rpcServer into lui s1/addiu s0,s1), and the update-section pins (offset $3, returnBuffers $4, freePtr $5, cmdPtr $6, returnPtr $3) + barrier(freePtr,cmdPtr) + returnPtr computed AFTER the free-store as (offset + (int)returnBuffers). 176/176 words; full boot parity clean. See notes/989snd_snd_SendIOPCommandNoWait.md for the dead-end levers."
   }
 }

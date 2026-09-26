@@ -1,8 +1,54 @@
 # snd_SendIOPCommandNoWait (0x12E6E0, 176 words)
 
-Blocked 2026-09-20. The C body is fully understood and was implemented; the
-local EGC (SN 2.73a) cannot reproduce the original register allocation.
-INCLUDE_ASM retained.
+Matched 2026-09-27. 176/176 words, clean `make split && make` + full boot
+ELF parity. The former 9-s-register allocation wall (see below) is resolved:
+it was not a single allocator tie-break but four separate, probe-verified
+levers, none of which works alone.
+
+## Solution (all levers required; word-diff path 79 -> 14 -> 6 -> 5 -> 4 -> 0)
+
+1. Spin loop as a `while` with DIRECT global-array references
+   (`snd_batchCommandBuffers[snd_batchIndex]->num_commands == 0x100 ||
+   snd_batchFreeBytes[snd_batchIndex] < aligned`), not local pointer
+   variables. Local pointers make EGC MERGE the entry/backedge num-check
+   into one block; the original keeps them SPLIT. This also makes EGC emit
+   BOTH original alignment nops (0x12E81C before the backedge test,
+   0x12E8F4 before the copy loop head) naturally. (goto forms and the local
+   pointer form never produced the 0x12E81C nop.)
+2. `register int data_size_reg asm("$17"); register int command_reg
+   asm("$23");` — the original keeps data size in s1 and command in s7;
+   the prologue, fast-path checks, and spin-loop scheduling depend on those
+   homes.
+3. Fast path: block-local `register int* rpc asm("$16");` plus the comma
+   expression `while ((rpc = &snd_rpcServer, sceSifCheckStatRpc(rpc)) !=
+   0)`. Pinning the completed pointer to s0 makes EGC split
+   `&snd_rpcServer` as `lui s1; addiu s0,s1` and keep the call args as the
+   original does. A plain local (no pin) hoists the split and adds a word;
+   a $30 pin (where `done` naturally lives) deletes the fast path.
+4. Update section: pins `offset asm("$3")`, `returnBuffers asm("$4")`,
+   `freePtr asm("$5")`, `cmdPtr asm("$6")`, `returnPtr asm("$3")`; the
+   barrier is `asm volatile("" : : "r"(freePtr), "r"(cmdPtr))` (returnPtr
+   NOT in the barrier); the statement order is the three pointer assigns,
+   barrier, `*freePtr -= aligned;`, THEN
+   `returnPtr = (SndCommandReturnDef**)(offset + (int)returnBuffers);`
+   (int arithmetic, so EGC emits `addu v1,v1,a0` at the original's
+   interleaved spot; the pointer-operand-order variants `ptr+n`/`n+ptr` do
+   not change EGC's pointer-first RTL).
+
+Dead ends (do not retry): pinning `aligned` or any int to $16 (178 words,
+158 diffs); `-fno-schedule-insns[2]` (712 bytes); `-mno-split-addresses`
+(153 diffs); dropping `.data` from `snd_rpcServer` (probe fails); moving
+the rpc local out of the block.
+
+## Escalation outcome
+
+- `expert` (2026-09-27, this session): recommended the block-local
+  `register int* rpc asm("$16")` pin plus the comma-expression loop test —
+  that lever closed the final 4-word diff (fast path). The earlier
+  2026-09-20 expert call failed to read the dossier (prompt expansion bug).
+- `last-resort-decompiler` (GPT-5.6 Sol, 2026-09-20): see below; its
+  debug-symbol-shaped source (171/149) did not match but established that
+  the body semantics were sound.
 
 ## Function
 
@@ -42,7 +88,7 @@ spin, `snd_NoWaitContinuingString` 0x154070 with the spin count afterwards).
   s2), `msg` (pointer, reg a1), `msg_size` (aligned size, reg s0) — the
   register assignments match the RC1 original binary exactly.
 
-## The blocker: register allocation
+## Former blocker: register allocation (context for the solution above)
 
 Original (frame 0xC0, u_data at 0x10(sp)) keeps ALL 9 s-registers for real
 values: s0=aligned, s1=data_size, s2=i, s3=&cmdBufs, s4=&freeBytes,
@@ -87,14 +133,16 @@ the copy loop all match when written as:
 - `register X asm("$23"/"$22"/"$30")` pinning of command/data/done: 164
   and appears to miscompile (`addiu s1,s8,4` = done+4)
 
-Root cause: an allocator tie-break difference between the local EGC (SN
-2.73a) and Insomniac's SCE 2.95.2 at 9+ s-register demand — local EGC
-ranks compiler-generated values/loop constants above incoming params for
-s-registers; the original fills s-registers params-first. No matched
-function in the project saves 7+ s-registers (max = 6), so this scale was
-never before validated.
-
-## Escalations
+At the time the root cause looked like an allocator tie-break difference
+between the local EGC (SN 2.73a) and Insomniac's SCE 2.95.2 at 9+
+s-register demand — local EGC ranks compiler-generated values/loop
+constants above incoming params for s-registers; the original fills
+s-registers params-first. No matched function in the project saves 7+
+s-registers (max = 6), so this scale was never before validated. The
+2026-09-27 resolution (above) shows the gap was actually four probe-
+verified source levers — the direct-array split, the s1/s7 pins, the
+s0 rpc pin, and the update-section pin/order/cast — rather than one
+untie-able allocation.
 
 - `expert` (GPT-6 Astra, 2026-09-20): could not read the dossier (prompt
   expansion bug) but recommended pass flags (-fno-move-all-movables,

@@ -39,9 +39,11 @@ extern int snd_NoWaitContinuingString __attribute__((section(".data")));
 extern SndCommandBuffer* snd_batchCommandBuffers[2];
 extern int snd_batchFreeBytes[2];
 extern int* snd_batchReturnBuffers[2];
+extern SndCommandReturnDef* snd_streamBuffers[2];
 extern int snd_batchIndex;
 void snd_PrepareReturnBuffer(int* buf, int index);
 extern void snd_SendCurrentBatch(void);
+extern void snd_PostMessage(void);
 
 // Unreachable dead tail the original compiler emitted after
 // snd_BankLoadFromEE_CB (989snd_bankload.c): two 0x50 stack deallocations
@@ -301,15 +303,106 @@ unsigned int snd_SendIOPCommandAndWait(int cmd, int count, char* data) {
 // room), with the completion callback table updated, and snd_PostMessage
 // advances the batch command count and flushes.
 //
-// Blocked: the body is fully understood (see
-// decomp_state/notes/989snd_snd_SendIOPCommandNoWait.md) but the local EGC
-// (SN 2.73a) allocates the spin-loop constants (256, 1, string base) into
-// caller-saved s-registers and spills the incoming command/data/done
-// parameters to the stack, while the original keeps all four parameters in
-// s-registers and reloads the constants between calls. No C structure or
-// flag found makes the local build reproduce the original 9-s-register
-// allocation.
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_SendIOPCommandNoWait);
+// Maximum commands queued in one batch command buffer.
+#define SND_BATCH_MAX_COMMANDS 0x100
+
+void snd_SendIOPCommandNoWait(int command, int data_size, char* data,
+                              SndCompleteProc done, u64 u_data) {
+    int was_cleared;
+    int i;
+    int aligned;
+    // The original keeps data size and command in s1/s7; the prologue, the
+    // fast-path checks, and the spin-loop scheduling all depend on those homes.
+    register int data_size_reg asm("$17");
+    register int command_reg asm("$23");
+    int tail;
+    int idx;
+    SndCommandBuffer* cmdBuf;
+    char* dest;
+    int j;
+    // Pinned update-section pointers: EGC must keep the batch offset in v1 and
+    // the three computed pointers in a1-a3 to reproduce the original tail.
+    register int offset asm("$3");
+    register SndCommandReturnDef** returnBuffers asm("$4");
+    register int* freePtr asm("$5");
+    register SndCommandBuffer** cmdPtr asm("$6");
+    register SndCommandReturnDef** returnPtr asm("$3");
+
+    was_cleared = 0;
+    command_reg = command;
+    data_size_reg = data_size;
+
+    if (snd_batchBusy == 0 && snd_currentBuffer == 0 && data_size_reg == 0 &&
+        done == 0) {
+        // Pinning the completed pointer to s0 makes EGC split &snd_rpcServer
+        // as lui s1 + addiu s0,s1, matching the original.
+        register int* rpc asm("$16");
+        snd_PrepareReturnBuffer(snd_syncBuffer, 1);
+        while ((rpc = &snd_rpcServer, sceSifCheckStatRpc(rpc)) != 0) {
+            func_00116078(&snd_NonIdleErrorString);
+            snd_FlushSoundCommands();
+            FlushCache(0);
+        }
+        sceSifCallRpc(rpc, command_reg, 1, 0, 0, snd_syncBuffer,
+                      SND_SYNC_RPC_RESULT_SIZE, 0, 0);
+        return;
+    }
+
+    aligned = data_size_reg + 4;
+    i = 0;
+    if (aligned & 3) {
+        int total;
+        tail = (aligned > -1) ? aligned : data_size_reg + 7;
+        total = data_size_reg + 8;
+        aligned = total - (aligned - ((tail >> 2) << 2));
+    }
+
+    // Direct array references (not local pointers) keep EGC's entry and
+    // backedge num-check blocks split, matching the original layout.
+    while (snd_batchCommandBuffers[snd_batchIndex]->num_commands ==
+             SND_BATCH_MAX_COMMANDS ||
+           snd_batchFreeBytes[snd_batchIndex] < aligned) {
+        if (snd_batchBusy != 0) {
+            snd_batchBusy = 0;
+            was_cleared = 1;
+        }
+        snd_FlushSoundCommands();
+        if (i == 1) {
+            func_00116078(&snd_NoWaitBufferFullString, snd_batchIndex,
+                          snd_batchCommandBuffers[snd_batchIndex]->num_commands);
+        }
+        i++;
+    }
+
+    if (i != 0) {
+        func_00116078(&snd_NoWaitContinuingString, i);
+    }
+    if (was_cleared) {
+        snd_batchBusy = 1;
+    }
+
+    idx = snd_batchIndex;
+    cmdBuf = snd_batchCommandBuffers[idx];
+    dest = (char*)cmdBuf - (snd_batchFreeBytes[idx] - 0x1000);
+    *(unsigned short*)dest = command_reg;
+    dest += 2;
+    *(unsigned short*)dest = data_size_reg;
+    dest += 2;
+    for (j = 0; j < data_size_reg; j++)
+        dest[j] = data[j];
+    offset = snd_batchIndex * 4;
+    returnBuffers = snd_streamBuffers;
+    freePtr = (int*)((char*)snd_batchFreeBytes + offset);
+    cmdPtr = (SndCommandBuffer**)((char*)snd_batchCommandBuffers + offset);
+    asm volatile("" : : "r"(freePtr), "r"(cmdPtr));
+    *freePtr -= aligned;
+    // returnPtr is computed after the free-store, as offset + base in int
+    // form, so EGC emits addu v1,v1,a0 at the original's interleaved spot.
+    returnPtr = (SndCommandReturnDef**)(offset + (int)returnBuffers);
+    (*returnPtr)[(*cmdPtr)->num_commands].done = done;
+    (*returnPtr)[(*cmdPtr)->num_commands].u_data = u_data;
+    snd_PostMessage();
+}
 
 void snd_PostMessage(void) {
     SndCommandBuffer* commandBuffer = snd_batchCommandBuffers[snd_batchIndex];
