@@ -4,6 +4,7 @@
 #include "boot_level.h"
 #include "pad_state.h"
 #include "sound.h"
+#include "video.h"
 
 // The boot font table is a large block at 0x137B80. The 16-byte head is the
 // debug font image (LoadDebugFont, bloaders.cpp); the 8-byte {src, size}
@@ -53,8 +54,6 @@ extern LevelMem levelMem __attribute__((section(".data")));
 // In-window scalar globals: plain externs (no .data) keep the -G8 small-data
 // bare pseudo that ps2eeas expands to the original's self-based absolute
 // lui/load and lui at/store (see bloaders_LoadDebugFont.md).
-// InitOnce reads the disc region; 0 selects GS NTSC (2), 1 selects PAL (3).
-extern u32 videoModePal;
 extern int decodeMode;
 extern u32 frameBufferBase;
 extern u32 GameMode;
@@ -234,8 +233,6 @@ extern BootSpaceTransitionState bootSpaceTransitionState;
 
 void InitOnce(void);
 void texResetCursor(void);
-void VU1_initChain(void);
-void DMAC_VIF1_Enable(void);
 void PutDispBuffer(void);
 void SetBackgroundColor(int red, int green, int blue);
 void PutDrawBufferLarge(void);
@@ -246,9 +243,6 @@ void VU1_syncChain(int mode);
 void UpdatePad(void);
 void Transition_DoTransition(void);
 
-// The original SetPalMode__Fi consumes no argument, and this caller supplies
-// none. Keep the historical symbol without manufacturing an argument load.
-void SetPalMode(void) asm("SetPalMode__Fi");
 void draw_resetTextureDmaState(void);
 void framebuf_appendLargeSetup(void);
 void framebuf_appendSmallSetup(void);
@@ -264,11 +258,6 @@ extern "C" void FastDecompress(int source, int destination);
 extern "C" void snd_ResolveBankXREFS(void);
 // C linkage: variadic printf replacement in the handwritten game/stub TU.
 extern "C" int STUB_printf(const char* format, ...);
-// C linkage: SDK routine resets VIF1, VU1 and GIF hardware.
-extern "C" void resetVif1Gif(void);
-// C linkage: SDK GS reset routine, mode/interlace/video-system/field-mode.
-extern "C" void sceGsResetGraph(short mode, unsigned short interlace,
-                                unsigned short videoSystem, unsigned short fieldMode);
 
 #define BOOT_ARCHIVE_ALIGNMENT 0x4000U
 #define BOOT_ARCHIVE_WORKSPACE_SIZE 0x2C0000
@@ -279,11 +268,6 @@ extern "C" void sceGsResetGraph(short mode, unsigned short interlace,
 #define BOOT_SOUND_DEF_COUNT 7
 #define BOOT_DECODE_ALIGNMENT 0x40
 #define DECODE_MODE_INTRO -1
-#define GS_RESET_FULL 0
-#define GS_INTERLACED 1
-#define GS_VIDEO_NTSC 2
-#define GS_VIDEO_PAL 3
-#define GS_FIELD_MODE 0
 #define LEVEL_ID_NONE -1
 #define VU_SYNC_WAIT 1
 

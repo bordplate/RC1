@@ -90,6 +90,12 @@ $(OBJ_DIR)/game/menu_callbacks.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns2
 $(OBJ_DIR)/game/pause_sched.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
 $(OBJ_DIR)/game/pause_post.o: PRIVATE_COMPILE_FLAGS = -G0
 $(OBJ_DIR)/game/pause_post2.o: PRIVATE_COMPILE_FLAGS = -G0
+# ResetVideoPipeline's vifChainFlags zero store and textureCursorEnd load must
+# stay standalone self-based absolute pairs; the flag turns their .data
+# aliases into unsplittable absolute pseudos ps2eeas expands in place. The
+# flag breaks the sibling draw_post functions, so ResetVideoPipeline gets its
+# own Splat segment/TU.
+$(OBJ_DIR)/game/draw_post_reset.o: PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 
 # Existing source forms in these TUs rely on GNU macro expansion/scheduling.
 # Keep their assembler local until each source migration passes full parity.
