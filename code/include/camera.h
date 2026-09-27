@@ -119,7 +119,12 @@ extern CamBlender camTransState __attribute__((section(".data")));
 struct ViewCtx {
     u32 pad_00[0x10];
     CameraMatrix field_40; // 0x40
-    u32 pad_80[0x10];
+    u32 pad_80[0x8];       // 0x80
+    float field_0A0;       // 0xA0: 32.0, written by InitViewContext
+    float field_0A4;       // 0xA4: 745472.0, written by InitViewContext
+    u32 pad_A8[2];         // 0xA8
+    float field_0B0;       // 0xB0: 0.63, written by InitViewContext
+    u32 pad_B4[3];         // 0xB4
     CameraMatrix fMtx;     // 0xC0
     CameraMatrix nfMtx;    // 0x100
     CameraMatrix hMtx;     // 0x140
@@ -152,6 +157,30 @@ struct ViewCtx {
     int occlColor2;        // 0x244
  };
 extern ViewCtx viewCtx;
+
+// 0x151780: occlusion camera parameter block. InitViewContext reads the two
+// 16-bit params near the end of the block; the rest is not yet mapped.
+struct OcclCamParamBlock {
+    u8 pad_000[0x150];
+    u16 paramX; // 0x150
+    u16 paramY; // 0x152
+};
+extern struct OcclCamParamBlock occlCamParamBase;
+
+// 0x13E500: occlusion view rectangle computed by InitViewContext. The two
+// sign-extended params and their halves are stored raw; min/max are the
+// rectangle centered on OCCL_VIEW_CENTER, pre-scaled (x16) into 16.0.
+struct OcclViewParams {
+    s32 paramX; // 0x00: sign-extended OcclCamParamBlock.paramX
+    s32 paramY; // 0x04: sign-extended OcclCamParamBlock.paramY
+    s32 halfX;  // 0x08: paramX >> 1
+    s32 halfY;  // 0x0C: paramY >> 1
+    s32 minX;   // 0x10: (OCCL_VIEW_CENTER - halfX) << 4
+    s32 minY;   // 0x14: (OCCL_VIEW_CENTER - halfY) << 4
+    s32 maxX;   // 0x18: (halfX + OCCL_VIEW_CENTER) << 4
+    s32 maxY;   // 0x1C: (halfY + OCCL_VIEW_CENTER) << 4
+};
+extern struct OcclViewParams occlViewParams;
 
 // C linkage: handwritten VU polar builders in the generated sce/lib region
 // (aliases in config/linker_aliases.ld). Each rotates the 64-byte CameraMatrix

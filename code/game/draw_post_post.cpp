@@ -245,7 +245,46 @@ void UpdateOcclusion() {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", InitViewContext__Fv);
+// The occlusion view rectangle is centered on this fixed-point value
+// (pre-scale; InitViewContext multiplies the min/max by 16).
+#define OCCL_VIEW_CENTER 0x800
+
+void InitViewContext(void) {
+    int rawX = occlCamParamBase.paramX;
+    int rawY = occlCamParamBase.paramY;
+    // The params are 16-bit fixed-point; sign-extend and keep a halved copy.
+    int x = (s16)rawX;
+    int y = (s16)rawY;
+    int halfX = (s16)rawX >> 1;
+    int halfY = (s16)rawY >> 1;
+
+    occlViewParams.paramX = x;
+    occlViewParams.paramY = y;
+    occlViewParams.halfX = halfX;
+    occlViewParams.halfY = halfY;
+    occlViewParams.minX = (OCCL_VIEW_CENTER - halfX) << 4;
+    occlViewParams.minY = (OCCL_VIEW_CENTER - halfY) << 4;
+    occlViewParams.maxX = (halfX + OCCL_VIEW_CENTER) << 4;
+    occlViewParams.maxY = (halfY + OCCL_VIEW_CENTER) << 4;
+
+    viewCtx.field_0A0 = 32.0f;
+    viewCtx.field_0A4 = 745472.0f;
+    viewCtx.field_0B0 = 0.63f;
+
+    float halfScale = 0.5f;
+    viewCtx.occlCamScale0 = func_001FA6C0(x) * halfScale;
+    // The original reloads paramY signed here (a fresh `lh`) rather than
+    // reusing the `y` local; matching that keeps the register allocation.
+    float yScale = func_001FA6C0(*(const s16*)&occlCamParamBase.paramY) * halfScale;
+    viewCtx.occlCamScale1 = yScale;
+    viewCtx.occlCamScale2 = viewCtx.occlCamScale0 * 4.0f;
+    viewCtx.occlCamScale3 = yScale * 4.0f;
+
+    viewCtx.fogFarIntensity = 524288.0f;
+    viewCtx.fogNearIntensity = 255.0f;
+    viewCtx.fogNearDist = 0.0f;
+    viewCtx.fogFarDist = 0.0f;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", UpdateViewContext__Fv);
 
