@@ -82,7 +82,37 @@ void UpdateFog(int cameraIndex) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ParseOcclGrid);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", GetOcclGridFromPair__Fiiiiiif);
+// C linkage: ParseOcclGrid is defined by the generated INCLUDE_ASM fallback
+// as the unmangled symbol at 0x1f2690; GetOcclGridFromPair calls that entry.
+// Returns the matched grid cell (pgrid + (child<<7)) or 0 when not found.
+extern "C" char* ParseOcclGrid(int x, int y, int z);
+
+// fraction is the caller-computed fractional part of the scaled occlusion
+// coordinate. Below this midpoint the first cell is parsed first; at or above
+// it the second cell is.
+#define OCCL_CELL_FRACTION_MIDPOINT 0.5f
+
+void GetOcclGridFromPair(int cell0X, int cell0Y, int cell0Z,
+                         int cell1X, int cell1Y, int cell1Z,
+                         float fraction) {
+    int secondX, secondY, secondZ;
+
+    if (fraction < OCCL_CELL_FRACTION_MIDPOINT) {
+        if (ParseOcclGrid(cell0X, cell0Y, cell0Z) != 0)
+            return;
+        secondX = cell1X;
+        secondY = cell1Y;
+        secondZ = cell1Z;
+    } else {
+        if (ParseOcclGrid(cell1X, cell1Y, cell1Z) != 0)
+            return;
+        secondX = cell0X;
+        secondY = cell0Y;
+        secondZ = cell0Z;
+    }
+
+    ParseOcclGrid(secondX, secondY, secondZ);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", BuildOcclVisibility__Fv);
 

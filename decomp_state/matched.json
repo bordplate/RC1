@@ -2135,5 +2135,13 @@
     "size": 704,
     "matched_date": "2026-09-27",
     "note": "IOP no-wait command dispatch: fast synchronous fire-and-forget sceSifCallRpc when batch idle + no payload + no callback, else append to the current command batch after spinning for room (4-byte aligned, SND_BATCH_MAX_COMMANDS cap), update the per-stream return table (done/u_data) and snd_PostMessage. Match needs four levers: direct-array while test (keeps entry/backedge num-check split + both alignment nops), data_size/command pinned to $17/$23, block-local rpc pinned to $16 with comma-expression loop test (splits &snd_rpcServer into lui s1/addiu s0,s1), and the update-section pins (offset $3, returnBuffers $4, freePtr $5, cmdPtr $6, returnPtr $3) + barrier(freePtr,cmdPtr) + returnPtr computed AFTER the free-store as (offset + (int)returnBuffers). 176/176 words; full boot parity clean. See notes/989snd_snd_SendIOPCommandNoWait.md for the dead-end levers."
+  },
+  "code/game/draw_post_post.cpp:94:GetOcclGridFromPair__Fiiiiiif": {
+    "name": "GetOcclGridFromPair__Fiiiiiif",
+    "source": "code/game/draw_post_post.cpp",
+    "vram": "0x001F2768",
+    "size": 184,
+    "matched_date": "2026-09-27",
+    "note": "Occlusion-grid pair fetch: parse the nearer of two adjacent grid cells (cell0/cell1, each an (x,y,z) octree index) first, then the other only if the first returns 0. The float arg is the caller-computed fractional part of the scaled cell coordinate (position - (float)(int)position); below OCCL_CELL_FRACTION_MIDPOINT (0.5f) cell0 is nearer, at/above it cell1 is. Match-critical shape: the SECOND ParseOcclGrid call is a single shared jal that both branches converge on, so the C source must set the second cell's coords into locals in each branch and make ONE trailing call (two per-branch calls emit two jals and overshoot by 4 bytes). All six int args are live across the branch so EGC copies them to s0-s5 in the prologue; the 0.5f constant loads (lui at/mtc1 $f0) hoist before the prologue and the float arg stays in $f12 for c.lt.s. 46/46 words; full boot parity clean."
   }
 }
