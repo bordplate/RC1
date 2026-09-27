@@ -320,6 +320,7 @@ ActuatorWave = 0x00165480;
 actuator_CalcPower = 0x001e8d08;
 
 OcclVisibility = 0x00193fc0;
+OcclVisibilityMerged = 0x00194040;
 
 // game/bmain.cpp
 // Boot overlay state and resident asset records, recovered by startlevel.
@@ -448,6 +449,7 @@ BuildOcclVisibility__Fv = 0x1f2820;
 GetOcclGridFromPair__Fiiiiiif = 0x1f2768;
 OcclInvalidGrid = 0x15f64c;
 OcclMode = 0x015f648;
+OcclPreviousGrid = 0x0015F650;
 ResetDrawGlobals = 0x01f37e8;
 OcclOct = 0x015f644;
 UpdateOcclusion__Fv = 0x1f2c10;
@@ -531,6 +533,7 @@ FastCountChars__FPvi = 0x01f9d98;
 FastVectorToPackedChars__FR4vec4 = 0x001f9d68;
 FastVectorFromPackedChars__FR4vec4i = 0x01f9d50;
 FastMemZero16__FPvi = 0x001f9810;
+FastMemOr16__FPvN20i = 0x001f98f8;
 FastDecTimer__FRs = 0x001f9770;
 FastSitAndSpin__Fi = 0x001f97c0;
 FastDecTimer__FRi = 0x001f9740;
@@ -805,6 +808,7 @@ sceRead = 0x0011C2C0;
 sceWrite = 0x0011C520;
 func_001F9B20 = 0x001F9B20;
 func_001FA6C0 = 0x001FA6C0;
+func_001FA6D0 = 0x001FA6D0;
 
 // occlusion-cam debug sampler data
 occlCamSubStateTable = 0x0015F010;

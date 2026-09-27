@@ -2151,5 +2151,13 @@
     "size": 100,
     "matched_date": "2026-09-27",
     "note": "11-param PLAY_VAG_STREAM (0x2C) payload builder + snd_SendIOPCommandNoWait wrapper. 28-byte payload packs (vol<<16|offset1) and (pan<<16|offset2). sub_group is a plain u32 (EGC 8-byte-aligns each stack arg, so cb@sp+0x38, user_data@sp+0x40). Two register pins carry the match: lo2 pinned to $3 (original keeps $7 reserved for the cb load) and loc2arg pinned to $5 (direct early sw of the a1 param, no copy). 989snd_post.o region and full boot ELF cmp byte-identical. See notes/989snd_snd_PlayVAGStreamByLocEx_CB.md."
+  },
+  "code/game/draw_post_post.cpp:154:BuildOcclVisibility__Fv": {
+    "name": "BuildOcclVisibility__Fv",
+    "source": "code/game/draw_post_post.cpp",
+    "vram": "0x001F2820",
+    "size": 1008,
+    "matched_date": "2026-09-27",
+    "note": "Rebuilds the 128-byte OcclVisibility buffer from the camera's octree cell (ParseOcclGrid), a neighbor-cell OR-merge into OcclVisibilityMerged when OcclMode==0 (FastMemZero16 + FastMemOr16), the previous grid, or an octant table (OcclOct), then sets OcclVisibility[0x7F] |= 0x80. Match-critical: the staged flag must be read as the occlCamState.staged FIELD (a scalar int is small data under -G8 -> bare pseudo -> self-based lui/lw, no two-register split) and pinned `register int staged asm(\"$3\")`: the original keeps the 0x190000 page live in v0 (reused by the same-page OcclVisibility copy dest `addiu a0,v0,16320`), so the load is `lui v0 / lw v1,-0x3CD4(v0)`; the self-based form would also corrupt the copy dest on the staged==0 path. OcclPreviousGrid/OcclInvalidGrid use the Gp-alias mixed-addressing recipe (GPREL16 stores + self-based reads). getOcclGridFromPairCell alias reads the leftover v0 of the void GetOcclGridFromPair; octant tests are `pos - oct[n] > 0.0f` (c.lt.s, not c.le.s). Renamed func_001F98F8 -> FastMemOr16__FPvN20i (128-bit OR merge in fastfunc.s). See notes/draw_post_post_BuildOcclVisibility__Fv.md."
   }
 }

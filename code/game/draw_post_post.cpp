@@ -1,6 +1,7 @@
 #include "common.h"
 #include "types.h"
 #include "camera.h"
+#include "actuator.h"
 #include "video.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F2260);
@@ -114,12 +115,127 @@ void GetOcclGridFromPair(int cell0X, int cell0Y, int cell0Z,
     ParseOcclGrid(secondX, secondY, secondZ);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", BuildOcclVisibility__Fv);
+// OcclMode 0 merges the neighbor grid cells around the camera into
+// OcclVisibilityMerged and copies the result into OcclVisibility; the other
+// modes rebuild OcclVisibility from the previous grid, the staged camera
+// commit state, or a precomputed octant table.
+extern "C" int OcclMode;
+extern "C" int OcclInvalidGrid;
+// GPREL access aliases: the first branch and the OcclMode 0 setup store
+// these as GPREL16, while the mode switch reads them back with self-based
+// absolute loads. ps2eeas expands a bare pseudo as GPREL only once the
+// matching .extern declaration precedes the reference; the plain symbols
+// stay self-based absolute.
+extern "C" int OcclInvalidGridGp;
+asm(".extern OcclInvalidGridGp, 4");
+extern "C" char* OcclPreviousGrid;
+extern "C" char* OcclPreviousGridGp;
+asm(".extern OcclPreviousGridGp, 4");
+extern "C" float* OcclOct;
+extern "C" u8 OcclVisibility[];
+extern "C" u8 OcclVisibilityMerged[];
 
-void BuildOcclVisibility(void);
+// GetOcclGridFromPair returns void, but its final ParseOcclGrid call leaves
+// the matched cell pointer in v0; the alias reads that leftover value.
+extern "C" char* getOcclGridFromPairCell(int cell0X, int cell0Y, int cell0Z,
+                                         int cell1X, int cell1Y, int cell1Z,
+                                         float fraction) asm("GetOcclGridFromPair__Fiiiiiif");
+
+// FastMemOr16: 128-bit logical OR merge, dst[i] = a[i] | b[i] for size bytes.
+void FastMemOr16(void* dst, void* a, void* b, int size);
+void FastMemZero16(void* p, int size);
+
+#define OCCL_VISIBILITY_SIZE 0x80
+#define OCCL_VISIBILITY_VALID_FLAG 0x80
+#define OCCL_CELL_SCALE 0.25f
+#define OCCL_OCT_SLOT_STRIDE 0x80
+#define OCCL_OCT_SLOT_DATA_OFFSET 0x10
+
+void BuildOcclVisibility(void) {
+    int cellX, cellY, cellZ;
+    char* mergedCell;
+    char* pairX;
+    char* pairY;
+    char* pairZ;
+    float* oct;
+    int octX, octY, octZ;
+    int octIndex;
+    // staged must be read from the occlCamState field, not the scalar
+    // occlCamStaged (a 4-byte scalar is small data under -G8 and expands to
+    // a self-based lui/lw pair), and pinned to v1: the original keeps the
+    // 0x190000 hi page live in v0 (shared with the same-page OcclVisibility
+    // destinations), so the load is `lui v0 / lw v1`, not self-based.
+    register int staged asm("$3");
+
+    cellX = func_001FA6D0(currentCamera.pos * OCCL_CELL_SCALE);
+    cellY = func_001FA6D0(currentCamera.posY * OCCL_CELL_SCALE);
+    cellZ = func_001FA6D0(currentCamera.posZ * OCCL_CELL_SCALE);
+    mergedCell = ParseOcclGrid(cellX, cellY, cellZ);
+    if (mergedCell != 0) {
+        OcclInvalidGrid = 0;
+        FastMemCopy(OcclVisibility, mergedCell, OCCL_VISIBILITY_SIZE);
+        OcclPreviousGridGp = mergedCell;
+        goto visibilityDone;
+    }
+    OcclInvalidGridGp = 1;
+    if (OcclMode == 0) {
+        pairX = getOcclGridFromPairCell(cellX - 1, cellY, cellZ, cellX + 1, cellY, cellZ,
+                                        currentCamera.pos * OCCL_CELL_SCALE - func_001FA6C0(cellX));
+        pairY = getOcclGridFromPairCell(cellX, cellY - 1, cellZ, cellX, cellY + 1, cellZ,
+                                        currentCamera.posY * OCCL_CELL_SCALE - func_001FA6C0(cellY));
+        pairZ = getOcclGridFromPairCell(cellX, cellY, cellZ - 1, cellX, cellY, cellZ + 1,
+                                        currentCamera.posZ * OCCL_CELL_SCALE - func_001FA6C0(cellZ));
+        if (pairX != 0 || pairY != 0 || pairZ != 0) {
+            FastMemZero16(OcclVisibilityMerged, OCCL_VISIBILITY_SIZE);
+            if (pairX != 0)
+                FastMemOr16(OcclVisibilityMerged, OcclVisibilityMerged, pairX, OCCL_VISIBILITY_SIZE);
+            if (pairY != 0)
+                FastMemOr16(OcclVisibilityMerged, OcclVisibilityMerged, pairY, OCCL_VISIBILITY_SIZE);
+            if (pairZ != 0)
+                FastMemOr16(OcclVisibilityMerged, OcclVisibilityMerged, pairZ, OCCL_VISIBILITY_SIZE);
+            mergedCell = (char*)OcclVisibilityMerged;
+            OcclPreviousGrid = mergedCell;
+            FastMemCopy(OcclVisibility, mergedCell, OCCL_VISIBILITY_SIZE);
+        }
+    }
+    if (mergedCell != 0)
+        goto visibilityDone;
+    switch (OcclMode) {
+    case 0:
+        staged = occlCamState.staged;
+        if (staged == 0 && OcclPreviousGrid != 0)
+            FastMemCopy(OcclVisibility, OcclPreviousGrid, OCCL_VISIBILITY_SIZE);
+        else
+            FastMemSet(OcclVisibility, -1, OCCL_VISIBILITY_SIZE);
+        break;
+    case 1:
+        FastMemSet(OcclVisibility, -1, OCCL_VISIBILITY_SIZE);
+        break;
+    case 2:
+        if (OcclOct != 0) {
+            oct = OcclOct;
+            octX = currentCamera.pos - oct[0] > 0.0f;
+            octY = currentCamera.posY - oct[1] > 0.0f;
+            octZ = currentCamera.posZ - oct[2] > 0.0f;
+            octIndex = octZ + (octY << 1) + (octX << 2);
+            FastMemCopy(OcclVisibility,
+                        (char*)oct + (octIndex * OCCL_OCT_SLOT_STRIDE + OCCL_OCT_SLOT_DATA_OFFSET),
+                        OCCL_VISIBILITY_SIZE);
+        } else {
+            staged = occlCamState.staged;
+            if (staged == 0 && OcclPreviousGrid != 0) {
+                FastMemCopy(OcclVisibility, OcclPreviousGrid, OCCL_VISIBILITY_SIZE);
+            } else {
+                FastMemSet(OcclVisibility, -1, OCCL_VISIBILITY_SIZE);
+            }
+        }
+        break;
+    }
+visibilityDone:
+    OcclVisibility[0x7F] |= OCCL_VISIBILITY_VALID_FLAG;
+}
 
 extern "C" int OcclUpdate __attribute__((section(".data")));
-extern "C" char OcclVisibility[] __attribute__((section(".data")));
 
 void UpdateOcclusion() {
     if (OcclUpdate == 0) {
