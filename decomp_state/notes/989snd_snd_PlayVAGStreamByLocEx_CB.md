@@ -130,6 +130,16 @@ default-flags best: 100 bytes, 9 word-diffs (-fno-schedule-insns2) / 13 (default
   cb/user_data (not a match). Model's own verdict: if the narrow memory-dependency
   forms fail (they did), this is a concrete sched2 load-hoist tie-break with no
   default-flags pure-C form.
+2026-09-27 (full re-escalation: decomp-researcher -> expert -> last-resort):
+- `last-resort-decompiler` (GPT-5.6 Sol) re-invoked with the full dossier (original
+  25 words, Ghidra semantics, closest 17-diff probe, residual gaps, exhausted list).
+  Re-prescribed the `-fno-schedule-insns` + 4-pin route (lo2->$3, hi1->$2, lo1->$6,
+  sub->$12): primary (nonvolatile `lw %0,48($sp)` asm load of sub with `r`(lo1)
+  input) = 4 diffs (load deferred after f); alternative (plain `sub = sub_group;`)
+  = 3 diffs (best — reproduces the 2026-09-26 result exactly). New 2026-09-27
+  variants also failed: no-sub-pin (3), merged `data[6]=sub_group` (3),
+  asm-load + pin-barrier window (25), both-schedulers-off (20), default flags
+  (22 + move, 0x68). Verdict unchanged: unfixable sched2 load-hoist tie-break.
 
 ## Conclusion
 The function cannot be matched with the local EGC/EEGCC 2.95.2 toolchain. Default
