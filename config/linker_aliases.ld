@@ -118,7 +118,6 @@ func_00214228 = 0x00214228;
 func_0023BA48 = 0x0023BA48;
 func_001FF768 = 0x001FF768;
 currentCamera = 0x00186F40;
-drawCamera = 0x0018CF10;
 importCameraTable = 0x0015EF90;
 camControlWork = 0x00189650;
 drawOcclusionEnabled = 0x0015F49C;

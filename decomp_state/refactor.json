@@ -10,7 +10,8 @@
     "category": "style",
     "description": "drawCamera (Camera struct, 0x18CF10) and viewCtx.field_210/field_214 (ViewCtx, 0x18CD00+0x210) are the SAME address: drawCamera.mtx0[0] == viewCtx.field_210. projectWorldPoint (matched) reads drawCamera.mtx0[0] as the perspective scale, and UpdateFog writes the fog fields through the same viewCtx base. Investigate whether the original ViewCtx embeds a Camera member at 0x210 (so drawCamera should become &viewCtx.<member>) or whether drawCamera is a separate extern aliasing that region. Any change must keep projectWorldPoint and UpdateFog byte-identical (full boot ELF cmp). Do NOT rename drawCamera to a placeholder or repoint it without resolving the layout.",
     "evidence": "notes/draw_post_post_UpdateFog__Fi.md; code/game/draw_post.cpp:26; code/_generated/matchings/game/draw_post/projectWorldPoint__FPfT0.s",
-    "status": "open"
+    "status": "done",
+    "resolved": "2026-09-27: RESOLVED - drawCamera is NOT a Camera. 0x18CF10 == viewCtx+0x210, the perspective scale (first float of the fog+persp param block), written piecemeal by UpdateFog (fog fields 0x218-0x238) and the occlusion/draw code (0x210/0x214/0x220/0x224) as individual floats, never as a bulk matrix. projectWorldPoint now reads viewCtx.perspScale (renamed from field_210); `extern Camera drawCamera` and the drawCamera symbol (symbols.txt + linker_aliases.ld) removed. Verified: draw_post.o 4/4 match, full boot ELF cmp byte-identical. See notes/draw_post_viewCtx_perspScale.md."
   },
   {
     "id": "camera_Camera_TransitionStep",

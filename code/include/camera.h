@@ -69,13 +69,12 @@ struct CamOffsetRec {
     int elapsed;    // +0x0C elapsed frames
 };
 
-// 0x186F40 (currentCamera) and 0x18CF10 (drawCamera); the level camera code
-// indexes the per-slot UpdateCam block through pCurrentUpdCam/pLastUpdCam.
+// 0x186F40 (currentCamera); the level camera code indexes the per-slot UpdateCam
+// block through pCurrentUpdCam/pLastUpdCam.
 struct Camera {
     // First 4x4: the camera basis written by UpdateDrawCamera. Rows are
     // [ -q1x, -q2x, q0x, 0 ], [ -q1y, -q2y, q0y, 0 ], [ -q1z, -q2z, q0z, 0 ],
-    // [ 0, 0, 0, 1 ] where q0-q2 are the staged orientation quads; entry 0
-    // doubles as the perspective scale used by projectWorldPoint.
+    // [ 0, 0, 0, 1 ] where q0-q2 are the staged orientation quads.
     float mtx0[16];        // 0x00
     float matrix[16];      // 0x40
     // Derived 4x4 slots maintained by UpdateDrawCamera from the camera and the
@@ -111,7 +110,6 @@ struct Camera {
  };
 
 extern Camera currentCamera;
-extern Camera drawCamera;
 extern CamBlender camTransState __attribute__((section(".data")));
 
 // 0x18CD00: view context block shared by InitViewContext, UpdateViewContext
@@ -134,10 +132,12 @@ struct ViewCtx {
     float occlCamScale1;   // 0x204
     float occlCamScale2;   // 0x208
     float occlCamScale3;   // 0x20C
-    // 0x210 is the drawCamera symbol address; projectWorldPoint loads it as
-    // the float perspective scale. The block belongs to the view context:
-    // UpdateFog writes the fog fields below through the same viewCtx base.
-    float field_210;       // 0x210
+    // 0x210: perspective scale. projectWorldPoint divides the projected
+    // vector's w into it to get the screen-space scale. This block (0x210-
+    // 0x238) is the perspective/fog param area of the view context: UpdateFog
+    // writes the fog fields below through this same viewCtx base. The old
+    // `drawCamera` symbol aliased this region (viewCtx+0x210) and is gone.
+    float perspScale;      // 0x210
     float field_214;       // 0x214
     float fogNearDist;     // 0x218
     float fogFarIntensity; // 0x21C
