@@ -1,5 +1,18 @@
 [
   {
+    "id": "camera_viewCtx_drawCamera_overlap",
+    "file": "code/include/camera.h",
+    "function": "projectWorldPoint__FPfT0",
+    "addresses": [
+      "0x18CF10",
+      "0x18CD00"
+    ],
+    "category": "style",
+    "description": "drawCamera (Camera struct, 0x18CF10) and viewCtx.field_210/field_214 (ViewCtx, 0x18CD00+0x210) are the SAME address: drawCamera.mtx0[0] == viewCtx.field_210. projectWorldPoint (matched) reads drawCamera.mtx0[0] as the perspective scale, and UpdateFog writes the fog fields through the same viewCtx base. Investigate whether the original ViewCtx embeds a Camera member at 0x210 (so drawCamera should become &viewCtx.<member>) or whether drawCamera is a separate extern aliasing that region. Any change must keep projectWorldPoint and UpdateFog byte-identical (full boot ELF cmp). Do NOT rename drawCamera to a placeholder or repoint it without resolving the layout.",
+    "evidence": "notes/draw_post_post_UpdateFog__Fi.md; code/game/draw_post.cpp:26; code/_generated/matchings/game/draw_post/projectWorldPoint__FPfT0.s",
+    "status": "open"
+  },
+  {
     "id": "camera_Camera_TransitionStep",
     "file": "code/game/camera.cpp",
     "function": "func_001ECAF8",

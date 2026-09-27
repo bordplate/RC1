@@ -5,7 +5,80 @@
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F2260);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", UpdateFog__Fi);
+// Particle clip distance per fog state (PartClipDist in Deadlocked).
+#define WATER_PART_CLIP_DIST 0x40000
+#define LEVEL_PART_CLIP_DIST 0x1F4000
+
+// Underwater fog settings; the on-land source is the levelFog* block below.
+extern u8 waterFogR;
+extern u8 waterFogG;
+extern u8 waterFogB;
+extern float waterFogNearDist;
+extern float waterFogFarIntensity;
+extern float waterFogNearIntensity;
+extern float waterFogFarDist;
+
+// Per-level fog settings loaded by the level loader.
+extern u8 levelFogR;
+extern u8 levelFogG;
+extern u8 levelFogB;
+extern float levelFogNearDist;
+extern float levelFogFarIntensity;
+extern float levelFogNearIntensity;
+extern float levelFogFarDist;
+
+extern int levelFogMode;
+extern int partClipDist;
+// GPREL access alias of partClipDist: the underwater branch stores it as a
+// GPREL16 in the branch delay slot. ps2eeas expands the bare pseudo as GPREL
+// only once this .extern declaration precedes the reference; the plain symbol
+// stays self-based absolute for the level branch.
+extern int partClipDistGp;
+asm(".extern partClipDistGp, 4");
+
+void UpdateViewContext(void);
+
+void UpdateFog(int cameraIndex) {
+    // EGC's default COP1 allocation in this branch context does not match the
+    // original's float registers, so the four fog floats are pinned per branch.
+    if (currentCamera.camUnderWater != 0) {
+        ViewCtx* ctx = &viewCtx;
+        u8 r = waterFogR;
+        u8 g = waterFogG;
+        u8 b = waterFogB;
+        register float nearDist asm("$f1") = waterFogNearDist;
+        register float farIntensity asm("$f2") = waterFogFarIntensity;
+        register float nearIntensity asm("$f3") = waterFogNearIntensity;
+        register float farDist asm("$f0") = waterFogFarDist;
+        ctx->fogR = r;
+        ctx->fogG = g;
+        ctx->fogB = b;
+        ctx->fogNearDist = nearDist;
+        ctx->fogFarIntensity = farIntensity;
+        ctx->fogNearIntensity = nearIntensity;
+        ctx->fogFarDist = farDist;
+        partClipDistGp = WATER_PART_CLIP_DIST;
+    } else {
+        ViewCtx* ctx = &viewCtx;
+        u8 r = levelFogR;
+        u8 g = levelFogG;
+        u8 b = levelFogB;
+        register float nearDist asm("$f3") = levelFogNearDist;
+        register float farIntensity asm("$f1") = levelFogFarIntensity;
+        register float nearIntensity asm("$f2") = levelFogNearIntensity;
+        register float farDist asm("$f0") = levelFogFarDist;
+        ctx->fogR = r;
+        ctx->fogG = g;
+        ctx->fogB = b;
+        ctx->fogNearDist = nearDist;
+        ctx->fogFarIntensity = farIntensity;
+        ctx->fogNearIntensity = nearIntensity;
+        ctx->fogFarDist = farDist;
+        partClipDist = LEVEL_PART_CLIP_DIST;
+    }
+    UpdateViewContext();
+    levelFogMode = 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ParseOcclGrid);
 

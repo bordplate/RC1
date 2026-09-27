@@ -104,9 +104,11 @@ struct Camera {
     // 0x350: orientation matrix committed by the camera transition (identity
     // on camera reset); the occlusion setup reads it as the camera transform.
     CameraMatrix orientMtx; // 0x350
-    char pad_390[8];        // 0x390
+    char pad_390[4];        // 0x390
+    u32 camUnderWater;     // 0x394: set by the underwater raycast test,
+                           // consumed by UpdateFog
     u32 camTimer;          // 0x398
-};
+ };
 
 extern Camera currentCamera;
 extern Camera drawCamera;
@@ -123,12 +125,32 @@ struct ViewCtx {
     CameraMatrix fMtx;     // 0xC0
     CameraMatrix nfMtx;    // 0x100
     CameraMatrix hMtx;     // 0x140
-    u32 pad_180[0x20];
+    u32 pad_180[0x8];
     float hvdf[4];         // 0x1A0: 3-vector blended into the mtx2 row scales
-    u32 pad_1B0[0x10];
+    u32 pad_1B0[0x4];
     float guardX;          // 0x1C0: scale for the two field_40 rows
-    u32 pad_1C4[0x3C];
-};
+    u32 pad_1C4[0xF];
+    float occlCamScale0;   // 0x200: ratio pair consumed by UpdateViewContext
+    float occlCamScale1;   // 0x204
+    float occlCamScale2;   // 0x208
+    float occlCamScale3;   // 0x20C
+    // 0x210 is the drawCamera symbol address; projectWorldPoint loads it as
+    // the float perspective scale. The block belongs to the view context:
+    // UpdateFog writes the fog fields below through the same viewCtx base.
+    float field_210;       // 0x210
+    float field_214;       // 0x214
+    float fogNearDist;     // 0x218
+    float fogFarIntensity; // 0x21C
+    float pad_220[2];
+    float fogNearIntensity;// 0x228
+    float fogFarDist;      // 0x22C
+    int fogR;              // 0x230: fog red 0-255 (byte value, word store)
+    int fogG;              // 0x234
+    int fogB;              // 0x238
+    int occlColor0;        // 0x23C: packed into frameBufferColor
+    int occlColor1;        // 0x240
+    int occlColor2;        // 0x244
+ };
 extern ViewCtx viewCtx;
 
 // C linkage: handwritten VU polar builders in the generated sce/lib region
