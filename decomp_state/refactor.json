@@ -49,6 +49,7 @@
   "category": "style",
   "description": "InitViewContext (matched) writes several magic float literals to viewCtx defaults: field_0A0=32.0, field_0A4=745472.0, field_0B0=0.63, fogFarIntensity=524288.0, fogNearIntensity=255.0, and the scale factors 0.5 (halfScale) and 4.0. Their meaning is not yet resolved, so they are left as literals with a note. When the semantics are established (likely occlusion-camera clip/scale and fog defaults), replace them with named constants. Any change must keep InitViewContext byte-identical (308 bytes) and full boot ELF cmp passing. The 0.5 must stay a saved float local (register allocation) and the 4.0 stays an inline constant (no mov.s), so naming them as defines/local-init is required, not a re-expression.",
   "evidence": "notes/draw_post_post_InitViewContext__Fv.md; code/game/draw_post_post.cpp:252",
-  "status": "open"
- }
+  "status": "done",
+  "resolved": "2026-09-27: semantics established from the consumer UpdateViewContext__Fv (0x1F2D98) which matches the DL reference line for line: field_0A0/0A4/0B0 = nearClip(32.0)/farClip(745472.0)/xratio(0.63) projection-box depths + aspect default; occlCamScale0..3 = xpix/ypix (half draw size) / xclip/yclip (4x); fog defaults = fogFarDist(0x21C)=524288.0 (1/1024 units, 512 units) + fogNearIntensity(0x228)=255.0 (255 = clear). Naming exposed and fixed a far-pair swap: 0x21C is fogFarDist and 0x22C is fogFarIntensity (fog formulas, level-fog writer 0x1EE4B0 scaling, and the 524288.0/1024.0 clamp code all agree); levelFog/waterFog globals, ViewCtx fields, UpdateFog locals and symbols.txt swapped to match. Named constants VIEWCTX_NEAR_CLIP/FAR_CLIP/DEFAULT_XRATIO/HALF_PIXEL/CLIP_SCALE/DEFAULT_FOG_FAR_DIST/DEFAULT_FOG_NEAR_INTENSITY. 0.5 stays a saved float local, 4.0 stays inline, fog store order unchanged. Verified: make split + build + full boot ELF cmp byte-identical. See notes/draw_post_post_InitViewContext__Fv.md."
+  }
 ]

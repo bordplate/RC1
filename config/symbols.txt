@@ -815,17 +815,20 @@ occlCamSubStateTable = 0x0015F010;
 levelFogR = 0x0015F484;
 levelFogG = 0x0015F485;
 levelFogB = 0x0015F486;
+// Distances are stored in 1/1024 units (see UpdateViewContext's /1024 fog
+// scaling); intensities are 0-255 with 255 = clear. The far pair was formerly
+// misnamed as a swapped intensity/distance.
 levelFogNearDist = 0x0015F488;
-levelFogFarIntensity = 0x0015F48C;
+levelFogFarDist = 0x0015F48C;
 levelFogNearIntensity = 0x0015F490;
-levelFogFarDist = 0x0015F494;
+levelFogFarIntensity = 0x0015F494;
 waterFogR = 0x001610C4;
 waterFogG = 0x001610C5;
 waterFogB = 0x001610C6;
 waterFogNearDist = 0x001610C8;
-waterFogFarIntensity = 0x001610CC;
+waterFogFarDist = 0x001610CC;
 waterFogNearIntensity = 0x001610D0;
-waterFogFarDist = 0x001610D4;
+waterFogFarIntensity = 0x001610D4;
 occlFlag0 = 0x0015F640;
 occlSampleCount = 0x0015F654;
 occlSamplePoints = 0x001940E0;

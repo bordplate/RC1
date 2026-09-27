@@ -11,22 +11,23 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F2260);
 #define LEVEL_PART_CLIP_DIST 0x1F4000
 
 // Underwater fog settings; the on-land source is the levelFog* block below.
+// Distances are stored in 1/1024 units; intensities are 0-255 (255 = clear).
 extern u8 waterFogR;
 extern u8 waterFogG;
 extern u8 waterFogB;
 extern float waterFogNearDist;
-extern float waterFogFarIntensity;
-extern float waterFogNearIntensity;
 extern float waterFogFarDist;
+extern float waterFogNearIntensity;
+extern float waterFogFarIntensity;
 
 // Per-level fog settings loaded by the level loader.
 extern u8 levelFogR;
 extern u8 levelFogG;
 extern u8 levelFogB;
 extern float levelFogNearDist;
-extern float levelFogFarIntensity;
-extern float levelFogNearIntensity;
 extern float levelFogFarDist;
+extern float levelFogNearIntensity;
+extern float levelFogFarIntensity;
 
 extern int levelFogMode;
 extern int partClipDist;
@@ -48,16 +49,16 @@ void UpdateFog(int cameraIndex) {
         u8 g = waterFogG;
         u8 b = waterFogB;
         register float nearDist asm("$f1") = waterFogNearDist;
-        register float farIntensity asm("$f2") = waterFogFarIntensity;
+        register float farDist asm("$f2") = waterFogFarDist;
         register float nearIntensity asm("$f3") = waterFogNearIntensity;
-        register float farDist asm("$f0") = waterFogFarDist;
+        register float farIntensity asm("$f0") = waterFogFarIntensity;
         ctx->fogR = r;
         ctx->fogG = g;
         ctx->fogB = b;
         ctx->fogNearDist = nearDist;
-        ctx->fogFarIntensity = farIntensity;
-        ctx->fogNearIntensity = nearIntensity;
         ctx->fogFarDist = farDist;
+        ctx->fogNearIntensity = nearIntensity;
+        ctx->fogFarIntensity = farIntensity;
         partClipDistGp = WATER_PART_CLIP_DIST;
     } else {
         ViewCtx* ctx = &viewCtx;
@@ -65,16 +66,16 @@ void UpdateFog(int cameraIndex) {
         u8 g = levelFogG;
         u8 b = levelFogB;
         register float nearDist asm("$f3") = levelFogNearDist;
-        register float farIntensity asm("$f1") = levelFogFarIntensity;
+        register float farDist asm("$f1") = levelFogFarDist;
         register float nearIntensity asm("$f2") = levelFogNearIntensity;
-        register float farDist asm("$f0") = levelFogFarDist;
+        register float farIntensity asm("$f0") = levelFogFarIntensity;
         ctx->fogR = r;
         ctx->fogG = g;
         ctx->fogB = b;
         ctx->fogNearDist = nearDist;
-        ctx->fogFarIntensity = farIntensity;
-        ctx->fogNearIntensity = nearIntensity;
         ctx->fogFarDist = farDist;
+        ctx->fogNearIntensity = nearIntensity;
+        ctx->fogFarIntensity = farIntensity;
         partClipDist = LEVEL_PART_CLIP_DIST;
     }
     UpdateViewContext();
@@ -249,6 +250,20 @@ void UpdateOcclusion() {
 // (pre-scale; InitViewContext multiplies the min/max by 16).
 #define OCCL_VIEW_CENTER 0x800
 
+// View-context defaults written by InitViewContext.
+// Perspective-box depths of the projection (see ViewCtx.nearClip/farClip).
+#define VIEWCTX_NEAR_CLIP 32.0f
+#define VIEWCTX_FAR_CLIP 745472.0f
+// Default aspect ratio; yratio derives from it per video mode.
+#define VIEWCTX_DEFAULT_XRATIO 0.63f
+// xpix/ypix are half the draw size; xclip/yclip are 4x the pix values.
+#define VIEWCTX_HALF_PIXEL 0.5f
+#define VIEWCTX_CLIP_SCALE 4.0f
+// Boot fog-ramp defaults: clear (intensity 255) up to a 512-unit far
+// distance (stored in 1/1024 units), full fog (intensity 0) at the far end.
+#define VIEWCTX_DEFAULT_FOG_FAR_DIST 524288.0f
+#define VIEWCTX_DEFAULT_FOG_NEAR_INTENSITY 255.0f
+
 void InitViewContext(void) {
     int rawX = occlCamParamBase.paramX;
     int rawY = occlCamParamBase.paramY;
@@ -267,23 +282,23 @@ void InitViewContext(void) {
     occlViewParams.maxX = (halfX + OCCL_VIEW_CENTER) << 4;
     occlViewParams.maxY = (halfY + OCCL_VIEW_CENTER) << 4;
 
-    viewCtx.field_0A0 = 32.0f;
-    viewCtx.field_0A4 = 745472.0f;
-    viewCtx.field_0B0 = 0.63f;
+    viewCtx.nearClip = VIEWCTX_NEAR_CLIP;
+    viewCtx.farClip = VIEWCTX_FAR_CLIP;
+    viewCtx.xratio = VIEWCTX_DEFAULT_XRATIO;
 
-    float halfScale = 0.5f;
-    viewCtx.occlCamScale0 = func_001FA6C0(x) * halfScale;
+    float halfScale = VIEWCTX_HALF_PIXEL;
+    viewCtx.xpix = func_001FA6C0(x) * halfScale;
     // The original reloads paramY signed here (a fresh `lh`) rather than
     // reusing the `y` local; matching that keeps the register allocation.
     float yScale = func_001FA6C0(*(const s16*)&occlCamParamBase.paramY) * halfScale;
-    viewCtx.occlCamScale1 = yScale;
-    viewCtx.occlCamScale2 = viewCtx.occlCamScale0 * 4.0f;
-    viewCtx.occlCamScale3 = yScale * 4.0f;
+    viewCtx.ypix = yScale;
+    viewCtx.xclip = viewCtx.xpix * VIEWCTX_CLIP_SCALE;
+    viewCtx.yclip = yScale * VIEWCTX_CLIP_SCALE;
 
-    viewCtx.fogFarIntensity = 524288.0f;
-    viewCtx.fogNearIntensity = 255.0f;
+    viewCtx.fogFarDist = VIEWCTX_DEFAULT_FOG_FAR_DIST;
+    viewCtx.fogNearIntensity = VIEWCTX_DEFAULT_FOG_NEAR_INTENSITY;
     viewCtx.fogNearDist = 0.0f;
-    viewCtx.fogFarDist = 0.0f;
+    viewCtx.fogFarIntensity = 0.0f;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", UpdateViewContext__Fv);

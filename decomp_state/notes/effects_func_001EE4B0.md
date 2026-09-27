@@ -18,30 +18,41 @@ is the camera index base. Steps:
 4. `t = 1.0f - blend;`
 5. Four lerps, each `state1*blend + state0*t` (the state1*blend product is the
    accumulator / result register; state0*t is the addend):
-   - `fd = farDist1*blend + farDist0*t`
-   - `ni = nearIntensity1*blend + nearIntensity0*t`
-   - `nd = nearDist1*blend + nearDist0*t`
-   - `fi = farIntensity1*blend + farIntensity0*t`
+   - `fd = farDist1*blend + farDist0*t`        (vol 0x74/0x64)
+   - `ni = nearIntensity1*blend + nearIntensity0*t`  (vol 0x70/0x60)
+   - `nd = nearDist1*blend + nearDist0*t`      (vol 0x6C/0x5C)
+   - `fi = farIntensity1*blend + farIntensity0*t`    (vol 0x78/0x68)
 6. Color mix (packed 0x00BBGGRR; low byte→R, mid→G, high→B):
    - `hi1=c1>>16; hi0=c0>>16; mid1=c1>>8; mid0=c0>>8;`
    - `levelFogB = ((hi1&0xFF)*w + (hi0&0xFF)*inv) >> 8`
    - `levelFogR = ((c1&0xFF)*w  + (c0&0xFF)*inv)  >> 8`
    - `levelFogG = ((mid1&0xFF)*w + (mid0&0xFF)*inv)>> 8`
-7. Final: `levelFogNearDist=nd*1024.0f; levelFogFarIntensity=fi*1024.0f;
-   levelFogNearIntensity=255.0f-ni*255.0f; levelFogFarDist=255.0f-fd*255.0f;`
-   Store order: sb B, sb R, sb G, swc1 NearDist, swc1 FarIntensity,
-   swc1 NearIntensity, swc1 FarDist.
+7. Final: `levelFogNearDist=nd*1024.0f; levelFogFarDist=fd*1024.0f;
+   levelFogNearIntensity=255.0f-ni*255.0f; levelFogFarIntensity=255.0f-fi*255.0f;`
+   Store order: sb B, sb R, sb G, swc1 NearDist, swc1 FarDist,
+   swc1 NearIntensity, swc1 FarIntensity.
+   (Distances are stored in 1/1024 units, intensities 0-255 with 255 = clear;
+   verified against the fog consumer UpdateViewContext__Fv, 0x1F2D98, which
+   derives fogMult/fogAdd/fog1 from exactly these globals' meanings.)
 
 ## LevelFogVolume layout (offsets from element base, kept in $s0)
 0x50 int flags (&0x2) · 0x54 int color0 · 0x58 int color1 · 0x5C f32 nearDist0 ·
-0x60 f32 nearIntensity0 · 0x64 f32 farIntensity0 · 0x68 f32 farDist0 ·
-0x6C f32 nearDist1 · 0x70 f32 nearIntensity1 · 0x74 f32 farIntensity1 ·
-0x78 f32 farDist1 · (0x80 total)
+0x60 f32 nearIntensity0 · 0x64 f32 farDist0 · 0x68 f32 farIntensity0 ·
+0x6C f32 nearDist1 · 0x70 f32 nearIntensity1 · 0x74 f32 farDist1 ·
+0x78 f32 farIntensity1 · (0x80 total)
+
+Note (2026-09-27): the far pair was originally mislabeled here (0x64/0x74 as
+farIntensity, 0x68/0x78 as farDist) because the levelFog globals they feed
+were swapped. The lwc1 register map in the original fixes the truth: the
+0x64/0x74 lerp (f9/f3) is the one scaled by 1024 and stored to
+levelFogFarDist, the 0x68/0x78 lerp (f4/f2) the one mapped through
+255-x*255 to levelFogFarIntensity. See the fog-consumer proof in
+decomp_state/notes/draw_post_post_InitViewContext__Fv.md.
 
 ## Original register maps (the targets)
-FP: $f20=255.0f, $f7=blend, $f12=arg, **$f1=t**; lerp terms farDist0→f4,
-farDist1→f2(=fd result), nearInt1→f5(=ni result), nearInt0→f0, nearDist1→f6(=nd
-result), nearDist0→f8, farInt1→f3(=fi result), farInt0→f9; 1024.0f→f0 (reused).
+FP: $f20=255.0f, $f7=blend, $f12=arg, **$f1=t**; lerp terms farDist0→f9,
+farDist1→f3(=fd result), nearInt1→f5(=ni result), nearInt0→f0, nearDist1→f6(=nd
+result), nearDist0→f8, farInt1→f2(=fi result), farInt0→f4; 1024.0f→f0 (reused).
 INT: w→v0, inv→t1, color1→a1, color0→a2, hi1(=color1>>16)→v1, hi0(=color0>>16)→a3,
 mid1(=color1>>8)→a0, mid0(=color0>>8)→t0; B reuses v1, R reuses a1, G reuses a0.
 
@@ -50,11 +61,11 @@ A semantically correct 396-byte candidate (candidate19) reproduces the original'
 **99-instruction multiset exactly** and the **complete GPR/FPR allocation** using
 verified hard-register locals:
 ```
-register float t  asm("$f1");  register float fd asm("$f2");
+register float t  asm("$f1");  register float fi asm("$f2");
 register float ni asm("$f5");  register float nd asm("$f6");
-register float fi asm("$f3");  register float fd0 asm("$f4");
+register float fd asm("$f3");  register float fi0 asm("$f4");
 register float ni0 asm("$f0"); register float nd0 asm("$f8");
-register float fi0 asm("$f9");
+register float fd0 asm("$f9");
 register int c1  asm("$5");    register int c0  asm("$6");
 register int hi1 asm("$3");    register int hi0 asm("$7");
 register int mi1 asm("$4");    register int mi0 asm("$8");
@@ -63,18 +74,18 @@ The **32 residual word diffs are pure instruction scheduling** of independent op
 (identical multiset; prologue, both calls, epilogue, and the final 7 stores all
 match):
 1. farDist0 vs farDist1 `lwc1` load order (orig loads farDist0 then farDist1).
-2. nearDist(nd) vs farIntensity(fi) lerp mul order in the interleaved region
-   (orig: nd1*b, nd0*t, fi1*b, fi0*t).
+2. nearDist(nd) vs farDist(fd) lerp mul order in the interleaved region
+   (orig: nd1*b, nd0*t, fd1*b, fd0*t).
 3. The 6 `andi` masks order (orig: mid1, hi1, mid0, hi0, c1lo, c0lo).
 4. The 6 `mult` order (orig: hi1, hi0, c1lo, mid1, c0lo, mid0 — interleaved B/R/G).
-5. The back-half interleave (fd*255, ni*255, fi*1024, nd*1024, sub.s x2, addu x3,
+5. The back-half interleave (fi*255, ni*255, fd*1024, nd*1024, sub.s x2, addu x3,
    sra x3, sb x3, swc1 x4).
 
 ## Tried (all default flags -G8 -O2 -ffast-math -fno-exceptions -snas)
 - 19 source forms; exhaustive 24 lerp statement orders × 16 per-lerp operand orders
   (576 forms, named + compound) — ZERO reproduced the FP term map without pins.
 - Color block before/after the lerp; final-store reorder; color load-order swap;
-  nd/fi lerp-order swap.
+  nd/fd lerp-order swap.
 - expert (GPT-6 Astra, one-shot) recommendation: pin the 5 color intermediates
   (c1/hi1/hi0/mi1/mi0) — reduced 38→32 diffs and fixed the integer map. Its
   boundary `asm volatile("" : "+r"(...))` around the block made it WORSE (56).

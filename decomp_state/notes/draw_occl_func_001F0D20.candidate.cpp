@@ -61,10 +61,10 @@ extern const char occlStartPtFmt[];
 extern const char occlPathFmt[];
 extern const char occlSemiOne[];
 extern const char occlSampleName[];
-extern f32 occlCamScale0 __attribute__((section(".data")));
-extern f32 occlCamScale1 __attribute__((section(".data")));
-extern f32 occlCamScale2 __attribute__((section(".data")));
-extern f32 occlCamScale3 __attribute__((section(".data")));
+extern f32 xpix __attribute__((section(".data")));
+extern f32 ypix __attribute__((section(".data")));
+extern f32 xclip __attribute__((section(".data")));
+extern f32 yclip __attribute__((section(".data")));
 extern "C" u8 D_0013E520[];
 
 // 0x1863D0: array of 0x4C structs, s16 field at +0x3E.
@@ -290,10 +290,10 @@ after0x4000:
             if (padButtons & 0x50) {
                 occlCamState.flagF = (occlCamState.flagF == 0);
                 f32 scale = occlCamState.flagF ? 0.125f : 0.5f;
-                occlCamScale0 = func_001FA6C0(occlCamParam0) * scale;
-                occlCamScale1 = func_001FA6C0(occlCamParam1) * scale;
-                occlCamScale2 = occlCamScale0 * 4.0f;
-                occlCamScale3 = occlCamScale1 * 4.0f;
+                xpix = func_001FA6C0(occlCamParam0) * scale;
+                ypix = func_001FA6C0(occlCamParam1) * scale;
+                xclip = xpix * 4.0f;
+                yclip = ypix * 4.0f;
                 UpdateViewContext();
             }
             break;

@@ -17,8 +17,8 @@ member embedded in ViewCtx at +0x210, or a separate extern aliasing the region?
     folds to the constant 0x18CF10 emits the identical lui/lwc1.
 - The block viewCtx+0x210..0x238 is written PIECEMEAL as individual floats,
   never as a bulk 64-byte matrix copy:
-  * UpdateFog (0x1F2588): swc1 viewCtx+0x218/21C/228/22C, sw +0x230/34/38
-    (fogNearDist/FarIntensity/NearIntensity/FarDist/R/G/B).
+   * UpdateFog (0x1F2588): swc1 viewCtx+0x218/21C/228/22C, sw +0x230/34/38
+     (fogNearDist/FarDist/NearIntensity/FarIntensity/R/G/B).
   * FUN_001f2d98 (in the UpdateOcclusion region 0x1F2C10..): `swc1 $f3,528(s0)`
     = viewCtx+0x210 (s0 = viewCtx base 0x18CD00), plus +0x214/0x220/0x224, and
     reads +0x210 back with `lw v0,528(s0)`.
@@ -26,7 +26,7 @@ member embedded in ViewCtx at +0x210, or a separate extern aliasing the region?
   drawCamera was never a Camera. It is the perspective scale (0x210), the first
   float of the fog+persp param block owned by viewCtx.
 - symbols.txt map of the viewCtx region (0x18CD00-0x18CF48): viewCtx 0x18CD00,
-  occlCamScale0-3 0x18CF00-0C, drawCamera 0x18CF10, occlColor0-2 0x18CF3C-44.
+  xpix/ypix/xclip/yclip 0x18CF00-0C, drawCamera 0x18CF10, occlColor0-2 0x18CF3C-44.
   The fog struct fields (0x218-0x238) sat inside the drawCamera symbol range.
 
 ## Change (parity-preserving)
@@ -37,7 +37,7 @@ member embedded in ViewCtx at +0x210, or a separate extern aliasing the region?
 - draw_post.cpp projectWorldPoint: `drawCamera.mtx0[0]` -> `viewCtx.perspScale`.
 - config/symbols.txt + config/linker_aliases.ld: removed the `drawCamera`
   symbol (viewCtx+0x210 is now named via the viewCtx.perspScale field). After
-  split, the 0x18CF10-0x18CF3B data region is covered by the occlCamScale3
+  split, the 0x18CF10-0x18CF3B data region is covered by the yclip
   label; bytes unchanged (all zero in boot ELF).
 
 ## Verification

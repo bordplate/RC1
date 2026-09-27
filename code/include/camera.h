@@ -120,11 +120,17 @@ struct ViewCtx {
     u32 pad_00[0x10];
     CameraMatrix field_40; // 0x40
     u32 pad_80[0x8];       // 0x80
-    float field_0A0;       // 0xA0: 32.0, written by InitViewContext
-    float field_0A4;       // 0xA4: 745472.0, written by InitViewContext
-    u32 pad_A8[2];         // 0xA8
-    float field_0B0;       // 0xB0: 0.63, written by InitViewContext
-    u32 pad_B4[3];         // 0xB4
+    // Perspective-box depths (D/F in the DL layout): the fMtx depth rows use
+    // the (F+D)/(F-D) and 2F/(F-D) coefficients and xpix/(xratio*D) /
+    // ypix/(yratio*D) as the x/y scales.
+    float nearClip;        // 0xA0: 32.0, written by InitViewContext
+    float farClip;         // 0xA4: 745472.0, written by InitViewContext
+    float xclipratio;      // 0xA8: xclip/xpix, set by UpdateViewContext
+    float yclipratio;      // 0xAC: yclip/ypix
+    float xratio;          // 0xB0: 0.63 default, written by InitViewContext
+    float yratio;          // 0xB4: xratio * 0.775 (NTSC) / 0.756 (PAL)
+    float xradpad;         // 0xB8: 1/cos(atan2(1, xratio))
+    float yradpad;         // 0xBC: 1/cos(atan2(1, yratio))
     CameraMatrix fMtx;     // 0xC0
     CameraMatrix nfMtx;    // 0x100
     CameraMatrix hMtx;     // 0x140
@@ -133,22 +139,25 @@ struct ViewCtx {
     u32 pad_1B0[0x4];
     float guardX;          // 0x1C0: scale for the two field_40 rows
     u32 pad_1C4[0xF];
-    float occlCamScale0;   // 0x200: ratio pair consumed by UpdateViewContext
-    float occlCamScale1;   // 0x204
-    float occlCamScale2;   // 0x208
-    float occlCamScale3;   // 0x20C
+    float xpix;            // 0x200: half draw width in pixels (width * 0.5)
+    float ypix;            // 0x204: half draw height in pixels
+    float xclip;           // 0x208: 4x xpix, clipbox extent
+    float yclip;           // 0x20C: 4x ypix
     // 0x210: perspective scale. projectWorldPoint divides the projected
     // vector's w into it to get the screen-space scale. This block (0x210-
     // 0x238) is the perspective/fog param area of the view context: UpdateFog
     // writes the fog fields below through this same viewCtx base. The old
     // `drawCamera` symbol aliased this region (viewCtx+0x210) and is gone.
     float perspScale;      // 0x210
-    float field_214;       // 0x214
+    // Fog ramp: fog(z) = fogMult * z + fogAdd, distances in 1/1024 units,
+    // intensities 0-255 (255 = clear). UpdateViewContext derives the ramp.
+    float fog1;            // 0x214: (nearInt*farDist - farInt*nearDist)/(farDist-nearDist)
     float fogNearDist;     // 0x218
-    float fogFarIntensity; // 0x21C
-    float pad_220[2];
+    float fogFarDist;      // 0x21C
+    float fogMult;         // 0x220: (farInt - nearInt) / ((farDist - nearDist)/1024)
+    float fogAdd;          // 0x224: nearInt - nearDist/1024 * fogMult
     float fogNearIntensity;// 0x228
-    float fogFarDist;      // 0x22C
+    float fogFarIntensity; // 0x22C
     int fogR;              // 0x230: fog red 0-255 (byte value, word store)
     int fogG;              // 0x234
     int fogB;              // 0x238
