@@ -692,9 +692,27 @@ default-`-G8` TU — no constant-address cast, no section attribute needed.
 When the owning TU is pinned `-G0` for a sibling (pause_post.o needs -G0 for
 pause_resetMenuEntry's PI inlining), isolate the function into its own
 default-flags TU via a Splat boundary split (pause_post_soundvol.o). See
-decomp_state/notes/pause_func_0021CB00.md.
+ decomp_state/notes/pause_func_0021CB00.md.
 
-ProcessMobyAnimData's verified symbolic form uses a named array for the
+ Extension observed 2026-09-27 (two-register split of an in-window global,
+ BuildOcclVisibility 0x1F2820): when the original loads a GP-window global as
+ `lui v0,HI; lw v1,LO(v0)` — base and value in DIFFERENT registers because the
+ hi page stays live in v0 and is reused by a later same-page destination
+ (`addiu a0,v0,0x3FC0`) — the bare-pseudo form (plain scalar extern, any size
+ <= 8, including 8-byte pointers) can NEVER produce it; ps2eeas always expands
+ the bare pseudo self-based. Force the RTL split by reading the value through
+ a STRUCT FIELD (e.g. `occlCamState.staged` at +0x14, not the scalar
+ `occlCamStaged`): the field access is not small data, so EGC emits a genuine
+ `lui base,%hi(field); lw value,%lo(field)(base)`. Even then EGC may unify
+ base and value into one register (a legal `lw r,off(r)` overlap) — pin the
+ VALUE (`register int v asm("$3");`) to force the original's (base, value)
+ pair. The self-based form is not cosmetic: on the copy path the last v0 write
+ before the dest's `addiu a0,v0,0x3FC0` becomes the loaded value (0),
+ corrupting the destination to 0x3FC0 — a defect invisible to a 4-word
+ register-only diff. See
+ decomp_state/notes/draw_post_post_BuildOcclVisibility__Fv.md.
+
+ ProcessMobyAnimData's verified symbolic form uses a named array for the
 FastMemCopy source (D_00165500) and plain pointer scalar externs for both
 MobyAnimProc arguments (D_0015F638 and D_0015F63C). Under SN, arg1 expands
 to a self-based absolute load and arg2 remains GP-relative in the call delay
