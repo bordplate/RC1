@@ -2143,5 +2143,13 @@
     "size": 184,
     "matched_date": "2026-09-27",
     "note": "Occlusion-grid pair fetch: parse the nearer of two adjacent grid cells (cell0/cell1, each an (x,y,z) octree index) first, then the other only if the first returns 0. The float arg is the caller-computed fractional part of the scaled cell coordinate (position - (float)(int)position); below OCCL_CELL_FRACTION_MIDPOINT (0.5f) cell0 is nearer, at/above it cell1 is. Match-critical shape: the SECOND ParseOcclGrid call is a single shared jal that both branches converge on, so the C source must set the second cell's coords into locals in each branch and make ONE trailing call (two per-branch calls emit two jals and overshoot by 4 bytes). All six int args are live across the branch so EGC copies them to s0-s5 in the prologue; the 0.5f constant loads (lui at/mtc1 $f0) hoist before the prologue and the float arg stays in $f12 for c.lt.s. 46/46 words; full boot parity clean."
+  },
+  "code/989snd/ee/989snd_post.c:492:snd_PlayVAGStreamByLocEx_CB": {
+    "name": "snd_PlayVAGStreamByLocEx_CB",
+    "source": "code/989snd/ee/989snd_post.c",
+    "vram": "0x0012EC08",
+    "size": 100,
+    "matched_date": "2026-09-27",
+    "note": "11-param PLAY_VAG_STREAM (0x2C) payload builder + snd_SendIOPCommandNoWait wrapper. 28-byte payload packs (vol<<16|offset1) and (pan<<16|offset2). sub_group is a plain u32 (EGC 8-byte-aligns each stack arg, so cb@sp+0x38, user_data@sp+0x40). Two register pins carry the match: lo2 pinned to $3 (original keeps $7 reserved for the cb load) and loc2arg pinned to $5 (direct early sw of the a1 param, no copy). 989snd_post.o region and full boot ELF cmp byte-identical. See notes/989snd_snd_PlayVAGStreamByLocEx_CB.md."
   }
 }

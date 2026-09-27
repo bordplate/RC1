@@ -484,7 +484,35 @@ asm(".align 3");
 asm("addiu $sp,$sp,0x10");
 asm("nop");
 
-INCLUDE_ASM("code/_generated/nonmatchings/989snd/ee/989snd_post", snd_PlayVAGStreamByLocEx_CB);
+// Assembles the PLAY_VAG_STREAM (0x2C) command payload from a stream
+// location/offset pair, volume/pan, and the group/queue routing fields, then
+// issues it through snd_SendIOPCommandNoWait with the caller's completion
+// callback. The 28-byte payload packs each (value << 16 | offset) pair into a
+// single word.
+void snd_PlayVAGStreamByLocEx_CB(int loc1, int loc2, int offset1, int offset2,
+                                 int vol, int pan, int vol_group, u32 queue,
+                                 u32 sub_group, SndCompleteProc cb,
+                                 u64 user_data) {
+    int data[7];
+    // The original keeps the masked offset2 in v1 (leaving a3 reserved for the
+    // cb load) and stores loc2 straight out of its a1 parameter register; EGC
+    // otherwise masks in place into a3 and defers the loc2 store behind a copy.
+    register int lo2 asm("$3");
+    register int loc2arg asm("$5") = loc2;
+    int hi2;
+
+    lo2 = offset2 & 0xFFFF;
+    hi2 = pan << 16;
+    data[2] = vol << 16 | offset1 & 0xFFFF;
+    data[3] = hi2 | lo2;
+    data[0] = loc1;
+    data[1] = loc2arg;
+    data[4] = vol_group;
+    data[5] = queue;
+    data[6] = sub_group;
+    snd_SendIOPCommandNoWait(SND_IOP_CMD_PLAY_VAG_STREAM, 0x1C, (char*)data, cb,
+                             user_data);
+}
 
 void snd_PauseVAGStream(int stream) {
     int buf[1];
