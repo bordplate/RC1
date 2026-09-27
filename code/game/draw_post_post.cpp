@@ -188,7 +188,21 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F46C8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4740);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F47B8);
+// Second per-draw-phase callback list (AddDrawCallback is the first). The
+// unmangled label is the Splat placeholder for this stripped-ELF symbol.
+extern u32 drawCallback2Funcs[];
+extern u32 drawCallback2Args[];
+extern int drawCallback2Count;
+
+void AddDrawCallback2(u32 func, u32 arg) asm("func_001F47B8");
+void AddDrawCallback2(u32 func, u32 arg) {
+    int idx = drawCallback2Count;
+    if (idx < DRAW_CALLBACK_MAX) {
+        drawCallback2Funcs[idx] = func;
+        drawCallback2Args[idx] = arg;
+        drawCallback2Count = idx + 1;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4808);
 
