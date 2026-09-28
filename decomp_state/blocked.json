@@ -1,5 +1,17 @@
 [
  {
+  "id": "code/game/draw_post_post.cpp:func_001F33B8",
+  "source": "code/game/draw_post_post.cpp",
+  "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F33B8.s",
+  "name": "func_001F33B8",
+  "status": "blocked",
+  "date": "2026-09-28",
+  "vram": "0x1F33B8",
+  "size": "0x130",
+  "note": "SetUserViewContext (Deadlocked-named; writes occlViewParams + viewCtx clip/fog/pixel-scale, then UpdateViewContext). A verified C form (cand16) matches the semantics, the 0x60 frame, the occlViewParams base split, the cvt.s.w body, and the ENTIRE tail EXACTLY once the fog args are pinned to callee-saved FPRs (fogND $f22/fogFD $f23/fogNI $f24/fogFI $f21), yclip is computed out-of-place into $f3, and a zero-byte FPU barrier `asm volatile(\\\"\\\" : \\\"+f\\\"(yScale));` sits before `viewCtx.ypix=yScale` (keeps yScale in f0 so the ypix store lands in the jal delay slot). Residual 35 diff words are PROLOGUE-ONLY (instructions 8-45): EGC 2.95.2 groups the five FPU prologue saves and the four fog mov.s copies and delays sq ra, whereas the original interleaves the FPU saves strictly with the integer min/max ops, spreads the three sll, and interleaves the fog mov.s one-per-constant with the lui/mtc1 constant loads. This is a prologue-insertion/ready-list scheduler tiebreak, not a missing instruction. Tried (all parity-safe, none closed it): 19 source orderings (best cand12/cand16 304B; some 300/308 or broke fog regs), -fno-schedule-insns (300B/67), -fno-schedule-insns2 (304B/39), both (312B/76) — default is closest; $s0 pointer pin (register ViewCtx* ctx asm(\\\"$16\\\")=&viewCtx + ctx->field) gave BYTE-IDENTICAL output (no effect); scoped fog-pin transfer (308B, broke allocation); anchored zero-byte =f fog transfers interleaved with the viewCtx stores (300B/72, worse). Retain INCLUDE_ASM; full-ELF parity preserved. farClip binary literal is 524288.0f (0x49000000), not VIEWCTX_FAR_CLIP — needs a named constant if re-attempted. See notes/draw_post_post_func_001F33B8.md.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-28 with the full dossier (tail already solved via the +f barrier; prologue-only mismatch). Recommended two experiments: (1) pin the viewCtx pointer to $s0 with an initializer — applied, byte-identical to cand16 (no effect, s0 was already the base register); (2) anchor the four fog transfers at their logical positions via zero-byte tied =f asms with the viewCtx stores interleaved — applied, changed the size to 300 bytes / 72 diff words (prologue save structure changed, worse). Concluded the prologue interleaving is a genuine unmatchable EGC 2.95.2 default-scheduler tiebreak; expert (GPT-6 Astra) consulted earlier and its +f-barrier recommendation is what fixed the tail."
+ },
+ {
   "id": "code/game/effects.cpp:func_001EE328",
   "source": "code/game/effects.cpp",
   "asm": "code/_generated/nonmatchings/game/effects/func_001EE328.s",
