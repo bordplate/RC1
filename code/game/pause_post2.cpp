@@ -84,7 +84,25 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021DF98);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021E110);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021E1F8);
+// C++ linkage (mangles to FastAddRots__Fff): fast add-with-wrap in
+// game/fastfunc; returns a + b wrapped into [-100.0, 100.0).
+extern float FastAddRots(float a, float b);
+
+// Pause-screen step object allocated by func_00225490: camera-relative
+// display floats at 0x10-0x18 and the wrapping angle at 0x48, which the
+// per-frame callback stored at 0x74 advances each frame.
+typedef struct {
+    u8 pad[0x48];
+    float angle;
+} PauseStepObject;
+
+// Symbol override: per-frame pause step callback at the address-based
+// generated entry point; advances the object's angle by 0.01 via FastAddRots.
+void pause_stepAngle01(PauseStepObject* obj) asm("func_0021E1F8");
+
+void pause_stepAngle01(PauseStepObject* obj) {
+    obj->angle = FastAddRots(obj->angle, 0.01f);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021E230);
 

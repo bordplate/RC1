@@ -2199,5 +2199,14 @@
     "size": 68,
     "matched_date": "2026-09-28",
     "note": "Scans the five-slot map pool (mapSlotPool @0x1A00F0) for the first slot whose key (slotKey @+0x28C) equals the arg and whose pointer (slotPtr @+0x278) is non-zero; returns index else -1. func_002050A0 renamed to findMapSlot (findMapSlot__Fi); D_001A00F0 renamed to mapSlotPool. Two-step base+offset load forced via a MapSlotPool pointer (pool->slotKey); a direct member access made EGC fold the base/offset and drop %lo(base). Single count++ duplicated into the beqzl/bnel taken-delay slots, p++ in the bnez delay slot. Clean full parity passes. See notes/map_func_002050A0.md."
+  },
+  "code/game/pause_post2.cpp:103:pause_stepAngle01": {
+    "name": "pause_stepAngle01",
+    "original_name": "func_0021E1F8",
+    "source": "code/game/pause_post2.cpp",
+    "vram": "0x0021E1F8",
+    "size": 56,
+    "matched_date": "2026-09-28",
+    "note": "Per-frame pause step callback (stored at obj+0x74 by func_0021DF98/LoadHandGadget for func_00225490-allocated step objects): advances the object's angle (float at 0x48, initialized to 100.0) by 0.01 via FastAddRots, which wraps the sum into [-100.0,100.0). The 0.01f lui/ori constant lands in $v0 before the sq $ra/sq $s0 prologue stores, s0 takes a0, the lwc1 f12 arg load sits in the jal delay slot, and the result swc1 returns to 0x48; void return leaves v0 as the float result. FastAddRots is C++-linkage in game/fastfunc (mangles to FastAddRots__Fff, 2 float params; the callee overwrites f14 itself). First-try match: 56/56 words, pause_post2.o 121/121, clean full boot parity. Sibling func_0021F120 is the 0.02f twin. See notes/pause_post2_pause_stepAngle01.md."
   }
 }
