@@ -127,6 +127,11 @@ movieDecodeBuf = 0x0016120C;
 frameBufferColor = 0x00152078;
 bootAssets = 0x00137B80;
 debugFontBuffer = 0x001AABC0;
+// Display and z-buffer VRAM bases for the current video mode, set by
+// SetPalMode; the draw buffer runs from frameBufferBase for
+// drawW*drawH*4 bytes, ending exactly at textureMemoryBase.
+displayBase = 0x0015EE80;
+zbufBase = 0x0015EE84;
 frameBufferBase = 0x0015EE88;
 textureMemoryBase = 0x0015EE8C;
 textureAllocCounter = 0x0015EF20;
@@ -584,6 +589,9 @@ FastAbsF = 0x1f99c0;
 // _lookup_grid_pointer = 0x0441e88; // Outside the configured segments.
 CollLine_Fix = 0x1efa68;
 CollOutput = 0x00194100;
+// 0x1000-byte scratch/source buffer: SetPalMode zeroes it, then uploads it in
+// 32x32 tiles via sceGsSetDefLoadImage/sceGsExecLoadImage.
+loadImageBuffer = 0x001941C0;
 MobyGrids = 0x01b76e0;
 
 // drawquad
@@ -773,6 +781,10 @@ vu1GsRegsNormal = 0x001de3c0;
 vu1GsRegsAlt = 0x001de3f0;
 vu1GsRegsFont = 0x0013cf10;
 vu1GsRegsTexFlush = 0x001dee00;
+// Sky-reference GS state blocks; SetPalMode rewrites the lead 64-bit word of
+// each from the current frame/z-buffer bases and view-rect params.
+skyRefTextured = 0x0013d100;
+skyRefGouraud = 0x0013d170;
 
 // actuator.cpp
 texResetCursor__Fv = 0x1e9128;

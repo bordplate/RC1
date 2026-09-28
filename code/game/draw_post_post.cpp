@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "actuator.h"
 #include "video.h"
+#include "sce_gs.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F2260);
 
@@ -265,9 +266,14 @@ void UpdateOcclusion() {
 #define VIEWCTX_DEFAULT_FOG_NEAR_INTENSITY 255.0f
 
 void InitViewContext(void) {
-    int rawX = occlCamParamBase.paramX;
-    int rawY = occlCamParamBase.paramY;
+    int rawX = occlCamParamBase.drawW;
+    int rawY = occlCamParamBase.drawH;
     // The params are 16-bit fixed-point; sign-extend and keep a halved copy.
+    // EGC 2.95.2 quirk (probe-verified): `x = (s16)raw` lowers to the raw
+    // zero-extended value and `(s16)raw >> 1` lowers to the sign-extended
+    // value with the >>1 dropped, so the matched bytes store the unhalved
+    // params in the halfX/halfY slots. Do not "fix" the >>1 away or add
+    // explicit extends; this exact source form is what matches.
     int x = (s16)rawX;
     int y = (s16)rawY;
     int halfX = (s16)rawX >> 1;
@@ -288,9 +294,9 @@ void InitViewContext(void) {
 
     float halfScale = VIEWCTX_HALF_PIXEL;
     viewCtx.xpix = func_001FA6C0(x) * halfScale;
-    // The original reloads paramY signed here (a fresh `lh`) rather than
+    // The original reloads drawH signed here (a fresh `lh`) rather than
     // reusing the `y` local; matching that keeps the register allocation.
-    float yScale = func_001FA6C0(*(const s16*)&occlCamParamBase.paramY) * halfScale;
+    float yScale = func_001FA6C0(*(const s16*)&occlCamParamBase.drawH) * halfScale;
     viewCtx.ypix = yScale;
     viewCtx.xclip = viewCtx.xpix * VIEWCTX_CLIP_SCALE;
     viewCtx.yclip = yScale * VIEWCTX_CLIP_SCALE;

@@ -1,6 +1,7 @@
 #include "common.h"
 #include "types.h"
 #include "boot_level.h"
+#include "sce_gs.h"
 
 // PIF (PSM T8H) image header read from the debug font buffer.
 typedef struct {
@@ -27,19 +28,6 @@ typedef struct {
     int vLog;
 } PifParser;
 
-// 96-byte GS load-image packet built by sceGsSetDefLoadImage.
-typedef struct {
-    u8 _data[96];
-} sceGsLoadImage;
-
-// C linkage: SCE GS image loader entry points (core.text SDK code). All three
-// return int (status/result); the ignored return value still affects EGC
-// register allocation, so the prototypes must keep the int return type.
-extern "C" int sceGsSetDefLoadImage(sceGsLoadImage* image, short p1, short p2,
-                                    short p3, short p4, short p5, short p6,
-                                    short p7);
-extern "C" int sceGsExecLoadImage(sceGsLoadImage* image, void* source);
-extern "C" int sceGsSyncPath(int path, int sync);
 extern "C" int log2dim(int x);
 
 // C linkage: these loader routines are SDK-style unmangled entry points.

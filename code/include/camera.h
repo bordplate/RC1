@@ -167,21 +167,30 @@ struct ViewCtx {
  };
 extern ViewCtx viewCtx;
 
-// 0x151780: occlusion camera parameter block. InitViewContext reads the two
-// 16-bit params near the end of the block; the rest is not yet mapped.
+// 0x151780: buffer parameter block, written by
+// SetupFS_AA_buffer(drawW, drawH, zbufW, zbufH, aux, aux): the draw buffer
+// runs from frameBufferBase for drawW*drawH*4 bytes (ending exactly at
+// textureMemoryBase) and the z-buffer holds zbufW*zbufH*4 bytes.
+// InitViewContext and SetPalMode read the dimensions to build the occlusion
+// view rectangle and the z-buffer 32x32 tile count.
 struct OcclCamParamBlock {
     u8 pad_000[0x150];
-    u16 paramX; // 0x150
-    u16 paramY; // 0x152
+    u16 drawW;   // 0x150
+    u16 drawH;   // 0x152
+    u16 pad_154; // 0x154
+    u16 pad_156; // 0x156: *zbufBase >> 13
+    s16 zbufW;   // 0x158
+    s16 zbufH;   // 0x15A
 };
 extern struct OcclCamParamBlock occlCamParamBase;
 
-// 0x13E500: occlusion view rectangle computed by InitViewContext. The two
-// sign-extended params and their halves are stored raw; min/max are the
-// rectangle centered on OCCL_VIEW_CENTER, pre-scaled (x16) into 16.0.
+// 0x13E500: occlusion view rectangle computed by InitViewContext and
+// SetPalMode. The two sign-extended dimension params and their halves are
+// stored raw; min/max are the rectangle centered on OCCL_VIEW_CENTER,
+// pre-scaled (x16) into 16.0.
 struct OcclViewParams {
-    s32 paramX; // 0x00: sign-extended OcclCamParamBlock.paramX
-    s32 paramY; // 0x04: sign-extended OcclCamParamBlock.paramY
+    s32 paramX; // 0x00: sign-extended OcclCamParamBlock.drawW
+    s32 paramY; // 0x04: sign-extended OcclCamParamBlock.drawH
     s32 halfX;  // 0x08: paramX >> 1
     s32 halfY;  // 0x0C: paramY >> 1
     s32 minX;   // 0x10: (OCCL_VIEW_CENTER - halfX) << 4
