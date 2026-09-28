@@ -67,6 +67,12 @@ drawCallbackArgs = 0x0018DC40;
 drawCallback2Count = 0x0015F468;
 drawCallback2Funcs = 0x0018DD40;
 drawCallback2Args = 0x0018DE40;
+// Counts for the "pre effects" (0x18DF40/0x18E040) and "vu effects"
+// (0x18E140/0x18E240) callback lists, run by func_001F46C8 / func_001F4740.
+drawCallback3Count = 0x0015F46C;
+drawCallback4Count = 0x0015F470;
+// Count of 16-byte-stride effect quads at 0x18E350 drawn by func_001F4880.
+effectQuadCount = 0x0015F474;
 drawNormalFrame__Fv = 0x001F4248;
 AddDrawCallback__FUiUi = 0x001F4600;
 fontSmallGlyphs = 0x001DF050;
@@ -105,6 +111,14 @@ textureCursorEnd = 0x0015EE78;
 pauseScreenState = 0x001D5BF0;
 memcardErrorMessage = 0x001E8360;
 videoErrorMessage = 0x00161220;
+// Per-cell occlusion-sample table (vendor/func_00239D60 search +
+// func_00239F58 bilinear sampler): base of the sample records (stride 0x1190),
+// the per-cell AABB table (0x10-byte entries), the cell count, and the moby
+// occlusion z-test cluster count.
+occlSampleBase = 0x00161190;
+occlCellTable = 0x00161194;
+occlCellCount = 0x00161198;
+mobyOcclClusterCount = 0x0016119C;
 movieDisplayActive = 0x001611E0;
 movieErrorMessage = 0x001611F8;
 vuChainOverflowMessage = 0x001E8400;
@@ -332,6 +346,19 @@ bootLevelActive = 0x0015F5E8;
 drawEnableMask = 0x0015F434;
 drawFrameCount = 0x0015F438;
 screenFade = 0x0015F43C;
+// Occlusion-sample VU1 chain state (func_001F4D98): enable pulse plus a frame
+// counter that ramps to 24 and decays, emitting a per-frame VU1 chain.
+occlChainActive = 0x0015F444;
+occlChainFrames = 0x0015F448;
+// Debug/profiler state in the 0x15F330-0x15F37C block; write-only in the boot
+// ELF (no readers), so the address-based name is retained.
+D_0015F330 = 0x0015F330;
+D_0015F334 = 0x0015F334;
+// Gates the "screen overlay" stage (func_001F4FB8) and an overlay parameter.
+screenOverlayEnabled = 0x0015F34C;
+D_0015F360 = 0x0015F360;
+// Gates func_001F5138, the occlusion-debug GS-register + rect overlay.
+occlDebugOverlayEnabled = 0x0015F370;
 gameLanguage = 0x0015ED88;
 bootImageBuffer = 0x0015EF5C;
 requestedVideoMode = 0x0016034C;

@@ -307,7 +307,61 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F33B8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", SetPalMode__Fi);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ResetDrawGlobals);
+// Per-level draw-state reset (called from the level and space loaders): zero
+// the four per-draw-phase callback-list counters, the effect-quad count, the
+// debug/profiler state block, the occlusion-sample VU-chain pulse state,
+// OcclMode, and the per-cell occlusion-sample table state.
+extern int drawCallbackCount;
+extern int drawCallback3Count;
+extern int drawCallback4Count;
+extern int drawCallback2Count;
+extern int effectQuadCount;
+// Debug/profiler state in the 0x15F330-0x15F37C block; write-only in the boot
+// ELF (no readers found), so the address-based name is retained.
+extern int D_0015F330;
+extern int D_0015F334;
+extern int occlChainActive;
+extern int occlChainFrames;
+extern int OcclMode;
+extern int occlSampleBase;
+extern int occlCellTable;
+extern int occlCellCount;
+// These four are stored GPREL16 here (sw off gp) rather than self-based; the
+// .extern seed makes ps2eeas expand the bare pseudo as GPREL16 (a plain
+// declaration expands self-based).
+extern int screenOverlayEnabled;
+// Overlay parameter in the screen-overlay state block; write-only in the boot
+// ELF (no readers found), so the address-based name is retained.
+extern int D_0015F360;
+extern int occlDebugOverlayEnabled;
+extern int mobyOcclClusterCount;
+asm(".extern screenOverlayEnabled, 4");
+asm(".extern D_0015F360, 4");
+asm(".extern occlDebugOverlayEnabled, 4");
+asm(".extern mobyOcclClusterCount, 4");
+
+// C linkage: the level loader (func_001E9B10) and space loader (func_00230F60)
+// call the unmangled symbol ResetDrawGlobals; a C++ declaration would mangle it
+// to ResetDrawGlobals__Fv and fail to link.
+extern "C" void ResetDrawGlobals(void) {
+    drawCallbackCount = 0;
+    drawCallback3Count = 0;
+    drawCallback4Count = 0;
+    drawCallback2Count = 0;
+    effectQuadCount = 0;
+    D_0015F330 = 0;
+    D_0015F334 = 0;
+    occlChainActive = 0;
+    occlChainFrames = 0;
+    screenOverlayEnabled = 0;
+    D_0015F360 = 0;
+    occlDebugOverlayEnabled = 0;
+    OcclMode = 0;
+    occlSampleBase = 0;
+    occlCellTable = 0;
+    occlCellCount = 0;
+    mobyOcclClusterCount = 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ResetGsRegisters__Fv);
 

@@ -2175,5 +2175,13 @@
   "size": 52,
   "matched_date": "2026-09-28",
   "note": "Normal per-frame draw setup (caller state 0/8, the non-space-load path): if not spaceLoadInProgress, append the large framebuffer setup (framebuf_appendLargeSetup), reset drawEnableMask (0x15F434) to its base set DRAW_ENABLE_MASK_BASE=0x7F (bits 0-6, the stages the main draw pass runs), then run DrawDebugProfiler. Match-critical access modes: spaceLoadInProgress (0x15F618) is a plain self-based lui/lw load (default -G8 bare pseudo), while the drawEnableMask reset is a GPREL16 store in the DrawDebugProfiler call delay slot - reproduced with an .extern-seeded declaration (asm(\".extern drawEnableMask, 4\")) mirroring the partClipDistGp pattern. DrawDebugProfiler is called via extern \"C\" because its INCLUDE_ASM supplies the unmangled symbol. EGC naturally places the sq ra in the bnez delay slot and the mask store in the trailing jal delay slot with the plain source order."
+ },
+ "code/game/draw_post_post.cpp:346:ResetDrawGlobals": {
+  "name": "ResetDrawGlobals",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F37E8",
+  "size": 124,
+  "matched_date": "2026-09-28",
+  "note": "Per-level draw-state reset (callers: level loader func_001E9B10, space loader func_00230F60). 31-word flat body of 17 zero-stores in a fixed non-address-ordered sequence (the last, mobyOcclClusterCount, lands in the jr $ra delay slot); no frame/calls/saves. Match-critical access modes: 13 self-based stores (plain extern int -> ps2eeas self-based lui/sw, since EGC's .extern lands after the reference) and 4 GPREL16 stores (screenOverlayEnabled 0x15F34C, D_0015F360, occlDebugOverlayEnabled 0x15F370, mobyOcclClusterCount 0x16119C) reproduced with .extern-seeded declarations (partClipDistGp pattern). EGC preserves the exact source store order (verified 0 word diffs). Established 11 new global names (drawCallback3/4Count, effectQuadCount, occlChainActive/Frames, screenOverlayEnabled, occlDebugOverlayEnabled, occlSampleBase/CellTable/CellCount, mobyOcclClusterCount); D_0015F330/334/360 kept as placeholders (write-only, no boot-ELF readers). extern C (callers use the unmangled symbol). See decomp_state/notes/draw_post_post_ResetDrawGlobals.md."
  }
 }
