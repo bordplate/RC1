@@ -780,6 +780,9 @@ Vif1ChainCmd__Fi = 0x233f78;
 vu1GsRegsNormal = 0x001de3c0;
 vu1GsRegsAlt = 0x001de3f0;
 vu1GsRegsFont = 0x0013cf10;
+// GS register reset block (record header 0x00008012) streamed into the VU1
+// chain by ResetGsRegisters; the next record (0x00008001) starts at its end.
+resetGsRegsFixed = 0x0013cfc0;
 vu1GsRegsTexFlush = 0x001dee00;
 // Sky-reference GS state blocks; SetPalMode rewrites the lead 64-bit word of
 // each from the current frame/z-buffer bases and view-rect params.

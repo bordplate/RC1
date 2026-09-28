@@ -369,7 +369,49 @@ extern "C" void ResetDrawGlobals(void) {
     mobyOcclClusterCount = 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ResetGsRegisters__Fv);
+// Head of the VU1 command chain; draw functions append VIF data-reference
+// packets through it. Double volatile so EGC re-reads the head before every
+// packet store; the plain (non-.data) declaration keeps the load a bare
+// self-based pseudo and leaves the streamed block addresses as schedulable
+// lui/addiu pairs, matching the original. vuchain.cpp's .data form pairs
+// with -mno-split-addresses for that TU instead.
+extern volatile u32* volatile vu1ChainHead;
+// Same object as vu1ChainHead: the final head update stores GPREL in the
+// VU1_addGSregister call delay slot, so it goes through this plain alias.
+extern volatile u32* vu1ChainHeadStore;
+// 44-word GS state block streamed by the second packet below.
+extern u32 vu1GsRegsFont[];
+// GS register reset block streamed by the first packet below.
+extern u32 resetGsRegsFixed[];
+// The original calls it with only the register and value; the third bool
+// parameter of the exported symbol is never materialized at any call site.
+void VU1_addGSregister(unsigned int reg, unsigned long value)
+    asm("VU1_addGSregister__FUiUlb");
+
+// VIF packet tags for the data-reference records appended below (same
+// values vuchain.cpp uses for its chain appenders).
+#define VU1_DATA_REF_TAG 0x30000000
+#define VU1_DATA_REF_END_TAG 0x50000000
+// GS register that receives the packed fog color (R | G<<8 | B<<16); the
+// offset is hardware-defined and unnamed in the available references.
+#define VU1_FOG_COLOR_GS_REG 0x3D
+
+// Stream the fixed-GS-state and font-GS-state reset blocks into the VU1
+// command chain, then load the current fog color into the fog GS register.
+void ResetGsRegisters() {
+    vu1ChainHead[0] = VU1_DATA_REF_TAG | 0x13;
+    vu1ChainHead[1] = (u32)resetGsRegsFixed;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x13;
+    volatile u32* next = vu1ChainHead + 4;
+    vu1ChainHead = next;
+    next[0] = VU1_DATA_REF_TAG | 0x0B;
+    vu1ChainHead[1] = (u32)vu1GsRegsFont;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x0B;
+    vu1ChainHeadStore = vu1ChainHead + 4;
+    VU1_addGSregister(VU1_FOG_COLOR_GS_REG, (long)viewCtx.fogR | ((long)viewCtx.fogG << 8) | ((long)viewCtx.fogB << 0x10));
+}
 
 // The EE maps the GS (Graphics Synthesizer) register window at 0x12000000;
 // these are the display-control registers ResetGsRegistersPr resets.
