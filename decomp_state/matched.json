@@ -2191,5 +2191,13 @@
     "size": 84,
     "matched_date": "2026-09-28",
     "note": "256-entry lookup-table init (bitSwapLut, 0x18E740, u32[256]). Flat 256-iteration loop: index = i with bits 3 and 4 conditionally swapped (andi/ori/movn sequence), value stored = (i>>1)<<24 (top byte = i>>1) at table[index]; the sw lands in the bnez taken-delay slot. Single caller: InitOnce__Fv (0x201984). Matched byte-for-byte on the first C attempt (0 word diffs of 21): the bit-op sequence (andi 0xE7/0x8/0x10, ori 0x10/0x8, movn, sra 1, sll 24) and register allocation (base in t0, index in a3, temps v0/a1/v1/a2/a0) fall out exactly from the natural C. Match-critical: the table must be a NAMED .data symbol (bitSwapLut, section .data) so EGC emits the self-based lui/addiu base load (hi in v0, lo added to t0); a raw constant address instead emits lui/ori into one register and breaks the match. Named buildBitSwapLut__Fv + bitSwapLut in config/symbols.txt (was func_001F7A30/D_0018E740); caller .s regenerated to jal buildBitSwapLut__Fv."
+  },
+  "code/game/map.cpp:26:findMapSlot__Fi": {
+    "name": "findMapSlot__Fi",
+    "source": "code/game/map.cpp",
+    "vram": "0x002050A0",
+    "size": 68,
+    "matched_date": "2026-09-28",
+    "note": "Scans the five-slot map pool (mapSlotPool @0x1A00F0) for the first slot whose key (slotKey @+0x28C) equals the arg and whose pointer (slotPtr @+0x278) is non-zero; returns index else -1. func_002050A0 renamed to findMapSlot (findMapSlot__Fi); D_001A00F0 renamed to mapSlotPool. Two-step base+offset load forced via a MapSlotPool pointer (pool->slotKey); a direct member access made EGC fold the base/offset and drop %lo(base). Single count++ duplicated into the beqzl/bnel taken-delay slots, p++ in the bnez delay slot. Clean full parity passes. See notes/map_func_002050A0.md."
   }
 }
