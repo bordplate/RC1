@@ -636,6 +636,15 @@ void draw_prepareFrame(void) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F79A8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7A30);
+extern u32 bitSwapLut[256] __attribute__((section(".data")));
+
+void buildBitSwapLut(void) {
+    for (int i = 0; i < 256; i++) {
+        int index = i & 0xE7;
+        if (i & 0x8) index |= 0x10;
+        if (i & 0x10) index |= 0x8;
+        bitSwapLut[index] = (u32)((i >> 1) << 24);
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7A88);

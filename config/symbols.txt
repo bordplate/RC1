@@ -901,3 +901,5 @@ occlCamVecFloatB = 0x0013F3E8;
 occlCamParamBase = 0x00151780;
 occlU16TableABase = 0x001863D0;
 occlU16TableBBase = 0x001DFFB0;
+bitSwapLut = 0x0018E740;
+buildBitSwapLut__Fv = 0x001F7A30;
