@@ -351,7 +351,33 @@ void ResetGsRegistersPr() {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", DrawDebugProfiler);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4248);
+// drawEnableMask bits 0-6 enable the base set of per-frame draw stages that
+// the normal draw path (state 0/8) runs.
+#define DRAW_ENABLE_MASK_BASE 0x7F
+
+// Per-frame draw setup for the normal draw states (state 0 and 8): append the
+// large framebuffer setup, reset the draw-enable mask to its base set, then
+// run the main draw pass. Skipped while a space load is in progress.
+extern int spaceLoadInProgress;
+extern int drawEnableMask;
+// GPREL store alias of drawEnableMask: the mask reset is a GPREL16 store in
+// the DrawDebugProfiler call delay slot; the .extern seed makes ps2eeas expand
+// the bare pseudo as GPREL16 (a plain declaration would be self-based).
+asm(".extern drawEnableMask, 4");
+void framebuf_appendLargeSetup(void);
+// C linkage: DrawDebugProfiler is supplied by the generated INCLUDE_ASM with
+// the unmangled symbol DrawDebugProfiler; the call target is that unmangled
+// entry point, which C++ mangling would not resolve.
+extern "C" void DrawDebugProfiler(void);
+
+void drawNormalFrame(void) {
+    if (spaceLoadInProgress) {
+        return;
+    }
+    framebuf_appendLargeSetup();
+    drawEnableMask = DRAW_ENABLE_MASK_BASE;
+    DrawDebugProfiler();
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", SetupGifPaging__Fi);
 

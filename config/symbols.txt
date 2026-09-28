@@ -67,6 +67,7 @@ drawCallbackArgs = 0x0018DC40;
 drawCallback2Count = 0x0015F468;
 drawCallback2Funcs = 0x0018DD40;
 drawCallback2Args = 0x0018DE40;
+drawNormalFrame__Fv = 0x001F4248;
 AddDrawCallback__FUiUi = 0x001F4600;
 fontSmallGlyphs = 0x001DF050;
 fontMediumGlyphs = 0x001DF3F0;
@@ -325,6 +326,10 @@ OcclVisibilityMerged = 0x00194040;
 // game/bmain.cpp
 // Boot overlay state and resident asset records, recovered by startlevel.
 bootLevelActive = 0x0015F5E8;
+// Bitmask of per-frame draw stages/features read by the main draw pass
+// (DrawDebugProfiler); bit N enables the Nth stage. drawNormalFrame resets
+// it to the base set (bits 0-6).
+drawEnableMask = 0x0015F434;
 drawFrameCount = 0x0015F438;
 screenFade = 0x0015F43C;
 gameLanguage = 0x0015ED88;
