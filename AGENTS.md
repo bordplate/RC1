@@ -747,6 +747,31 @@ the same family (VU1_gsRegsNormal, VU1_addGSregister, func_00233C28, and the
 PutDrawBuffer* packet appenders sharing head 0x160F00) should start from this
 form. See decomp_state/notes/vuchain_VU1_addDataRef__FPvi.md.
 
+ Counterpoint observed 2026-09-28 (plain -G8 head declaration,
+ ResetGsRegisters__Fv 0x1F3868): when the function also STREAMS NAMED BLOCK
+ ADDRESSES as packet payloads (resetGsRegsFixed, vu1GsRegsFont) and the
+ original interleaves a packet store BETWEEN such an address's lui/addiu
+ halves and keeps a RAW struct base (viewCtx, offsets 0x230/4/8) for later
+ field loads, the `.data` + -mno-split-addresses form CANNOT match: under the
+ flag those addresses compile to single indivisible `la` pseudos in the
+ compiler .s, so the scheduler cannot split them and the struct base folds to
+ `la r,sym+const` (wrong offsets); the residual is a cascade of Reload
+ register choices (constant regs, head-load alternation phase) that source
+ reordering, register pins, and both scheduler flags do not fix. The
+ matching form is the PLAIN (non-.data) DOUBLE-VOLATILE declaration with
+ DEFAULT address splitting: at -G8 EGC emits the bare `lw r,vu1ChainHead`
+ small-data pseudo ps2eeas expands self-based (the 2026-09-16 behavior),
+ while symbol addresses stay split lui/addiu pairs EGC can interleave —
+ reproducing the entire original register map with zero pins and no private
+ flags (0/59 word diffs on the first probe). The mid `sw r,vu1ChainHead` is
+ absolute; the final `sw r,<plain alias>` in a `jal`/`jr` noreorder delay
+ slot is GPREL16 (same alias rule as above). Check the compiler `.s`
+ (la vs lui/addiu) before blaming Reload tie-breaks. Also verified: EGC
+ 2.95.2 accepts a free-function `asm("Mangled")` label — VU1_addGSregister
+ is declared 2-param (its 3rd bool param is never materialized at any RC1
+ call site) with `asm("VU1_addGSregister__FUiUlb")`. See
+ decomp_state/notes/draw_post_post_ResetGsRegisters__Fv.md.
+
 Extension observed 2026-09-13 (dead-tail placement, func_00233880): in the
 store-tail family the dead fragment sits after the `jr`'s delay slot AND the
 following `.align` nop: `[jr ra; sw A (delay slot, ALIVE); nop (alignment);
