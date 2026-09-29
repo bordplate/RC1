@@ -574,7 +574,17 @@ void ExecuteDrawCallbacks3(void) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ExecuteDrawCallbacks4__Fv);
+extern DrawCallbackProc drawCallback4Funcs[];
+extern u32 drawCallback4Args[];
+
+// Calls each (func, arg) pair registered on the "vu effects" callback list,
+// re-reading the list count after every call.
+void ExecuteDrawCallbacks4(void) {
+    int i;
+    for (i = 0; i < drawCallback4Count; i++) {
+        drawCallback4Funcs[i](drawCallback4Args[i]);
+    }
+}
 
 // Second per-draw-phase callback list (AddDrawCallback is the first). The
 // unmangled label is the Splat placeholder for this stripped-ELF symbol.

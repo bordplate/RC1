@@ -2252,5 +2252,14 @@
   "size": 120,
   "matched_date": "2026-09-29",
   "note": "Runs the PRIMARY per-draw-phase callback list: for i in 0..drawCallbackCount, calls drawCallbackFuncs[i](drawCallbackArgs[i]), re-reading the count after each call. Matching form is the PLAIN indexed for-loop (same as the matched sibling ExecuteDrawCallbacks3__Fv / clones 2 and 4), NO pins/barriers/volatile/private flags: EGC strength-reduces the subscripts to the s1/s2 pointer-advance loop, emits the for's first check as the single blez guard, hoists the first fn load, and schedules the two setup lui high-halves in the original's [funcs->v1, args->v0] order with the bnel loop and f-reload in the branch delay slot. One deviation from the sibling's source: list 1's drawCallbackFuncs is declared extern u32[] (the already-matched AddDrawCallback 0x1F4600 stores its u32 func parameter into it), so the index result carries an explicit (DrawCallbackProc) cast before the call - a pure 32-bit pointer reinterpret, no address constant, no codegen effect. drawCallbackCount/drawCallbackFuncs/drawCallbackArgs are plain named externs (count 0x15F464 in-window self-based lui/lw; funcs/args 0x18DB40/0x18DC40 split lui/addiu); the DrawCallbackProc typedef was moved above so both executors share it. First-try match on the indexed probe: 120/120 words, 0 differences; object byte region equal at 0x1F4650; full boot parity passes. Supersedes the stale blocked.json entry keyed func_001F4650 (pre-rename) and the pointer-form 2-byte lui-order wall in notes/draw_post_post_func_001F4650.md."
+ },
+ "code/game/draw_post_post.cpp:582:ExecuteDrawCallbacks4__Fv": {
+  "name": "ExecuteDrawCallbacks4__Fv",
+  "original_name": "func_001F4740",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F4740",
+  "size": 120,
+  "matched_date": "2026-09-29",
+  "note": "Runs the \"vu effects\" per-draw-phase callback list (list 4): for i in 0..drawCallback4Count, calls drawCallback4Funcs[i](drawCallback4Args[i]), re-reading the count after each call. Byte-identical clone of the matched sibling ExecuteDrawCallbacks3__Fv (0x1F46C8); the matching form is the PLAIN indexed for-loop (extern DrawCallbackProc drawCallback4Funcs[]; extern u32 drawCallback4Args[]; for (i=0; i<drawCallback4Count; i++) drawCallback4Funcs[i](drawCallback4Args[i];)) with NO pins, barriers, volatile, or private flags. drawCallback4Count (0x15F470) was already declared; drawCallback4Funcs (0x18E140) / drawCallback4Args (0x18E240) named in config/symbols.txt from the generated assembly. First-try match: full build + cmp boot ELF byte-identical. Completes the three remaining clones of the ExecuteDrawCallbacks family (ExecuteDrawCallbacks2__Fv 0x1F4808 is the only one left)."
  }
 }
