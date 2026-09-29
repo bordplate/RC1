@@ -2217,5 +2217,14 @@
     "size": 236,
     "matched_date": "2026-09-28",
     "note": "Appends two VIF data-reference packets (fixed-GS-reset block resetGsRegsFixed 0x13CFC0 tag 0x13, then vu1GsRegsFont tag 0xB) to the VU1 chain and calls VU1_addGSregister(0x3D, packed fog color). Match-critical: vu1ChainHead must be declared PLAIN double-volatile (no .data section attribute) so the -G8 small-data path emits bare self-based load pseudos while the block addresses stay schedulable lui/addiu pairs; the vuchain .data + -mno-split-addresses form instead folds them into indivisible la pseudos and cannot match (25-30 residual RA/schedule word diffs, all source/pin/flag variants tried). Packet B word 0 is written through a local pointer (next = head + 4) so EGC reuses the old-head register + 0x10 with no reload. Mid head update is absolute; final update is GPREL in the jal delay slot via vu1ChainHeadStore. VU1_addGSregister declared 2-param with asm('VU1_addGSregister__FUiUlb') label (3rd bool param never materialized). Fog value needs (long) casts per field for the dsll8/dsll16 + 32-bit or sequence. No private flags, no pins. See decomp_state/notes/draw_post_post_ResetGsRegisters__Fv.md."
+  },
+  "code/game/camera.cpp:60:ExecuteCamPostUpdFuncs": {
+    "name": "ExecuteCamPostUpdFuncs",
+    "original_name": "ExecuteCamPostUpdFuncs",
+    "source": "code/game/camera.cpp",
+    "vram": "0x001EBCF0",
+    "size": 108,
+    "matched_date": "2026-09-29",
+    "note": "Calls every registered camera post-update routine (CamPostUpdRoutines array @0x1892B0 of zero-arg fn pointers, count in CamPostUpdRoutineCnt @0x15EF8C), reloading the count after each call, then clears the count. Pins: i->$16, routine->$3, and the i<count test result pinned to $2 (v0 overwrites the count register; original then bnel to loop). Without pinning the comparison to v0, EGC reuses the routine register v1 for the slt result (2-word diff). The unreachable 0x14-byte dead tail at 0x1EBD60 (two move v0,zero + sw zero,0(a0)) is preserved in the adjacent inline-asm block."
   }
 }

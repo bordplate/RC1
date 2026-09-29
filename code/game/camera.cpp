@@ -47,7 +47,38 @@ extern "C" void BackupCurrentCam(void) {
     *(void**)(dst + 0x70) = p;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/camera", ExecuteCamPostUpdFuncs);
+// 0x15EF8C: number of camera post-update routines to run (GP window, so a
+// plain int compiles to the original's self-based absolute load).
+extern int CamPostUpdRoutineCnt;
+// 0x1892B0: array of camera post-update routine function pointers.
+typedef void (*CamPostUpdRoutine)(void);
+extern CamPostUpdRoutine CamPostUpdRoutines[];
+
+// Unmangled symbol (confirmed in the original .ld); the asm label goes on a
+// separate declaration because this EGC rejects an asm label on a definition.
+void ExecuteCamPostUpdFuncs(void) asm("ExecuteCamPostUpdFuncs");
+void ExecuteCamPostUpdFuncs(void) {
+    // Pins reproduce the original register map: the counter stays in s0,
+    // the routine pointer loads into v1 for the jalr, and the i<count test
+    // result lands in v0 (overwriting the reloaded count; the bnel then
+    // re-branches to the loop). Unpinned, EGC reuses the routine register
+    // v1 for the slt result and moves the counter to s1.
+    register int i asm("$16") = 0;
+    CamPostUpdRoutine* p;
+    if (CamPostUpdRoutineCnt > 0) {
+        p = CamPostUpdRoutines;
+        for (;;) {
+            i = i + 1;
+            register CamPostUpdRoutine fn asm("$3") = *p;
+            fn();
+            p = p + 1;
+            register int more asm("$2") = i < CamPostUpdRoutineCnt;
+            if (more) continue;
+            break;
+        }
+    }
+    CamPostUpdRoutineCnt = 0;
+}
 
 // Unreachable dead tail of ExecuteCamPostUpdFuncs (0x1EBCF0): two
 // `move v0,zero` and one `sw zero,0(a0)` after the parent's `jr ra`.
