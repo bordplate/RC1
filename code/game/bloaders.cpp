@@ -69,4 +69,22 @@ extern "C" void LoadDebugFont(void) {
     debugFontPifHeader = *(u64*)buf;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/bloaders", func_001E93A8);
+// Unreachable dead tail after LoadDebugFont (0x1E9338): one
+// `addiu sp,sp,0x10` (see the 989snd dead addiu-sp tail family). Nothing
+// reaches 0x1E93A8 (0 jal/j/branch/data references; no Ghidra function),
+// so it is not a function; the original compiler emitted this byte after
+// the parent's RTL, so it is preserved here as an exact word. The trailing
+// nop pads to the 8-aligned stub.o entry (STUB_printf) at 0x1E93B0.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001E93A8, 0x4\n"
+    "glabel func_001E93A8\n"
+    "    .word 0x27bd0010\n"
+    "endlabel func_001E93A8\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
