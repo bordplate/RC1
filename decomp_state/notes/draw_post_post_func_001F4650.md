@@ -1,4 +1,4 @@
-# func_001F4650 — ExecuteDrawCallbacks (BLOCKED: 2-byte independent-`lui` order wall)
+# func_001F4650 — ExecuteDrawCallbacks (MATCHED 2026-09-29: indexed for-loop form)
 
 Target: `code/game/draw_post_post.cpp` (INCLUDE_ASM at line 552),
 `code/_generated/nonmatchings/game/draw_post_post/func_001F4650.s`, 0x78 bytes, vram 0x1F4650.
@@ -134,3 +134,34 @@ allocation. None of the ~40 ruled-out variants above was this indexed form — t
 pointer-based. The last-resort "unrepresentable in pure C" conclusion is superseded for this
 form. The identical indexed form was probed on THIS clone (list 1): 120/120, 0 differences.
 Retry with that form; see `notes/draw_post_post_ExecuteDrawCallbacks3__Fv.md`.
+
+## Matched (2026-09-29) — committed form
+MATCHED byte-for-byte (120/120 words, full boot ELF `cmp` passes). The committed
+form is the indexed for-loop, exactly as the Correction predicted:
+
+```cpp
+void ExecuteDrawCallbacks(void) {
+    int i;
+    for (i = 0; i < drawCallbackCount; i++) {
+        ((DrawCallbackProc)drawCallbackFuncs[i])(drawCallbackArgs[i]);
+    }
+}
+```
+
+Difference from the sibling (`ExecuteDrawCallbacks3`): list 1's `drawCallbackFuncs`
+is declared `extern u32[]` (not `DrawCallbackProc[]`) because the already-matched
+`AddDrawCallback` (0x1F4600) stores its `u32 func` parameter into it. A `u32`
+element is not callable, so the index result carries an explicit
+`(DrawCallbackProc)` cast before the call. The cast is a pure type reinterpret of
+the loaded 32-bit pointer (no address constant, no codegen effect beyond the call):
+the probe and the full build both emit the identical s1/s2 pointer loop, the
+`blez` guard, the hoisted first-fn load, the original `[funcs-hi->v1, args-hi->v0]`
+`lui` order, and the `bnel` loop with the f-reload in the branch delay slot. No
+pins, barriers, volatile, or private flags; default TU flags (SN assembler, -G8 -O2).
+The `DrawCallbackProc` typedef was moved up above this function so both executors
+share it. Verified: probe 120/120, object byte region equal at 0x1F4650, and
+`cmp build/boot_elf.elf assets/boot_elf.elf` clean.
+
+The earlier "Disposition: Retain INCLUDE_ASM" and the stale `blocked.json` entry
+(keyed `code/game/draw_post_post.cpp:func_001F4650`, the pre-rename name) are
+superseded by this match; the blocker entry was removed.

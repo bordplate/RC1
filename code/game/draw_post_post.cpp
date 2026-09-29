@@ -549,11 +549,19 @@ void AddDrawCallback(u32 func, u32 arg) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ExecuteDrawCallbacks__Fv);
-
 // The registered callback is a 32-bit function pointer taking the u32
 // argument stored next to it; the executors call func(arg) per pair.
 typedef void (*DrawCallbackProc)(u32);
+
+// Calls each (func, arg) pair registered on the draw callback list,
+// re-reading the list count after every call.
+void ExecuteDrawCallbacks(void) {
+    int i;
+    for (i = 0; i < drawCallbackCount; i++) {
+        ((DrawCallbackProc)drawCallbackFuncs[i])(drawCallbackArgs[i]);
+    }
+}
+
 extern DrawCallbackProc drawCallback3Funcs[];
 extern u32 drawCallback3Args[];
 
