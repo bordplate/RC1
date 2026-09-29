@@ -74,6 +74,14 @@ drawCallback3Count = 0x0015F46C;
 drawCallback4Count = 0x0015F470;
 // Count of 16-byte-stride effect quads at 0x18E350 drawn by func_001F4880.
 effectQuadCount = 0x0015F474;
+// Gif-paging state (SetupGifPaging/DoGifPaging): the two reserved 16-byte
+// VU1 packet markers, the count and base of the EffectTex array zeroed at
+// gif-page setup, and the gif load counter.
+gifPageMarkerA = 0x0015F450;
+gifPageMarkerB = 0x0015F454;
+gifLoadCnt = 0x0015F458;
+effectTexCnt = 0x0015F45C;
+effectTexs = 0x0018D440;
 drawNormalFrame__Fv = 0x001F4248;
 AddDrawCallback__FUiUi = 0x001F4600;
 fontSmallGlyphs = 0x001DF050;

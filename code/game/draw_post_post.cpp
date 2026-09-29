@@ -4,6 +4,7 @@
 #include "actuator.h"
 #include "video.h"
 #include "sce_gs.h"
+#include "hud.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F2260);
 
@@ -481,6 +482,44 @@ void drawNormalFrame(void) {
     DrawDebugProfiler();
 }
 
+// One effect texture record zeroed when a gif page is set up. Deadlocked's
+// EffectTex; the 8-byte tex0 word holds the packed GS tex0 register.
+typedef struct {
+    u64 tex0;
+    u16 ptex;
+    u16 ppal;
+    u8 uLog;
+    u8 vLog;
+    s16 format;
+} EffectTex;
+
+// Reserves the 16-byte VU1 data-reference slot that DoGifPaging will fill
+// (gifPageMarkerA), advances the chain head past it, resets the texture
+// cursor to the end of the texture pool, clears the effect texture array,
+// and the gif load slot counter. Unless noHud is set, it then invalidates
+// the HUD texture and palette GS RAM slots: texture slots at or above the
+// start of the texture pool and all palette slots.
+extern volatile u32* gifPageMarkerA;
+extern int effectTexCnt;
+extern EffectTex effectTexs[];
+extern int textureCursor;
+extern int textureCursorEnd;
+// The original reloads this in every HUD texture loop iteration; a plain
+// declaration CSEs the load out of the loop.
+extern volatile int textureMemoryBase;
+// gifLoadCnt (0x15F458) counts the 16-byte load slots that _ssp_load_tex
+// allocates from 0x18D020 (slot = count * 16). The clear here is a GPREL16
+// store in the branch delay slot; the .extern-seeded alias makes ps2eeas
+// expand the bare pseudo as GPREL16 (a plain declaration would be self-based).
+extern int gifLoadCntGp;
+asm(".extern gifLoadCntGp, 4");
+
+// BLOCKED (2026-09-29): head block, EffectTex memset, both HUD loop BODIES and
+// the epilogue all match byte-for-byte; the only residual is the two HUD-loop
+// PREAMBLES. EGC 2.95.2 hoists the independent counter zero-init before the
+// guard (and will not place an opaque asm into the plain guard's delay slot),
+// while the original sits in the delay slot — see
+// decomp_state/notes/draw_post_SetupGifPaging__Fi.md and the blocker entry.
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", SetupGifPaging__Fi);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", DoGifPaging__Fv);

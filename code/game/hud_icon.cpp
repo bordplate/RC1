@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "hud.h"
 
 typedef struct {
     u16 id;
@@ -8,16 +9,6 @@ typedef struct {
     u8 animType;
     u8 speed;
 } HudIconDef;
-
-typedef struct {
-    u8 pad[0x10];
-    u32 heapCursor;
-    u32 heapEnd;
-    u32 pad_18;
-    u32 iconTable;
-} HudHeap;
-
-extern HudHeap hudHeap __attribute__((section(".data")));
 
 int Hud_GetIconIndex(int iconId) {
     // The peeled element-0 checks must compile to beq (return-as-jump), which

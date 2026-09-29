@@ -1,16 +1,8 @@
 #include "common.h"
 #include "types.h"
-
-typedef struct {
-    u8 pad[0x10];
-    u32 heapCursor;
-    u32 heapEnd;
-    u32 pad_18;
-    u32 iconTable;
-} HudHeap;
+#include "hud.h"
 
 extern int hudHeapBase __attribute__((section(".data")));
-extern HudHeap hudHeap __attribute__((section(".data")));
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FEE88);
 
