@@ -1,4 +1,5 @@
 #include "common.h"
+#include "types.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_GetName);
 
@@ -37,11 +38,34 @@ extern "C" int memcard_GetDataSize(int* data) {
     return size + 8;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/memcard", memcard_Checksum);
+// C linkage: this routine is called from the original unmangled memcard API.
+// Table-less 16-bit CRC over the save payload: seeded with MEMCARD_CRC_INIT,
+// left-shifted one bit at a time, XORing MEMCARD_CRC_POLY when MEMCARD_CRC_MSB
+// is set. The payload pointer advances one byte per step even though callers
+// pass an int* into the save header.
+#define MEMCARD_MAX_SAVE_LEN 0x1800
+#define MEMCARD_CRC_INIT     0xEDB88320
+#define MEMCARD_CRC_POLY     0x1F45
+#define MEMCARD_CRC_MSB      0x8000
+#define MEMCARD_CRC_MASK     0xFFFF
 
-// C linkage: the checksum implementation remains supplied by generated
-// assembly at the original unmangled entry point.
-extern "C" int memcard_Checksum(int* data, int len);
+extern "C" int memcard_Checksum(int* data, int len) {
+    if (len >= MEMCARD_MAX_SAVE_LEN + 1)
+        return 0;
+    u8* p = (u8*)data;
+    u8* end = p + len;
+    int crc = MEMCARD_CRC_INIT;
+    while (p < end) {
+        crc ^= *p++ << 8;
+        for (int i = 7; i >= 0; i--) {
+            if (crc & MEMCARD_CRC_MSB)
+                crc = (crc << 1) ^ MEMCARD_CRC_POLY;
+            else
+                crc <<= 1;
+        }
+    }
+    return crc & MEMCARD_CRC_MASK;
+}
 
 // C linkage: this routine is called from the original unmangled memcard API.
 extern "C" int memcard_TestChecksum(int* data) {
