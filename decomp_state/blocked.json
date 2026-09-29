@@ -1,5 +1,17 @@
 [
  {
+  "id": "code/game/draw_post_post.cpp:DoGifPaging__Fv",
+  "source": "code/game/draw_post_post.cpp",
+  "asm": "code/_generated/nonmatchings/game/draw_post_post/DoGifPaging__Fv.s",
+  "name": "DoGifPaging__Fv",
+  "status": "blocked",
+  "date": "2026-09-29",
+  "vram": "0x1F4398",
+  "size": "0x11C",
+  "note": "Fills the two 16-byte GIF-page VU1 data-reference records (gifPageMarkerA/B): each record [0]=0x20000000 (GIF page tag, held in $s0 across the fn), [1]=(u32)chain link, [2]=[3]=0, and vu1ChainHead advances 16 bytes per record; between the two, if drawTextureDmaState[11]!=0 calls func_0020B4A8 (BuildGifTextureDma, NO args) + VU1_texFlush then re-reads the head (branch phi -> head[0]=tag). Best verified candidate (v47.cpp, production default flags) = 284 bytes / 16 diff words; everything from 0x1F442C to the return (the ENTIRE second half) matches byte-for-byte. The hard part (SOLVED): the branch delay-slot load at 0x1f4408 is a GPREL 1-instr read of vu1ChainHead while all other reads are absolute 2-instr lui/lw — reproduced by a NON-volatile alias vu1ChainHeadPlain (same 0x160F00) read as a separate statement before the if (EGC moves a non-volatile load into the noreorder branch delay slot -> ps2eeas expands GPREL16; a volatile one is immovable and instead yields beqzl + tag-in-delay-slot semantic bug), plus a volatile in-if reload that stays absolute. The 16 residuals are four coupled EGC 2.95.2 default-scheduler/RA tiebreaks: (1) 0x1F43B8-CC first-half order [A1 load][head+=16][head store][sq ra] vs candidate [head+=16][sq ra][A1 load][head store]; (2) 0x1F43E4-F8 EGC hoists each gifPageMarkerA base load ahead of the preceding marker store (a volatile store fixes the interleaving but -> beql + duplicated merge tag + 292B, v45); (3) 0x1F4400/04 cond value in v0 not v1 (base correctly pinned a1 via `register int* dma asm(\\\"$5\\\")==drawTextureDmaState`; pinning the cond value to v1 steals v1 from the delay-slot load); (4) 0x1F4424/28 merge [lq ra][sw tag] vs candidate [sw tag][lq ra]. Flags -fno-schedule-insns / -fno-schedule-insns2 / -mno-split-addresses (and combos) do not close them; -fno-schedule-insns2 fixes the branch-region registers but breaks the prologue (L1 no longer hoisted before the prologue, sq ra early). Retain INCLUDE_ASM; full-ELF parity preserved. Re-attempt start point: v47.cpp structure. See notes/draw_post_DoGifPaging__Fv.md.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-29 with the full 71-word dossier: (a) corrected the func_0020B4A8 signature to no-arg (its `srl t1,a0,0x8` at 0x20b4bc is dead — t1 is overwritten by `lhu t1,6(a3)` at 0x20b4e4 before any use; the a0 present at the jal 0x20b4a8 is residue from the preceding a[1] marker store), (b) produced v47.cpp = 284B/16 with the entire second half byte-exact (a1 base pin, packetValue/markerA register pins, (volatile u32*)vu1ChainHead / (volatile u32*)markerB second-half casts, block-scoped $2/$3/$4 pins), (c) concluded the 16 residuals are four coupled default-scheduler/RA tiebreaks in the first half + branch (clusters 1-4 in the note) not resolvable by any source form, register pin, barrier, or tested TU flag without regressing an already-matching cluster or triggering the 292-byte beql form."
+ },
+ {
   "id": "code/game/draw_post_post.cpp:func_001F33B8",
   "source": "code/game/draw_post_post.cpp",
   "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F33B8.s",
