@@ -590,7 +590,6 @@ void ExecuteDrawCallbacks4(void) {
 // unmangled label is the Splat placeholder for this stripped-ELF symbol.
 extern u32 drawCallback2Funcs[];
 extern u32 drawCallback2Args[];
-extern int drawCallback2Count;
 
 void AddDrawCallback2(u32 func, u32 arg) asm("func_001F47B8");
 void AddDrawCallback2(u32 func, u32 arg) {
@@ -602,7 +601,14 @@ void AddDrawCallback2(u32 func, u32 arg) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ExecuteDrawCallbacks2__Fv);
+// Calls each (func, arg) pair registered on the second per-draw-phase
+// callback list, re-reading the list count after every call.
+void ExecuteDrawCallbacks2(void) {
+    int i;
+    for (i = 0; i < drawCallback2Count; i++) {
+        ((DrawCallbackProc)drawCallback2Funcs[i])(drawCallback2Args[i]);
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4880);
 

@@ -2261,5 +2261,14 @@
   "size": 120,
   "matched_date": "2026-09-29",
   "note": "Runs the \"vu effects\" per-draw-phase callback list (list 4): for i in 0..drawCallback4Count, calls drawCallback4Funcs[i](drawCallback4Args[i]), re-reading the count after each call. Byte-identical clone of the matched sibling ExecuteDrawCallbacks3__Fv (0x1F46C8); the matching form is the PLAIN indexed for-loop (extern DrawCallbackProc drawCallback4Funcs[]; extern u32 drawCallback4Args[]; for (i=0; i<drawCallback4Count; i++) drawCallback4Funcs[i](drawCallback4Args[i];)) with NO pins, barriers, volatile, or private flags. drawCallback4Count (0x15F470) was already declared; drawCallback4Funcs (0x18E140) / drawCallback4Args (0x18E240) named in config/symbols.txt from the generated assembly. First-try match: full build + cmp boot ELF byte-identical. Completes the three remaining clones of the ExecuteDrawCallbacks family (ExecuteDrawCallbacks2__Fv 0x1F4808 is the only one left)."
+ },
+ "code/game/draw_post_post.cpp:606:ExecuteDrawCallbacks2__Fv": {
+  "name": "ExecuteDrawCallbacks2__Fv",
+  "original_name": "func_001F4808",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F4808",
+  "size": 120,
+  "matched_date": "2026-09-29",
+  "note": "Runs the SECOND per-draw-phase callback list: for i in 0..drawCallback2Count, calls drawCallback2Funcs[i](drawCallback2Args[i]), re-reading the count after each call. Byte-identical clone of the matched sibling ExecuteDrawCallbacks3__Fv (0x1F46C8); last remaining member of the four-clone family. Matching form is the plain indexed for-loop on the already-declared externs (extern u32 drawCallback2Funcs[]; extern u32 drawCallback2Args[]; extern int drawCallback2Count;) with the index result cast (DrawCallbackProc) before the call, exactly like the matched list-1 sibling ExecuteDrawCallbacks__Fv (list 2's funcs array is u32[] because the already-matched AddDrawCallback2 0x1F47B8 stores its u32 func parameter into it); NO pins, barriers, volatile, or private flags. Both the typed-array form (like clones 3/4) and the u32[]+cast form were probed 120/120 before the edit; the cast form was kept to avoid touching matched AddDrawCallback2. The redundant 'extern int drawCallback2Count;' in the AddDrawCallback2 block (already declared at line 324) was removed with this change. First-try match on the probe: 120/120 words, 0 differences; draw_post_post.o 71/71 functions match; full boot ELF cmp byte-identical; decomp_status 616 -> 615. Completes the ExecuteDrawCallbacks family (all four clones matched)."
  }
 }

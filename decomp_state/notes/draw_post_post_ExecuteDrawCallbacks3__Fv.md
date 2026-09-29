@@ -16,10 +16,16 @@ Four byte-identical 0x78-byte executor clones, one per callback list:
 
 | list | count | funcs | args | executor |
 |------|-------|-------|------|----------|
-| 1    | drawCallbackCount 0x15F464 | drawCallbackFuncs 0x18DB40 | drawCallbackArgs 0x18DC40 | ExecuteDrawCallbacks__Fv 0x1F4650 (blocked, INCLUDE_ASM) |
-| 2    | drawCallback2Count 0x15F468 | drawCallback2Funcs 0x18DD40 | drawCallback2Args 0x18DE40 | ExecuteDrawCallbacks2__Fv 0x1F4808 (blocked, INCLUDE_ASM) |
-| 3    | drawCallback3Count 0x15F46C | drawCallback3Funcs 0x18DF40 | drawCallback3Args 0x18E040 | **ExecuteDrawCallbacks3__Fv 0x1F46C8 (matched)** |
-| 4    | drawCallback4Count 0x15F470 | drawCallback4Funcs 0x18E140 | drawCallback4Args 0x18E240 | ExecuteDrawCallbacks4__Fv 0x1F4740 (blocked, INCLUDE_ASM) |
+| 1    | drawCallbackCount 0x15F464 | drawCallbackFuncs 0x18DB40 | drawCallbackArgs 0x18DC40 | ExecuteDrawCallbacks__Fv 0x1F4650 (matched 2026-09-29, u32[] + cast form) |
+| 2    | drawCallback2Count 0x15F468 | drawCallback2Funcs 0x18DD40 | drawCallback2Args 0x18DE40 | ExecuteDrawCallbacks2__Fv 0x1F4808 (matched 2026-09-29, u32[] + cast form) |
+| 3    | drawCallback3Count 0x15F46C | drawCallback3Funcs 0x18DF40 | drawCallback3Args 0x18E040 | **ExecuteDrawCallbacks3__Fv 0x1F46C8 (matched 2026-09-29, typed-array form)** |
+| 4    | drawCallback4Count 0x15F470 | drawCallback4Funcs 0x18E140 | drawCallback4Args 0x18E240 | ExecuteDrawCallbacks4__Fv 0x1F4740 (matched 2026-09-29, typed-array form) |
+
+FAMILY COMPLETE: all four clones matched 2026-09-29 with the plain indexed
+for-loop (no pins/barriers/volatile/flags). Lists 1 and 2 use the `extern
+u32[]` + `(DrawCallbackProc)` cast form because their already-matched
+AddDrawCallback* registrator stores a u32 into the funcs array; lists 3 and
+4 use the typed `extern DrawCallbackProc[]` form. Both forms probe 120/120.
 
 All names added to `config/symbols.txt` (function mangled names + the
 previously-unnamed funcs/args arrays); the three remaining INCLUDE_ASM
