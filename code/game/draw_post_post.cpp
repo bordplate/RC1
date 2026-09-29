@@ -549,11 +549,24 @@ void AddDrawCallback(u32 func, u32 arg) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4650);
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ExecuteDrawCallbacks__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F46C8);
+// The registered callback is a 32-bit function pointer taking the u32
+// argument stored next to it; the executors call func(arg) per pair.
+typedef void (*DrawCallbackProc)(u32);
+extern DrawCallbackProc drawCallback3Funcs[];
+extern u32 drawCallback3Args[];
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4740);
+// Calls each (func, arg) pair registered on the "pre effects" callback list,
+// re-reading the list count after every call.
+void ExecuteDrawCallbacks3(void) {
+    int i;
+    for (i = 0; i < drawCallback3Count; i++) {
+        drawCallback3Funcs[i](drawCallback3Args[i]);
+    }
+}
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ExecuteDrawCallbacks4__Fv);
 
 // Second per-draw-phase callback list (AddDrawCallback is the first). The
 // unmangled label is the Splat placeholder for this stripped-ELF symbol.
@@ -571,7 +584,7 @@ void AddDrawCallback2(u32 func, u32 arg) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4808);
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", ExecuteDrawCallbacks2__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4880);
 

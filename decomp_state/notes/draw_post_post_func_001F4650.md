@@ -113,3 +113,24 @@ clones → original-codegen behavior, not a misdecode.
 Retain `INCLUDE_ASM`; full-ELF parity preserved (build/boot_elf.elf == assets/boot_elf.elf).
 Re-attempt only with a compiler/codegen revision change or an inline-assembly workaround for the
 two high-half loads (the latter is out of style for a matching decompilation and not applied).
+
+## Correction (2026-09-29 evening) — the wall is form-specific; a matching form now exists
+Clone 3 (0x1F46C8, `ExecuteDrawCallbacks3__Fv`) MATCHED the same day with the plain INDEXED
+for-loop — no pointers, no pins, no barriers, no flags:
+
+```cpp
+void ExecuteDrawCallbacks3(void) {
+    int i;
+    for (i = 0; i < drawCallback3Count; i++) {
+        drawCallback3Funcs[i](drawCallback3Args[i]);
+    }
+}
+```
+
+(with `extern DrawCallbackProc drawCallback3Funcs[];` / `extern u32 drawCallback3Args[];`).
+EGC strength-reduces the subscripts to the s1/s2 pointer loop and emits the original
+`[lui v1,%hi(funcs); lui v0,%hi(args)]` high-half order with the original temps and s1/s2
+allocation. None of the ~40 ruled-out variants above was this indexed form — they were all
+pointer-based. The last-resort "unrepresentable in pure C" conclusion is superseded for this
+form. The identical indexed form was probed on THIS clone (list 1): 120/120, 0 differences.
+Retry with that form; see `notes/draw_post_post_ExecuteDrawCallbacks3__Fv.md`.

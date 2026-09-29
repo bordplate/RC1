@@ -2234,5 +2234,14 @@
   "size": 116,
   "matched_date": "2026-09-29",
   "note": "Table-less 16-bit CRC over the save payload: seeded with MEMCARD_CRC_INIT (0xEDB88320), left-shifted one bit per step for 8 iterations, XORing MEMCARD_CRC_POLY (0x1F45) when MEMCARD_CRC_MSB (0x8000) is set; returns crc & 0xFFFF (MEMCARD_CRC_MASK). Guarded by len >= MEMCARD_MAX_SAVE_LEN+1 (0x1801) -> 0. The payload pointer is cast to u8* and advances one byte per step even though callers pass an int* into the save header. The *p++ load lands in the loop back-edge delay slot (bnel) and p++ sits in the body; the inner bit loop hoists the shared crc<<1 into the beqz delay slot. Named #defines per STYLEGUIDE (no magic numbers); matched on the first probe. memcard.o matches all 116 bytes and full boot parity passes."
+ },
+ "code/game/draw_post_post.cpp:562:ExecuteDrawCallbacks3__Fv": {
+  "name": "ExecuteDrawCallbacks3__Fv",
+  "original_name": "func_001F46C8",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F46C8",
+  "size": 120,
+  "matched_date": "2026-09-29",
+  "note": "Runs the \"pre effects\" per-draw-phase callback list: for i in 0..drawCallback3Count, calls drawCallback3Funcs[i](drawCallback3Args[i]), re-reading the count after each call. The matching form is the PLAIN indexed for-loop (typedef void (*DrawCallbackProc)(u32); extern DrawCallbackProc drawCallback3Funcs[]; extern u32 drawCallback3Args[]; for (i=0; i<drawCallback3Count; i++) drawCallback3Funcs[i](drawCallback3Args[i]);) with NO pins, barriers, volatile, or private flags: EGC strength-reduces the subscripts to the s1/s2 pointer-advance loop, emits the for's first check as the single blez guard (i=0 in the prologue before it), hoists the first fn load, and schedules the two setup lui high-halves in the original's [funcs->v1, args->v0] order (shared page 0x19, negative lo addius into s1=funcs, s2=args). The pointer-based form (explicit p/a locals, for(;;)+break) leaves exactly the 2-byte lui-order wall documented in notes/draw_post_post_func_001F4650.md; the indexed form is the fix for the whole four-clone family (list 1 probed 120/120 with the same form). Family renamed: ExecuteDrawCallbacks__Fv (0x1F4650, list 1), ExecuteDrawCallbacks2__Fv (0x1F4808, list 2), ExecuteDrawCallbacks4__Fv (0x1F4740, list 4); drawCallback3Funcs/Args (0x18DF40/0x18E040) and drawCallback4Funcs/Args (0x18E140/0x18E240) named in symbols.txt. First-try match on the indexed probe: 120/120 words, full boot parity passes."
  }
 }

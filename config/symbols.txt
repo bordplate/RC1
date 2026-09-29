@@ -68,10 +68,20 @@ drawCallbackArgs = 0x0018DC40;
 drawCallback2Count = 0x0015F468;
 drawCallback2Funcs = 0x0018DD40;
 drawCallback2Args = 0x0018DE40;
-// Counts for the "pre effects" (0x18DF40/0x18E040) and "vu effects"
-// (0x18E140/0x18E240) callback lists, run by func_001F46C8 / func_001F4740.
+// Counts for the "pre effects" (drawCallback3*) and "vu effects"
+// (drawCallback4*) callback lists, run by the ExecuteDrawCallbacks* family.
 drawCallback3Count = 0x0015F46C;
+drawCallback3Funcs = 0x0018DF40;
+drawCallback3Args = 0x0018E040;
 drawCallback4Count = 0x0015F470;
+drawCallback4Funcs = 0x0018E140;
+drawCallback4Args = 0x0018E240;
+// Per-draw-phase callback list executors (draw_post_post.cpp): each runs one
+// (func, arg) list, calling func(arg) for every registered pair.
+ExecuteDrawCallbacks__Fv = 0x001F4650;
+ExecuteDrawCallbacks2__Fv = 0x001F4808;
+ExecuteDrawCallbacks3__Fv = 0x001F46C8;
+ExecuteDrawCallbacks4__Fv = 0x001F4740;
 // Count of 16-byte-stride effect quads at 0x18E350 drawn by func_001F4880.
 effectQuadCount = 0x0015F474;
 // Gif-paging state (SetupGifPaging/DoGifPaging): the two reserved 16-byte
