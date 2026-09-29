@@ -612,7 +612,71 @@ void ExecuteDrawCallbacks2(void) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4880);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FadeToBlack__FiUi);
+// VU1/draw-chain helper prototypes this function drives. VU1_syncChain's mode
+// 1 waits for the chain to drain before continuing.
+#define VU_SYNC_WAIT 1
+void VU1_syncChain(int mode);
+void VU1_sendChain(void);
+void VU1_swapChain(void);
+void PutDrawBufferLarge(void);
+void PutDrawBufferSmall(void);
+// C linkage: GS status query in the SCE SDK library; the argument is unused.
+extern "C" int func_00122298(int arg);
+// C linkage: still-assembly color-register/GS-state helper at 0x1F5210; the
+// stripped-ELF symbol is an unmangled entry point.
+extern "C" void func_001F5210(int a, int b, int c, int d);
+// Per-frame draw counter shared with the boot intro. Its load is self-based
+// absolute and its store lands GPREL in the VU1_initChain/VU1_sendChain call
+// delay slots, so a plain declaration matches the original.
+extern int drawFrameCount;
+// 80-word GS state block streamed into the VU1 chain on every fade frame.
+extern u32 gsStateFade[];
+// GS register that receives the per-frame fade value; the hardware register's
+// role is unconfirmed beyond being the fade target.
+#define VU1_FADE_GS_REG 1
+// Full value on the fade scale; 0x80 in the register's top byte is fully black.
+#define VU1_FADE_FULL 0x80
+
+// Symbol override: the stripped-ELF symbol is mangled FadeToBlack__FiUi (int,
+// unsigned int) but no boot caller materializes a1, so the source declares a
+// single argument and pins the two-argument mangled name.
+void FadeToBlack(int frames) asm("FadeToBlack__FiUi");
+
+// Fades the display to black over `frames` frames. Each frame re-sets the draw
+// buffers, writes the GS color register and the stepped alpha register,
+// re-streams the GS state block, and advances the frame counter.
+void FadeToBlack(int frames) {
+    int i;
+    VU1_syncChain(VU_SYNC_WAIT);
+    func_00122298(0);
+    drawFrameCount++;
+    VU1_initChain();
+    i = frames - 1;
+    for (; i >= 0; i--) {
+        PutDrawBufferLarge();
+        framebuf_appendLargeSetup();
+        func_001F5210(0, 0, 0, VU1_FADE_FULL);
+        PutDrawBufferSmall();
+        VU1_addGSregister(VU1_FADE_GS_REG,
+                          (unsigned long)(VU1_FADE_FULL - (i << 7) / (i + 1)) << 24);
+        vu1ChainHead[0] = VU1_DATA_REF_TAG | 0x14;
+        vu1ChainHead[1] = (u32)gsStateFade;
+        vu1ChainHead[2] = 0;
+        vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x14;
+        vu1ChainHeadStore = vu1ChainHead + 4;
+        VU1_syncChain(VU_SYNC_WAIT);
+        func_00122298(0);
+        drawFrameCount++;
+        VU1_sendChain();
+        VU1_swapChain();
+    }
+    VU1_syncChain(VU_SYNC_WAIT);
+    func_00122298(0);
+    drawFrameCount++;
+    VU1_initChain();
+    PutDrawBufferLarge();
+    framebuf_appendLargeSetup();
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4BE0);
 

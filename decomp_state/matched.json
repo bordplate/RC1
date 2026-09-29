@@ -2270,5 +2270,14 @@
   "size": 120,
   "matched_date": "2026-09-29",
   "note": "Runs the SECOND per-draw-phase callback list: for i in 0..drawCallback2Count, calls drawCallback2Funcs[i](drawCallback2Args[i]), re-reading the count after each call. Byte-identical clone of the matched sibling ExecuteDrawCallbacks3__Fv (0x1F46C8); last remaining member of the four-clone family. Matching form is the plain indexed for-loop on the already-declared externs (extern u32 drawCallback2Funcs[]; extern u32 drawCallback2Args[]; extern int drawCallback2Count;) with the index result cast (DrawCallbackProc) before the call, exactly like the matched list-1 sibling ExecuteDrawCallbacks__Fv (list 2's funcs array is u32[] because the already-matched AddDrawCallback2 0x1F47B8 stores its u32 func parameter into it); NO pins, barriers, volatile, or private flags. Both the typed-array form (like clones 3/4) and the u32[]+cast form were probed 120/120 before the edit; the cast form was kept to avoid touching matched AddDrawCallback2. The redundant 'extern int drawCallback2Count;' in the AddDrawCallback2 block (already declared at line 324) was removed with this change. First-try match on the probe: 120/120 words, 0 differences; draw_post_post.o 71/71 functions match; full boot ELF cmp byte-identical; decomp_status 616 -> 615. Completes the ExecuteDrawCallbacks family (all four clones matched)."
+ },
+ "code/game/draw_post_post.cpp:648:FadeToBlack__FiUi": {
+  "name": "FadeToBlack__FiUi",
+  "original_name": "FadeToBlack__FiUi",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F4A58",
+  "size": 392,
+  "matched_date": "2026-09-29",
+  "note": "Fades the display to black over `frames` frames: per frame re-sets the draw buffers, writes GS register 1 (VU1_FADE_GS_REG) with the stepped fade value (0x80 - (i<<7)/(i+1)) << 24 via VU1_addGSregister, and streams the 80-word gsStateFade GS state block (0x13CDD0, newly named in symbols.txt) as a VIF data-ref packet; advances drawFrameCount and the VU1 chain each frame. Single-argument source declaration pinned to the two-arg mangled name (no boot caller materializes a1). First-try probe match: 98/98 words, 0 differences, default TU flags (SN). Key forms: double-volatile vu1ChainHead (4 self-based head loads + GPREL head-advance via vu1ChainHeadStore in the VU1_syncChain delay slot, same as ResetGsRegisters); plain `extern int drawFrameCount` whose ++ store lands GPREL in the VU1_initChain/VU1_sendChain delay slots (no alias needed); plain C division reproduces EGC's dead `beql; break` zero-divisor guard; func_001F5210/func_00122298 declared extern \"C\" (unmangled). Clean build + full boot ELF cmp byte-identical; decomp_status 615 -> 614. See notes/draw_post_FadeToBlack__FiUi.md."
  }
 }

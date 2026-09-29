@@ -797,6 +797,9 @@ VU1_setScissor__Fiiii = 0x233a40;
 Vif1ChainCmd__Fi = 0x233f78;
 vu1GsRegsNormal = 0x001de3c0;
 vu1GsRegsAlt = 0x001de3f0;
+// 80-word GS state block (packet tag 0x14) streamed into the VU1 chain on
+// every FadeToBlack frame and during intro playback.
+gsStateFade = 0x0013cdd0;
 vu1GsRegsFont = 0x0013cf10;
 // GS register reset block (record header 0x00008012) streamed into the VU1
 // chain by ResetGsRegisters; the next record (0x00008001) starts at its end.
