@@ -152,3 +152,13 @@ void DrawRectOverlay(int top, int bot, int left, int right, unsigned long color)
     vu1ChainHeadStore = vu1ChainHead + 8;
 }
 ```
+
+## Dead tail (resolved 2026-09-30)
+
+The 4-byte fragment `func_001F5448` following this function (`sw v0,0(gp);
+nop` — the compiler's dead second copy of the final vu1ChainHead store,
+targeting the gp-window base word D_00166C00) is no longer an INCLUDE_ASM:
+it is preserved as a top-level raw-asm block at its source position per the
+dead-tail policy (see notes/draw_post_func_001F5448.md). A future C match of
+this function must emit that tail as trailing inline assembly and remove the
+top-level block.
