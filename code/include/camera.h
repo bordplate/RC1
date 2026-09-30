@@ -200,6 +200,24 @@ struct OcclViewParams {
 };
 extern struct OcclViewParams occlViewParams;
 
+// 0x30-byte screen VBlank color-effect config (Deadlocked ScreenVBEffect): a
+// background fill plus two repeating scanline bands (A/B). Each band is a GS
+// alpha-register value (*_alpha) plus a color whose TOP BYTE is the enable
+// flag, and a row span (*_lines) that also steps the running scan position.
+struct ScreenVBEffect {
+    u32 enabled;  // 0x00
+    u32 bkgColor; // 0x04: top byte = enable
+    u64 bkgAlpha; // 0x08: GS alpha value (masked 0xFF000000FF)
+    s32 aLines;   // 0x10: band A row span
+    u32 aColor;   // 0x14: top byte = enable
+    u64 aAlpha;   // 0x18: GS alpha value
+    s32 bLines;   // 0x20: band B row span
+    u32 bColor;   // 0x24: top byte = enable
+    u64 bAlpha;   // 0x28: GS alpha value
+};
+extern struct ScreenVBEffect screenColorEffect;
+extern struct ScreenVBEffect* screenColorEffectNow;
+
 // C linkage: handwritten VU polar builders in the generated sce/lib region
 // (aliases in config/linker_aliases.ld). Each rotates the 64-byte CameraMatrix
 // in place (dst == src) about one polar axis; the init variant fills the 4

@@ -346,6 +346,10 @@ asm(".extern screenOverlayEnabled, 4");
 asm(".extern D_0015F360, 4");
 asm(".extern occlDebugOverlayEnabled, 4");
 asm(".extern mobyOcclClusterCount, 4");
+// DrawScreenEffect re-reads this pointer GPREL before every field deref; the
+// .extern seed makes ps2eeas expand the bare pseudo as GPREL16 (a plain
+// declaration would expand self-based).
+asm(".extern screenColorEffectNow, 8");
 
 // C linkage: the level loader (func_001E9B10) and space loader (func_00230F60)
 // call the unmangled symbol ResetDrawGlobals; a C++ declaration would mangle it
@@ -388,6 +392,10 @@ extern u32 resetGsRegsFixed[];
 // parameter of the exported symbol is never materialized at any call site.
 void VU1_addGSregister(unsigned int reg, unsigned long value)
     asm("VU1_addGSregister__FUiUlb");
+// Full-width rectangle overlay VU1 appender (top, bot, left, right, color).
+// color is a 64-bit value passed in a single GPR.
+void DrawRectOverlay(int top, int bot, int left, int right, unsigned long color)
+    asm("DrawRectOverlay_FiiiiUl");
 
 // VIF packet tags for the data-reference records appended below (same
 // values vuchain.cpp uses for its chain appenders).
@@ -682,7 +690,56 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4BE0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4D98);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4FB8);
+// Screen VBlank color-effect renderer (background fill + two scanline bands).
+// Reads screenColorEffectNow (GPREL) before every field deref; the .extern
+// seed above keeps those loads GPREL16.
+//
+// count is pinned to s1 ($17) and pos left a plain local: with all five
+// callee-saved registers live EGC re-reads the pointer after each call and
+// recomputes count-1 per band instead of hoisting it, and pinning pos would
+// make it emit a slt/beqz pre-check instead of the original's single blez.
+// GS register that receives the screen-effect alpha; the register's role is
+// unconfirmed beyond being the effect's alpha target.
+#define VU1_SCREEN_ALPHA_GS_REG 0x42
+// Mask applied to each alpha value before it is sent to the GS register.
+#define SCREEN_EFFECT_ALPHA_MASK 0xFF000000FFUL
+// A band's color is enabled by its top byte.
+#define SCREEN_EFFECT_COLOR_ENABLE 0xFF000000
+
+void DrawScreenEffect() {
+    s32 pos = 0;
+    register s32 count asm("$17") = (s16)occlCamParamBase.drawH;
+    if (screenColorEffectNow->bkgAlpha != 0)
+        VU1_addGSregister(VU1_SCREEN_ALPHA_GS_REG,
+                          screenColorEffectNow->bkgAlpha & SCREEN_EFFECT_ALPHA_MASK);
+    if ((screenColorEffectNow->bkgColor & SCREEN_EFFECT_COLOR_ENABLE) != 0)
+        DrawRectOverlay(0, count, 0, (s16)occlCamParamBase.drawW,
+                        (unsigned long)screenColorEffectNow->bkgColor);
+    while (pos < count) {
+        if (screenColorEffectNow->aAlpha != 0)
+            VU1_addGSregister(VU1_SCREEN_ALPHA_GS_REG,
+                              screenColorEffectNow->aAlpha & SCREEN_EFFECT_ALPHA_MASK);
+        if ((screenColorEffectNow->aColor & SCREEN_EFFECT_COLOR_ENABLE) != 0) {
+            s32 end = pos + screenColorEffectNow->aLines;
+            if (end >= count - 1)
+                end = count - 1;
+            DrawRectOverlay(pos, end, 0, (s16)occlCamParamBase.drawW,
+                            (unsigned long)screenColorEffectNow->aColor);
+        }
+        pos += screenColorEffectNow->aLines;
+        if (screenColorEffectNow->bAlpha != 0)
+            VU1_addGSregister(VU1_SCREEN_ALPHA_GS_REG,
+                              screenColorEffectNow->bAlpha & SCREEN_EFFECT_ALPHA_MASK);
+        if ((screenColorEffectNow->bColor & SCREEN_EFFECT_COLOR_ENABLE) != 0) {
+            s32 end = pos + screenColorEffectNow->bLines;
+            if (end >= count - 1)
+                end = count - 1;
+            DrawRectOverlay(pos, end, 0, (s16)occlCamParamBase.drawW,
+                            (unsigned long)screenColorEffectNow->bColor);
+        }
+        pos += screenColorEffectNow->bLines;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F5138);
 

@@ -287,6 +287,9 @@ wad_GetSectors_FiiPv = 0x12f208;
 DrawRectOverlay_FiiiiUl = 0x01f52a0;
 
 DrawDebugProfiler = 0x001f39d0;
+// Screen VBlank color-effect renderer (BKG + two scanline bands); called from
+// DrawDebugProfiler under the always-false screen-overlay guard.
+DrawScreenEffect__Fv = 0x001f4fb8;
 projectWorldPoint__FPfT0 = 0x001f2070;
 
 // camera 
@@ -380,6 +383,11 @@ D_0015F330 = 0x0015F330;
 D_0015F334 = 0x0015F334;
 // Gates the "screen overlay" stage (func_001F4FB8) and an overlay parameter.
 screenOverlayEnabled = 0x0015F34C;
+// DrawScreenEffect (0x1F4FB8) screen VBlank color-effect renderer: pointer to
+// the active ScreenVBEffect config (the boot image holds the fixed 0x18CA40).
+screenColorEffectNow = 0x0015F350;
+// The ScreenVBEffect config pointed to by screenColorEffectNow (0x30 bytes).
+screenColorEffect = 0x0018CA40;
 D_0015F360 = 0x0015F360;
 // Gates func_001F5138, the occlusion-debug GS-register + rect overlay.
 occlDebugOverlayEnabled = 0x0015F370;
