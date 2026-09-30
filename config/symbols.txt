@@ -530,6 +530,7 @@ DoGifPaging__Fv = 0x1f4398;
 GetEffectTex__Fii = 0x1f44b8;
 VU1_syncChain__Fi = 0x2337b0;
 FadeToBlack__FiUi = 0x001f4a58;
+fadeSetColor = 0x001F5210;
 DrawTexturedQuad = 0x1f5450;
 DrawUIFrame = 0x1f5f18;
 UpdateFog__Fi = 0x1f2588;
@@ -808,6 +809,9 @@ vu1GsRegsAlt = 0x001de3f0;
 // 80-word GS state block (packet tag 0x14) streamed into the VU1 chain on
 // every FadeToBlack frame and during intro playback.
 gsStateFade = 0x0013cdd0;
+// 80-word GS state block (packet tag 0x14) streamed by the fade-color setter
+// (0x1F5210); a 0x40-offset sibling of gsStateFade sharing its body.
+gsStateFadeColor = 0x0013cc90;
 vu1GsRegsFont = 0x0013cf10;
 // GS register reset block (record header 0x00008012) streamed into the VU1
 // chain by ResetGsRegisters; the next record (0x00008001) starts at its end.

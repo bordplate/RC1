@@ -630,15 +630,17 @@ void PutDrawBufferLarge(void);
 void PutDrawBufferSmall(void);
 // C linkage: GS status query in the SCE SDK library; the argument is unused.
 extern "C" int func_00122298(int arg);
-// C linkage: still-assembly color-register/GS-state helper at 0x1F5210; the
-// stripped-ELF symbol is an unmangled entry point.
-extern "C" void func_001F5210(int a, int b, int c, int d);
+// C linkage: loads the fade GS register (r | g<<8 | b<<16 | intensity<<24) and
+// re-streams the fade GS state block; the stripped-ELF symbol is unmangled.
+extern "C" void fadeSetColor(int r, int g, int b, int intensity);
 // Per-frame draw counter shared with the boot intro. Its load is self-based
 // absolute and its store lands GPREL in the VU1_initChain/VU1_sendChain call
 // delay slots, so a plain declaration matches the original.
 extern int drawFrameCount;
 // 80-word GS state block streamed into the VU1 chain on every fade frame.
 extern u32 gsStateFade[];
+// 80-word GS state block streamed by the fade-color helper (0x1F5210).
+extern u32 gsStateFadeColor[];
 // GS register that receives the per-frame fade value; the hardware register's
 // role is unconfirmed beyond being the fade target.
 #define VU1_FADE_GS_REG 1
@@ -663,7 +665,7 @@ void FadeToBlack(int frames) {
     for (; i >= 0; i--) {
         PutDrawBufferLarge();
         framebuf_appendLargeSetup();
-        func_001F5210(0, 0, 0, VU1_FADE_FULL);
+        fadeSetColor(0, 0, 0, VU1_FADE_FULL);
         PutDrawBufferSmall();
         VU1_addGSregister(VU1_FADE_GS_REG,
                           (unsigned long)(VU1_FADE_FULL - (i << 7) / (i + 1)) << 24);
@@ -791,7 +793,15 @@ void DrawOcclDebugOverlay(ScreenVBEffect* effect) {
         VU1_addGSregister(VU1_SCREEN_ALPHA_GS_REG, OCCL_DEBUG_END_ALPHA);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F5210);
+void fadeSetColor(int r, int g, int b, int intensity) {
+    VU1_addGSregister(VU1_FADE_GS_REG, (unsigned long)r | ((unsigned long)g << 8)
+                      | ((unsigned long)b << 0x10) | ((unsigned long)intensity << 0x18));
+    vu1ChainHead[0] = VU1_DATA_REF_TAG | 0x14;
+    vu1ChainHead[1] = (u32)gsStateFadeColor;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x14;
+    vu1ChainHead = vu1ChainHead + 4;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", DrawRectOverlay_FiiiiUl);
 
