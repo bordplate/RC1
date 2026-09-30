@@ -280,14 +280,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:547:func_001F5138",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 547,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F5138.s",
-    "name": "func_001F5138",
-    "status": "todo"
-  },
-  {
     "id": "code/game/draw_post_post.cpp:549:func_001F5210",
     "source": "code/game/draw_post_post.cpp",
     "line": 549,

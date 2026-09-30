@@ -741,7 +741,55 @@ void DrawScreenEffect() {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F5138);
+// The frame buffer base address (0x15EE88); the overlay GS writes below
+// shift it arithmetically, so it is read as a signed int here (a u32 shift
+// would lower to srl, not the original's sra).
+extern u32 frameBufferBase;
+
+// GS register that receives the frame-buffer-derived overlay base value; the
+// offset is hardware-defined and unnamed in the available references.
+#define OCCL_DEBUG_GS_REG 0x4E
+// Right-shift applied to the frame buffer base before it is ORed into the
+// overlay GS value (byte address to the base's hardware addressing unit).
+#define OCCL_DEBUG_FB_SHIFT 13
+// Bits ORed into the frame-buffer-derived overlay base for the two GS writes
+// around the overlay rectangle: the common bit is used by both, the leading
+// bit only by the write that precedes the rectangle.
+#define OCCL_DEBUG_BASE_LEAD 0x100000000
+#define OCCL_DEBUG_BASE_COMMON 0x1000000
+// Fixed alpha sent to the alpha GS register after the overlay rectangle,
+// closing the pair opened by the masked bkgAlpha write at the top.
+#define OCCL_DEBUG_END_ALPHA 0x8000000044UL
+
+// Occlusion-debug overlay renderer, the occlusion twin of DrawScreenEffect.
+// Takes the debug overlay's ScreenVBEffect config (the block based at
+// occlDebugOverlayEnabled, 0x15F370) instead of the global
+// screenColorEffectNow, and draws only its background (no A/B bands). An
+// enabled bkgColor wraps the full-screen DrawRectOverlay in two
+// OCCL_DEBUG_GS_REG writes derived from the frame buffer base. The caller
+// (DrawDebugProfiler) references the original placeholder symbol, so the
+// declaration keeps that name via the asm override.
+void DrawOcclDebugOverlay(ScreenVBEffect* effect) asm("func_001F5138");
+void DrawOcclDebugOverlay(ScreenVBEffect* effect) {
+    if (effect->bkgAlpha != 0)
+        VU1_addGSregister(VU1_SCREEN_ALPHA_GS_REG,
+                          effect->bkgAlpha & SCREEN_EFFECT_ALPHA_MASK);
+    if ((effect->bkgColor & SCREEN_EFFECT_COLOR_ENABLE) != 0) {
+        // OCCL_DEBUG_BASE_COMMON must stay a bare constant: pinning it to a
+        // register makes EGC emit the rectangle-following OR in-place
+        // (or a1,a1,s0) instead of the original's or a1,s0,a1.
+        VU1_addGSregister(OCCL_DEBUG_GS_REG,
+                          (int)frameBufferBase >> OCCL_DEBUG_FB_SHIFT
+                              | OCCL_DEBUG_BASE_COMMON | OCCL_DEBUG_BASE_LEAD);
+        DrawRectOverlay(0, (s16)occlCamParamBase.drawH, 0, (s16)occlCamParamBase.drawW,
+                        (unsigned long)effect->bkgColor);
+        VU1_addGSregister(OCCL_DEBUG_GS_REG,
+                          (int)frameBufferBase >> OCCL_DEBUG_FB_SHIFT
+                              | OCCL_DEBUG_BASE_COMMON);
+    }
+    if (effect->bkgAlpha != 0)
+        VU1_addGSregister(VU1_SCREEN_ALPHA_GS_REG, OCCL_DEBUG_END_ALPHA);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F5210);
 
