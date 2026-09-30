@@ -122,3 +122,17 @@ the 292-byte beql form. Retain `INCLUDE_ASM`; full boot-ELF parity preserved.
 Re-attempt starting point: v47.cpp structure (no-arg callee, a1 base pin,
 `(volatile u32*)` second-half casts, block-scoped `$2/$3/$4` pins) — the 16
 residuals are clusters 1–4 above.
+
+## Re-confirmation (2026-10-01)
+A full second independent pass (fresh candidate lineage, `.extern`-seeded
+same-address alias for the delay-slot load instead of the plain-alias form,
+u32 value locals for the subscript stores) reached 284B/17 with the SAME four
+first-half/branch clusters — no new lever found, confirming the residual is
+stable across candidate lineages. Escalations this pass: expert (GPT-6 Astra)
+and last-resort-decompiler (GPT-5.6 Sol); the one new fix found (explicit
+B-region volatile read order: both `vu1ChainHead` and `gifPageMarkerB` reads
+before either store, matching the original's `[P8 load][B1 load][addiu][stores]`
+order) is already covered by the v47 second-half cast form. No flag
+(`-fno-schedule-insns[2]`, `-mno-split-addresses`, combos), register pin,
+scoped transfer, barrier, callee-prototype variant, or local-type variant
+closed any cluster. Do NOT re-select this target; see clusters 1–4.
