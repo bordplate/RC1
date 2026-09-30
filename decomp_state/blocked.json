@@ -461,5 +461,16 @@
   "size": "0x1B8",
   "note": "DrawSubtitles: iterates Scene.subtitles (16-B entries) for the first [start,stop) window containing Scene.iframe, draws a FontSetWindow/func_001F7580/DrawUIFrame window, returns. KEY confirmed finding: func_001F7580's color arg is a 64-bit (unsigned long) value, not u32 \u2014 a u32 formal materializes 0x80B0B0B0 as lui/ori (2 insns) but an unsigned long formal emits ori zero/dsll16/ori (3 insns) = the original's exact form at both call sites; this cut the diff from 78 to 50 (not committed since still non-matching). Best verified candidate (p9, default flags + 64-bit color) = 50 residual diff words, ALL EGC 2.95.2 Reload/scheduler tie-breaks with no logic errors: (1) Scene-base temp t0 vs a3 (~5), (2) start-cache lhu at slot #14 vs #17 (~4), (3) text ptr (sub+4)+idx*2 vs sub+(4+idx*2) (~5), (4) FontSetWindow const order (~4), (5) edge/textY block t2-vs-t1 + sll/sra reorderings (~20, largest), (6) tail while-check two-load vs one-load+sign-extend (~10). See notes/draw_post_post_func_001F4BE0.md.",
   "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-09-30 with the full dossier (color finding + 50-diff categorization + all prior attempts). Recommended: (a) move the unsigned `start` load to the TOP of the loop body to match the original's lhu-in-backedge-delay-slot + prologue schedule (plausibly fixing groups 1,2,6), (b) make `edge` an int (not s16) to stop EGC coalescing the untruncated a2 store with the sign-extended a1 compare, (c) split textBase=textOfs; text=textBase+langIdx, (d) test all-int FontSetWindow signature. Tested mechanically: (a) p14 -> 99 diffs and function shrank to 107 lines (loop restructured, regressed); (b) p15 -> 69 diffs (regressed). Both concrete recommendations failed; no flag route remains (scheduler flags, pins, barriers all regress). Source left as INCLUDE_ASM (parity preserved)."
+ },
+ {
+  "id": "code/game/draw_post_post.cpp:func_001F4D98",
+  "source": "code/game/draw_post_post.cpp",
+  "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4D98.s",
+  "name": "func_001F4D98",
+  "status": "blocked",
+  "date": "2026-09-30",
+  "vram": "0x1F4D98",
+  "size": "0x220",
+  "note": "Occlusion-sample VU1 chain state machine: appends a 128-byte packet (5 x 16B records) to vu1ChainHead, advancing H0->H8. Gate/frames prologue + tail match, but the packet-build body is an EGC 2.95.2 RA/scheduler wall: (1) per-word coordinate register allocation in the 8 perspective words (different (X,Y) register pair per word, not forceable without 16 conflicting hard pins), (2) per-word load/or/sd scheduling (both scheduler flags worse), (3) u64 K|=0xF300 lowers to li+or vs original 32-bit ori (the 548-vs-544 1-word size gap). Best candidate 548B/104-105 diffs. K=0xFFFFF300000000 (ori;dsll16;ori 0xF300;dsll24); view params 0x13E500 (volatile); templates A=0x160820 B=0x160830 (unnamed). last-resort GPT-5.6 Sol used (final-head fresh reload + K-barrier drop + scoped Y-then-X loads implemented, residual confirmed). Retain INCLUDE_ASM; parity preserved. See notes/draw_post_post_func_001F4D98.md."
  }
 ]
