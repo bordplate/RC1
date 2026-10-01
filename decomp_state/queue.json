@@ -16,35 +16,11 @@
     "status": "todo"
   },
   {
-    "id": "code/game/actuator.cpp:11:func_001E9120",
-    "source": "code/game/actuator.cpp",
-    "line": 11,
-    "asm": "code/_generated/nonmatchings/game/actuator/func_001E9120.s",
-    "name": "func_001E9120",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/actuator.cpp:30:func_001E9148",
-    "source": "code/game/actuator.cpp",
-    "line": 30,
-    "asm": "code/_generated/nonmatchings/game/actuator/func_001E9148.s",
-    "name": "func_001E9148",
-    "status": "todo"
-  },
-  {
     "id": "code/game/bloaders.cpp:48:LoadPifAsPSMT8H",
     "source": "code/game/bloaders.cpp",
     "line": 48,
     "asm": "code/_generated/nonmatchings/game/bloaders/LoadPifAsPSMT8H.s",
     "name": "LoadPifAsPSMT8H",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/bloaders.cpp:72:func_001E93A8",
-    "source": "code/game/bloaders.cpp",
-    "line": 72,
-    "asm": "code/_generated/nonmatchings/game/bloaders/func_001E93A8.s",
-    "name": "func_001E93A8",
     "status": "todo"
   },
   {
@@ -56,73 +32,65 @@
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:50:ExecuteCamPostUpdFuncs",
+    "id": "code/game/camera.cpp:336:func_001EBF10",
     "source": "code/game/camera.cpp",
-    "line": 50,
-    "asm": "code/_generated/nonmatchings/game/camera/ExecuteCamPostUpdFuncs.s",
-    "name": "ExecuteCamPostUpdFuncs",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/camera.cpp:305:func_001EBF10",
-    "source": "code/game/camera.cpp",
-    "line": 305,
+    "line": 336,
     "asm": "code/_generated/nonmatchings/game/camera/func_001EBF10.s",
     "name": "func_001EBF10",
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:315:Camera_ActivationCheckPriority",
+    "id": "code/game/camera.cpp:346:Camera_ActivationCheckPriority",
     "source": "code/game/camera.cpp",
-    "line": 315,
+    "line": 346,
     "asm": "code/_generated/nonmatchings/game/camera/Camera_ActivationCheckPriority.s",
     "name": "Camera_ActivationCheckPriority",
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:323:UpdateAllCameras__Fi",
+    "id": "code/game/camera.cpp:354:UpdateAllCameras__Fi",
     "source": "code/game/camera.cpp",
-    "line": 323,
+    "line": 354,
     "asm": "code/_generated/nonmatchings/game/camera/UpdateAllCameras__Fi.s",
     "name": "UpdateAllCameras__Fi",
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:383:func_001EC710",
+    "id": "code/game/camera.cpp:414:func_001EC710",
     "source": "code/game/camera.cpp",
-    "line": 383,
+    "line": 414,
     "asm": "code/_generated/nonmatchings/game/camera/func_001EC710.s",
     "name": "func_001EC710",
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:444:func_001EC8A0",
+    "id": "code/game/camera.cpp:475:func_001EC8A0",
     "source": "code/game/camera.cpp",
-    "line": 444,
+    "line": 475,
     "asm": "code/_generated/nonmatchings/game/camera/func_001EC8A0.s",
     "name": "func_001EC8A0",
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:548:func_001ECCD8",
+    "id": "code/game/camera.cpp:579:func_001ECCD8",
     "source": "code/game/camera.cpp",
-    "line": 548,
+    "line": 579,
     "asm": "code/_generated/nonmatchings/game/camera/func_001ECCD8.s",
     "name": "func_001ECCD8",
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:672:func_001ED470",
+    "id": "code/game/camera.cpp:703:func_001ED470",
     "source": "code/game/camera.cpp",
-    "line": 672,
+    "line": 703,
     "asm": "code/_generated/nonmatchings/game/camera/func_001ED470.s",
     "name": "func_001ED470",
     "status": "todo"
   },
   {
-    "id": "code/game/camera.cpp:673:func_001ED7F0",
+    "id": "code/game/camera.cpp:704:func_001ED7F0",
     "source": "code/game/camera.cpp",
-    "line": 673,
+    "line": 704,
     "asm": "code/_generated/nonmatchings/game/camera/func_001ED7F0.s",
     "name": "func_001ED7F0",
     "status": "todo"
@@ -136,409 +104,345 @@
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:8:func_001F2260",
+    "id": "code/game/draw_post_post.cpp:9:func_001F2260",
     "source": "code/game/draw_post_post.cpp",
-    "line": 8,
+    "line": 9,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F2260.s",
     "name": "func_001F2260",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:86:ParseOcclGrid",
+    "id": "code/game/draw_post_post.cpp:87:ParseOcclGrid",
     "source": "code/game/draw_post_post.cpp",
-    "line": 86,
+    "line": 87,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/ParseOcclGrid.s",
     "name": "ParseOcclGrid",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:310:UpdateViewContext__Fv",
+    "id": "code/game/draw_post_post.cpp:311:UpdateViewContext__Fv",
     "source": "code/game/draw_post_post.cpp",
-    "line": 310,
+    "line": 311,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/UpdateViewContext__Fv.s",
     "name": "UpdateViewContext__Fv",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:312:func_001F33B8",
+    "id": "code/game/draw_post_post.cpp:313:func_001F33B8",
     "source": "code/game/draw_post_post.cpp",
-    "line": 312,
+    "line": 313,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F33B8.s",
     "name": "func_001F33B8",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:314:SetPalMode__Fi",
+    "id": "code/game/draw_post_post.cpp:315:SetPalMode__Fi",
     "source": "code/game/draw_post_post.cpp",
-    "line": 314,
+    "line": 315,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/SetPalMode__Fi.s",
     "name": "SetPalMode__Fi",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:454:DrawDebugProfiler",
+    "id": "code/game/draw_post_post.cpp:463:DrawDebugProfiler",
     "source": "code/game/draw_post_post.cpp",
-    "line": 454,
+    "line": 463,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/DrawDebugProfiler.s",
     "name": "DrawDebugProfiler",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:484:SetupGifPaging__Fi",
+    "id": "code/game/draw_post_post.cpp:531:SetupGifPaging__Fi",
     "source": "code/game/draw_post_post.cpp",
-    "line": 484,
+    "line": 531,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/SetupGifPaging__Fi.s",
     "name": "SetupGifPaging__Fi",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:486:DoGifPaging__Fv",
+    "id": "code/game/draw_post_post.cpp:533:DoGifPaging__Fv",
     "source": "code/game/draw_post_post.cpp",
-    "line": 486,
+    "line": 533,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/DoGifPaging__Fv.s",
     "name": "DoGifPaging__Fv",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:488:GetEffectTex__Fii",
+    "id": "code/game/draw_post_post.cpp:535:GetEffectTex__Fii",
     "source": "code/game/draw_post_post.cpp",
-    "line": 488,
+    "line": 535,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/GetEffectTex__Fii.s",
     "name": "GetEffectTex__Fii",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:513:func_001F4650",
+    "id": "code/game/draw_post_post.cpp:621:func_001F4880",
     "source": "code/game/draw_post_post.cpp",
-    "line": 513,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4650.s",
-    "name": "func_001F4650",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:515:func_001F46C8",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 515,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F46C8.s",
-    "name": "func_001F46C8",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:517:func_001F4740",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 517,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4740.s",
-    "name": "func_001F4740",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:535:func_001F4808",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 535,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4808.s",
-    "name": "func_001F4808",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:537:func_001F4880",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 537,
+    "line": 621,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4880.s",
     "name": "func_001F4880",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:539:FadeToBlack__FiUi",
+    "id": "code/game/draw_post_post.cpp:691:func_001F4BE0",
     "source": "code/game/draw_post_post.cpp",
-    "line": 539,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/FadeToBlack__FiUi.s",
-    "name": "FadeToBlack__FiUi",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:541:func_001F4BE0",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 541,
+    "line": 691,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4BE0.s",
     "name": "func_001F4BE0",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:543:func_001F4D98",
+    "id": "code/game/draw_post_post.cpp:693:func_001F4D98",
     "source": "code/game/draw_post_post.cpp",
-    "line": 543,
+    "line": 693,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4D98.s",
     "name": "func_001F4D98",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:545:func_001F4FB8",
+    "id": "code/game/draw_post_post.cpp:806:DrawRectOverlay_FiiiiUl",
     "source": "code/game/draw_post_post.cpp",
-    "line": 545,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F4FB8.s",
-    "name": "func_001F4FB8",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:549:func_001F5210",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 549,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F5210.s",
-    "name": "func_001F5210",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:551:DrawRectOverlay_FiiiiUl",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 551,
+    "line": 806,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/DrawRectOverlay_FiiiiUl.s",
     "name": "DrawRectOverlay_FiiiiUl",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:553:func_001F5448",
+    "id": "code/game/draw_post_post.cpp:831:DrawTexturedQuad",
     "source": "code/game/draw_post_post.cpp",
-    "line": 553,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F5448.s",
-    "name": "func_001F5448",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/draw_post_post.cpp:555:DrawTexturedQuad",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 555,
+    "line": 831,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/DrawTexturedQuad.s",
     "name": "DrawTexturedQuad",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:557:func_001F55D8",
+    "id": "code/game/draw_post_post.cpp:833:func_001F55D8",
     "source": "code/game/draw_post_post.cpp",
-    "line": 557,
+    "line": 833,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F55D8.s",
     "name": "func_001F55D8",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:559:func_001F5808",
+    "id": "code/game/draw_post_post.cpp:835:func_001F5808",
     "source": "code/game/draw_post_post.cpp",
-    "line": 559,
+    "line": 835,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F5808.s",
     "name": "func_001F5808",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:561:func_001F5AB0",
+    "id": "code/game/draw_post_post.cpp:837:func_001F5AB0",
     "source": "code/game/draw_post_post.cpp",
-    "line": 561,
+    "line": 837,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F5AB0.s",
     "name": "func_001F5AB0",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:563:func_001F5F10",
+    "id": "code/game/draw_post_post.cpp:839:func_001F5F10",
     "source": "code/game/draw_post_post.cpp",
-    "line": 563,
+    "line": 839,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F5F10.s",
     "name": "func_001F5F10",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:565:DrawUIFrame",
+    "id": "code/game/draw_post_post.cpp:841:DrawUIFrame",
     "source": "code/game/draw_post_post.cpp",
-    "line": 565,
+    "line": 841,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/DrawUIFrame.s",
     "name": "DrawUIFrame",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:567:func_001F6060",
+    "id": "code/game/draw_post_post.cpp:843:func_001F6060",
     "source": "code/game/draw_post_post.cpp",
-    "line": 567,
+    "line": 843,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6060.s",
     "name": "func_001F6060",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:579:func_001F6200",
+    "id": "code/game/draw_post_post.cpp:855:func_001F6200",
     "source": "code/game/draw_post_post.cpp",
-    "line": 579,
+    "line": 855,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6200.s",
     "name": "func_001F6200",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:603:FontPrint",
+    "id": "code/game/draw_post_post.cpp:879:FontPrint",
     "source": "code/game/draw_post_post.cpp",
-    "line": 603,
+    "line": 879,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/FontPrint.s",
     "name": "FontPrint",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:605:FontPrintLarge",
+    "id": "code/game/draw_post_post.cpp:881:FontPrintLarge",
     "source": "code/game/draw_post_post.cpp",
-    "line": 605,
+    "line": 881,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/FontPrintLarge.s",
     "name": "FontPrintLarge",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:607:FontPrintSmall",
+    "id": "code/game/draw_post_post.cpp:883:FontPrintSmall",
     "source": "code/game/draw_post_post.cpp",
-    "line": 607,
+    "line": 883,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/FontPrintSmall.s",
     "name": "FontPrintSmall",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:609:func_001F6630",
+    "id": "code/game/draw_post_post.cpp:885:func_001F6630",
     "source": "code/game/draw_post_post.cpp",
-    "line": 609,
+    "line": 885,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6630.s",
     "name": "func_001F6630",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:611:func_001F6638",
+    "id": "code/game/draw_post_post.cpp:887:func_001F6638",
     "source": "code/game/draw_post_post.cpp",
-    "line": 611,
+    "line": 887,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6638.s",
     "name": "func_001F6638",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:613:func_001F6928",
+    "id": "code/game/draw_post_post.cpp:889:func_001F6928",
     "source": "code/game/draw_post_post.cpp",
-    "line": 613,
+    "line": 889,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6928.s",
     "name": "func_001F6928",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:615:func_001F69D0",
+    "id": "code/game/draw_post_post.cpp:891:func_001F69D0",
     "source": "code/game/draw_post_post.cpp",
-    "line": 615,
+    "line": 891,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F69D0.s",
     "name": "func_001F69D0",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:617:func_001F6A60",
+    "id": "code/game/draw_post_post.cpp:893:func_001F6A60",
     "source": "code/game/draw_post_post.cpp",
-    "line": 617,
+    "line": 893,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6A60.s",
     "name": "func_001F6A60",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:619:FontPrintCenter",
+    "id": "code/game/draw_post_post.cpp:895:FontPrintCenter",
     "source": "code/game/draw_post_post.cpp",
-    "line": 619,
+    "line": 895,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/FontPrintCenter.s",
     "name": "FontPrintCenter",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:621:FontPrintCenterSmall",
+    "id": "code/game/draw_post_post.cpp:897:FontPrintCenterSmall",
     "source": "code/game/draw_post_post.cpp",
-    "line": 621,
+    "line": 897,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/FontPrintCenterSmall.s",
     "name": "FontPrintCenterSmall",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:623:FontPrintCenterLarge",
+    "id": "code/game/draw_post_post.cpp:899:FontPrintCenterLarge",
     "source": "code/game/draw_post_post.cpp",
-    "line": 623,
+    "line": 899,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/FontPrintCenterLarge.s",
     "name": "FontPrintCenterLarge",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:625:func_001F6CB8",
+    "id": "code/game/draw_post_post.cpp:901:func_001F6CB8",
     "source": "code/game/draw_post_post.cpp",
-    "line": 625,
+    "line": 901,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6CB8.s",
     "name": "func_001F6CB8",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:627:func_001F6FD0",
+    "id": "code/game/draw_post_post.cpp:903:func_001F6FD0",
     "source": "code/game/draw_post_post.cpp",
-    "line": 627,
+    "line": 903,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F6FD0.s",
     "name": "func_001F6FD0",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:629:func_001F7070",
+    "id": "code/game/draw_post_post.cpp:905:func_001F7070",
     "source": "code/game/draw_post_post.cpp",
-    "line": 629,
+    "line": 905,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F7070.s",
     "name": "func_001F7070",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:631:FontPrintWindow",
+    "id": "code/game/draw_post_post.cpp:907:FontPrintWindow",
     "source": "code/game/draw_post_post.cpp",
-    "line": 631,
+    "line": 907,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/FontPrintWindow.s",
     "name": "FontPrintWindow",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:633:func_001F7580",
+    "id": "code/game/draw_post_post.cpp:909:func_001F7580",
     "source": "code/game/draw_post_post.cpp",
-    "line": 633,
+    "line": 909,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F7580.s",
     "name": "func_001F7580",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:635:func_001F75F0",
+    "id": "code/game/draw_post_post.cpp:911:func_001F75F0",
     "source": "code/game/draw_post_post.cpp",
-    "line": 635,
+    "line": 911,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F75F0.s",
     "name": "func_001F75F0",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:637:func_001F7660",
+    "id": "code/game/draw_post_post.cpp:913:func_001F7660",
     "source": "code/game/draw_post_post.cpp",
-    "line": 637,
+    "line": 913,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F7660.s",
     "name": "func_001F7660",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:671:func_001F76A0",
+    "id": "code/game/draw_post_post.cpp:947:func_001F76A0",
     "source": "code/game/draw_post_post.cpp",
-    "line": 671,
+    "line": 947,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F76A0.s",
     "name": "func_001F76A0",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:673:func_001F7888",
+    "id": "code/game/draw_post_post.cpp:949:func_001F7888",
     "source": "code/game/draw_post_post.cpp",
-    "line": 673,
+    "line": 949,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F7888.s",
     "name": "func_001F7888",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:685:func_001F79A8",
+    "id": "code/game/draw_post_post.cpp:961:func_001F79A8",
     "source": "code/game/draw_post_post.cpp",
-    "line": 685,
+    "line": 961,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F79A8.s",
     "name": "func_001F79A8",
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:698:func_001F7A88",
+    "id": "code/game/draw_post_post.cpp:974:func_001F7A88",
     "source": "code/game/draw_post_post.cpp",
-    "line": 698,
+    "line": 974,
     "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F7A88.s",
     "name": "func_001F7A88",
     "status": "todo"
@@ -816,265 +720,265 @@
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:15:func_001FEE88",
+    "id": "code/game/hud.cpp:7:func_001FEE88",
     "source": "code/game/hud.cpp",
-    "line": 15,
+    "line": 7,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FEE88.s",
     "name": "func_001FEE88",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:17:LinkHudBank__FiPc",
+    "id": "code/game/hud.cpp:9:LinkHudBank__FiPc",
     "source": "code/game/hud.cpp",
-    "line": 17,
+    "line": 9,
     "asm": "code/_generated/nonmatchings/game/hud/LinkHudBank__FiPc.s",
     "name": "LinkHudBank__FiPc",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:19:func_001FF120",
+    "id": "code/game/hud.cpp:11:func_001FF120",
     "source": "code/game/hud.cpp",
-    "line": 19,
+    "line": 11,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF120.s",
     "name": "func_001FF120",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:21:Hud_SendResidentBank__FiPcb",
+    "id": "code/game/hud.cpp:13:Hud_SendResidentBank__FiPcb",
     "source": "code/game/hud.cpp",
-    "line": 21,
+    "line": 13,
     "asm": "code/_generated/nonmatchings/game/hud/Hud_SendResidentBank__FiPcb.s",
     "name": "Hud_SendResidentBank__FiPcb",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:28:Hud_HeapAlloc__FUiPcT1i",
+    "id": "code/game/hud.cpp:20:Hud_HeapAlloc__FUiPcT1i",
     "source": "code/game/hud.cpp",
-    "line": 28,
+    "line": 20,
     "asm": "code/_generated/nonmatchings/game/hud/Hud_HeapAlloc__FUiPcT1i.s",
     "name": "Hud_HeapAlloc__FUiPcT1i",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:30:func_001FF308",
+    "id": "code/game/hud.cpp:22:func_001FF308",
     "source": "code/game/hud.cpp",
-    "line": 30,
+    "line": 22,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF308.s",
     "name": "func_001FF308",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:32:func_001FF418",
+    "id": "code/game/hud.cpp:24:func_001FF418",
     "source": "code/game/hud.cpp",
-    "line": 32,
+    "line": 24,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF418.s",
     "name": "func_001FF418",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:34:func_001FF480",
+    "id": "code/game/hud.cpp:26:func_001FF480",
     "source": "code/game/hud.cpp",
-    "line": 34,
+    "line": 26,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF480.s",
     "name": "func_001FF480",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:36:func_001FF500",
+    "id": "code/game/hud.cpp:28:func_001FF500",
     "source": "code/game/hud.cpp",
-    "line": 36,
+    "line": 28,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF500.s",
     "name": "func_001FF500",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:38:func_001FF568",
+    "id": "code/game/hud.cpp:30:func_001FF568",
     "source": "code/game/hud.cpp",
-    "line": 38,
+    "line": 30,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF568.s",
     "name": "func_001FF568",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:40:func_001FF570",
+    "id": "code/game/hud.cpp:32:func_001FF570",
     "source": "code/game/hud.cpp",
-    "line": 40,
+    "line": 32,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF570.s",
     "name": "func_001FF570",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:42:func_001FF5E8",
+    "id": "code/game/hud.cpp:34:func_001FF5E8",
     "source": "code/game/hud.cpp",
-    "line": 42,
+    "line": 34,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF5E8.s",
     "name": "func_001FF5E8",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:44:func_001FF6D8",
+    "id": "code/game/hud.cpp:36:func_001FF6D8",
     "source": "code/game/hud.cpp",
-    "line": 44,
+    "line": 36,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF6D8.s",
     "name": "func_001FF6D8",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:54:func_001FF780",
+    "id": "code/game/hud.cpp:46:func_001FF780",
     "source": "code/game/hud.cpp",
-    "line": 54,
+    "line": 46,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF780.s",
     "name": "func_001FF780",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:56:func_001FF958",
+    "id": "code/game/hud.cpp:48:func_001FF958",
     "source": "code/game/hud.cpp",
-    "line": 56,
+    "line": 48,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FF958.s",
     "name": "func_001FF958",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:58:GetIconFrame__Fii",
+    "id": "code/game/hud.cpp:50:GetIconFrame__Fii",
     "source": "code/game/hud.cpp",
-    "line": 58,
+    "line": 50,
     "asm": "code/_generated/nonmatchings/game/hud/GetIconFrame__Fii.s",
     "name": "GetIconFrame__Fii",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:60:GetFrameTex__Fi",
+    "id": "code/game/hud.cpp:52:GetFrameTex__Fi",
     "source": "code/game/hud.cpp",
-    "line": 60,
+    "line": 52,
     "asm": "code/_generated/nonmatchings/game/hud/GetFrameTex__Fi.s",
     "name": "GetFrameTex__Fi",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:62:func_001FFC30",
+    "id": "code/game/hud.cpp:54:func_001FFC30",
     "source": "code/game/hud.cpp",
-    "line": 62,
+    "line": 54,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FFC30.s",
     "name": "func_001FFC30",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:64:func_001FFE18",
+    "id": "code/game/hud.cpp:56:func_001FFE18",
     "source": "code/game/hud.cpp",
-    "line": 64,
+    "line": 56,
     "asm": "code/_generated/nonmatchings/game/hud/func_001FFE18.s",
     "name": "func_001FFE18",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:66:func_00200078",
+    "id": "code/game/hud.cpp:58:func_00200078",
     "source": "code/game/hud.cpp",
-    "line": 66,
+    "line": 58,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200078.s",
     "name": "func_00200078",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:68:func_00200258",
+    "id": "code/game/hud.cpp:60:func_00200258",
     "source": "code/game/hud.cpp",
-    "line": 68,
+    "line": 60,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200258.s",
     "name": "func_00200258",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:70:func_00200468",
+    "id": "code/game/hud.cpp:62:func_00200468",
     "source": "code/game/hud.cpp",
-    "line": 70,
+    "line": 62,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200468.s",
     "name": "func_00200468",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:72:func_00200600",
+    "id": "code/game/hud.cpp:64:func_00200600",
     "source": "code/game/hud.cpp",
-    "line": 72,
+    "line": 64,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200600.s",
     "name": "func_00200600",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:74:func_00200958",
+    "id": "code/game/hud.cpp:66:func_00200958",
     "source": "code/game/hud.cpp",
-    "line": 74,
+    "line": 66,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200958.s",
     "name": "func_00200958",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:76:Hud_sendTexture__FPciiiii",
+    "id": "code/game/hud.cpp:68:Hud_sendTexture__FPciiiii",
     "source": "code/game/hud.cpp",
-    "line": 76,
+    "line": 68,
     "asm": "code/_generated/nonmatchings/game/hud/Hud_sendTexture__FPciiiii.s",
     "name": "Hud_sendTexture__FPciiiii",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:78:func_00200C80",
+    "id": "code/game/hud.cpp:70:func_00200C80",
     "source": "code/game/hud.cpp",
-    "line": 78,
+    "line": 70,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200C80.s",
     "name": "func_00200C80",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:80:func_00200E08",
+    "id": "code/game/hud.cpp:72:func_00200E08",
     "source": "code/game/hud.cpp",
-    "line": 80,
+    "line": 72,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200E08.s",
     "name": "func_00200E08",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:82:func_00200F90",
+    "id": "code/game/hud.cpp:74:func_00200F90",
     "source": "code/game/hud.cpp",
-    "line": 82,
+    "line": 74,
     "asm": "code/_generated/nonmatchings/game/hud/func_00200F90.s",
     "name": "func_00200F90",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:84:func_00201110",
+    "id": "code/game/hud.cpp:76:func_00201110",
     "source": "code/game/hud.cpp",
-    "line": 84,
+    "line": 76,
     "asm": "code/_generated/nonmatchings/game/hud/func_00201110.s",
     "name": "func_00201110",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:86:func_00201128",
+    "id": "code/game/hud.cpp:78:func_00201128",
     "source": "code/game/hud.cpp",
-    "line": 86,
+    "line": 78,
     "asm": "code/_generated/nonmatchings/game/hud/func_00201128.s",
     "name": "func_00201128",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:88:func_00201200",
+    "id": "code/game/hud.cpp:80:func_00201200",
     "source": "code/game/hud.cpp",
-    "line": 88,
+    "line": 80,
     "asm": "code/_generated/nonmatchings/game/hud/func_00201200.s",
     "name": "func_00201200",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:90:func_002012A8",
+    "id": "code/game/hud.cpp:82:func_002012A8",
     "source": "code/game/hud.cpp",
-    "line": 90,
+    "line": 82,
     "asm": "code/_generated/nonmatchings/game/hud/func_002012A8.s",
     "name": "func_002012A8",
     "status": "todo"
   },
   {
-    "id": "code/game/hud.cpp:92:draw_bootImage__Fi",
+    "id": "code/game/hud.cpp:84:draw_bootImage__Fi",
     "source": "code/game/hud.cpp",
-    "line": 92,
+    "line": 84,
     "asm": "code/_generated/nonmatchings/game/hud/draw_bootImage__Fi.s",
     "name": "draw_bootImage__Fi",
     "status": "todo"
@@ -1416,89 +1320,81 @@
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:3:memcard_GetName",
+    "id": "code/game/memcard.cpp:4:memcard_GetName",
     "source": "code/game/memcard.cpp",
-    "line": 3,
+    "line": 4,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_GetName.s",
     "name": "memcard_GetName",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:5:menu_checkBootMemoryCard__Fv",
+    "id": "code/game/memcard.cpp:6:menu_checkBootMemoryCard__Fv",
     "source": "code/game/memcard.cpp",
-    "line": 5,
+    "line": 6,
     "asm": "code/_generated/nonmatchings/game/memcard/menu_checkBootMemoryCard__Fv.s",
     "name": "menu_checkBootMemoryCard__Fv",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:7:memcard_RestoreGame",
+    "id": "code/game/memcard.cpp:8:memcard_RestoreGame",
     "source": "code/game/memcard.cpp",
-    "line": 7,
+    "line": 8,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_RestoreGame.s",
     "name": "memcard_RestoreGame",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:9:func_00209370",
+    "id": "code/game/memcard.cpp:10:func_00209370",
     "source": "code/game/memcard.cpp",
-    "line": 9,
+    "line": 10,
     "asm": "code/_generated/nonmatchings/game/memcard/func_00209370.s",
     "name": "func_00209370",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:11:memcard_Update",
+    "id": "code/game/memcard.cpp:12:memcard_Update",
     "source": "code/game/memcard.cpp",
-    "line": 11,
+    "line": 12,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_Update.s",
     "name": "memcard_Update",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:13:memcard_MakeWholeSave",
+    "id": "code/game/memcard.cpp:14:memcard_MakeWholeSave",
     "source": "code/game/memcard.cpp",
-    "line": 13,
+    "line": 14,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_MakeWholeSave.s",
     "name": "memcard_MakeWholeSave",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:40:memcard_Checksum",
+    "id": "code/game/memcard.cpp:80:memcard_PrepData",
     "source": "code/game/memcard.cpp",
-    "line": 40,
-    "asm": "code/_generated/nonmatchings/game/memcard/memcard_Checksum.s",
-    "name": "memcard_Checksum",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/memcard.cpp:56:memcard_PrepData",
-    "source": "code/game/memcard.cpp",
-    "line": 56,
+    "line": 80,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_PrepData.s",
     "name": "memcard_PrepData",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:58:memcard_RestoreInfo__FPcii",
+    "id": "code/game/memcard.cpp:82:memcard_RestoreInfo__FPcii",
     "source": "code/game/memcard.cpp",
-    "line": 58,
+    "line": 82,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_RestoreInfo__FPcii.s",
     "name": "memcard_RestoreInfo__FPcii",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:60:memcard_RestoreData__FPcT0iP7mc_data",
+    "id": "code/game/memcard.cpp:84:memcard_RestoreData__FPcT0iP7mc_data",
     "source": "code/game/memcard.cpp",
-    "line": 60,
+    "line": 84,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_RestoreData__FPcT0iP7mc_data.s",
     "name": "memcard_RestoreData__FPcT0iP7mc_data",
     "status": "todo"
   },
   {
-    "id": "code/game/memcard.cpp:62:memcard_Save__Fii",
+    "id": "code/game/memcard.cpp:86:memcard_Save__Fii",
     "source": "code/game/memcard.cpp",
-    "line": 62,
+    "line": 86,
     "asm": "code/_generated/nonmatchings/game/memcard/memcard_Save__Fii.s",
     "name": "memcard_Save__Fii",
     "status": "todo"
@@ -2928,25 +2824,17 @@
     "status": "todo"
   },
   {
-    "id": "code/game/pad.cpp:4:UpdatePad__FR3PAD",
+    "id": "code/game/pad.cpp:6:UpdatePad__FR3PAD",
     "source": "code/game/pad.cpp",
-    "line": 4,
+    "line": 6,
     "asm": "code/_generated/nonmatchings/game/pad/UpdatePad__FR3PAD.s",
     "name": "UpdatePad__FR3PAD",
     "status": "todo"
   },
   {
-    "id": "code/game/pad.cpp:6:ClearPadInput__FR3PAD",
+    "id": "code/game/pad.cpp:27:ProcessPadInput__FR3PADPUci",
     "source": "code/game/pad.cpp",
-    "line": 6,
-    "asm": "code/_generated/nonmatchings/game/pad/ClearPadInput__FR3PAD.s",
-    "name": "ClearPadInput__FR3PAD",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/pad.cpp:8:ProcessPadInput__FR3PADPUci",
-    "source": "code/game/pad.cpp",
-    "line": 8,
+    "line": 27,
     "asm": "code/_generated/nonmatchings/game/pad/ProcessPadInput__FR3PADPUci.s",
     "name": "ProcessPadInput__FR3PADPUci",
     "status": "todo"

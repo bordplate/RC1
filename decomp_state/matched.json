@@ -2305,5 +2305,13 @@
   "size": 144,
   "matched_date": "2026-09-30",
   "note": "Fade-color setter: loads the fade GS register (VU1_FADE_GS_REG=1) with (r | g<<8 | b<<16 | intensity<<24) via VU1_addGSregister, then appends an 80-word (tag 0x14) data-ref packet streaming gsStateFadeColor (0x13CC90, a 0x40-offset sibling of gsStateFade sharing its body) and advances vu1ChainHead 4 words. C linkage (unmangled). Match-critical: the packing must cast EACH shifted term to unsigned long ((unsigned long)g<<8, etc.) so EGC emits 64-bit dsll/or; int args with a single trailing (unsigned long) cast emit 32-bit sll + a zero-extend (wrong). Same idiom as FadeToBlack per-frame fade write. The final head store is an ABSOLUTE self-based sw (lui at; sw v0,0(at)) standalone before jr, NOT the GPREL-in-delay-slot form, so use the double-volatile vu1ChainHead=vu1ChainHead+4 (not the vu1ChainHeadStore plain alias). Callers: FadeToBlack (0,0,0,VU1_FADE_FULL) and DrawDebugProfiler (3 color+intensity calls). 36/36 words, full boot parity clean."
+ },
+ "code/game/pad.cpp:8:ClearPadInput__FR3PAD": {
+  "name": "ClearPadInput__FR3PAD",
+  "source": "code/game/pad.cpp",
+  "vram": "0x002172C0",
+  "size": 100,
+  "matched_date": "2026-10-01",
+  "note": "Clears the per-frame pad state: zeroes field_1A0/1A4(pressedButtons)/1A8/1B0/1B4/1B8/1C0/1C4/1C8/1D8, sets field_1D0=1 and field_1D4=1, then zeroes analog[16] (0x100) and hudAnalog[16] (0x140). Default flags; no pins. Key codegen finding: EGC 2.95.2 hoists the LATER-in-source of two constant (=1) stores to position 2 (right after the first store) and keeps the rest in source order, so the matching source order is field_1B0, field_1A0, pressedButtons, field_1A8, field_1D0=1, field_1D4=1, then the 1B4..1D8 zeros (1D4 must follow 1D0). The 16-iteration zero loop compiles to li 15 / sw,dec,sw / bgez with base=&hudAnalog (a0+0x140) and the analog stores at -0x40(base); writing f32 fields =0.0f emits the same sw zero. PAD struct extended to 0x1E0 in pad_state.h (offset comments). Raw 100-byte object match plus clean full boot ELF parity pass. See notes/pad_ClearPadInput__FR3PAD.md."
  }
 }
