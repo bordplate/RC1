@@ -968,7 +968,24 @@ int drawTextLarge(char* text, int length) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrint);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintLarge);
+// The real GetEffectTex__Fii entry point takes two int parameters, but the
+// callee never reads the second and this call site leaves it stale (only a0
+// is set before the jal). This EGC rejects a one-argument call to a
+// two-parameter prototype, so the one-parameter declaration is pinned to
+// the original label.
+int GetEffectTex(int texId) asm("GetEffectTex__Fii");
+
+// C linkage: the stripped-ELF FontPrint family symbols are unmangled
+// (FontPrint, FontPrintCenter, FontPrintWindow).
+extern "C" void FontPrint(int x, int y, int color, u8* text, int length,
+                          int tex, char* glyphs);
+
+// C linkage: the stripped-ELF symbol is the unmangled FontPrintLarge, a
+// member of the same font API family. Prints text with the fontSmallGlyphs
+// set and effect texture 1 bound.
+extern "C" void FontPrintLarge(int x, int y, int color, u8* text, int length) {
+    FontPrint(x, y, color, text, length, GetEffectTex(1), fontSmallGlyphs);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintSmall);
 

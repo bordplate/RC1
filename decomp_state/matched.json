@@ -2353,5 +2353,14 @@
   "size": 80,
   "matched_date": "2026-10-01",
   "note": "Sums the signed advance-width byte (offset +3 in each 4-byte entry) of the font glyph tables over the nonzero text bytes, stopping at the first zero byte or when the counter reaches length; returns the accumulated width. text param is u8* (the text[0] pre-check is an unsigned lbu); callers (drawTextSmall/Medium/Large) pass char* via a no-op (u8*) cast. Unmangled C-linkage symbol (fontMeasureString=0x001F6200 in symbols.txt + linker_aliases.ld). MATCHING FORM (default flags, SN): do-while with a SINGLE ++i at the top of the loop body, a tied barrier asm volatile(\"\" : \"+r\"(c) : \"r\"(p)) between ++p and the glyph load, and an if-guarded prologue (if (length != 0 && text[0] != 0)). Two EGC 2.95.2 behaviors defeated: (1) the barrier blocks sll edge-splitting so the width index is computed after ++p (original loop head); (2) with the sll ineligible to split, the single top-of-body ++i is edge-split onto the entry edge (0x1f621c) and the latch/backedge (0x1f6244), reproducing both original i++ copies (a prologue ++i or int i=1 instead lets EGC constant-fold to li $9,1 and reshuffle the prologue - not defeatable by temp/pointer). The prologue must be if-guarded, not while(i!=length && *p) (which emits beq $9,$5 on i and mis-orders). Flags tried: -fno-rerun-cse-after-loop/-fno-gcse/-fno-peephole/-fno-schedule-insns[2] accepted but no effect on the if-guarded form; -O1 far worse (19 diffs); -fno-cse/-fno-peephole2 rejected by EGC. expert + last-resort-decompiler consulted (last-resort recommended the single-top-of-body-++i + barrier combo). Probe 0 word diffs (cand22); full make + cmp byte-identical; count 605->604. See notes/draw_post_post_fontMeasureString.md."
+ },
+ "code/game/draw_post_post.cpp:986:FontPrintLarge": {
+  "name": "FontPrintLarge",
+  "symbol": "FontPrintLarge",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6530",
+  "size": 124,
+  "matched_date": "2026-10-01",
+  "note": "Five-arg wrapper: FontPrint(x, y, color, text, length, GetEffectTex(1), fontSmallGlyphs). Unmangled C-linkage symbol; FontPrint's 7 params ride a0-a3,t0,t1,t2 so the wrapper's 5th param (length) arrives in t0. GetEffectTex is declared 1-param with asm(\"GetEffectTex__Fii\"): the real 2-int label never reads param 2 and the original call leaves a1 stale; this EGC rejects a 1-arg call to a 2-param prototype. Default flags, SN assembler; probe 0 word diffs, full boot ELF cmp byte-identical. See notes/draw_post_post_FontPrintLarge.md."
  }
 }
