@@ -240,14 +240,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/draw_post_post.cpp:839:func_001F5F10",
-    "source": "code/game/draw_post_post.cpp",
-    "line": 839,
-    "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F5F10.s",
-    "name": "func_001F5F10",
-    "status": "todo"
-  },
-  {
     "id": "code/game/draw_post_post.cpp:841:DrawUIFrame",
     "source": "code/game/draw_post_post.cpp",
     "line": 841,

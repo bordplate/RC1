@@ -162,3 +162,13 @@ dropping the ratio from 0.8449 to 0.3993. Same RA wall as the siblings.
 Source reverted to INCLUDE_ASM; full-ELF parity preserved. Blocker recorded in
 decomp_state/blocked.json (id code/game/draw_post_post.cpp:func_001F5AB0).
 Re-attempt start point: the best candidate above + the four residual clusters.
+
+## Dead tail (resolved 2026-10-01)
+
+The 4-byte fragment `func_001F5F10` following this function (`sw v0,0(gp);
+nop` — the compiler's dead second copy of the final vu1ChainHead store,
+targeting the gp-window base word D_00166C00) is no longer an INCLUDE_ASM:
+it is preserved as a top-level raw-asm block at its source position per the
+dead-tail policy (see notes/draw_post_func_001F5F10.md). A future C match of
+this function must emit that tail as trailing inline assembly and remove the
+top-level block.

@@ -836,7 +836,27 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F5808);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F5AB0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F5F10);
+// Unreachable dead tail the original compiler emitted after
+// func_001F5AB0 (DrawOcclEffectSprite, blocked: EGC RA/scheduler wall, see
+// decomp_state/notes/draw_post_func_001F5AB0.md): a GPREL store of the new
+// vu1ChainHead into D_00166C00 (the gp-window base word), the compiler's
+// second copy of the final head update landing after the jr, plus the
+// alignment nop before DrawUIFrame. Nothing reaches it (no Ghidra function;
+// tools/deadness_scan.py: 0 references), so the bytes are preserved with raw
+// asm per the dead-tail policy; the parent keeps its INCLUDE_ASM.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F5F10, 0x4\n"
+    "glabel func_001F5F10\n"
+    "    .word 0xaf820000\n"
+    "endlabel func_001F5F10\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", DrawUIFrame);
 
