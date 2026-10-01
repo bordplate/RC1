@@ -535,6 +535,7 @@ FadeToBlack__FiUi = 0x001f4a58;
 fadeSetColor = 0x001F5210;
 DrawTexturedQuad = 0x1f5450;
 DrawUIFrame = 0x1f5f18;
+DrawBevelFrame = 0x1f6060;
 UpdateFog__Fi = 0x1f2588;
 ResetVideoPipeline__Fv = 0x1f21c0;
 

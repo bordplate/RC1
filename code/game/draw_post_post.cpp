@@ -877,7 +877,29 @@ extern "C" void DrawUIFrame(int top, int bot, int left, int right, int alpha) {
     DrawRectOverlay(top + 4, bot - 4, right + 3, right + 4, color);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6060);
+#define DRAW_BEVEL_FRAME_ALPHA_MASK 0xFF000000
+#define DRAW_BEVEL_FRAME_FILL_RGB 4
+// Draws a beveled rectangular frame: the main (top, bot, left, right) rect in a
+// near-black fill that keeps the input color's top byte (alpha) and forces the
+// RGB bytes to a dark value, plus eight stepped bevel bands around all four
+// edges drawn in the full input color.
+// color must stay a signed int: EGC passes a signed int to DrawRectOverlay's
+// 64-bit color arg as a plain register move, but would zero-extend an unsigned
+// int (dsll32/dsrl32) which the original does not emit.
+// C linkage: unmangled sibling of the confirmed-C-linkage DrawUIFrame, in the
+// same UI-draw API family (fadeSetColor, FontPrintWindow, DrawRectOverlay).
+extern "C" void DrawBevelFrame(int top, int bot, int left, int right, int color) {
+    int fill = (color & DRAW_BEVEL_FRAME_ALPHA_MASK) | DRAW_BEVEL_FRAME_FILL_RGB;
+    DrawRectOverlay(top, bot, left, right, fill);
+    DrawRectOverlay(top - 1, top + 1, left + 3, right + 5, color);
+    DrawRectOverlay(top - 3, top - 5, left - 1, right - 3, color);
+    DrawRectOverlay(top - 5, bot - 3, left - 1, left + 1, color);
+    DrawRectOverlay(top + 3, bot + 1, left - 3, left - 5, color);
+    DrawRectOverlay(bot - 1, bot + 1, left - 3, right - 3, color);
+    DrawRectOverlay(bot + 3, bot + 5, left + 3, right + 1, color);
+    DrawRectOverlay(top + 3, bot + 3, right - 1, right + 1, color);
+    DrawRectOverlay(top + 1, bot - 3, right + 3, right + 5, color);
+}
 
 extern int drawOcclusionEnabled;
 

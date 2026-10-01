@@ -2335,5 +2335,13 @@
   "size": 324,
   "matched_date": "2026-10-01",
   "note": "Beveled UI frame: seven DrawRectOverlay calls (full rect + three stepped bevel bands outside each vertical edge, inset 1/2/4 px) in near-black 0x00040404 with caller alpha in the top byte. Unmangled C-linkage symbol in the UI/font family. Plain straight-line C matched byte-for-byte on the first probe under default flags (no pins, no private flags). Confirmed against Deadlocked DrawTextShadow (reference/dl/game_dl/draw.cpp:3590). See notes/draw_post_post_DrawUIFrame.md."
+ },
+ "code/game/draw_post_post.cpp:891:DrawBevelFrame": {
+  "name": "DrawBevelFrame",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6060",
+  "size": 388,
+  "matched_date": "2026-10-01",
+  "note": "9-rect beveled rectangular frame, sibling of DrawUIFrame (7-rect, vertical bevels only). Main (top,bot,left,right) rect drawn in a near-black fill = (color & 0xFF000000)|4 (keeps the input color's alpha byte, forces RGB to 4); eight stepped bevel bands around all four edges drawn in the full color. All 9 call DrawRectOverlay_FiiiiUl. CODEGEN CONSTRAINT: the color param MUST be a signed int. EGC passes a signed int to DrawRectOverlay's 64-bit (unsigned long) color arg as a plain register move (the first call's a4 setup is the redundant 'move t0,t0' noop in the jal delay slot, calls 2-9 are 'move t0,s1'); but an unsigned int color would make EGC insert dsll32/dsrl32 zero-extends the original does not emit (400 bytes vs 388). The fill is computed in 32-bit (lui t0,0xff00; and t0,s1,t0; ori t0,t0,4) because color is 32-bit. extern \"C\" (unmangled) matching the confirmed-C-linkage DrawUIFrame family; symbol DrawBevelFrame=0x1f6060 in config/symbols.txt. Matches all 388 bytes (0/97 word diffs), full boot parity passes."
  }
 }
