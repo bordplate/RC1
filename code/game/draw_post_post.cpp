@@ -858,7 +858,24 @@ asm(
     "    .set at\n"
 );
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", DrawUIFrame);
+// C linkage: the stripped-ELF symbol is unmangled DrawUIFrame (the sibling
+// DrawRectOverlay of the same subsystem is C++ mangled); it belongs to the
+// unmangled UI/font API family (fadeSetColor, FontSetWindow, FontPrintWindow).
+// Draws a beveled UI frame: the main (top, bot, left, right) rectangle plus
+// three stepped bevel bands just outside each vertical edge, each inset 1, 2
+// and 4 pixels, in a near-black color whose top byte is the alpha.
+// The frame's near-black fill (R | G<<8 | B<<16); only the alpha varies.
+#define DRAW_UI_FRAME_SHADOW_RGB 0x40404
+extern "C" void DrawUIFrame(int top, int bot, int left, int right, int alpha) {
+    unsigned long color = (alpha << 24) | DRAW_UI_FRAME_SHADOW_RGB;
+    DrawRectOverlay(top, bot, left, right, color);
+    DrawRectOverlay(top + 1, bot - 1, left - 2, left, color);
+    DrawRectOverlay(top + 2, bot - 2, left - 3, left - 2, color);
+    DrawRectOverlay(top + 4, bot - 4, left - 4, left - 3, color);
+    DrawRectOverlay(top + 1, bot - 1, right, right + 2, color);
+    DrawRectOverlay(top + 2, bot - 2, right + 2, right + 3, color);
+    DrawRectOverlay(top + 4, bot - 4, right + 3, right + 4, color);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6060);
 

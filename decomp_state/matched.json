@@ -2325,5 +2325,15 @@
   "size": 52,
   "matched_date": "2026-10-01",
   "note": "Pause-menu post-callback (entry 4 of the 0x1CF368 callback table, siblings 0x21C7A0/0x220B20/0x21C9C8): copies the item's 8-entry sprite-list pointer array (mode+0x30) into the staging buffer pauseIopSpriteLists (0x141EA0, zero-init core.data 8x u32), which the card-screen setup 0x226B08 ships to IOP RAM 0x70000150; the sibling 0x21C9C8 copies the buffer back into an item and counts entries. No-frame leaf, returns 0. MATCHING FORM (default flags, SN): u32* src = mode->spriteLists; u32* dst = pauseIopSpriteLists; int count = PAUSE_SPRITE_LIST_COUNT - 1; do { *dst = *src; src++; dst++; count--; } while (count >= 0); return 0;  -  EGC emits the original lui v0,%hi / addiu a0,a0,48 interleaving, li v1,7, the lw/addiu -1/addiu 4/sw/bgez loop with the dst++ in the bgez delay slot, and the jr/move v0,zero tail (52/52 words, first probe). Layout established for this target: PauseSpriteListMode is now { u8 pad[0x30]; u32 spriteLists[8]; } (the old pad[0x34]+spriteList comment miscounted the array as 7 entries; the copy and the 0x21C9C8 scan both cover 8); users of element 1 (+0x34) updated to spriteLists[1] (pause_selectSpriteList, pause_setFirstSpriteTag  -  re-verified matching). Symbols: pauseIopSpriteLists = 0x141EA0 + the MANGLED function name pause_stageSpriteLists__FP19PauseSpriteListMode in symbols.txt (the generated data table .word-references the C++ symbol; same convention as menu_post_preparePageOpen__Fv  -  an unmangled entry breaks the link with undefined reference). Verified: clean make + cmp byte-identical; tu_assembler_diff pause_post.o 29/29, pause_post2.o 121/121; count 609 -> 608. See notes/pause_post_func_0021CA60.md."
+ },
+ "code/game/draw_post_post.cpp:867:DrawUIFrame": {
+  "name": "DrawUIFrame",
+  "original_name": "DrawUIFrame",
+  "symbol": "DrawUIFrame",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F5F18",
+  "size": 324,
+  "matched_date": "2026-10-01",
+  "note": "Beveled UI frame: seven DrawRectOverlay calls (full rect + three stepped bevel bands outside each vertical edge, inset 1/2/4 px) in near-black 0x00040404 with caller alpha in the top byte. Unmangled C-linkage symbol in the UI/font family. Plain straight-line C matched byte-for-byte on the first probe under default flags (no pins, no private flags). Confirmed against Deadlocked DrawTextShadow (reference/dl/game_dl/draw.cpp:3590). See notes/draw_post_post_DrawUIFrame.md."
  }
 }
