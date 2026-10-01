@@ -2371,5 +2371,13 @@
   "size": 124,
   "matched_date": "2026-10-01",
   "note": "Five-arg wrapper: FontPrint(x, y, color, text, length, GetEffectTex(2), fontMediumGlyphs). Byte-identical sibling of FontPrintLarge (0x1F6530) with tex 2 and the fontMediumGlyphs table (0x1DF3F0); the glyph-table naming is inverted vs the wrapper name. Unmangled C-linkage symbol. Its 4-byte dead tail func_001F6630 (0x1F6630, addiu sp,sp,0x60 + nop; 0 references, no Ghidra function) is preserved as raw inline asm per the dead-tail policy. Full make + cmp byte-identical. See notes/draw_post_post_FontPrintSmall.md."
+ },
+ "code/game/draw_post_post.cpp:1059:FontPrintRight": {
+  "name": "FontPrintRight",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6940",
+  "size": 140,
+  "matched_date": "2026-10-02",
+  "note": "Right-aligned FontPrint family member (the Splat func_001F6928 range was a 12-byte dead tail + this function): FontPrint(x - drawTextSmall(text, length), y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs); full width subtracted (Center siblings subtract half via sra). Named after the Deadlocked FontPrintRight/Small/Large trio; siblings 0x1F69D0 (RightSmall) and 0x1F6A60 (RightLarge) still INCLUDE_ASM. cfront needs the (char*)text cast (u8*->char* \"changes signedness\"); a1 stays stale from the drawTextSmall call into the one-arg GetEffectTex; 7th arg (glyphs) in t2. Also introduced FONT_EFFECT_TEX_SMALL/MEDIUM/LARGE defines (1/2/3) used by FontPrintLarge/Small/Right. Dead tail at 0x1F6928 (3x addiu sp,sp,0x60; nop, deadness-scanned 0 refs) preserved as raw asm, glabel func_001F6928. 35/35 words + 6/6 tail; full boot parity byte-identical. See notes/draw_post_post_FontPrintRight.md."
  }
 }

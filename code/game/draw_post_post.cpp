@@ -975,6 +975,13 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrint);
 // the original label.
 int GetEffectTex(int texId) asm("GetEffectTex__Fii");
 
+// The per-level effectTexs[] slots bound by the font family: each glyph
+// table always pairs with one shadow/effect texture slot (the FontPrint*
+// wrappers below bind the slot matching their glyph set).
+#define FONT_EFFECT_TEX_SMALL 1
+#define FONT_EFFECT_TEX_MEDIUM 2
+#define FONT_EFFECT_TEX_LARGE 3
+
 // C linkage: the stripped-ELF FontPrint family symbols are unmangled
 // (FontPrint, FontPrintCenter, FontPrintWindow).
 extern "C" void FontPrint(int x, int y, int color, u8* text, int length,
@@ -982,17 +989,19 @@ extern "C" void FontPrint(int x, int y, int color, u8* text, int length,
 
 // C linkage: the stripped-ELF symbol is the unmangled FontPrintLarge, a
 // member of the same font API family. Prints text with the fontSmallGlyphs
-// set and effect texture 1 bound.
+// set and the FONT_EFFECT_TEX_SMALL slot bound.
 extern "C" void FontPrintLarge(int x, int y, int color, u8* text, int length) {
-    FontPrint(x, y, color, text, length, GetEffectTex(1), fontSmallGlyphs);
+    FontPrint(x, y, color, text, length,
+              GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs);
 }
 
 // C linkage: the stripped-ELF symbol is the unmangled FontPrintSmall, a
 // member of the same font API family. Prints text with the fontMediumGlyphs
-// set and effect texture 2 bound (the glyph-table naming is inverted vs the
-// wrapper name: FontPrintLarge uses fontSmallGlyphs).
+// set and the FONT_EFFECT_TEX_MEDIUM slot bound (the glyph-table naming is
+// inverted vs the wrapper name: FontPrintLarge uses fontSmallGlyphs).
 extern "C" void FontPrintSmall(int x, int y, int color, u8* text, int length) {
-    FontPrint(x, y, color, text, length, GetEffectTex(2), fontMediumGlyphs);
+    FontPrint(x, y, color, text, length,
+              GetEffectTex(FONT_EFFECT_TEX_MEDIUM), fontMediumGlyphs);
 }
 
 // Unreachable dead tail after FontPrintSmall (0x1F6630): one `addiu
@@ -1017,7 +1026,40 @@ asm(
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6638);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6928);
+// Unreachable dead tail after func_001F6638 (0x1F6928): three `addiu
+// sp,sp,0x60; nop` units the original compiler emitted after the parent's
+// RTL (the 0x60 matches the next function's frame, not the parent's 0xD0).
+// Nothing reaches them (0 jal/j/branch/data references at 0x1F6928/30/38;
+// no Ghidra function), so the bytes are preserved here as raw asm per the
+// dead-tail policy; the parent keeps its INCLUDE_ASM.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F6928, 0x12\n"
+    "glabel func_001F6928\n"
+    "    .word 0x27BD0060\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27BD0060\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27BD0060\n"
+    "    .word 0x00000000\n"
+    "endlabel func_001F6928\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+
+// C linkage: right-aligned member of the unmangled FontPrint API family
+// (like FontPrintCenter, named after the FontPrintRight/Small/Large trio of
+// the direct-descendant Deadlocked build). Prints text so its right edge
+// lands at x: the full measured width is subtracted from x (the Center
+// siblings subtract half). Uses the fontSmallGlyphs set with the
+// FONT_EFFECT_TEX_SMALL slot, the same set and slot FontPrintLarge binds.
+extern "C" void FontPrintRight(int x, int y, int color, u8* text, int length) {
+    FontPrint(x - drawTextSmall((char*)text, length), y, color, text, length,
+              GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F69D0);
 
