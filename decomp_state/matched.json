@@ -2313,5 +2313,17 @@
   "size": 100,
   "matched_date": "2026-10-01",
   "note": "Clears the per-frame pad state: zeroes field_1A0/1A4(pressedButtons)/1A8/1B0/1B4/1B8/1C0/1C4/1C8/1D8, sets field_1D0=1 and field_1D4=1, then zeroes analog[16] (0x100) and hudAnalog[16] (0x140). Default flags; no pins. Key codegen finding: EGC 2.95.2 hoists the LATER-in-source of two constant (=1) stores to position 2 (right after the first store) and keeps the rest in source order, so the matching source order is field_1B0, field_1A0, pressedButtons, field_1A8, field_1D0=1, field_1D4=1, then the 1B4..1D8 zeros (1D4 must follow 1D0). The 16-iteration zero loop compiles to li 15 / sw,dec,sw / bgez with base=&hudAnalog (a0+0x140) and the analog stores at -0x40(base); writing f32 fields =0.0f emits the same sw zero. PAD struct extended to 0x1E0 in pad_state.h (offset comments). Raw 100-byte object match plus clean full boot ELF parity pass. See notes/pad_ClearPadInput__FR3PAD.md."
+ },
+ "code/game/pause_post.cpp:91:func_0021CA60": {
+  "name": "pause_stageSpriteLists",
+  "original_name": "func_0021CA60",
+  "symbol": "pause_stageSpriteLists__FP19PauseSpriteListMode",
+  "source": "code/game/pause_post.cpp",
+  "asm": "code/_generated/matchings/game/pause_post/pause_stageSpriteLists__FP19PauseSpriteListMode.s",
+  "vram": "0x0021CA60",
+  "file_offset": "0x11D9E0",
+  "size": 52,
+  "matched_date": "2026-10-01",
+  "note": "Pause-menu post-callback (entry 4 of the 0x1CF368 callback table, siblings 0x21C7A0/0x220B20/0x21C9C8): copies the item's 8-entry sprite-list pointer array (mode+0x30) into the staging buffer pauseIopSpriteLists (0x141EA0, zero-init core.data 8x u32), which the card-screen setup 0x226B08 ships to IOP RAM 0x70000150; the sibling 0x21C9C8 copies the buffer back into an item and counts entries. No-frame leaf, returns 0. MATCHING FORM (default flags, SN): u32* src = mode->spriteLists; u32* dst = pauseIopSpriteLists; int count = PAUSE_SPRITE_LIST_COUNT - 1; do { *dst = *src; src++; dst++; count--; } while (count >= 0); return 0;  -  EGC emits the original lui v0,%hi / addiu a0,a0,48 interleaving, li v1,7, the lw/addiu -1/addiu 4/sw/bgez loop with the dst++ in the bgez delay slot, and the jr/move v0,zero tail (52/52 words, first probe). Layout established for this target: PauseSpriteListMode is now { u8 pad[0x30]; u32 spriteLists[8]; } (the old pad[0x34]+spriteList comment miscounted the array as 7 entries; the copy and the 0x21C9C8 scan both cover 8); users of element 1 (+0x34) updated to spriteLists[1] (pause_selectSpriteList, pause_setFirstSpriteTag  -  re-verified matching). Symbols: pauseIopSpriteLists = 0x141EA0 + the MANGLED function name pause_stageSpriteLists__FP19PauseSpriteListMode in symbols.txt (the generated data table .word-references the C++ symbol; same convention as menu_post_preparePageOpen__Fv  -  an unmangled entry breaks the link with undefined reference). Verified: clean make + cmp byte-identical; tu_assembler_diff pause_post.o 29/29, pause_post2.o 121/121; count 609 -> 608. See notes/pause_post_func_0021CA60.md."
  }
 }

@@ -88,7 +88,21 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021C7A0);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021C9C8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post", func_0021CA60);
+// Pause-menu post-callback: stage the item's sprite-list pointer array into
+// the IOP screen buffer (shipped to IOP RAM 0x70000150 by the card-screen
+// setup at 0x226B08).
+int pause_stageSpriteLists(PauseSpriteListMode* mode) {
+    u32* src = mode->spriteLists;
+    u32* dst = pauseIopSpriteLists;
+    int count = PAUSE_SPRITE_LIST_COUNT - 1;
+    do {
+        *dst = *src;
+        src++;
+        dst++;
+        count--;
+    } while (count >= 0);
+    return 0;
+}
 
 extern u8 pauseSpriteListFlag __attribute__((section(".data")));
 extern int pauseSpriteListA[];
@@ -96,11 +110,11 @@ extern int pauseSpriteListB[];
 
 // Pause menu callback: select one of two sprite-index lists based on a
 // dedicated flag and store the chosen list pointer in the menu item's
-// PauseSpriteListMode::spriteList field.
+// PauseSpriteListMode::spriteLists[1] field.
 int pause_selectSpriteList(PauseSpriteListMode* mode) {
     // Match-critical: the != 0 direction makes EGC emit the original beqzl
     // layout; the == 0 form emits bnez (a 3-byte branch-direction diff).
-    mode->spriteList =
+    mode->spriteLists[1] =
         (pauseSpriteListFlag != 0) ? (u32)pauseSpriteListA : (u32)pauseSpriteListB;
     return 0;
 }

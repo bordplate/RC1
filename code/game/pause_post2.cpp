@@ -44,7 +44,7 @@ typedef struct {
 extern u8 pauseSpriteTagByte __attribute__((section(".data")));
 
 int pause_setFirstSpriteTag(PauseSpriteListMode* mode) {
-    PauseSpriteEntry* first = (PauseSpriteEntry*)mode->spriteList;
+    PauseSpriteEntry* first = (PauseSpriteEntry*)mode->spriteLists[1];
     first->actionTag = (pauseSpriteTagByte == 1) ? PAUSE_SPRITE_ACTION_NONE
                                                  : PAUSE_SPRITE_ACTION_NEXT;
     return 0;
