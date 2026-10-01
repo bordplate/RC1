@@ -1061,7 +1061,16 @@ extern "C" void FontPrintRight(int x, int y, int color, u8* text, int length) {
               GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F69D0);
+// C linkage: right-aligned member of the unmangled FontPrint API family, the
+// medium-glyph variant of FontPrintRight (the "Small" suffix follows the
+// family's glyph-set inversion, like FontPrintCenterSmall: it prints with the
+// fontMediumGlyphs set and the FONT_EFFECT_TEX_MEDIUM slot). Prints text so
+// its right edge lands at x: the full measured width is subtracted from x.
+extern "C" void FontPrintRightSmall(int x, int y, int color, u8* text,
+                                    int length) {
+    FontPrint(x - drawTextMedium((char*)text, length), y, color, text, length,
+              GetEffectTex(FONT_EFFECT_TEX_MEDIUM), fontMediumGlyphs);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6A60);
 

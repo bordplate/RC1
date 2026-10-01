@@ -584,6 +584,7 @@ FontPrintCenter = 0x01f6af0;
 FontPrintCenterLarge = 0x01f6c20;
 FontPrintCenterSmall = 0x01f6b88;
 FontPrintRight = 0x01f6940;
+FontPrintRightSmall = 0x001F69D0;
 FontPrintLarge = 0x01f6530;
 FontPrintSmall = 0x01f65b0;
 FontSetWindow = 0x01f7668;
