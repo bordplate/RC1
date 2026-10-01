@@ -911,28 +911,59 @@ void disableOcclusion(void) {
     drawOcclusionEnabled = 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6200);
+// Font glyph table layout: each entry is 4 bytes and the signed advance width
+// is the final byte.
+#define FONT_GLYPH_STRIDE 4
+#define FONT_GLYPH_WIDTH_OFFSET 3
 
-// C linkage: this still-assembly font helper at 0x001F6200 sums glyph widths;
-// the original call target is an unmangled entry point.
-extern "C" int fontMeasureString(char* text, int length, char* glyphs);
+// C linkage: sums the signed glyph width byte over the nonzero text bytes,
+// stopping at the first zero byte or when the counter reaches length. The
+// original call target is an unmangled entry.
+extern "C" int fontMeasureString(u8* text, int length, char* glyphs) {
+    int total = 0;
+    int i = 0;
+
+    if (length != 0 && text[0] != 0) {
+        u8* p = text;
+        u8 c = *p;
+
+        do {
+            ++i;
+            ++p;
+            // Tied barrier: blocks EGC edge-splitting the width index (c*stride)
+            // ahead of the pointer advance, preserving the original loop head.
+            asm volatile("" : "+r"(c) : "r"(p));
+
+            char w = glyphs[c * FONT_GLYPH_STRIDE + FONT_GLYPH_WIDTH_OFFSET];
+            if (w != 0)
+                total += w;
+
+            if (i == length)
+                break;
+
+            c = *p;
+        } while (c != 0);
+    }
+
+    return total;
+}
 
 extern char fontSmallGlyphs[];
 
 int drawTextSmall(char* text, int length) {
-    return fontMeasureString(text, length, fontSmallGlyphs);
+    return fontMeasureString((u8*)text, length, fontSmallGlyphs);
 }
 
 extern char fontMediumGlyphs[];
 
 int drawTextMedium(char* text, int length) {
-    return fontMeasureString(text, length, fontMediumGlyphs);
+    return fontMeasureString((u8*)text, length, fontMediumGlyphs);
 }
 
 extern char fontLargeGlyphs[];
 
 int drawTextLarge(char* text, int length) {
-    return fontMeasureString(text, length, fontLargeGlyphs);
+    return fontMeasureString((u8*)text, length, fontLargeGlyphs);
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrint);

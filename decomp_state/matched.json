@@ -2343,5 +2343,15 @@
   "size": 388,
   "matched_date": "2026-10-01",
   "note": "9-rect beveled rectangular frame, sibling of DrawUIFrame (7-rect, vertical bevels only). Main (top,bot,left,right) rect drawn in a near-black fill = (color & 0xFF000000)|4 (keeps the input color's alpha byte, forces RGB to 4); eight stepped bevel bands around all four edges drawn in the full color. All 9 call DrawRectOverlay_FiiiiUl. CODEGEN CONSTRAINT: the color param MUST be a signed int. EGC passes a signed int to DrawRectOverlay's 64-bit (unsigned long) color arg as a plain register move (the first call's a4 setup is the redundant 'move t0,t0' noop in the jal delay slot, calls 2-9 are 'move t0,s1'); but an unsigned int color would make EGC insert dsll32/dsrl32 zero-extends the original does not emit (400 bytes vs 388). The fill is computed in 32-bit (lui t0,0xff00; and t0,s1,t0; ori t0,t0,4) because color is 32-bit. extern \"C\" (unmangled) matching the confirmed-C-linkage DrawUIFrame family; symbol DrawBevelFrame=0x1f6060 in config/symbols.txt. Matches all 388 bytes (0/97 word diffs), full boot parity passes."
+ },
+ "code/game/draw_post_post.cpp:922:fontMeasureString": {
+  "name": "fontMeasureString",
+  "original_name": "func_001F6200",
+  "symbol": "fontMeasureString",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6200",
+  "size": 80,
+  "matched_date": "2026-10-01",
+  "note": "Sums the signed advance-width byte (offset +3 in each 4-byte entry) of the font glyph tables over the nonzero text bytes, stopping at the first zero byte or when the counter reaches length; returns the accumulated width. text param is u8* (the text[0] pre-check is an unsigned lbu); callers (drawTextSmall/Medium/Large) pass char* via a no-op (u8*) cast. Unmangled C-linkage symbol (fontMeasureString=0x001F6200 in symbols.txt + linker_aliases.ld). MATCHING FORM (default flags, SN): do-while with a SINGLE ++i at the top of the loop body, a tied barrier asm volatile(\"\" : \"+r\"(c) : \"r\"(p)) between ++p and the glyph load, and an if-guarded prologue (if (length != 0 && text[0] != 0)). Two EGC 2.95.2 behaviors defeated: (1) the barrier blocks sll edge-splitting so the width index is computed after ++p (original loop head); (2) with the sll ineligible to split, the single top-of-body ++i is edge-split onto the entry edge (0x1f621c) and the latch/backedge (0x1f6244), reproducing both original i++ copies (a prologue ++i or int i=1 instead lets EGC constant-fold to li $9,1 and reshuffle the prologue - not defeatable by temp/pointer). The prologue must be if-guarded, not while(i!=length && *p) (which emits beq $9,$5 on i and mis-orders). Flags tried: -fno-rerun-cse-after-loop/-fno-gcse/-fno-peephole/-fno-schedule-insns[2] accepted but no effect on the if-guarded form; -O1 far worse (19 diffs); -fno-cse/-fno-peephole2 rejected by EGC. expert + last-resort-decompiler consulted (last-resort recommended the single-top-of-body-++i + barrier combo). Probe 0 word diffs (cand22); full make + cmp byte-identical; count 605->604. See notes/draw_post_post_fontMeasureString.md."
  }
 }
