@@ -2362,5 +2362,14 @@
   "size": 124,
   "matched_date": "2026-10-01",
   "note": "Five-arg wrapper: FontPrint(x, y, color, text, length, GetEffectTex(1), fontSmallGlyphs). Unmangled C-linkage symbol; FontPrint's 7 params ride a0-a3,t0,t1,t2 so the wrapper's 5th param (length) arrives in t0. GetEffectTex is declared 1-param with asm(\"GetEffectTex__Fii\"): the real 2-int label never reads param 2 and the original call leaves a1 stale; this EGC rejects a 1-arg call to a 2-param prototype. Default flags, SN assembler; probe 0 word diffs, full boot ELF cmp byte-identical. See notes/draw_post_post_FontPrintLarge.md."
+ },
+ "code/game/draw_post_post.cpp:994:FontPrintSmall": {
+  "name": "FontPrintSmall",
+  "symbol": "FontPrintSmall",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F65B0",
+  "size": 124,
+  "matched_date": "2026-10-01",
+  "note": "Five-arg wrapper: FontPrint(x, y, color, text, length, GetEffectTex(2), fontMediumGlyphs). Byte-identical sibling of FontPrintLarge (0x1F6530) with tex 2 and the fontMediumGlyphs table (0x1DF3F0); the glyph-table naming is inverted vs the wrapper name. Unmangled C-linkage symbol. Its 4-byte dead tail func_001F6630 (0x1F6630, addiu sp,sp,0x60 + nop; 0 references, no Ghidra function) is preserved as raw inline asm per the dead-tail policy. Full make + cmp byte-identical. See notes/draw_post_post_FontPrintSmall.md."
  }
 }

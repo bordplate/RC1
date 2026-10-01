@@ -987,9 +987,33 @@ extern "C" void FontPrintLarge(int x, int y, int color, u8* text, int length) {
     FontPrint(x, y, color, text, length, GetEffectTex(1), fontSmallGlyphs);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintSmall);
+// C linkage: the stripped-ELF symbol is the unmangled FontPrintSmall, a
+// member of the same font API family. Prints text with the fontMediumGlyphs
+// set and effect texture 2 bound (the glyph-table naming is inverted vs the
+// wrapper name: FontPrintLarge uses fontSmallGlyphs).
+extern "C" void FontPrintSmall(int x, int y, int color, u8* text, int length) {
+    FontPrint(x, y, color, text, length, GetEffectTex(2), fontMediumGlyphs);
+}
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6630);
+// Unreachable dead tail after FontPrintSmall (0x1F6630): one `addiu
+// sp,sp,0x60` matching the parent's 0x60 frame. Nothing reaches it (0 jal/j/
+// branch/data references; no Ghidra function), so it is not a function; the
+// original compiler emitted this byte after the parent's RTL, so it is
+// preserved here as an exact word. The trailing nop pads to the 8-aligned
+// func_001F6638 entry at 0x1F6638.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F6630, 0x4\n"
+    "glabel func_001F6630\n"
+    "    .word 0x27BD0060\n"
+    "endlabel func_001F6630\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6638);
 
