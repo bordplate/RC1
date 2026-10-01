@@ -288,10 +288,27 @@ above the stores. Reordering assignments in the C source flips which store
  asm("$2")` = v0) and the base pointer (`register CameraQuad* dst asm("$4")` =
  a0). Verified on camera func_001EC710 (0x1EC710): the barrier defeats the
  documented DImode folding (the whole camera 128-bit-copy class), leaving only
- pure instruction-ORDER scheduler tie-breaks (store/epilogue scheduling), which
- `-fno-schedule-insns[2]` makes WORSE (the original used the default scheduler).
- See decomp_state/notes/camera_func_001EC710.md).
- 
+  pure instruction-ORDER scheduler tie-breaks (store/epilogue scheduling), which
+  `-fno-schedule-insns[2]` makes WORSE (the original used the default scheduler).
+  See decomp_state/notes/camera_func_001EC710.md).
+  Extension observed 2026-10-01 (tied barrier vs loop back-edge type, FontPrint
+  0x1F62B0): a short-lived TIED barrier on the loop-head char
+  (`unsigned int c = *p; asm volatile("" : "+r"(c)); c -= 8u;`) reproduces the
+  original's IN-PLACE head (`lbu v0; nop; addiu v0,v0,-8; sltiu v0,v0,8; beqz
+  v0`) and forces fresh in-place c-reloads in each sub-branch — but it DEMOTES a
+  `bnezl` loop back-edge (with the next-iter head c-load in its DELAY SLOT) to a
+  plain `bnez` + `nop` delay slot, because the barrier blocks EGC from
+  scheduling that c-load into the delay slot. A clean `do {...; p++;} while(*p)`
+  form keeps the `bnezl`+delay c-load but leaves the head c in a0 with c-8 fresh
+  (EGC CSEs a0 into the sub-paths). So an IN-PLACE v0 head and a
+  `bnezl`+delay-c-load back-edge are mutually exclusive under EGC 2.95.2 for
+  this shape — FontPrint is blocked on exactly this trade-off (last-resort
+  GPT-5.6 Sol confirmed; see decomp_state/notes/draw_post_post_FontPrint.md).
+  The matched sibling fontMeasureString (0x1F6200) uses the same barrier and
+  matches BECAUSE its back-edge is `bnez` (i++ in the delay slot), not `bnezl`.
+  The six remaining FontPrint family members likely share the `bnezl` back-edge
+  and may hit the same wall.
+  
 Exception observed 2026-09-04: when both trailing stores are CONSTANT stores
 sharing one %hi/%lo-computed global base (e.g. zeroing two struct fields),
 EGC emitted them in REVERSE source order instead — the first statement's store
