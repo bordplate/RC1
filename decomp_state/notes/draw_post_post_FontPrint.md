@@ -109,10 +109,54 @@ and probed: it fixed the head and the in-place sub-path c-reloads (116→45
 diffs) but could not restore the `bnezl`+c-load-delay-slot back-edge. Retain
 INCLUDE_ASM; full-ELF parity preserved.
 
+## Re-attempt progress (2026-10-02 session) — best candidate now `Y4`
+Re-derived the decomp independently and SOLVED the prologue save-allocation
+that N14 had left to luck. Four independent source levers, each required:
+1. `int cidx = *p + 0x40;` local in the ext branch -> x->s3, glyphs->s2.
+2. SINGLE-assignment occlusion control
+   `color = (color & 0xFF000000) | (fontCtrlColors[*p - 8] & 0xFFFFFF);`
+   -> color->s1, text->s0. (Two compound `&=`/`|=` give the in-place body but
+   push color->s0 — CONFLICTS with the prologue; see below.)
+3. 32-bit tint `int tint = alpha + (avg << 16) + (avg << 8) + avg;` (int;
+   casting alpha to unsigned long first gives 64-bit dsll/daddu).
+4. unsigned ext test `if ((((unsigned int)*p + 0x80u) & 0xFFu) < 0x28u)` -> sltiu.
+Plus: `.extern drawOcclusionEnabled,4` seed placed AFTER `u8* p = text;` (not
+before it) — placing it before the text move makes EGC hoist the epilogue's
+`lq ra` into the text-check delay slot (two-entry epilogue, ~110-word cascade);
+after `p=text` it keeps ONE epilogue and puts `move s0,a3` in the delay slot
+(matching the original). This hoisting was a REGRESSION vs N14 and is now fixed.
+Result: `Y4` (= current best.cpp), 121 word-diffs, size 0x27c (orig 0x280).
+Prologue map matches the target EXACTLY (len s6, y s5, tex s4, x s3, glyphs
+s2, color s1, text s0 deferred); head matches; epilogue is a single block.
+
+The residual on Y4 is the SAME fundamental barrier trade-off, now with a
+clearer mechanism. The tied barrier `unsigned int c = *p;
+asm volatile("" : "+r"(c)); c -= 8u;` gives the exact in-place v0 head but
+also makes EGC (a) CSE the control- and nonctl-branch `*p` loads into ONE
+`a0` hoisted into the head `beqz` delay slot (original reloads `*p` per
+branch: `lbu v0,0(s0)` in control, `lbu a0,0(s0)` in nonctl, and puts the
+occlusion `lw v0,-30564(gp)` in the head delay slot) — this is the 4-byte
+size gap; and (b) demote the back-edge to `bnez`+nop instead of
+`bnezl`+delay-c-load. Non-volatile `asm("" : "+r"(c))` (last-resort
+recommendation, re-tested 2026-10-02) still emits bnez/nop and shifts the
+head — no help. Additional residuals on Y4: occlusion control uses a temp
+(`and a1,s1,v0; or s1,a1,v0`) not in-place (`and s1,s1; or s1,s1`) because the
+single-assignment form is required for the prologue; ext cidx lands in v1 not
+v0 (`addiu v1,a0,64; sll v0,v1,2` vs `addiu v0,a0,64; sll v0,v0,2`); tint
+sum/alpha use t5/t4 not t4/t5 (instruction set identical, registers swapped).
+Scheduler flags -fno-schedule-insns[2] make it worse (125/135).
+
 ## Re-attempt start point
-- experiment20.cpp (clean do-while, correct bnezl, a0 head) — fix the head
-  register without a barrier.
-- experiment24.cpp (N14, tied barrier, correct head, bnez) — restore the
-  bnezl delay-slot c-load without the barrier.
-- The distinguishing target is the `bnezl` + next-iter head c-load in the delay
-  slot; a candidate must keep that while getting the in-place v0 head.
+- Reconstruct the Y4 form (described above: the 4 prologue levers +
+  `unsigned int c = *p; asm volatile("" : "+r"(c)); c -= 8u;` head +
+  `if (c < 8u) {...} else if (glyphs[*p].advance != 0) {...}` with `*p`
+  (not c) in the sub-branches + `.extern drawOcclusionEnabled,4` AFTER
+  `u8* p = text;` + do-while `i++; if (i==length) break; p++; while(*p)`):
+  correct prologue+head+epilogue; residual = barrier CSE (control/nonctl *p
+  per-branch reload) + bnez back-edge + temp control block + cidx v0/v1 +
+  tint t4/t5.
+- The single highest-value unlock: make EGC NOT CSE the control/nonctl `*p`
+  loads (reload per branch like the original) AND keep the in-place v0 head
+  AND the bnezl+delay-c-load back-edge, all with the single-assignment
+  occlusion form (for the prologue). No source form, pin, barrier, or flag
+  found that does this; it is the hard EGC 2.95.2 tie-break cluster.
