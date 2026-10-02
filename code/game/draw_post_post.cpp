@@ -1072,7 +1072,16 @@ extern "C" void FontPrintRightSmall(int x, int y, int color, u8* text,
               GetEffectTex(FONT_EFFECT_TEX_MEDIUM), fontMediumGlyphs);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6A60);
+// C linkage: right-aligned member of the unmangled FontPrint API family, the
+// large-glyph variant of FontPrintRight (the "Large" suffix follows the
+// family's glyph-set inversion, like FontPrintCenterLarge: it prints with the
+// fontLargeGlyphs set and the FONT_EFFECT_TEX_LARGE slot). Prints text so its
+// right edge lands at x: the full measured width is subtracted from x.
+extern "C" void FontPrintRightLarge(int x, int y, int color, u8* text,
+                                    int length) {
+    FontPrint(x - drawTextLarge((char*)text, length), y, color, text, length,
+              GetEffectTex(FONT_EFFECT_TEX_LARGE), fontLargeGlyphs);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintCenter);
 

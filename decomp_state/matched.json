@@ -2378,7 +2378,7 @@
   "vram": "0x001F6940",
   "size": 140,
   "matched_date": "2026-10-02",
-  "note": "Right-aligned FontPrint family member (the Splat func_001F6928 range was a 12-byte dead tail + this function): FontPrint(x - drawTextSmall(text, length), y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs); full width subtracted (Center siblings subtract half via sra). Named after the Deadlocked FontPrintRight/Small/Large trio; siblings 0x1F69D0 (RightSmall) and 0x1F6A60 (RightLarge) still INCLUDE_ASM. cfront needs the (char*)text cast (u8*->char* \"changes signedness\"); a1 stays stale from the drawTextSmall call into the one-arg GetEffectTex; 7th arg (glyphs) in t2. Also introduced FONT_EFFECT_TEX_SMALL/MEDIUM/LARGE defines (1/2/3) used by FontPrintLarge/Small/Right. Dead tail at 0x1F6928 (3x addiu sp,sp,0x60; nop, deadness-scanned 0 refs) preserved as raw asm, glabel func_001F6928. 35/35 words + 6/6 tail; full boot parity byte-identical. See notes/draw_post_post_FontPrintRight.md."
+  "note": "Right-aligned FontPrint family member (the Splat func_001F6928 range was a 12-byte dead tail + this function): FontPrint(x - drawTextSmall(text, length), y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs); full width subtracted (Center siblings subtract half via sra). Named after the Deadlocked FontPrintRight/Small/Large trio; all three right-aligned siblings now matched (0x1F69D0 RightSmall, 0x1F6A60 RightLarge). cfront needs the (char*)text cast (u8*->char* \"changes signedness\"); a1 stays stale from the drawTextSmall call into the one-arg GetEffectTex; 7th arg (glyphs) in t2. Also introduced FONT_EFFECT_TEX_SMALL/MEDIUM/LARGE defines (1/2/3) used by FontPrintLarge/Small/Right. Dead tail at 0x1F6928 (3x addiu sp,sp,0x60; nop, deadness-scanned 0 refs) preserved as raw asm, glabel func_001F6928. 35/35 words + 6/6 tail; full boot parity byte-identical. See notes/draw_post_post_FontPrintRight.md."
  },
  "code/game/draw_post_post.cpp:1069:FontPrintRightSmall": {
   "name": "FontPrintRightSmall",
@@ -2388,5 +2388,14 @@
   "size": 140,
   "matched_date": "2026-10-02",
   "note": "Right-aligned FontPrint family member, the medium-glyph variant of FontPrintRight (0x1F6940): FontPrint(x - drawTextMedium(text, length), y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_MEDIUM), fontMediumGlyphs). Full width subtracted (right edge at x). Byte-identical sibling of FontPrintRight with effect slot 2 and the fontMediumGlyphs table (0x1DF3F0). Unmangled C-linkage symbol. Straight-line call-sequence wrapper (no loop) -> not subject to the FontPrint bnezl back-edge wall; matched on the first probe as the direct analog of FontPrintRight. 35/35 words; full boot parity byte-identical. See notes/draw_post_post_FontPrintRightSmall.md."
+ },
+ "code/game/draw_post_post.cpp:1080:FontPrintRightLarge": {
+  "name": "FontPrintRightLarge",
+  "symbol": "FontPrintRightLarge",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6A60",
+  "size": 140,
+  "matched_date": "2026-10-02",
+  "note": "Right-aligned FontPrint family member, the large-glyph variant of FontPrintRight: FontPrint(x - drawTextLarge(text, length), y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_LARGE), fontLargeGlyphs); full measured width subtracted from x. Completes the right-aligned trio (Right 0x1F6940, RightSmall 0x1F69D0, RightLarge 0x1F6A60), mirroring the Center trio layout. Name from the Deadlocked FontPrintRight/Small/Large trio (reference/dl/game_dl/fonts.h) and the family slot/glyph-set convention; Lombyte fun_001f6a60.c confirms the body (arg0 - FUN_001f6290(arg3,arg4), FUN_001f44b8(3), D_001DF790). All six callers are in DrawItemsMenu (0x21EB20). Straight-line wrapper (no loop), not subject to the FontPrint bnezl back-edge wall; matched on the first probe as the direct analog of FontPrintRight. Object vs original: 0/35 non-relocation word diffs (5 relocation sites: drawTextLarge/GetEffectTex__Fii/FontPrint jal targets + fontLargeGlyphs hi/lo). decomp-verifier: PASS, full boot ELF cmp byte-identical, neighbors 0x1F69D0/0x1F6AF0 unperturbed. See notes/draw_post_post_FontPrintRightLarge.md."
  }
 }

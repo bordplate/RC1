@@ -38,8 +38,8 @@ slots 1/2/3) and the direct-descendant Deadlocked trio
 (FontPrintRight/FontPrintRightSmall/FontPrintRightLarge in
 reference/dl/game_dl/fonts.h). The sibling right-aligned wrappers:
 0x1F69D0 (fontMediumGlyphs, slot 2 -> FontPrintRightSmall) and
-0x1F6A60 (fontLargeGlyphs, slot 3 -> FontPrintRightLarge), both still
-INCLUDE_ASM. Glyph-width measurement from the original tables confirms the
+0x1F6A60 (fontLargeGlyphs, slot 3 -> FontPrintRightLarge); both are now
+matched (2026-10-02), completing the right-aligned trio. Glyph-width measurement from the original tables confirms the
 rendered sizes: fontMediumGlyphs is actually the narrowest font,
 fontSmallGlyphs middle, fontLargeGlyphs widest — the wrapper suffixes are
 inconsistent across families in the original (see FontPrintSmall's comment).

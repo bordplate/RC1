@@ -18,10 +18,10 @@ extern "C" void FontPrintRightSmall(int x, int y, int color, u8* text,
 It measures the string with drawTextMedium (0x1F6270, fontMediumGlyphs
 widths) and subtracts the FULL width from x (the text's right edge lands at
 x). This is the byte-identical sibling of FontPrintRight with the medium
-effect slot (FONT_EFFECT_TEX_MEDIUM = 2) and the fontMediumGlyphs table
-(0x1DF3F0) in place of the small slot/table. The large-glyph right-aligned
-sibling is func_001F6A60 (0x1F6A60, fontLargeGlyphs, slot 3) — still
-INCLUDE_ASM.
+ effect slot (FONT_EFFECT_TEX_MEDIUM = 2) and the fontMediumGlyphs table
+ (0x1DF3F0) in place of the small slot/table. The large-glyph right-aligned
+ sibling FontPrintRightLarge (0x1F6A60, fontLargeGlyphs, slot 3) is also
+ matched (2026-10-02), completing the right-aligned trio.
 
 ## Naming
 
