@@ -1120,9 +1120,64 @@ extern "C" int FontPrintCenterLarge(int x, int y, int color, u8* text,
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6CB8);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F6FD0);
+// One glyph-table entry (fontSmall/Medium/LargeGlyphs): texture coords u/v
+// as u8, then signed vertical drop and horizontal advance (verified against
+// the field accesses in the FontPrint family; see
+// decomp_state/notes/draw_post_func_001F6CB8.md).
+typedef struct fontLetter {
+    u8 u;
+    u8 v;
+    s8 drop;
+    s8 advance;
+} fontLetter;
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7070);
+// C linkage target is still the Splat placeholder: func_001F6CB8 is a
+// blocked target (see decomp_state/blocked.json), so the descriptive name
+// binds to the placeholder label with an asm override. The 9th argument
+// (glyphs) is passed in the 0(sp) stack slot by the EGC register window.
+extern "C" int FontPrintWindowGeneric(int x, int y, int width, int height,
+                                      long color, u8* text, int length,
+                                      int effect, fontLetter* glyphs)
+    asm("func_001F6CB8");
+
+// C linkage: the stripped-ELF symbol is the unmangled FontPrintWindowSmall,
+// the windowed-font member of the FontPrint API family. Prints text in a
+// width-bounded window starting at (x, y) with the fontMediumGlyphs set and
+// the FONT_EFFECT_TEX_MEDIUM slot bound. FontPrintWindowGeneric's return
+// (lines used, as final line y minus y plus 0x10) passes through in v0
+// untouched; callers use it to decide line advance.
+extern "C" void FontPrintWindowSmall(int x, int y, int width, int height,
+                                     long color, u8* text, int length) {
+    FontPrintWindowGeneric(x, y, width, height, color, text, length,
+                           GetEffectTex(FONT_EFFECT_TEX_MEDIUM),
+                           (fontLetter*)fontMediumGlyphs);
+}
+
+// Unreachable dead tail after FontPrintWindowSmall (0x1F7070): an `addiu
+// sp,sp,0x100` plus three `addiu sp,sp,0x70; nop` units the original
+// compiler emitted after the parent's RTL. Nothing reaches it (0 jal/j/
+// branch/data references; no Ghidra function), so it is not a function; the
+// bytes are preserved as exact words. The trailing nop pads to the
+// FontPrintWindow entry at 0x1F7090.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F7070, 0x1C\n"
+    "glabel func_001F7070\n"
+    "    .word 0x27BD0100\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27BD0070\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27BD0070\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27BD0070\n"
+    "endlabel func_001F7070\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintWindow);
 

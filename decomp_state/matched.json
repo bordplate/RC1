@@ -2423,5 +2423,14 @@
   "size": 148,
   "matched_date": "2026-10-02",
   "note": "Center-aligned FontPrint family member (C linkage, unmangled), large-glyph variant of FontPrintCenter (0x1F6AF0): int cx = x - (drawTextLarge(text,length) >> 1); FontPrint(cx, y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_LARGE), fontLargeGlyphs); return cx. Byte-identical structural twin of FontPrintCenter/FontPrintCenterSmall with drawTextLarge (0x1F6290), slot 3, and fontLargeGlyphs (0x1DF790); all other scheduling shared (arg swap in jal delay slot, sra half-width, subu in GetEffectTex delay slot, [a5,a1,a2,a3,a4,a0,t2] FontPrint order, trailing move v0,s0). Straight-line wrapper, no loop -> outside the FontPrint bnezl back-edge wall. First probe 148/148 bytes with default flags; full boot parity byte-identical. See notes/draw_post_post_FontPrintCenterLarge.md."
+ },
+ "code/game/draw_post_post.cpp:1149:FontPrintWindowSmall": {
+  "name": "FontPrintWindowSmall",
+  "symbol": "FontPrintWindowSmall",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6FD0",
+  "size": 160,
+  "matched_date": "2026-10-02",
+  "note": "Windowed-font FontPrint family member (C linkage, unmangled; name cross-checked vs Deadlocked FontPrintWindowSmall). 7-arg wrapper (x,y,width,height in a0-a3; long color, u8* text, int length in t0-t2; all saved to s0-s6 across the GetEffectTex call, frame 0x90) calling the blocked FontPrintWindowGeneric (func_001F6CB8) with 9 args: color/text/length/effect in t0-t3 (effect = GetEffectTex(FONT_EFFECT_TEX_MEDIUM), scheduled first, v0 forwarded in the final jal delay slot), glyphs = fontMediumGlyphs (0x1DF3F0) in the 0(sp) stack slot. color must be long (caller 0x21F7A8 and the wrapper both use plain move t0 with no extension). Callee return (lines used) passes through in v0; caller uses it for line advance. Companion change: func_001F7070 dead tail (addiu sp,sp,0x100 + 3x addiu sp,sp,0x70, 0 refs) emitted as exact words per the EGC dead-tail rule. First probe 160/160 default flags; full boot parity byte-identical. See notes/draw_post_post_FontPrintWindowSmall.md."
  }
 }
