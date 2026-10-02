@@ -134,7 +134,11 @@ struct ViewCtx {
     CameraMatrix fMtx;     // 0xC0
     CameraMatrix nfMtx;    // 0x100
     CameraMatrix hMtx;     // 0x140
-    u32 pad_180[0x8];
+    u32 pad_180[0x4];
+    // Packed {xclip, yclip, -2^23, perspScale} quad written by
+    // UpdateViewContext; the font state record snapshots it and stores a
+    // live pointer to it for the font VU program.
+    CameraQuad fontClipScale; // 0x190
     float hvdf[4];         // 0x1A0: 3-vector blended into the mtx2 row scales
     u32 pad_1B0[0x4];
     float guardX;          // 0x1C0: scale for the two field_40 rows

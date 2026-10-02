@@ -592,6 +592,15 @@ FontPrintRightLarge = 0x001F6A60;
 FontPrintLarge = 0x01f6530;
 FontPrintSmall = 0x01f65b0;
 FontSetWindow = 0x01f7668;
+FontQueueVUState = 0x1f76a0;
+
+// Font VU1 builder state: the "streamed" flag for the font VU program and
+// the row-bias added to the two record matrices while a font frame runs.
+fontState = 0x0015F620;
+fontDepthBias = 0x0015F348;
+// Font VU program in .vutext and the tag word streamed with it.
+fontVUProgramTag = 0x0010E800;
+fontVUProgram = 0x0010E810;
 
 // fastfunc.s
 FastBSphereCheck = 0x1fa728;

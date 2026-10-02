@@ -1266,7 +1266,115 @@ extern "C" void FontSetWindow(FontWindow* f, short x, short y, short w, short h,
     f->offY = 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F76A0);
+// C linkage: part of the unmangled font API family (FontSetWindow,
+// FontPrintWindow, ...).
+extern "C" void draw_loadViewMatrixW(void* a0, float w);
+void VU1_addDataRef(void* dataRef, s32 tag);
+void VU1_gsRegsFont(void);
+extern int fontState;
+extern u16 fontVUProgramTag __attribute__((section(".data")));
+extern u32 fontVUProgram[];
+// GPREL access alias of fontDepthBias: the record matrix rows add it as a
+// GP-relative float load, while the plain symbol stays self-based absolute.
+extern float fontDepthBiasGp;
+asm(".extern fontDepthBiasGp, 4");
+
+// VU1 font state record words (0xF0 bytes queued for the font render
+// program); meanings beyond the view-context snapshot are not yet resolved.
+#define FONT_STATE_TAG     0x10000000u // word 0 base; OR'd with the queue length (words >> 4 - 1) at the end
+#define FONT_STATE_TAG2    0x11000000u
+#define FONT_STATE_TAG3    0x01000404u
+#define FONT_STATE_COLOR   0x006C0C43A4u
+#define FONT_STATE_W0xA0   0x00008000u
+#define FONT_STATE_W0xA4   0x00303EC000u
+#define FONT_STATE_W0xA8   0x00000412u
+#define FONT_STATE_W0xE0   0x003000000u
+#define FONT_STATE_W0xE4   0x0020001D2u
+#define FONT_STATE_W0xE8   0x0015000000u
+
+// Queue the per-frame font VU1 state: build the view rows (scaled camera
+// position plus the VU-side view matrix), stream the font VU program on
+// first use, and append the 0xF0-byte camera/fog record the font render
+// program consumes. Runs once per font frame while windows are enabled.
+extern "C" void FontQueueVUState(void) {
+    float viewRows[16];
+    int fontInit = 7;
+    draw_loadViewMatrixW(viewRows, 1024.0f);
+    FastVecScale(viewRows + 12, &currentCamera.pos, -1024.0f);
+    viewRows[15] = 1.0f;
+    if (fontState != fontInit) {
+        VU1_addDataRef(fontVUProgram, fontVUProgramTag);
+        fontState = fontInit;
+    }
+    register u32 tag2 asm("$8") = FONT_STATE_TAG2;
+    u32 color = FONT_STATE_COLOR;
+    vu1ChainHead[0] = FONT_STATE_TAG;
+    vu1ChainHead[1] = 0;
+    vu1ChainHead[2] = tag2;
+    vu1ChainHead[3] = FONT_STATE_TAG3;
+    u32* rec = (u32*)vu1ChainHead;
+    u32* p = rec + 8;
+    rec[4] = 0;
+    rec[5] = 0;
+    rec[6] = 0;
+    rec[7] = color;
+    draw_transformMatrix(p, currentCamera.matrix, viewRows);
+    ((float*)p)[14] += fontDepthBiasGp;
+    p = rec + 0x18;
+    draw_transformMatrix(p, currentCamera.mtx3, viewRows);
+    ((float*)p)[14] += fontDepthBiasGp;
+    rec[0x28] = FONT_STATE_W0xA0;
+    p = rec + 0x2C;
+    rec[0x29] = FONT_STATE_W0xA4;
+    rec[0x2A] = FONT_STATE_W0xA8;
+    register ViewCtx* ctx asm("$4") = &viewCtx;
+    ((float*)rec)[0x2B] = ctx->perspScale;
+    // The two 128-bit quad copies pin their source pointers (a1/v1) and tie the
+    // destination so EGC materializes `sq v0,0(s1)` instead of folding to
+    // `sq imm(s0)`. The hvdf temp is pinned to the v0:v1 pair to match the
+    // original's overlapping `lq v0,0(v1)` (src in v1); the tied barrier after
+    // the clip store keeps the hvdf-src setup from hoisting past it.
+    register CameraQuad* clip asm("$5") = &ctx->fontClipScale;
+    asm volatile("" : "+r"(clip));
+    asm volatile("" : "+r"(p));
+    *(CameraQuad*)p = *clip;
+    asm volatile("" : : : "memory");
+    p = rec + 0x30;
+    register CameraQuad* hv asm("$3") = (CameraQuad*)ctx->hvdf;
+    asm volatile("" : "+r"(hv));
+    register CameraQuad hvq asm("$2");
+    hvq = *hv;
+    asm volatile("" : "+r"(p));
+    *(CameraQuad*)p = hvq;
+    asm volatile("" : : : "$2", "$3", "$5", "memory");
+    ((float*)rec)[0x34] = ctx->fogFarIntensity;
+    register u32 e0 asm("$3") = FONT_STATE_W0xE0;
+    register u32 e4 asm("$2") = FONT_STATE_W0xE4;
+    register u32 e8 asm("$5") = FONT_STATE_W0xE8;
+    p = rec + 0x3C;
+    ((float*)rec)[0x35] = ctx->fogNearIntensity;
+    rec[0x39] = e4;
+    rec[0x3A] = e8;
+    rec[0x38] = e0;
+    rec[0x37] = 0;
+    rec[0x3B] = 0;
+    rec[0x36] = 0;
+    // The memory barrier keeps the head load from interleaving with the record
+    // stores; the diff/word pins and tied barriers reproduce the original's
+    // `subu; lw; sra; addiu; or; sw` queue-length RMW (diff in v0, word in v1).
+    asm volatile("" : : : "memory");
+    register u32* head asm("$4") = (u32*)vu1ChainHead;
+    register int diff asm("$2") = (int)p - (int)head;
+    asm volatile("" : "+r"(diff));
+    register u32 word asm("$3") = head[0];
+    asm volatile("" : "+r"(diff), "+r"(word));
+    diff >>= 4;
+    diff -= 1;
+    word |= diff;
+    head[0] = word;
+    vu1ChainHeadStore = p;
+    VU1_gsRegsFont();
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7888);
 

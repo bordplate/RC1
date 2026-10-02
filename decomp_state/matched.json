@@ -2460,5 +2460,13 @@
   "size": 68,
   "matched_date": "2026-10-02",
   "note": "Claims a moby render slot: scans the 16-slot pool mobyRenderSlots (0x1B2BC0, renamed from D_001B2BC0) for the first slot that is empty (*p==0) or already holds the moby (*p==m), stores the moby there and returns the slot index; -1 if all 16 slots hold other mobies. The per-slot vec4 table follows the pool at 0x1B2C00 and the slot index is written by callers to MobyInstance+0x50 (MobyInstance+0x52 set to the 0xFF sentinel). Clean for-loop form (no register pin) matches byte-for-byte: the pool base load is an absolute self-based lui $2/addiu $5,$2 (pool is outside the GP window); count lands in v1 and the pointer in a1 naturally from the for-loop induction. Symbol kept as func_0020CC18 via an asm override (stripped ELF, still-assembly callers link the Splat placeholder). Full boot parity passes; count 590->589."
+ },
+ "code/game/draw_post_post.cpp:1299:FontQueueVUState": {
+  "name": "FontQueueVUState",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F76A0",
+  "size": 488,
+  "matched_date": "2026-10-03",
+  "note": "Font VU1 state builder: builds view rows (scaled camera pos + VU view matrix), streams the font VU program on first use (fontState==7 gate), and appends the 0xF0-byte camera/fog record (two view matrices, clip+hvdf 128-bit quads, fog, constant words, queue-length tag) to the vu1ChainHead linked chain. 122 instrs, frame 0x80. Byte-for-byte matched with default -G8 -O2 flags (no private TU flag). Key codegen: fontVUProgramTag (u16, .data) needs the section attribute to emit a genuine two-reg split (lui v0; lhu a1,off(v0)) instead of a self-based bare pseudo; the clip+hvdf quads pin their src pointers (a1/v1) and tie the dst so EGC materializes sq v0,0(s1); the hvdf 128-bit temp is pinned to the v0:v1 pair (register CameraQuad hvq asm(\"$2\")) to match the original's overlapping lq v0,0(v1); tail constants (W0xE0/E4/E8) pin to v1/v0/a1 and the queue-length RMW pins diff->v0/word->v1 with tied barriers for subu;lw;sra;addiu;or;sw. Full boot ELF parity passes. See notes/draw_post_post_FontQueueVUState.md."
  }
 }
