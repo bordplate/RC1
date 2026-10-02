@@ -1217,9 +1217,37 @@ extern "C" void FontPrintWindowLarge(FontWindow* f, long color, u8* text,
                     GetEffectTex(FONT_EFFECT_TEX_SMALL), (fontLetter*)fontSmallGlyphs);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F75F0);
+// C linkage: the stripped-ELF symbol is the unmangled FontPrintWindowMedium,
+// the medium-glyph member of the unmangled FontPrint API family. Prints text
+// in the width-bounded window described by the FontWindow with the
+// fontMediumGlyphs set and the FONT_EFFECT_TEX_MEDIUM slot bound (the
+// FontWindow-based sibling FontPrintWindowLarge binds fontSmallGlyphs; the
+// family's glyph-table naming is inverted vs the wrapper name, as there).
+extern "C" void FontPrintWindowMedium(FontWindow* f, long color, u8* text,
+                                      int length) {
+    FontPrintWindow(f, color, text, length,
+                    GetEffectTex(FONT_EFFECT_TEX_MEDIUM), (fontLetter*)fontMediumGlyphs);
+}
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7660);
+// Unreachable dead tail after FontPrintWindowMedium (0x1F75F0): one
+// `addiu sp,sp,0x50` matching the parent's 0x50 frame. Nothing reaches it
+// (tools/deadness_scan.py 0x1F7660 -> 0 references; no Ghidra function), so
+// it is not a function; the original compiler emitted this byte after the
+// parent's RTL, so it is preserved here as an exact word. The trailing nop
+// pads to the 8-aligned FontSetWindow entry at 0x1F7668.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001F7660, 0x4\n"
+    "glabel func_001F7660\n"
+    "    .word 0x27BD0050\n"
+    "endlabel func_001F7660\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 // C linkage: this font API entry point retains the original unmangled name.
 extern "C" void FontSetWindow(FontWindow* f, short x, short y, short w, short h,

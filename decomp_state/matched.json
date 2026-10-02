@@ -2441,5 +2441,14 @@
   "size": 108,
   "matched_date": "2026-10-02",
   "note": "Windowed-font FontPrint family member (C linkage, unmangled; name cross-checked vs Deadlocked fonts.h, which declares the same (FontWindow*, rgba, s, len) FontPrintWindowSmall/Large pair). Body: FontPrintWindow(f, color, text, length, GetEffectTex(FONT_EFFECT_TEX_SMALL), (fontLetter*)fontSmallGlyphs) - the fontSmallGlyphs set with the FONT_EFFECT_TEX_SMALL slot, the same set and slot FontPrintLarge binds (family glyph-table naming inverted vs wrapper name). Exact twin of the matched FontPrintLarge (0x1F6530) shape: 4 params saved s0-s3, GetEffectTex called with a0=1 in the jal delay slot (a1 left stale per the one-param declaration), tex result moved to t0 with a single 64-bit move. EGC 2.95.2 emits the plain `move t0,v0` for the int->long promotion despite the FontPrintWindow prototype declaring `long tex` (no sll32/dsrl32 pair), so the long prototype is codegen-safe. FontWindow typedef moved above the function (declarations emit no code, layout unchanged) and a FontPrintWindow extern prototype (register-window ABI: a0-a3 + t0/t1) added for the blocked 0x1F7090 re-attempt. Full boot ELF cmp byte-identical."
+ },
+ "code/game/draw_post_post.cpp:1226:FontPrintWindowMedium": {
+  "name": "FontPrintWindowMedium",
+  "symbol": "FontPrintWindowMedium",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F75F0",
+  "size": 108,
+  "matched_date": "2026-10-02",
+  "note": "Windowed-font FontPrint family member (C linkage, unmangled). Body: FontPrintWindow(f, color, text, length, GetEffectTex(FONT_EFFECT_TEX_MEDIUM), (fontLetter*)fontMediumGlyphs) - the fontMediumGlyphs set with the FONT_EFFECT_TEX_MEDIUM slot, the medium-glyph (FontWindow*) counterpart of FontPrintWindowLarge (0x1F7580), which binds fontSmallGlyphs (family glyph-table naming inverted vs wrapper name, as there). Name FontPrintWindowMedium is descriptive: the (f)-based pair is already occupied by FontPrintWindowLarge and the (x,y,w,h) FontPrintWindowSmall, so the glyph-set suffix distinguishes the member. Exact twin of the matched FontPrintWindowLarge shape (a0=2 in the GetEffectTex jal delay slot; tex result in t0; a5=self-based fontMediumGlyphs pair); structure cross-checked vs Lombyte FUN_001f75f0 = FUN_001f7090(a0..a3, FUN_001f44b8(2), D_001DF3F0). Paired trailing dead tail func_001F7660 (0x4, one addiu sp,sp,0x50 matching the parent's 0x50 frame) converted from INCLUDE_ASM to the raw-asm byte-preservation block (tools/deadness_scan.py 0x1F7660 -> 0 references; no Ghidra function). Full boot ELF cmp byte-identical."
  }
 }
