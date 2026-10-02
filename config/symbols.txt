@@ -963,3 +963,4 @@ occlU16TableBBase = 0x001DFFB0;
 bitSwapLut = 0x0018E740;
 buildBitSwapLut__Fv = 0x001F7A30;
 findMapSlot__Fi = 0x2050A0;
+mobyRenderSlots = 0x001B2BC0;

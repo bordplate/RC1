@@ -2450,5 +2450,15 @@
   "size": 108,
   "matched_date": "2026-10-02",
   "note": "Windowed-font FontPrint family member (C linkage, unmangled). Body: FontPrintWindow(f, color, text, length, GetEffectTex(FONT_EFFECT_TEX_MEDIUM), (fontLetter*)fontMediumGlyphs) - the fontMediumGlyphs set with the FONT_EFFECT_TEX_MEDIUM slot, the medium-glyph (FontWindow*) counterpart of FontPrintWindowLarge (0x1F7580), which binds fontSmallGlyphs (family glyph-table naming inverted vs wrapper name, as there). Name FontPrintWindowMedium is descriptive: the (f)-based pair is already occupied by FontPrintWindowLarge and the (x,y,w,h) FontPrintWindowSmall, so the glyph-set suffix distinguishes the member. Exact twin of the matched FontPrintWindowLarge shape (a0=2 in the GetEffectTex jal delay slot; tex result in t0; a5=self-based fontMediumGlyphs pair); structure cross-checked vs Lombyte FUN_001f75f0 = FUN_001f7090(a0..a3, FUN_001f44b8(2), D_001DF3F0). Paired trailing dead tail func_001F7660 (0x4, one addiu sp,sp,0x50 matching the parent's 0x50 frame) converted from INCLUDE_ASM to the raw-asm byte-preservation block (tools/deadness_scan.py 0x1F7660 -> 0 references; no Ghidra function). Full boot ELF cmp byte-identical."
+ },
+ "code/game/mobyfunc.cpp:95:func_0020CC18": {
+  "name": "MobyAssignRenderSlot",
+  "original_symbol": "func_0020CC18",
+  "source": "code/game/mobyfunc.cpp",
+  "asm": "code/_generated/nonmatchings/game/mobyfunc/func_0020CC18.s",
+  "vram": "0x0020CC18",
+  "size": 68,
+  "matched_date": "2026-10-02",
+  "note": "Claims a moby render slot: scans the 16-slot pool mobyRenderSlots (0x1B2BC0, renamed from D_001B2BC0) for the first slot that is empty (*p==0) or already holds the moby (*p==m), stores the moby there and returns the slot index; -1 if all 16 slots hold other mobies. The per-slot vec4 table follows the pool at 0x1B2C00 and the slot index is written by callers to MobyInstance+0x50 (MobyInstance+0x52 set to the 0xFF sentinel). Clean for-loop form (no register pin) matches byte-for-byte: the pool base load is an absolute self-based lui $2/addiu $5,$2 (pool is outside the GP window); count lands in v1 and the pointer in a1 naturally from the for-loop induction. Symbol kept as func_0020CC18 via an asm override (stripped ELF, still-assembly callers link the Splat placeholder). Full boot parity passes; count 590->589."
  }
 }

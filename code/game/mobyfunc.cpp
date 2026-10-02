@@ -80,7 +80,30 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", AttachManipulator);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DetachManipulator);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CC18);
+// Pool of 16 moby render slots; each holds a MobyInstance*. A per-slot vec4
+// table follows the pool in memory. MobyAssignRenderSlot claims one slot.
+#define MOBY_RENDER_SLOT_COUNT 16
+extern MobyInstance* mobyRenderSlots[MOBY_RENDER_SLOT_COUNT];
+
+// Claims (or reuses) a render slot for the moby: the first slot that is
+// empty or already holds the moby, storing the moby there and returning the
+// slot index, or -1 if every slot is held by another moby.
+// Symbol override: the boot ELF is stripped, so the original name is unknown
+// and the still-assembly callers link against Splat's func_0020CC18
+// placeholder, which natural C++ mangling would not produce.
+int MobyAssignRenderSlot(MobyInstance* m) asm("func_0020CC18");
+int MobyAssignRenderSlot(MobyInstance* m)
+{
+    int count;
+    for (count = 0; count < MOBY_RENDER_SLOT_COUNT; count++) {
+        MobyInstance** p = mobyRenderSlots + count;
+        if (*p == 0 || *p == m) {
+            *p = m;
+            return count;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020CC60);
 
