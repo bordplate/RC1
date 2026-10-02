@@ -580,6 +580,7 @@ mc_leveldata = 0x1a07c0;
 // fonts.cpp //
 FontPrintWindow = 0x1f7090;
 FontPrintWindowSmall = 0x1f6fd0;
+FontPrintWindowLarge = 0x1f7580;
 FontPrint = 0x1f62b0;
 FontPrintCenter = 0x01f6af0;
 FontPrintCenterLarge = 0x01f6c20;

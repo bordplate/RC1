@@ -2432,5 +2432,14 @@
   "size": 160,
   "matched_date": "2026-10-02",
   "note": "Windowed-font FontPrint family member (C linkage, unmangled; name cross-checked vs Deadlocked FontPrintWindowSmall). 7-arg wrapper (x,y,width,height in a0-a3; long color, u8* text, int length in t0-t2; all saved to s0-s6 across the GetEffectTex call, frame 0x90) calling the blocked FontPrintWindowGeneric (func_001F6CB8) with 9 args: color/text/length/effect in t0-t3 (effect = GetEffectTex(FONT_EFFECT_TEX_MEDIUM), scheduled first, v0 forwarded in the final jal delay slot), glyphs = fontMediumGlyphs (0x1DF3F0) in the 0(sp) stack slot. color must be long (caller 0x21F7A8 and the wrapper both use plain move t0 with no extension). Callee return (lines used) passes through in v0; caller uses it for line advance. Companion change: func_001F7070 dead tail (addiu sp,sp,0x100 + 3x addiu sp,sp,0x70, 0 refs) emitted as exact words per the EGC dead-tail rule. First probe 160/160 default flags; full boot parity byte-identical. See notes/draw_post_post_FontPrintWindowSmall.md."
+ },
+ "code/game/draw_post_post.cpp:1214:FontPrintWindowLarge": {
+  "name": "FontPrintWindowLarge",
+  "symbol": "FontPrintWindowLarge",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F7580",
+  "size": 108,
+  "matched_date": "2026-10-02",
+  "note": "Windowed-font FontPrint family member (C linkage, unmangled; name cross-checked vs Deadlocked fonts.h, which declares the same (FontWindow*, rgba, s, len) FontPrintWindowSmall/Large pair). Body: FontPrintWindow(f, color, text, length, GetEffectTex(FONT_EFFECT_TEX_SMALL), (fontLetter*)fontSmallGlyphs) - the fontSmallGlyphs set with the FONT_EFFECT_TEX_SMALL slot, the same set and slot FontPrintLarge binds (family glyph-table naming inverted vs wrapper name). Exact twin of the matched FontPrintLarge (0x1F6530) shape: 4 params saved s0-s3, GetEffectTex called with a0=1 in the jal delay slot (a1 left stale per the one-param declaration), tex result moved to t0 with a single 64-bit move. EGC 2.95.2 emits the plain `move t0,v0` for the int->long promotion despite the FontPrintWindow prototype declaring `long tex` (no sll32/dsrl32 pair), so the long prototype is codegen-safe. FontWindow typedef moved above the function (declarations emit no code, layout unchanged) and a FontPrintWindow extern prototype (register-window ABI: a0-a3 + t0/t1) added for the blocked 0x1F7090 re-attempt. Full boot ELF cmp byte-identical."
  }
 }

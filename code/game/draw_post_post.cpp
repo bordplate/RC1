@@ -1179,14 +1179,6 @@ asm(
     "    .set at\n"
 );
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintWindow);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7580);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F75F0);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7660);
-
 typedef struct FontWindow {
     short x;
     short y;
@@ -1201,6 +1193,33 @@ typedef struct FontWindow {
     short offX;
     short offY;
 } FontWindow;
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintWindow);
+
+// C linkage: FontPrintWindow is supplied by the generated INCLUDE_ASM
+// fallback (blocked: EGC register-allocation wall, see
+// decomp_state/blocked.json); this prototype states the EGC register-window
+// ABI the generated assembly implements: (f, rgba, text, length) in a0-a3,
+// (tex, glyphs) in t0/t1.
+extern "C" void FontPrintWindow(FontWindow* f, long rgba, u8* text, int length,
+                                long tex, fontLetter* glyphs);
+
+// C linkage: the stripped-ELF symbol is the unmangled FontPrintWindowLarge,
+// a member of the unmangled FontPrint API family (the Deadlocked build has
+// the same two-arg-count FontPrintWindowSmall/Large pair). Prints text in a
+// width-bounded window described by the FontWindow with the fontSmallGlyphs
+// set and the FONT_EFFECT_TEX_SMALL slot bound, the same set and slot
+// FontPrintLarge binds (the family's glyph-table naming is inverted vs the
+// wrapper name).
+extern "C" void FontPrintWindowLarge(FontWindow* f, long color, u8* text,
+                                     int length) {
+    FontPrintWindow(f, color, text, length,
+                    GetEffectTex(FONT_EFFECT_TEX_SMALL), (fontLetter*)fontSmallGlyphs);
+}
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F75F0);
+
+INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7660);
 
 // C linkage: this font API entry point retains the original unmangled name.
 extern "C" void FontSetWindow(FontWindow* f, short x, short y, short w, short h,
