@@ -2405,5 +2405,14 @@
   "size": 148,
   "matched_date": "2026-10-02",
   "note": "Center-aligned FontPrint family member (C linkage, unmangled). Returns the centered x: int cx = x - (drawTextSmall(text,length) >> 1); FontPrint(cx, y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs); return cx. The int return (not void) is what emits the trailing `move v0,s0` after the call and the [a5, a1, a2, a3, a4, a0] argument order; a void form compiles 4 bytes short with a0/a5 swapped. `>> 1` (not `/ 2`) is required: EGC emits a 3-instr signed-div idiom (srl/addu/sra) for /2 but the original is a single in-place `sra v0,v0,1`. cx lives in s0; the subu (x-cx) is scheduled into the GetEffectTex jal delay slot using the pre-clobber width/2 in v0. Center siblings (0x1F6B88 Small, 0x1F6C20 Large) share the same shape with drawTextMedium/Large + slot 2/3. Deadlocked reference (fonts.cpp:2043) returns int xpos-(w>>1). 37/37 words; full boot parity byte-identical. See notes/draw_post_post_FontPrintCenter.md."
+ },
+ "code/game/draw_post_post.cpp:1101:FontPrintCenterSmall": {
+  "name": "FontPrintCenterSmall",
+  "symbol": "FontPrintCenterSmall",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6B88",
+  "size": 148,
+  "matched_date": "2026-10-02",
+  "note": "Center-aligned FontPrint family member (C linkage, unmangled), medium-glyph variant of FontPrintCenter (0x1F6AF0): int cx = x - (drawTextMedium(text,length) >> 1); FontPrint(cx, y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_MEDIUM), fontMediumGlyphs); return cx. Byte-identical structural twin of FontPrintCenter with drawTextMedium (0x1F6270), slot 2, and fontMediumGlyphs (0x1DF3F0); all other scheduling (arg swap in jal delay slot, sra half-width, subu in GetEffectTex delay slot, [a5,a1,a2,a3,a4,a0,t2] FontPrint order, trailing move v0,s0) is shared. Straight-line wrapper, no loop -> outside the FontPrint bnezl back-edge wall. First probe 148/148 bytes with default flags; full boot parity byte-identical. See notes/draw_post_post_FontPrintCenterSmall.md."
  }
 }
