@@ -1083,7 +1083,16 @@ extern "C" void FontPrintRightLarge(int x, int y, int color, u8* text,
               GetEffectTex(FONT_EFFECT_TEX_LARGE), fontLargeGlyphs);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintCenter);
+// C linkage: center-aligned member of the unmangled FontPrint API family.
+// Prints the text centered on x (x minus half the measured width) with the
+// fontSmallGlyphs set and the FONT_EFFECT_TEX_SMALL slot, and returns the
+// centered x (the original leaves it in v0 after the call).
+extern "C" int FontPrintCenter(int x, int y, int color, u8* text, int length) {
+    int cx = x - (drawTextSmall((char*)text, length) >> 1);
+    FontPrint(cx, y, color, text, length,
+              GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs);
+    return cx;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintCenterSmall);
 

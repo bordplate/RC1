@@ -2397,5 +2397,13 @@
   "size": 140,
   "matched_date": "2026-10-02",
   "note": "Right-aligned FontPrint family member, the large-glyph variant of FontPrintRight: FontPrint(x - drawTextLarge(text, length), y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_LARGE), fontLargeGlyphs); full measured width subtracted from x. Completes the right-aligned trio (Right 0x1F6940, RightSmall 0x1F69D0, RightLarge 0x1F6A60), mirroring the Center trio layout. Name from the Deadlocked FontPrintRight/Small/Large trio (reference/dl/game_dl/fonts.h) and the family slot/glyph-set convention; Lombyte fun_001f6a60.c confirms the body (arg0 - FUN_001f6290(arg3,arg4), FUN_001f44b8(3), D_001DF790). All six callers are in DrawItemsMenu (0x21EB20). Straight-line wrapper (no loop), not subject to the FontPrint bnezl back-edge wall; matched on the first probe as the direct analog of FontPrintRight. Object vs original: 0/35 non-relocation word diffs (5 relocation sites: drawTextLarge/GetEffectTex__Fii/FontPrint jal targets + fontLargeGlyphs hi/lo). decomp-verifier: PASS, full boot ELF cmp byte-identical, neighbors 0x1F69D0/0x1F6AF0 unperturbed. See notes/draw_post_post_FontPrintRightLarge.md."
+ },
+ "code/game/draw_post_post.cpp:1090:FontPrintCenter": {
+  "name": "FontPrintCenter",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6AF0",
+  "size": 148,
+  "matched_date": "2026-10-02",
+  "note": "Center-aligned FontPrint family member (C linkage, unmangled). Returns the centered x: int cx = x - (drawTextSmall(text,length) >> 1); FontPrint(cx, y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_SMALL), fontSmallGlyphs); return cx. The int return (not void) is what emits the trailing `move v0,s0` after the call and the [a5, a1, a2, a3, a4, a0] argument order; a void form compiles 4 bytes short with a0/a5 swapped. `>> 1` (not `/ 2`) is required: EGC emits a 3-instr signed-div idiom (srl/addu/sra) for /2 but the original is a single in-place `sra v0,v0,1`. cx lives in s0; the subu (x-cx) is scheduled into the GetEffectTex jal delay slot using the pre-clobber width/2 in v0. Center siblings (0x1F6B88 Small, 0x1F6C20 Large) share the same shape with drawTextMedium/Large + slot 2/3. Deadlocked reference (fonts.cpp:2043) returns int xpos-(w>>1). 37/37 words; full boot parity byte-identical. See notes/draw_post_post_FontPrintCenter.md."
  }
 }
