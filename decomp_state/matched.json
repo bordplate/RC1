@@ -2414,5 +2414,14 @@
   "size": 148,
   "matched_date": "2026-10-02",
   "note": "Center-aligned FontPrint family member (C linkage, unmangled), medium-glyph variant of FontPrintCenter (0x1F6AF0): int cx = x - (drawTextMedium(text,length) >> 1); FontPrint(cx, y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_MEDIUM), fontMediumGlyphs); return cx. Byte-identical structural twin of FontPrintCenter with drawTextMedium (0x1F6270), slot 2, and fontMediumGlyphs (0x1DF3F0); all other scheduling (arg swap in jal delay slot, sra half-width, subu in GetEffectTex delay slot, [a5,a1,a2,a3,a4,a0,t2] FontPrint order, trailing move v0,s0) is shared. Straight-line wrapper, no loop -> outside the FontPrint bnezl back-edge wall. First probe 148/148 bytes with default flags; full boot parity byte-identical. See notes/draw_post_post_FontPrintCenterSmall.md."
+ },
+ "code/game/draw_post_post.cpp:1113:FontPrintCenterLarge": {
+  "name": "FontPrintCenterLarge",
+  "symbol": "FontPrintCenterLarge",
+  "source": "code/game/draw_post_post.cpp",
+  "vram": "0x001F6C20",
+  "size": 148,
+  "matched_date": "2026-10-02",
+  "note": "Center-aligned FontPrint family member (C linkage, unmangled), large-glyph variant of FontPrintCenter (0x1F6AF0): int cx = x - (drawTextLarge(text,length) >> 1); FontPrint(cx, y, color, text, length, GetEffectTex(FONT_EFFECT_TEX_LARGE), fontLargeGlyphs); return cx. Byte-identical structural twin of FontPrintCenter/FontPrintCenterSmall with drawTextLarge (0x1F6290), slot 3, and fontLargeGlyphs (0x1DF790); all other scheduling shared (arg swap in jal delay slot, sra half-width, subu in GetEffectTex delay slot, [a5,a1,a2,a3,a4,a0,t2] FontPrint order, trailing move v0,s0). Straight-line wrapper, no loop -> outside the FontPrint bnezl back-edge wall. First probe 148/148 bytes with default flags; full boot parity byte-identical. See notes/draw_post_post_FontPrintCenterLarge.md."
  }
 }
