@@ -286,3 +286,43 @@ A and B re-confirmed; two new details:
 Conclusion: unchanged. Retain INCLUDE_ASM. A future match would need the exact
 original RTL for the s3/s4/s5 + f20 allocation (A), a table-in-.data placement
 mechanism (B), and an f12 delay-slot FP convention (case 5) — three independent walls.
+
+## Session 2026-10-03 (re-attack; A-frame + C resolved, A-permutation + B remain)
+
+Re-selected by mistake (it was already blocked); a fresh last-resort GPT-5.6 Sol pass
+produced the key structural fix the prior sessions had not applied: **call the
+conversion helpers EXPLICITLY** (`func_001FA6C0(x)` x5, `func_001FA6D0(expr)` x1)
+instead of native C `(float)x` casts. The casts compile inline (`cvt.s.w`) with no
+`jal`, so they create no float live range; the five `jal`s are what force EGC to keep
+the numerator/FastCos results in `$f20` across the second conversion and across
+`FastCos`, which makes EGC (1) grow the frame to **0xC0** and emit **`swc1/lwc1 $f20`**
+and (2) pre-position the case-5 `*0.5f` in the `jal func_001FA6D0` delay slot
+(`jal; mul.s $f12,$f1,$f12`) — reproducing the f12-arg convention (Blocker C, 2026-09-22)
+for free. Start point = the corrected candidate above (lines "Corrected candidate")
+with case 5 rewritten to call the helpers EXPLICITLY:
+`f=(func_001FA6C0(pos)*3.1415927f)/func_001FA6C0(aw->off);` (else
+`f=3.1415927f-(func_001FA6C0(pos-aw->off)*3.1415927f)/func_001FA6C0(aw->on);`), then
+`f=FastCos(f); { float wp=func_001FA6C0(aw->power);
+pow=func_001FA6D0((f*wp+wp)*0.5f)+aw->minpower; }` (arg order decl: ret,scale,
+numscale,numpower,i,pAW,pow,rem,f). Verified via decomp_probe.py (default flags) =
+1020 B / 254 word-diffs; prologue now byte-matches through the `lui %hi(ActuatorWave)`,
+and the case-5 float block + final loop + epilogue match the original's structure
+(frame 0xC0, `$f20` saved, 5+1 helper `jal`s, f12 delay slot).
+
+**Still blocked** — two walls remain, both independent of the now-solved frame/f20/f12:
+- **A (register permutation only):** the original parks numpower->s3(sp+0x20),
+  numscale->s4(sp+0x10), ret->s5; probe2 still emits ret->s3, numpower->s4,
+  numscale->s5 (cyclic) and scale-base->a1 (orig v1). The frame/f20 are now correct,
+  so this is purely the saved-register assignment (RTL liveness-driven; decl reorder +
+  `-fno-schedule-insns` do not change it). A `register`-asm() pin of the three values
+  to $19/$20/$21 reproduces the register NAMES but is a non-clean hack.
+- **B (switch-table .data placement):** unchanged; EGC emits the 6-word table to
+  `.rdata` (-> .text), original holds it in the .data blob at 0x1E7640 with absolute
+  (non-relocatable) entries.
+- Minor 6-word size gap (1020 vs 1044) from small EGC tie-breaks: `beqz`/`beqzl`
+  (branch-likely) on the `type!=0` and final-loop tests, a leftover `sll` in the
+  final-loop setup, and the register permutation.
+
+So a future attempt should start from the candidate above (frame/f20/f12 already
+correct) and needs only (A) the s3/s4/s5 + scale-base register assignment and (B) the
+table-in-.data placement. last-resort GPT-5.6 Sol used (2026-10-03).
