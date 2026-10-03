@@ -1438,23 +1438,30 @@ void draw_prepareFrame(void) {
     UpdateViewContext();
 }
 
-// Gates the per-frame font VU state on the shared non-zero flag also used by
-// the quad drawer; when set, programs the font GS registers, queues the font
-// VU state with a temporary depth bias, and resets the bias to zero.
-extern int D_0015F478;
-extern "C" void func_001F8FF0(void);
-extern "C" void func_001F89A4(void);
+// Per-frame debug font stage, run from DrawDebugProfiler for the 0x20 stage
+// bit between SetupGifPaging(1) and DoGifPaging(). When glyph quad records
+// are pending (fontQuadCount, filled by level overlays), programs the font
+// GS registers, prepares the records (sphere clip, camera-space transform,
+// depth alpha, texture cursor), queues the font VU state with a temporary
+// depth bias, draws the glyph quads, then resets the bias and the last
+// GS register. The GS register numbers are the original's values; their
+// hardware semantics are undocumented for this range, so they stay literal.
+#define DEBUG_FONT_DEPTH_BIAS -0.04f
 
-extern "C" void func_001F79A8(void) {
-    if (D_0015F478 != 0) {
+extern int fontQuadCount;
+extern "C" void prepareFontQuads(void);
+extern "C" void drawFontQuads(void);
+
+extern "C" void drawDebugFont(void) {
+    if (fontQuadCount != 0) {
         VU1_addGSregister(8, 5);
         VU1_addGSregister(0x14, 0x61);
         VU1_addGSregister(0x47, 0x513F1);
         VU1_addGSregister(0x4A, 1);
-        func_001F8FF0();
-        fontDepthBiasGp = -0.04f;
+        prepareFontQuads();
+        fontDepthBiasGp = DEBUG_FONT_DEPTH_BIAS;
         FontQueueVUState();
-        func_001F89A4();
+        drawFontQuads();
         // The bias reset is an int zero store (sw $0), not a float store.
         *(int*)&fontDepthBiasGp = 0;
         VU1_addGSregister(0x4A, 0);

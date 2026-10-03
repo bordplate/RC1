@@ -646,6 +646,12 @@ writeGSHeader = 0x1f8364;
 writeSetupBlock = 0x1f82e4;
 FastDrawQuadReal = 0x1f7d30;
 FastIntersectVert = 0x1f7a98;
+drawDebugFont = 0x001f79a8;
+prepareFontQuads = 0x001f8ff0;
+drawFontQuads = 0x001f89a4;
+fontQuadCount = 0x0015f478;
+fontQuadItems = 0x0015f47c;
+fontQuadIndices = 0x0015f480;
 
 
 

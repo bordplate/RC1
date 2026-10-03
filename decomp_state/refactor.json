@@ -55,13 +55,14 @@
  {
   "id": "draw_post_post_func_001F79A8",
   "file": "code/game/draw_post_post.cpp",
-  "function": "func_001F79A8",
+  "function": "drawDebugFont",
   "addresses": [
    "0x1F79A8"
   ],
   "category": "style",
   "description": "Placeholder names to resolve: func_001F79A8 itself (sets up the font GS state + temporary depth bias + font VU state; called only from DrawDebugProfiler's drawEnableMask&0x20 GIF-paging path between SetupGifPaging(1) and DoGifPaging(); best-guess name setupFontVUState or prepareFontDraw), the callees func_001F8FF0 and func_001F89A4 (C-linkage, defined in code/_generated/game/drawquad.s, referenced only by address since the ELF is stripped), and the shared int flag D_0015F478 (also read by the quad drawer at 0x1F8A6C/0x1F9048; the D_0015F478/D_0015F47C/D_0015F480 block is shared with drawquad). The GS register numbers (8, 0x14, 0x47, 0x4A) and the -0.04f depth bias should become named constants once their GS semantics are confirmed. Renaming must keep draw_post_post.o byte-identical (full boot ELF cmp).",
-  "evidence": "notes/draw_post_post_func_001F79A8.md; code/_generated/nonmatchings/game/draw_post_post/func_001F79A8.s; code/_generated/game/drawquad.s (func_001F8FF0/func_001F89A4 defs + D_0015F478 reads); code/game/draw_post_post.cpp:1441",
-  "status": "open"
+  "evidence": "notes/draw_post_post_func_001F79A8.md; code/_generated/game/drawquad.s (prepareFontQuads/drawFontQuads defs + fontQuadCount reads); code/game/draw_post_post.cpp drawDebugFont",
+  "status": "done",
+  "resolved": "2026-10-03: func_001F79A8 -> drawDebugFont, func_001F8FF0 -> prepareFontQuads, func_001F89A4 -> drawFontQuads (C-linkage, drawquad.s), D_0015F478 -> fontQuadCount, D_0015F47C -> fontQuadItems, D_0015F480 -> fontQuadIndices, -0.04f bias -> DEBUG_FONT_DEPTH_BIAS. All names added to config/symbols.txt (drawquad section) so the drawquad.s glabels, the data lit, and DrawDebugProfiler's jal use the real names; pure rename, no codegen change. GS register numbers (8/0x14/0x47/0x4A) kept literal: the range exceeds the documented GS file (in-game usage reaches 0x200) and no available reference confirmed the semantics, so the entry's conditional clause does not apply. Verified: make split + build + full boot ELF cmp byte-identical; nm shows drawDebugFont/drawFontQuads/prepareFontQuads linked in draw_post_post.o/drawquad.o. Pipeline semantics documented in notes/draw_post_post_func_001F79A8.md."
  }
 ]
