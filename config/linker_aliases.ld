@@ -161,6 +161,7 @@ videoDecRegisterCallback = 0x0012AEC8;
 videoDecRelease = 0x0012B9E0;
 videoDecIsDecoderEmpty = 0x0012BA58;
 sceGsSyncPath = 0x00120558;
+sceGsPutDrawEnv = 0x001221B0;
 sceGsSetDefLoadImage = 0x00122330;
 sceGsExecLoadImage = 0x00122658;
 CreateSema = 0x00118980;

@@ -1,4 +1,6 @@
+#include "camera.h"
 #include "common.h"
+#include "sce_gs.h"
 #include "types.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FA860);
@@ -43,7 +45,43 @@ void SetBackgroundColor(s32 r, s32 g, s32 b) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDispBuffer__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDrawBufferLarge__Fv);
+// VIF packet tags for the data-reference record appended below (same
+// values vuchain.cpp uses for its chain appenders).
+#define VU1_DATA_REF_TAG 0x30000000
+#define VU1_DATA_REF_END_TAG 0x50000000
+// The original carries this no-op address mask on the giftag pointer; it is
+// what EGC lowers to the zero-extend `and r, r, -1` the original emits
+// before the store, so the mask must stay.
+#define AA_GIFTAG_ADDR_MASK 0xFFFFFFF
+
+// Head of the VU1 command chain. The double volatile forces EGC to re-load
+// the head before each packet store, and the plain (non-.data) declaration
+// keeps each load a bare self-based pseudo the SN assembler expands in
+// place; the final store must go through the non-.data alias so ps2eeas
+// emits it GPREL in the branch delay slot.
+extern volatile u32* volatile vu1ChainHead;
+extern volatile u32* vu1ChainHeadStore;
+// Pointer to the shared frame-buffer parameter block; SetupFS_AA_buffer
+// installs &occlCamParamBase here and the buffer-setup/append functions read
+// the GS environment blocks off it.
+extern OcclCamParamBlock* aaBuffPtr;
+
+// Append the large draw-env VIF data-reference record to the VU1 command
+// chain so the VU streams it later, or upload the draw env to the GS
+// directly when the chain is not running.
+void PutDrawBufferLarge() {
+    volatile u32* head = vu1ChainHead;
+    if (head) {
+        head[0] = VU1_DATA_REF_TAG | 9;
+        vu1ChainHead[1] = (u32)&aaBuffPtr->giftagDrawLarge & AA_GIFTAG_ADDR_MASK;
+        vu1ChainHead[2] = 0;
+        vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 9;
+        vu1ChainHeadStore = vu1ChainHead + 4;
+    }
+    else {
+        sceGsPutDrawEnv(&aaBuffPtr->giftagDrawLarge);
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", framebuf_appendLargeSetup__Fv);
 

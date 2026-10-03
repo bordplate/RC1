@@ -2468,5 +2468,14 @@
   "size": 488,
   "matched_date": "2026-10-03",
   "note": "Font VU1 state builder: builds view rows (scaled camera pos + VU view matrix), streams the font VU program on first use (fontState==7 gate), and appends the 0xF0-byte camera/fog record (two view matrices, clip+hvdf 128-bit quads, fog, constant words, queue-length tag) to the vu1ChainHead linked chain. 122 instrs, frame 0x80. Byte-for-byte matched with default -G8 -O2 flags (no private TU flag). Key codegen: fontVUProgramTag (u16, .data) needs the section attribute to emit a genuine two-reg split (lui v0; lhu a1,off(v0)) instead of a self-based bare pseudo; the clip+hvdf quads pin their src pointers (a1/v1) and tie the dst so EGC materializes sq v0,0(s1); the hvdf 128-bit temp is pinned to the v0:v1 pair (register CameraQuad hvq asm(\"$2\")) to match the original's overlapping lq v0,0(v1); tail constants (W0xE0/E4/E8) pin to v1/v0/a1 and the queue-length RMW pins diff->v0/word->v1 with tied barriers for subu;lw;sra;addiu;or;sw. Full boot ELF parity passes. See notes/draw_post_post_FontQueueVUState.md."
+ },
+ "code/game/framebuf.cpp:72:PutDrawBufferLarge__Fv": {
+  "name": "PutDrawBufferLarge__Fv",
+  "original_name": "PutDrawBufferLarge__Fv",
+  "source": "code/game/framebuf.cpp",
+  "vram": "0x001FB2D0",
+  "size": 148,
+  "matched_date": "2026-10-04",
+  "note": "Large draw-env VU1 chain appender: if vu1ChainHead is set, appends the 16-byte data-reference record [VU1_DATA_REF_TAG|9, (u32)&aaBuffPtr->giftagDrawLarge & 0xFFFFFFF, 0, VU1_DATA_REF_END_TAG|9] and advances the head through the plain vu1ChainHeadStore alias (GPREL delay-slot store); otherwise calls sceGsPutDrawEnv (0x1221B0, core.text SDK code, name verified against Lombyte) to upload the env directly. Codegen: a plain `volatile u32* head` local reproduces the original reusing the test's a0 value for the first store (no local => EGC reloads the volatile head); the original's & 0xFFFFFFF address mask is required for the zero-extend `and r,r,-1` (bare casts emit no AND; the mask materializes lui/ori of 0xFFFFFFF overflowing to 0xFFFFFFFF). Newly named: OcclCamParamBlock::giftagDrawLarge (+0x30), aaBuffPtr (0x15EEB8, pointer installed by SetupFS_AA_buffer), sceGsPutDrawEnv. See notes/framebuf_PutDrawBufferLarge__Fv.md."
  }
 }

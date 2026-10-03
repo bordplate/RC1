@@ -178,7 +178,12 @@ extern ViewCtx viewCtx;
 // InitViewContext and SetPalMode read the dimensions to build the occlusion
 // view rectangle and the z-buffer 32x32 tile count.
 struct OcclCamParamBlock {
-    u8 pad_000[0x150];
+    u8 pad_000[0x30];
+    // 0x30: head of the large draw-env GIF block; PutDrawBufferLarge points
+    // the VIF data-reference packet it appends at this, and
+    // sceGsPutDrawEnv uploads it directly when the VU1 chain is inactive.
+    u64 giftagDrawLarge;
+    u8 pad_038[0x118];
     u16 drawW;   // 0x150
     u16 drawH;   // 0x152
     u16 pad_154; // 0x154
