@@ -1479,4 +1479,15 @@ void buildBitSwapLut(void) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7A88);
+// Unreachable dead tail the original compiler emitted after
+// buildBitSwapLut: an alignment nop, two stack deallocations
+// (0x80 and 0x170, the frame of a function no longer in the source),
+// plus the alignment nop before FastIntersectVert in drawquad.o.
+// EGC 2.95.2 never regenerates dead frame deallocations after the
+// epilogue (probed; see decomp_state/notes/989snd_func_0012E078.md),
+// so the bytes are preserved with raw asm.
+asm("nop");
+asm("addiu $sp,$sp,0x80");
+asm("nop");
+asm("addiu $sp,$sp,0x170");
+asm("nop");

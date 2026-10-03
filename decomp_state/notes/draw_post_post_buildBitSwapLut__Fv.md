@@ -54,3 +54,23 @@ emit a GPREL access and fail to link.
 - `func_001F7A30` -> `buildBitSwapLut__Fv` (config/symbols.txt).
 - `D_0018E740` -> `bitSwapLut` (config/symbols.txt).
 - Caller `.s` (InitOnce__Fv) regenerated to `jal buildBitSwapLut__Fv`.
+
+## Dead-tail fragment func_001F7A88 (handled 2026-10-03)
+
+The 0x1F7A88 "function" in the queue is NOT a function: it is a 3-word
+multi-unit dead tail the original compiler emitted after this function's
+epilogue — `addiu sp,sp,0x80; nop; addiu sp,sp,0x170` — plus the alignment
+nop at 0x1F7A84 before it and the alignment nop at 0x1F7A94 after it (gap
+bytes between this symbol's end at 0x1F7A84 and FastIntersectVert, the first
+function of drawquad.o, at 0x1F7A98). Neither 0x80 nor 0x170 (nor their sum
+0x1F0) matches any live frame here — this function is a 0-frame leaf — so the
+bytes are leftovers of a function no longer in the source, the same artifact
+family as decomp_state/notes/989snd_func_0012E078.md.
+`tools/deadness_scan.py 0x1F7A88` finds 0 references and Ghidra has no
+function there. EGC 2.95.2 never regenerates dead frame deallocations after
+the epilogue (probed t1-t10/p1-p5), so the orphan INCLUDE_ASM was replaced
+with byte-preserving file-scope asm in draw_post_post.cpp right after
+buildBitSwapLut (`asm("nop"); asm("addiu $sp,$sp,0x80"); asm("nop");
+asm("addiu $sp,$sp,0x170"); asm("nop")`), emitting exactly 0x1F7A84-0x1F7A98
+and leaving draw_post_post.o(.text) ending where drawquad.o begins. Full
+boot-ELF parity passes; not a blocker (ghost fragment).
