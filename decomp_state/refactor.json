@@ -51,5 +51,17 @@
   "evidence": "notes/draw_post_post_InitViewContext__Fv.md; code/game/draw_post_post.cpp:252",
   "status": "done",
   "resolved": "2026-09-27: semantics established from the consumer UpdateViewContext__Fv (0x1F2D98) which matches the DL reference line for line: field_0A0/0A4/0B0 = nearClip(32.0)/farClip(745472.0)/xratio(0.63) projection-box depths + aspect default; occlCamScale0..3 = xpix/ypix (half draw size) / xclip/yclip (4x); fog defaults = fogFarDist(0x21C)=524288.0 (1/1024 units, 512 units) + fogNearIntensity(0x228)=255.0 (255 = clear). Naming exposed and fixed a far-pair swap: 0x21C is fogFarDist and 0x22C is fogFarIntensity (fog formulas, level-fog writer 0x1EE4B0 scaling, and the 524288.0/1024.0 clamp code all agree); levelFog/waterFog globals, ViewCtx fields, UpdateFog locals and symbols.txt swapped to match. Named constants VIEWCTX_NEAR_CLIP/FAR_CLIP/DEFAULT_XRATIO/HALF_PIXEL/CLIP_SCALE/DEFAULT_FOG_FAR_DIST/DEFAULT_FOG_NEAR_INTENSITY. 0.5 stays a saved float local, 4.0 stays inline, fog store order unchanged. Verified: make split + build + full boot ELF cmp byte-identical. See notes/draw_post_post_InitViewContext__Fv.md."
-  }
+  },
+ {
+  "id": "draw_post_post_func_001F79A8",
+  "file": "code/game/draw_post_post.cpp",
+  "function": "func_001F79A8",
+  "addresses": [
+   "0x1F79A8"
+  ],
+  "category": "style",
+  "description": "Placeholder names to resolve: func_001F79A8 itself (sets up the font GS state + temporary depth bias + font VU state; called only from DrawDebugProfiler's drawEnableMask&0x20 GIF-paging path between SetupGifPaging(1) and DoGifPaging(); best-guess name setupFontVUState or prepareFontDraw), the callees func_001F8FF0 and func_001F89A4 (C-linkage, defined in code/_generated/game/drawquad.s, referenced only by address since the ELF is stripped), and the shared int flag D_0015F478 (also read by the quad drawer at 0x1F8A6C/0x1F9048; the D_0015F478/D_0015F47C/D_0015F480 block is shared with drawquad). The GS register numbers (8, 0x14, 0x47, 0x4A) and the -0.04f depth bias should become named constants once their GS semantics are confirmed. Renaming must keep draw_post_post.o byte-identical (full boot ELF cmp).",
+  "evidence": "notes/draw_post_post_func_001F79A8.md; code/_generated/nonmatchings/game/draw_post_post/func_001F79A8.s; code/_generated/game/drawquad.s (func_001F8FF0/func_001F89A4 defs + D_0015F478 reads); code/game/draw_post_post.cpp:1441",
+  "status": "open"
+ }
 ]

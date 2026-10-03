@@ -1438,7 +1438,28 @@ void draw_prepareFrame(void) {
     UpdateViewContext();
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F79A8);
+// Gates the per-frame font VU state on the shared non-zero flag also used by
+// the quad drawer; when set, programs the font GS registers, queues the font
+// VU state with a temporary depth bias, and resets the bias to zero.
+extern int D_0015F478;
+extern "C" void func_001F8FF0(void);
+extern "C" void func_001F89A4(void);
+
+extern "C" void func_001F79A8(void) {
+    if (D_0015F478 != 0) {
+        VU1_addGSregister(8, 5);
+        VU1_addGSregister(0x14, 0x61);
+        VU1_addGSregister(0x47, 0x513F1);
+        VU1_addGSregister(0x4A, 1);
+        func_001F8FF0();
+        fontDepthBiasGp = -0.04f;
+        FontQueueVUState();
+        func_001F89A4();
+        // The bias reset is an int zero store (sw $0), not a float store.
+        *(int*)&fontDepthBiasGp = 0;
+        VU1_addGSregister(0x4A, 0);
+    }
+}
 
 extern u32 bitSwapLut[256] __attribute__((section(".data")));
 
