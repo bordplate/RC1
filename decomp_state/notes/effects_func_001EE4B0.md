@@ -113,3 +113,14 @@ python3 tools/decomp_probe.py <candidate.cpp> \
   --define func_00212C28=0x212C28 --define func_001FA6D0=0x1FA6D0 \
   --out /tmp/opencode/fogupdate/vXX
 ```
+
+## Dead-tail fragment func_001EE640 (handled 2026-10-03)
+The 0x1EE640 "function" in the queue is NOT a function: it is the 3-word
+multi-unit dead tail this function's compiler pass emitted after the epilogue —
+`addiu sp,sp,0xB0; nop; addiu sp,sp,0x60` — followed by the alignment nop at
+0x1EE64C (gap bytes between this symbol's end and the next symbol at 0x1EE650;
+neither 0xB0 nor 0x60 matches any live frame, cf.
+decomp_state/notes/989snd_func_0012E078.md). `tools/deadness_scan.py 0x1EE640`
+finds 0 references and Ghidra has no function there. It was replaced with a
+byte-preserving inline asm block in effects.cpp (same pattern as the sibling
+fragment func_001EE4A8), not with a blocker. Full boot-ELF parity passes.
