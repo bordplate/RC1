@@ -404,19 +404,11 @@
   "source": "code/game/draw_post_post.cpp",
   "line": 913,
   "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F7660.s",
-  "name": "func_001F7660",
-  "status": "todo"
- },
- {
-  "id": "code/game/draw_post_post.cpp:949:func_001F7888",
-  "source": "code/game/draw_post_post.cpp",
-  "line": 949,
-  "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F7888.s",
-  "name": "func_001F7888",
-  "status": "todo"
- },
- {
-  "id": "code/game/draw_post_post.cpp:961:func_001F79A8",
+   "name": "func_001F7660",
+   "status": "todo"
+  },
+  {
+   "id": "code/game/draw_post_post.cpp:961:func_001F79A8",
   "source": "code/game/draw_post_post.cpp",
   "line": 961,
   "asm": "code/_generated/nonmatchings/game/draw_post_post/func_001F79A8.s",

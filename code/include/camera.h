@@ -185,6 +185,21 @@ struct OcclCamParamBlock {
     u16 pad_156; // 0x156: *zbufBase >> 13
     s16 zbufW;   // 0x158
     s16 zbufH;   // 0x15A
+    s16 pad_15C; // 0x15C: zeroed by SetupFS_AA_buffer
+    s16 pad_15E; // 0x15E: *displayBase >> 13
+    s16 pad_160; // 0x160: effect buffer width (1 << log2Width), func_001FB440
+    s16 pad_162; // 0x162: effect buffer height (1 << log2Height), func_001FB440
+    s16 pad_164; // 0x164: zeroed by SetupFS_AA_buffer
+    s16 pad_166; // 0x166: effect buffer base in GS units, func_001FB440
+    s16 pad_168; // 0x168
+    s16 pad_16A; // 0x16A
+    s16 pad_16C; // 0x16C: 0x31 from SetupFS_AA_buffer
+    // 0x16E: current effect buffer base in GS address units (VRAM >> 13);
+    // SetupFS_AA_buffer records *frameBufferBase >> 13, setupEffectDrawBuffer
+    // re-reads it for in-place buffers, and func_001FB440 packs it into the
+    // GS state packet.
+    s16 effectBufBaseGs; // 0x16E
+    u32 pad_170;         // 0x170: zeroed by SetupFS_AA_buffer
 };
 extern struct OcclCamParamBlock occlCamParamBase;
 

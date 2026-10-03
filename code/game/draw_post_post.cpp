@@ -1376,7 +1376,57 @@ extern "C" void FontQueueVUState(void) {
     VU1_gsRegsFont();
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F7888);
+// func_001F33B8 and func_001FB440 are still INCLUDE_ASM placeholders; the asm
+// labels bind these calls to the unmangled symbols the generated assembly
+// defines, which C++ mangling would not produce.
+void func_001F33B8(int width, int height, float xratio, float fogNearDist,
+                   float fogFarDist, float fogNearIntensity, float fogFarIntensity)
+    asm("func_001F33B8");
+void func_001FB440(int log2Width, int log2Height, int gsBase)
+    asm("func_001FB440");
+
+// Sets up the occlusion effect draw buffer. inPlace != 0 uses the main effect
+// buffer (occlCamParamBase.effectBufBaseGs); otherwise it reserves a scratch
+// buffer below the texture pool. The caller (func_002196B8) still references
+// func_001F7888, so keep that symbol via the asm override; cfront cannot take
+// the label on the definition, so it lives on this declaration.
+void setupEffectDrawBuffer(int log2Width, int log2Height, int inPlace, float xratio)
+    asm("func_001F7888");
+
+void setupEffectDrawBuffer(int log2Width, int log2Height, int inPlace, float xratio) {
+    float x = xratio;
+    register int base asm("$3");
+    if (inPlace != 0) {
+        base = occlCamParamBase.effectBufBaseGs;
+    } else {
+        base = log2Width + log2Height;
+        // Pins + input-only barriers reproduce EGC's clamp (slti/movz) register
+        // map and the textureBase / `4 << t` scheduling. See
+        // decomp_state/notes/draw_post_post_setupEffectDrawBuffer.md.
+        register int limit asm("$6") = 0x10;
+        register int belowLimit asm("$4") = base < 0x11;
+        asm volatile("" : : "r"(belowLimit));
+        register int four asm("$2") = 4;
+        asm volatile("" : : "r"(four));
+        if (!belowLimit)
+            base = limit;
+        register int textureBase asm("$5") = textureMemoryBase;
+        four <<= base;
+        register int difference asm("$6") = textureBase - four;
+        base = difference >> 13;
+    }
+    // The gsBase anchor keeps the `sll a2, v1, 13` in the body ahead of the arg
+    // moves instead of the jal delay slot.
+    register int gsBase asm("$6") = base << 13;
+    asm volatile("" : : "r"(gsBase));
+    func_001FB440(log2Width, log2Height, gsBase);
+    func_001F33B8(1 << log2Width, 1 << log2Height, x, 0.0f, 524288.0f, 255.0f, 0.0f);
+    if (inPlace != 0)
+        VU1_addGSregister(0x47, 0);
+    else
+        VU1_addGSregister(0x47, 0x30000);
+    VU1_addGSregister(VU1_SCREEN_ALPHA_GS_REG, OCCL_DEBUG_END_ALPHA);
+}
 
 void PutDrawBufferLarge();
 void InitViewContext();
