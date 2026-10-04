@@ -59,6 +59,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDispBuffer__Fv);
 // 16-byte unit count (qcnt) of the AA clear-black register block that
 // SetupFS_AA_buffer builds at aaClearBlackRegs.
 #define AA_CLEAR_BLACK_QCNT 0x15
+// 16-byte unit count (qcnt) of the AA-blur clear register block that
+// AA_BlurPass references at aaClearRegs.
+#define AA_BLUR_CLEAR_QCNT 0x26
 // The original carries this no-op address mask on the giftag pointer; it is
 // what EGC lowers to the zero-extend `and r, r, -1` the original emits
 // before the store, so the mask must stay.
@@ -79,6 +82,9 @@ extern OcclCamParamBlock* aaBuffPtr;
 // GS GIF stream that SetupFS_AA_buffer builds as the AA pass's clear-to-black
 // register payload; appendClearBlackDataRef streams it through the VU1 chain.
 extern u32 aaClearBlackRegs[AA_CLEAR_BLACK_QCNT * 4];
+// GS register block the AA blur pass streams through the VU1 chain;
+// AA_BlurPass appends a data-reference record pointing at it.
+extern u32 aaClearRegs[AA_BLUR_CLEAR_QCNT * 4];
 
 // Append the large draw-env VIF data-reference record to the VU1 command
 // chain so the VU streams it later, or upload the draw env to the GS
@@ -126,7 +132,16 @@ void PutDrawBufferSmall() {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB440);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", AA_BlurPass__Fv);
+// Append the AA-blur clear register block to the VU1 command chain as a VIF
+// data-reference record so the VU streams it to the GS later.
+void AA_BlurPass() {
+    volatile u32* head = vu1ChainHead;
+    head[0] = VU1_DATA_REF_TAG | AA_BLUR_CLEAR_QCNT;
+    vu1ChainHead[1] = (u32)aaClearRegs;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | AA_BLUR_CLEAR_QCNT;
+    vu1ChainHeadStore = vu1ChainHead + 4;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", framebuf_appendSmallSetup__Fv);
 
