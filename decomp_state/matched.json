@@ -2529,5 +2529,13 @@
   "size": 56,
   "matched_date": "2026-10-04",
   "note": "Per-frame pause step callback (sibling of matched pause_stepAngle01). Advances PauseStepObject->step02 (float at 0x40) by 0.02f via FastAddRots; the lwc1 of the current value sits in the jal delay slot and the result swc1s back to 0x40. Extends PauseStepObject with the 0x40 step02 field (pad2[4] keeps angle at 0x48 for the sibling). asm(\"func_0021F120\") symbol override; C linkage via asm label. Full boot parity passes."
+ },
+ "pause_noMapSetup": {
+  "name": "pause_noMapSetup",
+  "source": "code/game/pause_post2.cpp",
+  "vram": "0x0021F330",
+  "size": 56,
+  "matched_date": "2026-10-04",
+  "note": "No-map-available screen setup. Stages two GS register records via VU1_addGSregister (0x42=0x44, 0x47=0xb; each 2nd arg in the jal delay slot) then calls UNK_NoMapAvailable (0x205640, no-arg void); returns 8 (li v0,8 in the jr delay slot). Frame 0x10. asm(\"func_0021F330\") symbol override; VU1_addGSregister declared 2-param with asm label, UNK_NoMapAvailable unmangled per symbols.txt. Full boot parity passes."
  }
 }

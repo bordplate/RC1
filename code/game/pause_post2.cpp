@@ -143,7 +143,27 @@ void pause_stepAngle02(PauseStepObject* obj) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021F158);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021F330);
+// C++ linkage (mangles to VU1_addGSregister__FUiUlb): appends a GS register
+// value record to the VU1 chain. Declared 2-param; the extra trailing params
+// in the mangled name are never materialized at any RC1 call site.
+void VU1_addGSregister(unsigned int reg, unsigned long value)
+    asm("VU1_addGSregister__FUiUlb");
+
+// No-map-available screen setup (draw_post_post 0x205640); no args, void.
+// Unmangled symbol per config/symbols.txt.
+extern void UNK_NoMapAvailable(void) asm("UNK_NoMapAvailable");
+
+// Symbol override: no-map-available screen setup at the address-based
+// generated entry point; stages two GS register records then shows the
+// no-map screen, returning 8.
+int pause_noMapSetup(void) asm("func_0021F330");
+
+int pause_noMapSetup(void) {
+    VU1_addGSregister(0x42, 0x44);
+    VU1_addGSregister(0x47, 0xb);
+    UNK_NoMapAvailable();
+    return 8;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", DrawMissionsMenu);
 
