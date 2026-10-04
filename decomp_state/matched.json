@@ -2512,5 +2512,14 @@
   "size": 92,
   "matched_date": "2026-10-04",
   "note": "Branchless AA-blur clear register VU1 chain appender, same codegen family as the matched PutDrawBufferLarge/appendClearBlackDataRef/PutDrawBufferSmall: unconditionally appends the 16-byte data-reference record [VU1_DATA_REF_TAG|0x26, (u32)aaClearRegs, 0, VU1_DATA_REF_END_TAG|0x26] at the current head and advances the head through the plain vu1ChainHeadStore alias (GPREL store in the jr delay slot). Default flags, double-volatile plain vu1ChainHead, volatile u32* head local for the first store. Newly named AA_BLUR_CLEAR_QCNT 0x26 (qcnt of the aaClearRegs block at 0x151900, out of GP window -> absolute lui/addiu load) and the aaClearRegs extern. Ghidra-confirmed. Byte-for-byte match, full-ELF parity passes."
+ },
+ "code/game/framebuf.cpp:154:framebuf_appendSmallSetup__Fv": {
+  "name": "framebuf_appendSmallSetup__Fv",
+  "original_name": "framebuf_appendSmallSetup__Fv",
+  "source": "code/game/framebuf.cpp",
+  "vram": "0x001FB6E0",
+  "size": 92,
+  "matched_date": "2026-10-04",
+  "note": "Branchless AA display register VU1 chain appender, same codegen family as the matched AA_BlurPass__Fv / PutDrawBufferLarge / appendClearBlackDataRef / PutDrawBufferSmall: unconditionally appends the 16-byte data-reference record [VU1_DATA_REF_TAG|0x29, (u32)aaDisplayRegs, 0, VU1_DATA_REF_END_TAG|0x29] at the current head and advances the head through the plain vu1ChainHeadStore alias (GPREL store in the jr delay slot). Default flags, double-volatile plain vu1ChainHead, volatile u32* head local for the first store. Newly named AA_DISPLAY_QCNT 0x29 (qcnt of the aaDisplayRegs block at 0x151B60, out of GP window -> absolute lui/addiu load) and the aaDisplayRegs extern. Ghidra-confirmed. Byte-for-byte match, full-ELF parity passes."
  }
 }
