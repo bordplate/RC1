@@ -164,4 +164,23 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB740);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB8F0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FBAB0);
+// Unreachable dead tail after func_001FB8F0 (0x1FB8F0): one
+// `lw v0,20(v1)`; the unit is not a stack deallocate and its value load
+// feeds nothing. Nothing reaches 0x1FBAB0 (0 jal/j/branch/data
+// references; no Ghidra function), so it is not a function; the original
+// compiler emitted this byte after the parent's RTL, so it is preserved
+// here as an exact word. The trailing nop pads to the 8-aligned
+// mode_freezeInit entry at 0x1FBAB8.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001FBAB0, 0x4\n"
+    "glabel func_001FBAB0\n"
+    "    .word 0x8c620014\n"
+    "endlabel func_001FBAB0\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
