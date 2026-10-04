@@ -710,6 +710,16 @@ When the owning TU is pinned `-G0` for a sibling (pause_post.o needs -G0 for
 pause_resetMenuEntry's PI inlining), isolate the function into its own
 default-flags TU via a Splat boundary split (pause_post_soundvol.o). See
  decomp_state/notes/pause_func_0021CB00.md.
+ Extension observed 2026-10-05 (inter-function padding in the isolated
+ segment, pause_setLevelSpriteList 0x221D28): when the isolated Splat segment
+ is LARGER than the function because the original has inter-function alignment
+ padding before the next function (here 4 bytes, vram 0x221D64-0x221D67), no
+ explicit padding source is needed — the `.text` section is aligned to 2**3,
+ so the assembler pads the shorter function up to the segment size with zeros,
+ reproducing the original's nop padding and letting the next object land on its
+ boundary. (The soundvol segment happened to equal its function size, so this
+ was not needed there.) See
+ decomp_state/notes/pause_post2_levelsprite_pause_setLevelSpriteList.md.
 
  Extension observed 2026-09-27 (two-register split of an in-window global,
  BuildOcclVisibility 0x1F2820): when the original loads a GP-window global as
