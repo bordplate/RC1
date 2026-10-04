@@ -88,7 +88,8 @@
   "addresses": ["0x23ACB8"],
   "category": "style",
   "description": "audioDecStart sets the decoder state with the literal `self->field_0x00 = 2` (the sibling audioDecReset already uses the literal `0`) and computes the IOP block alignment with the literals `size + 0x3FF` and `(aligned >> 10) << 10` (1024-byte blocks). Name the `_AudioDec` state constants (0 = reset, 2 = started; confirm any others) once the state machine is established and replace the literals in both audioDecStart and audioDecReset. The `>>10<<10` form is codegen-locked (it must stay an sra+sll pair, not an `and`), so only the 1024 block size could be named; verify with decomp_probe that any such naming keeps the sra/sll. Preserve byte-identical codegen (per-function fdiff + full boot cmp).",
-  "evidence": "notes/audiodec_audioDecStart.md; code/game/movie/audiodec.cpp:24-34; STYLEGUIDE.md (magic numbers)",
-  "status": "open"
+    "evidence": "notes/audiodec_audioDecStart.md; code/game/movie/audiodec.cpp:24-34; STYLEGUIDE.md (magic numbers)",
+    "status": "done",
+    "resolved": "2026-10-04: state machine established from the boot ELF (audioDecBeginPut/audioDecEndPut take the state==0 first-put/header paths, audioDecSend gates on state!=0, sendADPCM branches on 1/2/3, create/reset write 0, start writes 2) and the Deadlocked descendant (reference/dl/game_dl/movie/audiodec.cpp names the field `state`). audiodec.h now has AUDIODEC_STATE_IDLE/BUFFERED/STARTED/DONE (0-3), the struct field is renamed field_0x00 -> state, and audioDecStart/audioDecReset use the constants. Block size named AUDIODEC_IOP_BLOCK_BITS/AUDIODEC_IOP_BLOCK_SIZE; the division form (aligned / SIZE) * SIZE was probe-rejected: EGC emits a signed-division correction triplet (slt/addu/movn, +3 words) instead of the original bare sra/sll, so the shift form stays with the named log2. Verified: decomp_probe 88/88 and 68/68, fdiff 0/22 + 0/17, clean full build + cmp byte-identical. See notes/audiodec_audioDecStart.md."
   }
 ]

@@ -21,22 +21,23 @@ int audioDecDelete(_AudioDec* self) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", func_0023ACB0);
 
-// Start the movie sound stream: round the IOP buffer size down to a 1024-byte
-// boundary (a negative size is clamped through the same rounding), issue the
-// start command with the buffer, pause position, sample rate and channel count,
-// then mark the decoder active (state 2).
+// Start the movie sound stream: round the IOP buffer size down to an
+// AUDIODEC_IOP_BLOCK_SIZE boundary (a negative size is clamped through the
+// same rounding), issue the start command with the buffer, pause position,
+// sample rate and channel count, then mark the decoder started.
 extern "C" void audioDecStart(_AudioDec* self) {
     int size = self->field_0x4C;
-    int aligned = (size > -1) ? size : size + 0x3FF;
-    snd_StartMovieSound(self->field_0x48, (aligned >> 10) << 10, self->field_0x5C,
-                        self->field_0x14, self->field_0x18);
-    self->field_0x00 = 2;
+    int aligned = (size > -1) ? size : size + (AUDIODEC_IOP_BLOCK_SIZE - 1);
+    snd_StartMovieSound(self->field_0x48,
+                        (aligned >> AUDIODEC_IOP_BLOCK_BITS) << AUDIODEC_IOP_BLOCK_BITS,
+                        self->field_0x5C, self->field_0x14, self->field_0x18);
+    self->state = AUDIODEC_STATE_STARTED;
 }
 
 void audioDecReset(_AudioDec* self) {
     snd_ResetMovieSound();
 
-    self->field_0x00 = 0;
+    self->state = AUDIODEC_STATE_IDLE;
     self->field_0x30 = 0;
     self->field_0x38 = 0;
     self->field_0x3C = 0;
@@ -61,7 +62,7 @@ void sendADPCM(_AudioDec* self);
 // C linkage: this decoder callback is referenced by the original unmangled
 // movie-decoder API.
 extern "C" void audioDecSend(_AudioDec* self) {
-    if (*(int*)self) {
+    if (self->state) {
         sendADPCM(self);
     }
 }

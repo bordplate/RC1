@@ -726,8 +726,21 @@ default-flags TU via a Splat boundary split (pause_post_soundvol.o). See
  pair. The self-based form is not cosmetic: on the copy path the last v0 write
  before the dest's `addiu a0,v0,0x3FC0` becomes the loaded value (0),
  corrupting the destination to 0x3FC0 — a defect invisible to a 4-word
- register-only diff. See
- decomp_state/notes/draw_post_post_BuildOcclVisibility__Fv.md.
+  register-only diff. See
+  decomp_state/notes/draw_post_post_BuildOcclVisibility__Fv.md.
+
+ Observation observed 2026-10-04 (EGC signed-division fixup defeats the
+ round-down idiom, audioDecStart 0x23ACB8): EGC compiles a signed division by
+ a power of two (`x / 0x400`) as `sra` PLUS a signed-correction triplet
+ (`slt/addu/movn`) for negative operands — NOT a bare `sra`. So a source form
+ like `(x / 0x400) * 0x400` can never reproduce an original bare
+ `sra/sll` round-to-multiple-of-N pair (probe: 100 bytes vs 88, plus register
+ allocation drift). Match such idioms with SHIFT operators of constant count
+ (`(x >> 10) << 10`); if the magic shift is flagged by the style guide, name
+ the log2 next to the block size (AUDIODEC_IOP_BLOCK_BITS/SIZE in
+ audiodec.h). The same `+0x3FF / sra 10 / sll 10` idiom sits in
+ audioDecEndPut (still INCLUDE_ASM, 0x23AE90) — start from the shift form.
+ See decomp_state/notes/audiodec_audioDecStart.md.
 
  ProcessMobyAnimData's verified symbolic form uses a named array for the
 FastMemCopy source (D_00165500) and plain pointer scalar externs for both
