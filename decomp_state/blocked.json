@@ -1,5 +1,17 @@
 [
  {
+  "id": "code/game/framebuf.cpp:func_001FB8F0",
+  "source": "code/game/framebuf.cpp",
+  "asm": "code/_generated/nonmatchings/game/framebuf/func_001FB8F0.s",
+  "name": "func_001FB8F0",
+  "status": "blocked",
+  "date": "2026-10-04",
+  "vram": "0x1FB8F0",
+  "size": "0x1C0",
+  "note": "AA-pass inline GS display-environment packet builder. void framebuf_appendAAEnv(u32 p1..p7); the new head callers read from v0 is left incidentally by the trailing func_00233938 call. Best verified candidate (var_L1_void.cpp, production default flags) = 448 bytes / 40 diff words (~91%); PROLOGUE, hi-pair arithmetic, and w0/w1 build are all byte-correct. Two SOLVED prerequisites: (1) OR operands LOW-FIRST `long w0 = lo0 | ((long)hi0 << 16)` (or accumulator `long w0=lo0; w0|=(long)hi0<<16`) flips the prologue to the correct s1=a3(p4),s0=a1(p2) and moves packed results to s3(w0)/s2(w1) [expert GPT-6 Astra]; (2) return type void (NOT u32) with vu1AppendDataRefRecord still declared u32 [last-resort GPT-5.6 Sol; Ghidra marks both void]. Arithmetic orders: decl hi0,hi1,lo0,lo1; += / -= hi1,hi0,lo0,lo1; w0 built before w1. Residual 40 words are two coupled EGC 2.95.2 default-scheduler/RA tiebreaks: (A) lo-pair += / -= emit order 0x1FB980/84 + 0x1FB9AC/B8: original s1,s0,s3,s2 (hi1,hi0,lo0,lo1) vs candidate s1,s0,s2,s3 (hi1,hi0,lo1,lo0) with IDENTICAL register assignment (s2=p3,s3=p1) and source writing lo0-first, yet the two independent same-latency lo addu/subu come out reversed (explicit-pseudo form does not fix it); (B) q-packet region 0x1FB9CC-0x1FBA68 (~36): candidate materializes q0 const 0x1000000000000001 in v0 and loads the L5 old head into v1 then advances it IN PLACE (addiu v1,v1,16), storing q0 via sd v0,16(v1); the original keeps THREE simultaneous live values across the advance store (old head v0 + new head v1 + q0 const a0), stores q0 via sd a0,16(v0), and re-colors every 64-bit q-const register (q3 a2-vs-t0, q4 a3-vs-a2, q5 t0-vs-v0, ...) and store interleaving accordingly. Same old/new-head-base-split class as sibling func_001FB740 (also blocked). Retain INCLUDE_ASM; full-ELF parity preserved. See notes/framebuf_func_001FB8F0.md.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-10-04 with the full 41-word dossier (prologue already solved via OR-reversal). Corrected the return type to void (Ghidra marks this fn + func_00233938 void; callers read the incidental v0) -> 41 to 40 diffs. Prescribed 5 variants (void-target; explicit old/new bases with advance before q0; u32 two-pointer oldHead/newHead; explicit q-const pseudos; lo-pair explicit-pseudo form) - all applied and mechanically diffed: void=40 (best), old/new-bases=43, u32-ptr=43, pseudos=43, lo-pseudo=40. Concluded the strongest blocker is the old/new-head allocation (one incremented pointer pseudo vs the original's three simultaneous live values old-head v0 + new-head v1 + q0 a0 across the advance store, which changes the interference graph and re-colors every q-const register) and that the lo-pair reorder has no credible strictly-C lever in this build. expert (GPT-6 Astra) had earlier supplied the OR-operand-reversal that fixed the prologue."
+ },
+ {
   "id": "code/game/draw_post_post.cpp:DoGifPaging__Fv",
   "source": "code/game/draw_post_post.cpp",
   "asm": "code/_generated/nonmatchings/game/draw_post_post/DoGifPaging__Fv.s",
