@@ -90,6 +90,10 @@ $(OBJ_DIR)/game/menu_callbacks.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns2
 $(OBJ_DIR)/game/pause_sched.o: PRIVATE_COMPILE_FLAGS = -fno-schedule-insns
 $(OBJ_DIR)/game/pause_post.o: PRIVATE_COMPILE_FLAGS = -G0
 $(OBJ_DIR)/game/pause_post2.o: PRIVATE_COMPILE_FLAGS = -G0
+# pause_setLevelSpriteList (0x221D28) needs the default -G8 self-based load
+# of currentLevelId, so it sits in its own default-flags TU
+# (pause_post2_levelsprite); the tail keeps the -G0 its matched functions use.
+$(OBJ_DIR)/game/pause_post3.o: PRIVATE_COMPILE_FLAGS = -G0
 # ResetVideoPipeline's vifChainFlags zero store and textureCursorEnd load must
 # stay standalone self-based absolute pairs; the flag turns their .data
 # aliases into unsplittable absolute pseudos ps2eeas expands in place. The

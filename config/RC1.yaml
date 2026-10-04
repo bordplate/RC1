@@ -177,6 +177,8 @@ segments:
     - [0x119f18, cpp, game/pause_post]
     - [0x11da80, cpp, game/pause_post_soundvol]
     - [0x11dab0, cpp, game/pause_post2]
+    - [0x122ca8, cpp, game/pause_post2_levelsprite]
+    - [0x122ce8, cpp, game/pause_post3]
     - [0x1286c0, asm, game/shadowproc]
     - [0x129870, cpp, game/shrubfunc]
     - [0x129b68, asm, game/shrubproc]

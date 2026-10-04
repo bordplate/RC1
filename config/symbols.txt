@@ -160,6 +160,9 @@ debugFontPifHeader = 0x0015EEC8;
 pauseActionListA = 0x001D4810;
 pauseActionListB = 0x001D4840;
 pauseActionListMode = 0x0015EE90;
+// Per-level pause sprite-list pointers: 19 slots indexed by
+// currentLevelId % 19, slot 18 null-terminated one word later.
+pauseLevelSpriteLists = 0x001D4528;
 func_00206978 = 0x00206978;
 func_002069A0 = 0x002069A0;
 func_002069B0 = 0x002069B0;
