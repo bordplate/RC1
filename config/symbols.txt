@@ -49,6 +49,7 @@ musicVolumeRaw = 0x0015EDF0;
 pauseMenuFlags = 0x0013CB04;
 pauseCurrentActionList = 0x001D5BF8;
 pauseDefaultActionList = 0x001D22F8;
+pauseLookupKeys = 0x001D60B8;
 menu_postHasPendingSelection = 0x0013D2AC;
 spaceLoadPending = 0x0015F5B0;
 spaceLoadId = 0x0015F600;

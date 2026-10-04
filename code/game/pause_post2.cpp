@@ -380,7 +380,29 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_00225CD8);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_00225D88);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_00225DD8);
+// Symbol override: lookup at the address-based generated entry point; scans
+// five key/value pairs (key at pauseLookupKeys, value at key+1) for the
+// target, ORs bit 2 (0x4) into the matching value, returns 0 on match else 1.
+// The base variable forces the two-step pointer setup (base, then base+4)
+// that EGC otherwise folds into a single constant-offset load.
+extern int pauseLookupKeys[];
+int pause_lookupSetFlag(int target) asm("func_00225DD8");
+
+int pause_lookupSetFlag(int target) {
+    int* base = pauseLookupKeys;
+    int* p = base + 1;
+    int i = 0;
+    do {
+        i++;
+        if (p[-1] != target) {
+            p += 2;
+            continue;
+        }
+        *p |= 0x4;
+        return 0;
+    } while (i < 5);
+    return 1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_00225E20);
 
