@@ -10,6 +10,10 @@ extern "C" void snd_CloseMovieSound(void);
 // C linkage: this sound-library routine is an unmangled generated entry point.
 extern "C" void snd_ResetMovieSound(void);
 
+// C linkage: this sound-library routine is an unmangled generated entry point.
+extern "C" void snd_StartMovieSound(int iopBuffer, int iopBufferSize,
+                                    int iopPausePosition, int sr, int ch);
+
 int audioDecDelete(_AudioDec* self) {
     snd_CloseMovieSound();
     return 1;
@@ -17,7 +21,17 @@ int audioDecDelete(_AudioDec* self) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", func_0023ACB0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/audiodec", audioDecStart);
+// Start the movie sound stream: round the IOP buffer size down to a 1024-byte
+// boundary (a negative size is clamped through the same rounding), issue the
+// start command with the buffer, pause position, sample rate and channel count,
+// then mark the decoder active (state 2).
+extern "C" void audioDecStart(_AudioDec* self) {
+    int size = self->field_0x4C;
+    int aligned = (size > -1) ? size : size + 0x3FF;
+    snd_StartMovieSound(self->field_0x48, (aligned >> 10) << 10, self->field_0x5C,
+                        self->field_0x14, self->field_0x18);
+    self->field_0x00 = 2;
+}
 
 void audioDecReset(_AudioDec* self) {
     snd_ResetMovieSound();

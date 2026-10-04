@@ -2477,5 +2477,13 @@
   "size": 148,
   "matched_date": "2026-10-04",
   "note": "Large draw-env VU1 chain appender: if vu1ChainHead is set, appends the 16-byte data-reference record [VU1_DATA_REF_TAG|9, (u32)&aaBuffPtr->giftagDrawLarge & 0xFFFFFFF, 0, VU1_DATA_REF_END_TAG|9] and advances the head through the plain vu1ChainHeadStore alias (GPREL delay-slot store); otherwise calls sceGsPutDrawEnv (0x1221B0, core.text SDK code, name verified against Lombyte) to upload the env directly. Codegen: a plain `volatile u32* head` local reproduces the original reusing the test's a0 value for the first store (no local => EGC reloads the volatile head); the original's & 0xFFFFFFF address mask is required for the zero-extend `and r,r,-1` (bare casts emit no AND; the mask materializes lui/ori of 0xFFFFFFF overflowing to 0xFFFFFFFF). Newly named: OcclCamParamBlock::giftagDrawLarge (+0x30), aaBuffPtr (0x15EEB8, pointer installed by SetupFS_AA_buffer), sceGsPutDrawEnv. See notes/framebuf_PutDrawBufferLarge__Fv.md."
+ },
+ "code/game/movie/audiodec.cpp:20:audioDecStart": {
+  "name": "audioDecStart",
+  "source": "code/game/movie/audiodec.cpp",
+  "vram": "0x0023ACB8",
+  "size": 88,
+  "matched_date": "2026-10-04",
+  "note": "Starts the movie sound stream: rounds the IOP buffer size (field_0x4C) down to a 1024-byte boundary with a negative-size guard, calls snd_StartMovieSound(field_0x48 buffer, rounded size, field_0x5C pause position, field_0x14 sample rate, field_0x18 channel count), then marks the decoder active (field_0x00 = 2). C-linkage / unmangled (part of the original movie-decoder callback API, like audioDecSend/audioDecIsPageFull), so the definition is extern \"C\". Codegen: the (size > -1) ? size : size + 0x3FF ternary lowers to slt/movn (not a branch - an if would not match); (v >> 10) << 10 is an sra+sll pair (do NOT rewrite as v & ~0x3FF, that is an and). First probe 88/88 byte-for-byte; fdiff 0x23ACB8/0x58 = 0/22; clean full boot parity passes. See notes/audiodec_audioDecStart.md."
  }
 }

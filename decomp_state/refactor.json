@@ -80,5 +80,15 @@
   "evidence": "code/game/vuchain.cpp:43-185; code/game/draw_post_post.cpp:402-420,672-802; code/game/framebuf.cpp:48-80; reference/dl/game_dl/vuchain.cpp:287-290; notes/framebuf_PutDrawBufferLarge__Fv.md; notes/vu1_chain_record_protocol.md",
   "status": "done",
   "resolved": "2026-10-04: RESOLVED - the record-ID low byte is the VIF qcnt field, i.e. the streamed payload's size in 16-byte units. Verified against the boot ELF data layout (qcnt == payload bytes/16 for every static block: 3/0xB/0x13/0x14) and the Deadlocked source, which names the parameter qcnt and builds tags as bytes>>4 | 0x30000000. Static payloads now declare exact array sizes and derive the low byte as sizeof(block)/16 (vuchain.cpp, draw_post_post.cpp); the runtime large draw-env record uses named constant DRAW_ENV_LARGE_QCNT (framebuf.cpp); VU1_addDataRef's parameter renamed tag->qcnt. The 0x15/0x29 literals remain only in nonmatching INCLUDE_ASM (framebuf_appendLargeSetup/appendSmallSetup) until those functions match. Verified: the 3 affected objects rebuilt, all nine touched functions byte-identical, clean full boot ELF cmp passes. See notes/vu1_chain_record_protocol.md."
+  },
+ {
+  "id": "audiodec_audioDecStart_state_consts",
+  "file": "code/game/movie/audiodec.cpp",
+  "function": "audioDecStart",
+  "addresses": ["0x23ACB8"],
+  "category": "style",
+  "description": "audioDecStart sets the decoder state with the literal `self->field_0x00 = 2` (the sibling audioDecReset already uses the literal `0`) and computes the IOP block alignment with the literals `size + 0x3FF` and `(aligned >> 10) << 10` (1024-byte blocks). Name the `_AudioDec` state constants (0 = reset, 2 = started; confirm any others) once the state machine is established and replace the literals in both audioDecStart and audioDecReset. The `>>10<<10` form is codegen-locked (it must stay an sra+sll pair, not an `and`), so only the 1024 block size could be named; verify with decomp_probe that any such naming keeps the sra/sll. Preserve byte-identical codegen (per-function fdiff + full boot cmp).",
+  "evidence": "notes/audiodec_audioDecStart.md; code/game/movie/audiodec.cpp:24-34; STYLEGUIDE.md (magic numbers)",
+  "status": "open"
   }
 ]
