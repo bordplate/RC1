@@ -385,9 +385,9 @@ extern volatile u32* volatile vu1ChainHead;
 // VU1_addGSregister call delay slot, so it goes through this plain alias.
 extern volatile u32* vu1ChainHeadStore;
 // 44-word GS state block streamed by the second packet below.
-extern u32 vu1GsRegsFont[];
-// GS register reset block streamed by the first packet below.
-extern u32 resetGsRegsFixed[];
+extern u32 vu1GsRegsFont[44];
+// 76-word GS register reset block streamed by the first packet below.
+extern u32 resetGsRegsFixed[76];
 // The original calls it with only the register and value; the third bool
 // parameter of the exported symbol is never materialized at any call site.
 void VU1_addGSregister(unsigned int reg, unsigned long value)
@@ -398,7 +398,8 @@ void DrawRectOverlay(int top, int bot, int left, int right, unsigned long color)
     asm("DrawRectOverlay_FiiiiUl");
 
 // VIF packet tags for the data-reference records appended below (same
-// values vuchain.cpp uses for its chain appenders).
+// values vuchain.cpp uses for its chain appenders). The low byte (qcnt) is
+// the streamed block's size in 16-byte units, derived from the block below.
 #define VU1_DATA_REF_TAG 0x30000000
 #define VU1_DATA_REF_END_TAG 0x50000000
 // GS register that receives the packed fog color (R | G<<8 | B<<16); the
@@ -408,16 +409,16 @@ void DrawRectOverlay(int top, int bot, int left, int right, unsigned long color)
 // Stream the fixed-GS-state and font-GS-state reset blocks into the VU1
 // command chain, then load the current fog color into the fog GS register.
 void ResetGsRegisters() {
-    vu1ChainHead[0] = VU1_DATA_REF_TAG | 0x13;
+    vu1ChainHead[0] = VU1_DATA_REF_TAG | (sizeof(resetGsRegsFixed) / 16);
     vu1ChainHead[1] = (u32)resetGsRegsFixed;
     vu1ChainHead[2] = 0;
-    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x13;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | (sizeof(resetGsRegsFixed) / 16);
     volatile u32* next = vu1ChainHead + 4;
     vu1ChainHead = next;
-    next[0] = VU1_DATA_REF_TAG | 0x0B;
+    next[0] = VU1_DATA_REF_TAG | (sizeof(vu1GsRegsFont) / 16);
     vu1ChainHead[1] = (u32)vu1GsRegsFont;
     vu1ChainHead[2] = 0;
-    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x0B;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | (sizeof(vu1GsRegsFont) / 16);
     vu1ChainHeadStore = vu1ChainHead + 4;
     VU1_addGSregister(VU1_FOG_COLOR_GS_REG, (long)viewCtx.fogR | ((long)viewCtx.fogG << 8) | ((long)viewCtx.fogB << 0x10));
 }
@@ -638,9 +639,9 @@ extern "C" void fadeSetColor(int r, int g, int b, int intensity);
 // delay slots, so a plain declaration matches the original.
 extern int drawFrameCount;
 // 80-word GS state block streamed into the VU1 chain on every fade frame.
-extern u32 gsStateFade[];
+extern u32 gsStateFade[80];
 // 80-word GS state block streamed by the fade-color helper (0x1F5210).
-extern u32 gsStateFadeColor[];
+extern u32 gsStateFadeColor[80];
 // GS register that receives the per-frame fade value; the hardware register's
 // role is unconfirmed beyond being the fade target.
 #define VU1_FADE_GS_REG 1
@@ -669,10 +670,10 @@ void FadeToBlack(int frames) {
         PutDrawBufferSmall();
         VU1_addGSregister(VU1_FADE_GS_REG,
                           (unsigned long)(VU1_FADE_FULL - (i << 7) / (i + 1)) << 24);
-        vu1ChainHead[0] = VU1_DATA_REF_TAG | 0x14;
+        vu1ChainHead[0] = VU1_DATA_REF_TAG | (sizeof(gsStateFade) / 16);
         vu1ChainHead[1] = (u32)gsStateFade;
         vu1ChainHead[2] = 0;
-        vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x14;
+        vu1ChainHead[3] = VU1_DATA_REF_END_TAG | (sizeof(gsStateFade) / 16);
         vu1ChainHeadStore = vu1ChainHead + 4;
         VU1_syncChain(VU_SYNC_WAIT);
         func_00122298(0);
@@ -796,10 +797,10 @@ void DrawOcclDebugOverlay(ScreenVBEffect* effect) {
 void fadeSetColor(int r, int g, int b, int intensity) {
     VU1_addGSregister(VU1_FADE_GS_REG, (unsigned long)r | ((unsigned long)g << 8)
                       | ((unsigned long)b << 0x10) | ((unsigned long)intensity << 0x18));
-    vu1ChainHead[0] = VU1_DATA_REF_TAG | 0x14;
+    vu1ChainHead[0] = VU1_DATA_REF_TAG | (sizeof(gsStateFadeColor) / 16);
     vu1ChainHead[1] = (u32)gsStateFadeColor;
     vu1ChainHead[2] = 0;
-    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 0x14;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | (sizeof(gsStateFadeColor) / 16);
     vu1ChainHead = vu1ChainHead + 4;
 }
 
@@ -1269,7 +1270,7 @@ extern "C" void FontSetWindow(FontWindow* f, short x, short y, short w, short h,
 // C linkage: part of the unmangled font API family (FontSetWindow,
 // FontPrintWindow, ...).
 extern "C" void draw_loadViewMatrixW(void* a0, float w);
-void VU1_addDataRef(void* dataRef, s32 tag);
+void VU1_addDataRef(void* dataRef, s32 qcnt);
 void VU1_gsRegsFont(void);
 extern int fontState;
 extern u16 fontVUProgramTag __attribute__((section(".data")));

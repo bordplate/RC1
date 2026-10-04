@@ -46,9 +46,13 @@ void SetBackgroundColor(s32 r, s32 g, s32 b) {
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDispBuffer__Fv);
 
 // VIF packet tags for the data-reference record appended below (same
-// values vuchain.cpp uses for its chain appenders).
+// values vuchain.cpp uses for its chain appenders). The low byte (qcnt) is
+// the streamed record's size in 16-byte units.
 #define VU1_DATA_REF_TAG 0x30000000
 #define VU1_DATA_REF_END_TAG 0x50000000
+// 16-byte unit count (qcnt) of the large draw env GIF record that
+// SetupFS_AA_buffer builds at OcclCamParamBlock+0x30.
+#define DRAW_ENV_LARGE_QCNT 9
 // The original carries this no-op address mask on the giftag pointer; it is
 // what EGC lowers to the zero-extend `and r, r, -1` the original emits
 // before the store, so the mask must stay.
@@ -72,10 +76,10 @@ extern OcclCamParamBlock* aaBuffPtr;
 void PutDrawBufferLarge() {
     volatile u32* head = vu1ChainHead;
     if (head) {
-        head[0] = VU1_DATA_REF_TAG | 9;
+        head[0] = VU1_DATA_REF_TAG | DRAW_ENV_LARGE_QCNT;
         vu1ChainHead[1] = (u32)&aaBuffPtr->giftagDrawLarge & AA_GIFTAG_ADDR_MASK;
         vu1ChainHead[2] = 0;
-        vu1ChainHead[3] = VU1_DATA_REF_END_TAG | 9;
+        vu1ChainHead[3] = VU1_DATA_REF_END_TAG | DRAW_ENV_LARGE_QCNT;
         vu1ChainHeadStore = vu1ChainHead + 4;
     }
     else {

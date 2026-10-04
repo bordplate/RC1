@@ -77,7 +77,8 @@
   ],
   "category": "style",
   "description": "The VU1 data-reference packet family uses raw record-ID literals in the tag low byte (VU1_DATA_REF_TAG | 3, 0xB, 0x13, 0x0B, 0x14, 0x15, 0x29, 9) and the raw 4-word record stride (head + 4) in vuchain.cpp, draw_post_post.cpp (ResetGsRegisters and the 0x14 appenders), and framebuf.cpp (PutDrawBufferLarge). The original source used raw literals (verified: Deadlocked vuchain.cpp shows 0x30000009/0x50000009 verbatim) and the record-ID meanings are not established in the available references, so the literals stay for fidelity and family consistency. When the VU1 chain protocol record IDs can be named, introduce named constants for the IDs (and the 4-word stride, though that arguably already falls under the STYLEGUIDE 'buffer sizes where intention is clear' exception) across the family, re-verifying each affected object (vuchain.o, draw_post_post.o, framebuf.o) plus full boot ELF cmp.",
-  "evidence": "code/game/vuchain.cpp:43-185; code/game/draw_post_post.cpp:402-420,672-802; code/game/framebuf.cpp:48-80; reference/dl/game_dl/vuchain.cpp:287-290; notes/framebuf_PutDrawBufferLarge__Fv.md",
-  "status": "open"
- }
+  "evidence": "code/game/vuchain.cpp:43-185; code/game/draw_post_post.cpp:402-420,672-802; code/game/framebuf.cpp:48-80; reference/dl/game_dl/vuchain.cpp:287-290; notes/framebuf_PutDrawBufferLarge__Fv.md; notes/vu1_chain_record_protocol.md",
+  "status": "done",
+  "resolved": "2026-10-04: RESOLVED - the record-ID low byte is the VIF qcnt field, i.e. the streamed payload's size in 16-byte units. Verified against the boot ELF data layout (qcnt == payload bytes/16 for every static block: 3/0xB/0x13/0x14) and the Deadlocked source, which names the parameter qcnt and builds tags as bytes>>4 | 0x30000000. Static payloads now declare exact array sizes and derive the low byte as sizeof(block)/16 (vuchain.cpp, draw_post_post.cpp); the runtime large draw-env record uses named constant DRAW_ENV_LARGE_QCNT (framebuf.cpp); VU1_addDataRef's parameter renamed tag->qcnt. The 0x15/0x29 literals remain only in nonmatching INCLUDE_ASM (framebuf_appendLargeSetup/appendSmallSetup) until those functions match. Verified: the 3 affected objects rebuilt, all nine touched functions byte-identical, clean full boot ELF cmp passes. See notes/vu1_chain_record_protocol.md."
+  }
 ]
