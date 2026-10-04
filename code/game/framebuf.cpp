@@ -53,6 +53,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDispBuffer__Fv);
 // 16-byte unit count (qcnt) of the large draw env GIF record that
 // SetupFS_AA_buffer builds at OcclCamParamBlock+0x30.
 #define DRAW_ENV_LARGE_QCNT 9
+// 16-byte unit count (qcnt) of the small draw env GIF record that
+// SetupFS_AA_buffer builds at OcclCamParamBlock+0xC0.
+#define DRAW_ENV_SMALL_QCNT 9
 // 16-byte unit count (qcnt) of the AA clear-black register block that
 // SetupFS_AA_buffer builds at aaClearBlackRegs.
 #define AA_CLEAR_BLACK_QCNT 0x15
@@ -108,7 +111,18 @@ void appendClearBlackDataRef() {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDrawBufferSmall__Fv);
+// Append the small draw-env VIF data-reference record to the VU1 command
+// chain so the VU streams it later. Unlike PutDrawBufferLarge there is no
+// direct-upload fallback: the callers push the chain first and call this
+// between PutDrawBufferLarge and appendClearBlackDataRef.
+void PutDrawBufferSmall() {
+    volatile u32* head = vu1ChainHead;
+    head[0] = VU1_DATA_REF_TAG | DRAW_ENV_SMALL_QCNT;
+    vu1ChainHead[1] = (u32)&aaBuffPtr->giftagDrawSmall & AA_GIFTAG_ADDR_MASK;
+    vu1ChainHead[2] = 0;
+    vu1ChainHead[3] = VU1_DATA_REF_END_TAG | DRAW_ENV_SMALL_QCNT;
+    vu1ChainHeadStore = vu1ChainHead + 4;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", func_001FB440);
 

@@ -2494,5 +2494,14 @@
   "size": 104,
   "matched_date": "2026-10-04",
   "note": "Appends the AA clear-black register block (aaClearBlackRegs, runtime GIF stream built by SetupFS_AA_buffer) as a VIF data-reference record (qcnt 0x15) to the VU1 chain when it is running; no else branch, no frame. Same double-volatile plain-vu1ChainHead form as sibling PutDrawBufferLarge; final store is self-based through vu1ChainHead itself (no alias). DL descendant ClearDrawBufferLarge(black). See notes/framebuf_appendClearBlackDataRef.md."
+ },
+ "code/game/framebuf.cpp:111:PutDrawBufferSmall__Fv": {
+  "name": "PutDrawBufferSmall__Fv",
+  "original_name": "PutDrawBufferSmall__Fv",
+  "source": "code/game/framebuf.cpp",
+  "vram": "0x001FB3D0",
+  "size": 108,
+  "matched_date": "2026-10-04",
+  "note": "Branchless small draw-env VU1 chain appender, sibling of the matched PutDrawBufferLarge__Fv: unconditionally appends the 16-byte data-reference record [VU1_DATA_REF_TAG|9, (u32)&aaBuffPtr->giftagDrawSmall & 0xFFFFFFF, 0, VU1_DATA_REF_END_TAG|9] at the small draw-env block OcclCamParamBlock+0xC0 (newly named giftagDrawSmall u64; SetupFS_AA_buffer builds it at +0xC0 with the large block's giftag idiom) and advances the head through the plain vu1ChainHeadStore alias (GPREL store in the jr delay slot). Same codegen family as PutDrawBufferLarge/appendClearBlackDataRef: default flags, double-volatile plain vu1ChainHead, volatile u32* head local for the first store, AA_GIFTAG_ADDR_MASK for the zero-extend and. Newly named DRAW_ENV_SMALL_QCNT 9. Pitfall: first struct edit split pad_038[0x118] 0x20 short (pad_0C8[0x68] instead of [0x88]), shifting drawW/drawH and breaking 10 offset bytes in matched level .text; caught by the full-ELF cmp, fixed arithmetically (0xC8+0x88=0x150). See notes/framebuf_PutDrawBufferSmall__Fv.md."
  }
 }

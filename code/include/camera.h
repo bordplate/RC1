@@ -183,7 +183,11 @@ struct OcclCamParamBlock {
     // the VIF data-reference packet it appends at this, and
     // sceGsPutDrawEnv uploads it directly when the VU1 chain is inactive.
     u64 giftagDrawLarge;
-    u8 pad_038[0x118];
+    u8 pad_038[0x88];
+    // 0xC0: head of the small draw-env GIF block; PutDrawBufferSmall points
+    // the VIF data-reference packet it appends at this.
+    u64 giftagDrawSmall;
+    u8 pad_0C8[0x88];
     u16 drawW;   // 0x150
     u16 drawH;   // 0x152
     u16 pad_154; // 0x154
