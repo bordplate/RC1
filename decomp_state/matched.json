@@ -2521,5 +2521,13 @@
   "size": 92,
   "matched_date": "2026-10-04",
   "note": "Branchless AA display register VU1 chain appender, same codegen family as the matched AA_BlurPass__Fv / PutDrawBufferLarge / appendClearBlackDataRef / PutDrawBufferSmall: unconditionally appends the 16-byte data-reference record [VU1_DATA_REF_TAG|0x29, (u32)aaDisplayRegs, 0, VU1_DATA_REF_END_TAG|0x29] at the current head and advances the head through the plain vu1ChainHeadStore alias (GPREL store in the jr delay slot). Default flags, double-volatile plain vu1ChainHead, volatile u32* head local for the first store. Newly named AA_DISPLAY_QCNT 0x29 (qcnt of the aaDisplayRegs block at 0x151B60, out of GP window -> absolute lui/addiu load) and the aaDisplayRegs extern. Ghidra-confirmed. Byte-for-byte match, full-ELF parity passes."
+ },
+ "pause_stepAngle02": {
+  "name": "pause_stepAngle02",
+  "source": "code/game/pause_post2.cpp",
+  "vram": "0x0021F120",
+  "size": 56,
+  "matched_date": "2026-10-04",
+  "note": "Per-frame pause step callback (sibling of matched pause_stepAngle01). Advances PauseStepObject->step02 (float at 0x40) by 0.02f via FastAddRots; the lwc1 of the current value sits in the jal delay slot and the result swc1s back to 0x40. Extends PauseStepObject with the 0x40 step02 field (pad2[4] keeps angle at 0x48 for the sibling). asm(\"func_0021F120\") symbol override; C linkage via asm label. Full boot parity passes."
  }
 }
