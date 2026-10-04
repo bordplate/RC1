@@ -326,3 +326,34 @@ and the case-5 float block + final loop + epilogue match the original's structur
 So a future attempt should start from the candidate above (frame/f20/f12 already
 correct) and needs only (A) the s3/s4/s5 + scale-base register assignment and (B) the
 table-in-.data placement. last-resort GPT-5.6 Sol used (2026-10-03).
+
+**2026-10-04 re-attempt (best = 1052 B / 110 word-diffs, `cand_forzero.cpp`):**
+The for-loop zeroing (`for (i=0;i<2;i++){ scale[i]=numscale[i]=power[i]=numpower[i]=0; }`)
+with pins `pinNumpower=$19`(s3) / `pinNumscale=$20`(s4) / `count=$21`(s5) is the best
+form yet (down from 254). The residual is a COUPLED register-allocation trade-off, not
+one fixable RTL gap:
+- (1) the for-loop lets EGC hoist the numpower/numscale cursor bases into TWO EXTRA
+  callee-saved regs `s7=s4, s8=s3`, growing the frame 0xC0->0xE0 (+8 bytes) and making
+  the normalize loop index via s4/s3 instead of the original's caller-saved `t0=s4` /
+  `a3=s3`;
+- (2) the wave-head index/base land in `v0/v1` instead of the original `a1/a2`;
+- (3) the switch table is `.rdata` (0x1e9110) vs the original `.data` `jtbl_001E7640`
+  (2 dispatch words).
+
+The last-resort 2026-10-04 late-transfer rec (create `pNumscale`/`pNumpower` in
+`t0/a3` AFTER the wave loop via a tied asm) DOES restore the prologue (frame 0xC0,
+no s7/s8) and the normalize cursors (t0/a3), but moves the switch `type` into `v1` so
+EGC inserts a 2-instr bounds check `lh v1,0(s0); sltiu v0,v1,6` that the original/
+forzero LACK (original uses a plain `beqz v0` since case 0 is a no-op in the 6-entry
+table) — the extra 2 words shift the entire switch region -> 235 diffs. So:
+- `forzero` = correct switch (type v0, no bounds check) but extra s7/s8 + frame 0xE0 +
+  wave-head v0/v1 (110 diffs);
+- `late` = correct prologue/normalize but type->v1 triggers the bounds check and
+  cascades the switch (235 diffs).
+
+Exhausted (all parity-safe, none reached 0): for-loop vs do-while zeroing, register
+pins (numpower/numscale/count/pAW), separate field pointers, byte-offset pin to a1,
+declaration reordering, the late-transfer, late+pAW pin ($16), late+base pin,
+late+offset pin ($5). last-resort GPT-5.6 Sol used (2026-10-04): prescribed the
+late-transfer; applied and mechanically diffed — it fixes the prologue/normalize but
+regresses the switch via the bounds check, confirming the coupled RA wall.
