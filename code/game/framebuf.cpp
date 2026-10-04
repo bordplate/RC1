@@ -53,6 +53,9 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDispBuffer__Fv);
 // 16-byte unit count (qcnt) of the large draw env GIF record that
 // SetupFS_AA_buffer builds at OcclCamParamBlock+0x30.
 #define DRAW_ENV_LARGE_QCNT 9
+// 16-byte unit count (qcnt) of the AA clear-black register block that
+// SetupFS_AA_buffer builds at aaClearBlackRegs.
+#define AA_CLEAR_BLACK_QCNT 0x15
 // The original carries this no-op address mask on the giftag pointer; it is
 // what EGC lowers to the zero-extend `and r, r, -1` the original emits
 // before the store, so the mask must stay.
@@ -69,6 +72,10 @@ extern volatile u32* vu1ChainHeadStore;
 // installs &occlCamParamBase here and the buffer-setup/append functions read
 // the GS environment blocks off it.
 extern OcclCamParamBlock* aaBuffPtr;
+
+// GS GIF stream that SetupFS_AA_buffer builds as the AA pass's clear-to-black
+// register payload; appendClearBlackDataRef streams it through the VU1 chain.
+extern u32 aaClearBlackRegs[AA_CLEAR_BLACK_QCNT * 4];
 
 // Append the large draw-env VIF data-reference record to the VU1 command
 // chain so the VU streams it later, or upload the draw env to the GS
@@ -87,7 +94,19 @@ void PutDrawBufferLarge() {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", framebuf_appendLargeSetup__Fv);
+// Append the AA clear-black register block to the VU1 command chain as a VIF
+// data-reference record so the VU streams it to the GS later; a no-op when
+// the chain is not running.
+void appendClearBlackDataRef() {
+    volatile u32* head = vu1ChainHead;
+    if (head) {
+        head[0] = VU1_DATA_REF_TAG | AA_CLEAR_BLACK_QCNT;
+        vu1ChainHead[1] = (u32)aaClearBlackRegs;
+        vu1ChainHead[2] = 0;
+        vu1ChainHead[3] = VU1_DATA_REF_END_TAG | AA_CLEAR_BLACK_QCNT;
+        vu1ChainHead = vu1ChainHead + 4;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/framebuf", PutDrawBufferSmall__Fv);
 

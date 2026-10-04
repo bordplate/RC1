@@ -44,7 +44,7 @@ qcnt == payload bytes / 16 for every statically sized block:
 | 0x14 | gsStateFade (320, 80)    | 0x13CDD0..0x13CF10 |
 | 0x14 | gsStateFadeColor (320,80)| 0x13CC90..0x13CDD0 |
 | 9    | large draw-env record (144, 36), runtime block at OcclCamParamBlock+0x30 built by SetupFS_AA_buffer |
-| 0x15 | aaClearBlackRegs (runtime, framebuf_appendLargeSetup) |
+| 0x15 | aaClearBlackRegs (runtime, appendClearBlackDataRef) |
 | 0x29 | aaDisplayRegs (runtime, framebuf_appendSmallSetup) |
 
 ## Deadlocked corroboration
@@ -62,12 +62,13 @@ Deadlocked record layout word for word).
 - Static payloads: arrays are declared with their exact word counts and the
   tag low byte is derived as `sizeof(block) / 16` (vuchain.cpp,
   draw_post_post.cpp).
-- Runtime payloads: named qcnt constants — `DRAW_ENV_LARGE_QCNT 9`
-  (framebuf.cpp); `VU1_addDataRef(void*, s32 qcnt)` parameter renamed from
-  `tag` to the original's `qcnt` name.
-- The 0x10/0x50 0x0E and 0x10/0x50 0x06 inline-data records and the 0x15/0x29
-  records live only in nonmatching INCLUDE_ASM (func_001FB440,
-  func_001FB8F0, framebuf_appendLargeSetup, framebuf_appendSmallSetup); they
-  keep raw constants until those functions are decompiled.
+- Runtime payloads: named qcnt constants — `DRAW_ENV_LARGE_QCNT 9` and
+  `AA_CLEAR_BLACK_QCNT 0x15` (framebuf.cpp); `VU1_addDataRef(void*, s32 qcnt)`
+  parameter renamed from `tag` to the original's `qcnt` name.
+- The 0x10/0x50 0x0E and 0x10/0x50 0x06 inline-data records and the 0x29
+  record live only in nonmatching INCLUDE_ASM (func_001FB440, func_001FB8F0,
+  framebuf_appendSmallSetup); they keep raw constants until those functions
+  are decompiled. The 0x15 record was decompiled as
+  appendClearBlackDataRef (framebuf.cpp, 2026-10-04).
 - The 4-word record stride (`vu1ChainHead + 4`) stays as-is per the
   STYLEGUIDE buffer-size exception.

@@ -2485,5 +2485,14 @@
   "size": 88,
   "matched_date": "2026-10-04",
   "note": "Starts the movie sound stream: rounds the IOP buffer size (field_0x4C) down to an AUDIODEC_IOP_BLOCK_SIZE boundary with a negative-size guard, calls snd_StartMovieSound(field_0x48 buffer, rounded size, field_0x5C pause position, field_0x14 sample rate, field_0x18 channel count), then marks the decoder started (state = AUDIODEC_STATE_STARTED). C-linkage / unmangled (part of the original movie-decoder callback API, like audioDecSend/audioDecIsPageFull), so the definition is extern \"C\". Codegen: the (size > -1) ? size : size + 0x3FF ternary lowers to slt/movn (not a branch - an if would not match); (v >> 10) << 10 is an sra+sll pair (do NOT rewrite as v & ~0x3FF, that is an and, and the division form (v / 0x400) * 0x400 adds a signed-division correction triplet - use the shift form with AUDIODEC_IOP_BLOCK_BITS). State constants and the state field rename (2026-10-04) kept the codegen byte-identical. First probe 88/88 byte-for-byte; fdiff 0x23ACB8/0x58 = 0/22; clean full boot parity passes. See notes/audiodec_audioDecStart.md."
+ },
+ "code/game/framebuf.cpp:100:appendClearBlackDataRef": {
+  "name": "appendClearBlackDataRef__Fv",
+  "original_name": "framebuf_appendLargeSetup__Fv",
+  "source": "code/game/framebuf.cpp",
+  "vram": "0x001FB368",
+  "size": 104,
+  "matched_date": "2026-10-04",
+  "note": "Appends the AA clear-black register block (aaClearBlackRegs, runtime GIF stream built by SetupFS_AA_buffer) as a VIF data-reference record (qcnt 0x15) to the VU1 chain when it is running; no else branch, no frame. Same double-volatile plain-vu1ChainHead form as sibling PutDrawBufferLarge; final store is self-based through vu1ChainHead itself (no alias). DL descendant ClearDrawBufferLarge(black). See notes/framebuf_appendClearBlackDataRef.md."
  }
 }

@@ -244,7 +244,7 @@ void UpdatePad(void);
 void Transition_DoTransition(void);
 
 void draw_resetTextureDmaState(void);
-void framebuf_appendLargeSetup(void);
+void appendClearBlackDataRef(void);
 void framebuf_appendSmallSetup(void);
 void draw_bootImage(int image);
 int menu_checkBootMemoryCard(void);
@@ -314,7 +314,7 @@ void startlevel(void) {
             VU1_initChain();
             SetBackgroundColor(0, 0, 0);
             PutDrawBufferLarge();
-            framebuf_appendLargeSetup();
+            appendClearBlackDataRef();
             draw_bootImage(((BootImageArchive*)base)->decodeBuffer.offset + base);
             PutDrawBufferSmall();
             framebuf_appendSmallSetup();
@@ -358,7 +358,7 @@ void startlevel(void) {
     VU1_initChain();
     SetBackgroundColor(0, 0, 0);
     PutDrawBufferLarge();
-    framebuf_appendLargeSetup();
+    appendClearBlackDataRef();
     draw_bootImage(((BootImageArchive*)base)->decodeBuffer.offset + base);
     PutDrawBufferSmall();
     framebuf_appendSmallSetup();

@@ -476,7 +476,7 @@ extern int drawEnableMask;
 // the DrawDebugProfiler call delay slot; the .extern seed makes ps2eeas expand
 // the bare pseudo as GPREL16 (a plain declaration would be self-based).
 asm(".extern drawEnableMask, 4");
-void framebuf_appendLargeSetup(void);
+void appendClearBlackDataRef(void);
 // C linkage: DrawDebugProfiler is supplied by the generated INCLUDE_ASM with
 // the unmangled symbol DrawDebugProfiler; the call target is that unmangled
 // entry point, which C++ mangling would not resolve.
@@ -486,7 +486,7 @@ void drawNormalFrame(void) {
     if (spaceLoadInProgress) {
         return;
     }
-    framebuf_appendLargeSetup();
+    appendClearBlackDataRef();
     drawEnableMask = DRAW_ENABLE_MASK_BASE;
     DrawDebugProfiler();
 }
@@ -665,7 +665,7 @@ void FadeToBlack(int frames) {
     i = frames - 1;
     for (; i >= 0; i--) {
         PutDrawBufferLarge();
-        framebuf_appendLargeSetup();
+        appendClearBlackDataRef();
         fadeSetColor(0, 0, 0, VU1_FADE_FULL);
         PutDrawBufferSmall();
         VU1_addGSregister(VU1_FADE_GS_REG,
@@ -686,7 +686,7 @@ void FadeToBlack(int frames) {
     drawFrameCount++;
     VU1_initChain();
     PutDrawBufferLarge();
-    framebuf_appendLargeSetup();
+    appendClearBlackDataRef();
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F4BE0);
