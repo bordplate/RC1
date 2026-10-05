@@ -452,6 +452,56 @@ Freeze = 0x193300;
 mode_freezeInit__Fii = 0x1fbab8;
 DrawDialogText__Fv = 0x01fbc50;
 UpdateModeFreeze__Fv = 0x01fce28;
+// DrawDialogText__Fv dialog geometry/state. The 0x15F4xx/0x15F5xx words are
+// read GP-relative in the original (seed a .extern in the TU to force GPREL);
+// the 0x15EE/0x15ED/0x15F548/0x15F560+ words are read as absolute lui/lo pairs.
+freezeWavePeriod = 0x0015F520;
+freezeWaveColorA = 0x0015F524;
+freezeWaveColorB = 0x0015F528;
+freezeSlotColor = 0x0015F52C;
+freezeSlotColorB = 0x0015F530;
+freezeSlotColorC = 0x0015F534;
+freezeSlotColorD = 0x0015F538;
+freezeSlotColorE = 0x0015F53C;
+freezeSlotColorF = 0x0015F540;
+freezeTweenColorA = 0x0015F4F0;
+freezeTweenColorB = 0x0015F4F4;
+freezeBevelAX = 0x0015F4F8;
+freezeBevelAY = 0x0015F4FC;
+freezeBevelAHalfX = 0x0015F500;
+freezeBevelAHalfY = 0x0015F504;
+freezeBevelATextY = 0x0015F508;
+freezeBevelBX = 0x0015F50C;
+freezeBevelBY = 0x0015F510;
+freezeBevelBHalfX = 0x0015F514;
+freezeBevelBHalfY = 0x0015F518;
+freezeStatsTextY = 0x0015F51C;
+freezeAns2Y = 0x0015F4E8;
+freezeAns1Y = 0x0015F4EC;
+freezeDefaultText = 0x0015F548;
+freezeFmtSCSC = 0x0015F550;
+freezeFmtIndent = 0x0015F560;
+freezeFmtSt = 0x0015F568;
+freezeFmtNd = 0x0015F570;
+freezeFmtRd = 0x0015F578;
+freezeFmtTh = 0x0015F580;
+freezeFmtS = 0x0015F588;
+freezeFmtTime = 0x0015F590;
+freezeFmtScore = 0x0015F5A0;
+freezeStatsTimeRefA = 0x0015EE58;
+freezeStatsScoreRefA = 0x0015EE68;
+// Per-level (currentLevelId ^ 0x10) best-time / hi-score references.
+freezeStatsTimeRefB = 0x0015EE5C;
+freezeStatsScoreRefB = 0x0015EE6C;
+// 24-byte FontWindow templates (data_freeze/data_suffix segment).
+freezeWinTemplateA = 0x001E78F0;
+freezeWinTemplateB = 0x001E7908;
+// Unnamed VU-chain sprite/sphere builders and libc string helpers used by
+// DrawDialogText's auto-save (mode 5) and memory-card (mode 3) paths.
+func_001FFC30 = 0x001FFC30;
+func_00200600 = 0x00200600;
+func_001153FC = 0x001153FC;
+func_00116808 = 0x00116808;
 
 // game/map.cpp
 UNK_NoMapAvailable = 0x0205640;

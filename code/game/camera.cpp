@@ -168,44 +168,8 @@ struct vec4;
 // handed to the moby spawn.
 #define CAM_POS_BACK_OFF 0x50
 
-// Per-level camera data block at 0x13F350 (0x2310 bytes, all zero in boot).
-// The space transition setup zero-clears the whole block
-// (func_001E9B10: FastMemSet(levelCamData, 0, 0x2310)); level overlays supply
-// their own copy at the same address. camPosOffset (0x13F490) is the block
-// field at +0x140 (inner +0x120). The compiler materializes f98/pCollMoby/fA8
-// through the inner block base (levelCamData+0x20), so inner is a distinct
-// sub-block in the source.
-struct LevelCamInner {
-    char pad_00[0x60];    // +0x20
-    f32 dir80[4];         // +0x80 direction; dir80[2] (+0x88) seeds lastMobyZ
-    char pad_70[8];       // +0x90
-    f32 f98;              // +0x98 pushed into camCollState.ring[4] each frame
-    char pad_7C[0x1F4];   // +0x9C
-    f32 dir290[4];        // +0x290 (0x13F5E0) source of camCollState.aCur
-    char pad_280[0x50];   // +0x2A0
-    f32 waterHeight;      // +0x2F0 water-surface z; land flag when camera is above it
-    char pad_2D4[0x8];    // +0x2F4
-    u32 pCollMoby;        // +0x2FC level-placed collision moby (32-bit slot)
-    char pad_2E0[0xFE4];  // +0x300
-    u8 hotSpotWater;      // +0x12E4 hotspot select: water (clears collMode)
-    u8 hotSpotLava;       // +0x12E5 hotspot select: lava
-    u8 hotSpotQuickSand;  // +0x12E6 hotspot select: quicksand
-    char pad_12C7[4];     // +0x12E7
-    u8 hotSpotDeathSand;  // +0x12EB hotspot select: death sand
-    u8 hotSpotIceWater;   // +0x12EC hotspot select: ice water
-    char pad_12CD[0xD97]; // +0x12ED
-    int heroState;        // +0x2084 (0x1413D4) hero state mirrored for camera collision
-    char pad_2068[4];     // +0x2088
-    u32 heroStateType;    // +0x208C hero state type mirrored for camera collision
-    char pad_2070[0x1F4]; // +0x2090
-    int i2284;            // +0x2284 (0x1415D4)
-    char pad_2268[0x88];  // +0x2288
-};
-struct LevelCamData {
-    char pad_00[0x20];
-    LevelCamInner inner;  // +0x20, 0x22F0 bytes
-};
-extern LevelCamData levelCamData __attribute__((section(".data")));
+// LevelCamData/LevelCamInner (the 0x13F350 per-level camera data block) are
+// defined in camera.h, which this file includes.
 
 // Camera-collision state block at 0x1870D0; the current collision moby
 // (GameCamera, 0x187194) sits at +0xC4. Moby pointers live below 0x10000000
