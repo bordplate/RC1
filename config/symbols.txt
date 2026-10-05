@@ -448,7 +448,8 @@ PutDrawBufferSmall__Fv = 0x1fb3d0;
 AA_BlurPass__Fv = 0x1fb680;
 
 // game/freeze.cpp
-mode_freezeInit = 0x1fbab8;
+Freeze = 0x193300;
+mode_freezeInit__Fii = 0x1fbab8;
 DrawDialogText__Fv = 0x01fbc50;
 UpdateModeFreeze__Fv = 0x01fce28;
 
