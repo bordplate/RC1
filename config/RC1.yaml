@@ -105,6 +105,22 @@ segments:
     start: 0x66400
     vram: 0x00165480
 
+  # The original build keeps the dense-switch jump tables EGC compiles for
+  # freeze.o (mode_freezeInit, later DrawDialogText/UpdateModeFreeze) inside
+  # the data segment at 0x1E78D0+. Splat models that region as a raw blob, so
+  # the jtbl hole is carved out as its own segment. Before every link,
+  # tools/patch_freeze_rodata_ld.py places freeze.o(.rodata) there (or the
+  # blob's bytes, while that TU is still all INCLUDE_ASM).
+  - name: data_freeze
+    type: data
+    start: 0xe8850
+    vram: 0x1e78d0
+
+  - name: data_suffix
+    type: data
+    start: 0xe8870
+    vram: 0x1e78f0
+
   - name: lvl.vtbl
     type: rodata
     start: 0xe9b00
