@@ -64,3 +64,46 @@ updated to match.
 ## Verification
 `make clean && make split && make -j2` then `cmp build/boot_elf.elf assets/boot_elf.elf` => byte
 identical. Function `.text` (102 instr) and the linked jtbl both match the original.
+
+## Message-table decode (2026-10-05, refactor freeze_mode_freezeInit_msgids)
+The `msg_string` ids are indexes into the runtime-loaded help table (NOT present in the boot
+ELF: `HelpMsgs`@0x15F6A0 is a pointer, `helpMsgData`/`helpOffsetTable`@0x15EF60/64 are
+0xCDCDCDCD-filled at boot). The boot startlevel function (0x1EA830) does
+`helpOffsetTable = helpMsgData; for (set=0..7) Help_LoadMsgs(set); ...; Help_LoadMsgs(0);`, so the
+text file layout is `[8 set offsets][set 0 node][set 1 node]...`.
+
+- `assets/globals/all_text.bin`: the global set collection (630784 bytes). First 8 ints are the
+  set offsets `[0x20, 0x1D040, 0x1D050, 0x3CAE0, 0x5B1B0, 0x7A5D0, 0x99830, 0x99850]`; set 0's
+  node is at file offset 0x20 = `[count][w1][entries...]` with entries as 8-byte
+  `(textoff, id)` pairs and textoffs relative to the set node. (The `count` word does not equal
+  the entry count; the table also contains `(0xFFFFFFFF, 0)` gap pairs and a trailing
+  12-byte `(len, textoff, id)` block for ids 0x4E20-0x4E33.)
+- `assets/levels/<lvl>/help_messages_<lang>.bin`: per-level set, same entry format (node at 0x00).
+  The id space and texts are IDENTICAL across every level and language file checked (US/UK/F/DE/
+  ES/IT/JP/KR for levels 0-18), so the ids are a shared global namespace.
+
+Decoded US-English texts (id -> text):
+  0x4F6E  "Quit Race?"
+  0x5229  "Quit?"
+  0x5248  "\x10 Quit"
+  0x5249  "\x11 Continue"
+  0x524A  "\x10 Continue"
+  0x4EE0  "\x12 Exit"
+  0x4E2B  "When this icon appears, your progress is being saved.\x01\x01While this icon is on
+           screen, do not remove the Memory Card (PS2) or turn off the power."
+The leading `\x10`/`\x11`/`\x12` bytes are structural (identical in every language) and are font
+character codes that select button symbols: the glyph metric tables (fontSmallGlyphs@0x1DF050,
+fontMediumGlyphs@0x1DF3F0, fontLargeGlyphs@0x1DF790) are indexed directly by char code with
+stride 4 (width at +3), and 0x10-0x13 all sit at texture row y=96 (button-glyph row), so they
+render as the circle/cross/triangle button icons rather than the text. (Which of 0x10/0x11/0x12
+is circle vs cross vs triangle is taken from the in-game dialog: the pause "Quit?" dialog pairs
+0x4EE0/0x524A, the "Quit Race?" dialog pairs 0x5248/0x5249; 0x10 is shared by the two "Continue"/
+"Quit" circle lines.)
+
+Named in freeze.cpp as MSG_QUIT_RACE / MSG_QUIT / MSG_BTN_QUIT / MSG_BTN_CONTINUE_CROSS /
+MSG_BTN_CONTINUE_CIRCLE / MSG_BTN_EXIT / MSG_AUTOSAVE_WARNING. Sound group 0x1D is a group
+BITMASK (snd_PauseAllSoundsInGroup forwards the u_int straight to the IOP); per-bit meanings are
+not established, so it is named FREEZE_SOUND_GROUPS without asserting specific groups. The
+default-case countdown 0x78 is stored raw (no func_001F96F8 scaling) and named
+FREEZE_DEFAULT_COUNTDOWN_FRAMES. Pure `#define` substitution: freeze.o rebuilt, function 0/408
+bytes and jtbl 0/32 bytes vs original, full boot ELF cmp byte-identical.

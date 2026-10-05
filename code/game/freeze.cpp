@@ -36,11 +36,39 @@ extern "C" void func_001FED30(int msgId);
 
 // Freeze countdown duration in frames (scaled by func_001F96F8).
 #define FREEZE_COUNTDOWN_FRAMES 0x1E
+// Default-case countdown: stored raw, not frame-rate scaled. 120 frames.
+#define FREEZE_DEFAULT_COUNTDOWN_FRAMES 0x78
+// Bitmask of sound groups paused when entering the freeze. The IOP command
+// takes a group bitmask; the per-bit meanings are not established.
+#define FREEZE_SOUND_GROUPS 0x1D
+
+// Message-table ids for msg_string / func_001FED30. The table is loaded at
+// runtime per level (Help_LoadMsgs over help_messages_<lang>.bin; the global
+// set in assets/globals/all_text.bin); the id space is shared across levels
+// and languages, and the glyph bytes below (0x10/0x11/0x12) select button
+// symbols from the font texture row, independent of the text. Texts (US
+// English, from assets/globals/all_text.bin):
+//   MSG_QUIT_RACE                "Quit Race?"
+//   MSG_QUIT                     "Quit?"
+//   MSG_BTN_QUIT                 "<circle glyph> Quit"
+//   MSG_BTN_CONTINUE_CROSS       "<cross glyph> Continue"
+//   MSG_BTN_CONTINUE_CIRCLE      "<circle glyph> Continue"
+//   MSG_BTN_EXIT                 "<triangle glyph> Exit"
+//   MSG_AUTOSAVE_WARNING         "When this icon appears, your progress is
+//                                 being saved. ... do not remove the Memory
+//                                 Card (PS2) or turn off the power."
+#define MSG_QUIT_RACE 0x4F6E
+#define MSG_QUIT 0x5229
+#define MSG_BTN_QUIT 0x5248
+#define MSG_BTN_CONTINUE_CROSS 0x5249
+#define MSG_BTN_CONTINUE_CIRCLE 0x524A
+#define MSG_BTN_EXIT 0x4EE0
+#define MSG_AUTOSAVE_WARNING 0x4E2B
 
 void mode_freezeInit(int dialog, int restorePage)
 {
     if (GameMode != 3) {
-        snd_PauseAllSoundsInGroup(0x1D);
+        snd_PauseAllSoundsInGroup(FREEZE_SOUND_GROUPS);
         music_Pause(0);
     }
 
@@ -51,9 +79,9 @@ void mode_freezeInit(int dialog, int restorePage)
 
     switch (dialog) {
     case 0:
-        Freeze.query = (u32)msg_string(0x4F6E);
-        Freeze.ans1 = (u32)msg_string(0x5248);
-        Freeze.ans2 = (u32)msg_string(0x5249);
+        Freeze.query = (u32)msg_string(MSG_QUIT_RACE);
+        Freeze.ans1 = (u32)msg_string(MSG_BTN_QUIT);
+        Freeze.ans2 = (u32)msg_string(MSG_BTN_CONTINUE_CROSS);
         Freeze.countdown = 0;
         Freeze.field_0x1C = 0;
         Freeze.field_0x20 = 0;
@@ -61,19 +89,19 @@ void mode_freezeInit(int dialog, int restorePage)
         Freeze.field_0x28 = 0;
         break;
     case 2:
-        Freeze.query = (u32)msg_string(0x524A);
+        Freeze.query = (u32)msg_string(MSG_BTN_CONTINUE_CIRCLE);
         Freeze.ans1 = 0;
         Freeze.countdown = 0;
         break;
     case 1:
     case 4:
-        Freeze.query = (u32)msg_string(0x5229);
-        Freeze.ans1 = (u32)msg_string(0x4EE0);
-        Freeze.ans2 = (u32)msg_string(0x524A);
+        Freeze.query = (u32)msg_string(MSG_QUIT);
+        Freeze.ans1 = (u32)msg_string(MSG_BTN_EXIT);
+        Freeze.ans2 = (u32)msg_string(MSG_BTN_CONTINUE_CIRCLE);
         Freeze.countdown = 0;
         break;
     case 5:
-        func_001FED30(0x4E2B);
+        func_001FED30(MSG_AUTOSAVE_WARNING);
         Freeze.countdown = func_001F96F8(FREEZE_COUNTDOWN_FRAMES);
         Freeze.field_0x20 = 0;
         Freeze.field_0x24 = func_001F96F8(FREEZE_COUNTDOWN_FRAMES);
@@ -89,7 +117,7 @@ void mode_freezeInit(int dialog, int restorePage)
         break;
     default:
         Freeze.ans1 = 0;
-        Freeze.countdown = 0x78;
+        Freeze.countdown = FREEZE_DEFAULT_COUNTDOWN_FRAMES;
         Freeze.ans2 = 0;
         Freeze.query = 0;
         break;

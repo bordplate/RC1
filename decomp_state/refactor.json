@@ -102,8 +102,9 @@
    "0x1FBAB8"
   ],
   "category": "magic-number-naming",
-  "description": "mode_freezeInit (matched) passes raw message-table ids to msg_string (0x4F6E, 0x5248, 0x5249, 0x5229, 0x4EE0, 0x524A) and to func_001FED30 (0x4E2B), plus the sound group 0x1D to snd_PauseAllSoundsInGroup and the default countdown 0x78. These are opaque until the message table / sound groups are decoded; name them (msg ids, the freeze sound group, the default countdown) and replace the raw hex. Any change must keep mode_freezeInit byte-identical (full boot ELF cmp). FREEZE_COUNTDOWN_FRAMES (0x1E) is already named per the bmain.cpp frame-count convention.",
-  "evidence": "notes/freeze_mode_freezeInit.md; code/game/freeze.cpp",
-  "status": "open"
- }
-]
+   "description": "mode_freezeInit (matched) passes raw message-table ids to msg_string (0x4F6E, 0x5248, 0x5249, 0x5229, 0x4EE0, 0x524A) and to func_001FED30 (0x4E2B), plus the sound group 0x1D to snd_PauseAllSoundsInGroup and the default countdown 0x78. These are opaque until the message table / sound groups are decoded; name them (msg ids, the freeze sound group, the default countdown) and replace the raw hex. Any change must keep mode_freezeInit byte-identical (full boot ELF cmp). FREEZE_COUNTDOWN_FRAMES (0x1E) is already named per the bmain.cpp frame-count convention.",
+   "evidence": "notes/freeze_mode_freezeInit.md; code/game/freeze.cpp; assets/globals/all_text.bin; assets/levels/*/help_messages_us_english.bin",
+   "status": "done",
+   "resolved": "2026-10-05: message table decoded from assets/globals/all_text.bin (8 runtime-loaded sets; set 0 node at file 0x20; entries are (textoff, id) pairs, textoffs relative to the set node) and cross-checked against every per-level help_messages_us_english.bin - identical id space and texts in both. 0x4F6E='Quit Race?', 0x5229='Quit?', 0x5248='<glyph 0x10> Quit', 0x5249='<glyph 0x11> Continue', 0x524A='<glyph 0x10> Continue', 0x4EE0='<glyph 0x12> Exit', 0x4E2B='When this icon appears, your progress is being saved...'. The leading glyph bytes are structural (same in all languages) and select button symbols from the font texture row (glyph tables at fontSmall/Medium/LargeGlyphs index chars directly; 0x10-0x13 sit at row y=96). Named MSG_QUIT_RACE/MSG_QUIT/MSG_BTN_QUIT/MSG_BTN_CONTINUE_CROSS/MSG_BTN_CONTINUE_CIRCLE/MSG_BTN_EXIT/MSG_AUTOSAVE_WARNING in freeze.cpp; sound group 0x1D is a group bitmask (per-bit meanings not established) named FREEZE_SOUND_GROUPS; default-case countdown 0x78 (raw, unscaled) named FREEZE_DEFAULT_COUNTDOWN_FRAMES. Verified: freeze.o rebuilt, mode_freezeInit 0/408 bytes + jtbl 0/32 bytes vs original, full boot ELF cmp byte-identical. See notes/freeze_mode_freezeInit.md."
+  }
+ ]
