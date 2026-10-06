@@ -8,10 +8,11 @@ four reachable modes; the sole residual is a global register/address-allocation
 difference that EGC 2.95.2 makes internally and that no C lever reproduces.
 Reverted to `INCLUDE_ASM`; full boot-ELF parity verified green.
 
-Supersedes the 2026-10-05 "v2 / 67-word A-section" state below (that gap is
-closed). Continuation checkpoint + all candidates live in
-`working/draw_dialog_text/` (NOTES.md, freeze_ported_v4.cpp,
-authoritative_disasm.txt, normdiff.py, structdiff.py).
+Supersedes the 2026-10-05 "v2 / 67-word A-section" state (that gap is closed).
+This note is SELF-CONTAINED for a re-attempt: the full port (frame, all modes,
+wave A-section, constants) is described above — reconstruct the C body from it.
+The `working/draw_dialog_text/` checkpoint (candidate .cpp files,
+authoritative_disasm.txt, normdiff.py/structdiff.py) was cleared on block.
 
 ## What the full port matches (verified against authoritative_disasm.txt)
 
