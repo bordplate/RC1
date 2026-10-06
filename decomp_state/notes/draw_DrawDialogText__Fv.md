@@ -1,91 +1,121 @@
-# draw DrawDialogText__Fv — wave A-section correction + v2 state (2026-10-05)
+# draw DrawDialogText__Fv — full port done; blocked on EGC global register allocation
 
-Target: `DrawDialogText__Fv` (0x1FBC50, 1139 words) in `code/game/freeze.cpp`.
-The 6-mode pause/race-quit dialog. NOT yet matched; this note records the
-decisive A-section correction and the remaining (well-understood) residual so a
-future session does not re-derive it. Continuation checkpoint lives in
-`working/draw_dialog_text/` (NOTES.md, candidate_v2.cpp, authoritative_disasm.txt).
+Target: `DrawDialogText__Fv` (0x1FBC50, **1141 words / 0x11D4**) in
+`code/game/freeze.cpp`. The 6-mode pause / race-quit dialog renderer.
+**OUTCOME (2026-10-06): BLOCKED.** A complete C port compiles and matches on
+frame, FP saves, the wave A-section, all constants, and the full decode of all
+four reachable modes; the sole residual is a global register/address-allocation
+difference that EGC 2.95.2 makes internally and that no C lever reproduces.
+Reverted to `INCLUDE_ASM`; full boot-ELF parity verified green.
 
-## Headline: the wave A-section "dead FP ops" are LIVE delay-slot call args
+Supersedes the 2026-10-05 "v2 / 67-word A-section" state below (that gap is
+closed). Continuation checkpoint + all candidates live in
+`working/draw_dialog_text/` (NOTES.md, freeze_ported_v4.cpp,
+authoritative_disasm.txt, normdiff.py, structdiff.py).
 
-The prior plan treated the three FP ops in the A-section as dead and tried to
-force them with `+f` asm barriers. That was WRONG. They are the argument
-computations for the two helpers, scheduled into the JAL delay slots:
+## What the full port matches (verified against authoritative_disasm.txt)
 
+- **Frame**: `addiu sp,sp,-848` (0x350); saves s0..s8 + ra (10 `sq`) **and**
+  f20/f21/f22 (3 `swc1` at 816/824/832(sp)). The 2026-10-05 "32-byte frame"
+  gap is CLOSED — once the full mode bodies make f20/f21/f22 simultaneously
+  live, EGC saves all three and the FontWindow 32-byte padding appears.
+- **Wave A-section** (mode-0): the three "dead FP ops" are LIVE JAL delay-slot
+  call args (see below). `func_001FA6C0`=intToFastFloat, `func_001FA6D0`=
+  floatToInt. Prototype `extern "C" float func_001FA6C0(int value);`.
     int period = freezeWavePeriod;
-    float phase = (float)(drawFrameCount % period) / func_001FA6C0(period)
-                  * 6.28318f;
+    float phase = (float)(drawFrameCount % period) / func_001FA6C0(period)*6.28318f;
     int color = FastTweenColor(freezeWaveColorA, freezeWaveColorB,
-                               FastSin(phase - 3.14159f) * 0.5f + 0.5f);
+                               FastSin(phase - 3.14159f)*0.5f + 0.5f);
+- **Constants**: `VU1_addGSregister(71, 0x3004B)` (NOT 0x34B — orig is
+  `lui a1,0x3; ori a1,0x4b`); all gp-relative (0x15F4xx/0x15F5xx) vs absolute
+  (0x15EE58/5C, 0x15ED80/84) access-mode split; level base lui 0x14 (0x13F350).
+- **Modes** fully decoded: case 5 (autosave, VU-text scan + GetIconFrame/
+  GetFrameTex + func_00200600), case 2, case 1/default, case 0 (rank<3 bevel +
+  3 prints; rank>=3 bevelB + ordinal St/Nd/Rd/Th chain-of-`bne` + TIME section
+  + SCORE section). Ref polarity `(currentLevelId^0x10)!=0 ? &RefA : &RefB`;
+  time `total = videoModePal ? 3600 : 3000` (movn polarity); time chain uses
+  QUOTIENTS (mflo) with two dead mults; score `hs!=0 && hs==hiScore`.
+- **Data side**: `.rodata` = 208 bytes EXACT (mFI jtbl 32 + 2 templates 48 +
+  jtbl1 32 + jtbl2 96) once the body is present; the staged carve
+  (RC1.yaml data_suffix 0xe8920/0x1e79a0; patch HOLE_END 0x1E79A0) is correct
+  but is fully coupled to body parity, so it is reverted with the body.
 
-Disasm proof (mode-0, lines 601-630 of authoritative_disasm.txt):
-  - `jal func_001FA6C0;  lw a0,freezeWavePeriod`  -> arg = freezeWavePeriod.
-    Prototype MUST be `extern "C" float func_001FA6C0(int value);` (NOT void).
-  - `jal FastSin; sub.s f12,f12,f1`              -> arg = `phase - 3.14159f`.
-  - `jal FastTweenColor; add.s f12,f0,f12`       -> arg = `FastSin(..)*0.5f + 0.5f`.
-One FastSin call; no FP barriers needed. This supersedes the "stale-a0 works"
-and "+f barrier" notes in the working NOTES.md (those produced the 1074-word
-v1 with a double FastSin / no-arg helper).
+## The wall: EGC global register/address allocation (s7 vs s2)
 
-`func_001FA6C0` = intToFastFloat (0x1FA6C0), `func_001FA6D0` = floatToInt
-(0x1FA6D0), both in `code/_generated/game/fastfunc.s`. Float args pass in $f12
-(standard EGC EE ABI — not a wall; call helpers explicitly).
+The `Freeze` global lives at 0x193300 (high page 0x190000 + 0x3300). It is the
+most important live value in the function (saved first in the orig prologue).
 
-## v2 candidate measurement (candidate_v2.cpp)
+- **Original**: keeps the HIGH PAGE (0x190000) in **s2** from the prologue
+  (`lui v1,0x19; move s2,v1`), then materializes the full pointer per use-group
+  (`addiu v1,s2,0x3300` at 0x1FBCCC, 0x1FC1D4, ...) and does field accesses as
+  `access field(v1)`. This is EGC's natural far-global codegen (high-page in a
+  callee-saved reg + per-use materialization), and it keeps the base allocated
+  FIRST (s2).
+- **Mine (natural `Freeze.field` access)**: EGC assigns the high page to **s7**
+  and folds 0x3300+offset into each access. The base is allocated LATE (s7),
+  while `0x70000000` takes s2. This single register-order difference
+  (base s7 vs s2) cascades through the 1141-word body: **966/1141 words
+  differ**, 1122 words compiled (19 short).
 
-Corrected A-section + f21/f20 clamps + 0x200 mode-3 buffer + faithful-ish mode
-bodies. Compiles clean; `.text` = 0x11c0 = **1136 words** vs original **1139**.
-(v1 was 1074 — the A-section fix closed 62 of the 67-word gap.) Total size is
-within 3 words, but the aligned word diff is still ~0.8% match because the
-frame differs — close size + wrong internal structure.
+First-write allocation order after the prologue (base = Freeze high page):
+  ORIG: s2(base), s3(0x70000000), s5(sp+512), s0(lui 0x1e), s6(21071),
+        s4(21066), s1(sp+512 #2), s7(lw gp), s8(lw gp)
+  MINE: s7(base), s2(0x70000000), s4(sp+512), s0(lui), s3(extra), s5(21071),
+        s6(21066), s1
+The original allocates the base FIRST; mine allocates 0x70000000 first and the
+base last. That ordering is an EGC-internal liveness/register-pressure decision
+not controllable from C without changing the access form.
 
-## The real residual: 32-byte frame + incomplete mode-0 body
+## Three representations tested (all fail to match; original=1141 words)
 
-Frame: mine `addiu sp,sp,-816` (0x330) vs orig `addiu sp,sp,-848` (0x350).
-  - Orig prologue saves s0..s8 + ra + **f20,f21,f22** (swc1 at 816/824/832(sp));
-    mine saves only ONE fp reg (EGC swaps f20<->f21 by live-range; making
-    `slotT` live did NOT add a 3rd save — EGC's fp-save count is not directly
-    controllable from C).
-  - Orig local area 0x290: buf3[0x200]@sp+0, fWin@sp+0x200, fWin2@sp+0x220,
-    buf0[0x40]@sp+0x240, slot@sp+0x280 — the two 24B FontWindows are padded to
-    32-byte boundaries and buf0 to 0x240. Mine packs fWin@0x200/fWin2@0x218.
-  - 32 B = 16 B (two missing swc1) + 16 B (FontWindow 32B alignment).
+1. **Natural** `Freeze.field` global access — high page in s7.
+   1122 words, **966/1141** differ (closest). The register is wrong (s7≠s2).
+2. **$s2 pin** via a `FreezePage{u8 pad[0x3300]; freeze_t state;}` wrapper +
+   `register FreezePage* b asm("$18")` seeded `lui $3,%%hi(Freeze); move %0,$3`,
+   accessing `b->state.field` — high page in s2 (correct reg) but EGC FOLDS
+   0x3300+offset into each access (`lwc1 $f0,0x3304(s2)`, 1 instr) instead of
+   materializing the base (`addiu v1,s2,0x3300; lwc1 $f0,4(v1)`, 2 instr).
+   1114 words, 1107/1141 differ.
+3. **$s2 pin + tied barrier** on a `freeze_t* f=&b->state; asm volatile("" :
+   "+r"(f));` — forces s2 = full pointer (&Freeze, 0x193300) with 1-instr
+   `field(s2)` accesses. 1116 words, 973/1141 differ.
 
-The 3 live fp values: f21 = clamped bevel scale `t` (field_0x20*0.125,
-[0.1,1.0]); f20 = clamped slot scale `slotT` (field_0x24*0.125, [0.0,1.0]);
-f22 = a mode-5 constant (1536.0, the f14/f16 args of func_00200600).
-
-Mode-0 body is INCOMPLETE: orig has ~11 FastTweenColor calls (3 x slotT at
-0x1fc708-738 `mov.s f12,f20`, 8 x t at 0x1fc768-890 `mul.s f12,f12,f21`), each
-feeding a FontPrintCenter for a colored element. v2 has only 4. rank<3 = bevel
-+ 3 prints; rank>=3 = bevel + ordinal-suffix (St/Nd/Rd/Th via sprintf) +
-best-time/hi-score stats (div/mult chains %3600, %60, *100) + ~6 prints.
-
-Getting all ~11 colored elements + exact stats right is the main body work; it
-also makes f20/f21/f22 simultaneously live, which is what the frame depends on.
-
-## Next steps (in order)
-
-1. Reconstruct full mode-0 (all 3 slotT + 8 t FastTweenColor + FontPrintCenter
-   targets; verify rank<3 bevel/prints and rank>=3 ordinal + stats).
-2. Re-check the frame (f20/f21/f22 should become live and saved); if the two
-   FontWindow locals still pack at 24B, try 32-byte alignment or passing them
-   as call arguments to force the original stack layout.
-3. Apply the staged data-side carve ONLY with a matching body:
-   `tools/patch_freeze_rodata_ld.py` HOLE_END 0x1E78F0 -> 0x1E79A0;
-   `config/RC1.yaml` data_suffix 0xe8870/0x1e78f0 -> 0xe8920/0x1e79a0.
-   (jtbl values are case-body addresses -> .rodata parity is coupled to body.)
-4. Re-measure with the corrected offset and full build + cmp.
-
-## Raw-diff offset note
-
-.text file offset = VMA - 0x1e8d00 + 0xe9c80 = VMA - **0xFF480** (NOT -0xFF400;
-an earlier diff read 92 words early). freeze.o .text data at sh_offset 0x1200,
-DrawDialogText at +0x198.
+The original's specific form (high-page-in-s2 + per-use-group materialization)
+is not reproducible: pinning s2 changes EGC's address representation (fold or
+full-pointer-in-s2), and in natural access the register choice (s7 vs s2) is
+internal. No flag, section attribute, prototype change, or barrier/pin
+combination tested reproduces it.
 
 ## Escalation
 
-`last-resort-decompiler` invoked 2026-10-05: verdict "do not block yet; the
-67-word gap is the mistranslated A-section, not an allocator/scheduler wall".
-The corrected A-section was tested (v2 = 1136 words). NOT blocked — residual is
-understood and addressable; recorded here as a continuation checkpoint.
+- `last-resort-decompiler` (GPT-5.6 Sol) 2026-10-05 (A-section): "do not block;
+  the 67-word gap is the mistranslated A-section, not an allocator wall." The
+  corrected A-section was tested and closed that gap (superseded).
+- `last-resort-decompiler` (GPT-5.6 Sol) 2026-10-06 (register wall): prescribed
+  the $s2 pin (representation 2 above) with check criteria (first save
+  `sq $18,688(sp)`, init `lui $3,%hi(Freeze); move $18,$3`, mode-5 scratch
+  pointer s2→s3, frame stays 848). Applied and extended with the barrier
+  variant (representation 3). Result: the pin DOES move the base to s2 and keeps
+  the 848-byte frame, but it changes EGC's address representation (offset
+  folding / full-pointer-in-s2) which does not match the original's
+  high-page+materialize form, and size regressed (1114/1116 vs 1122). Per the
+  recommendation's own "abandon if it folds offsets / adds moves" clause, the
+  pin was abandoned after being mechanically diffed. No match.
+
+## Why it is a durable wall
+
+The residual is not missing code (the full port is present and every decoded
+section is correct) — it is EGC's choice of (a) which callee-saved register
+holds the far-global high page (s7 vs s2) and (b) whether to fold the
+0x3300 offset or materialize the base per use-group. Both are internal
+allocator/scheduler decisions for a 1141-word function with heavy FP + many
+calls; the C levers (pins, barriers, section attrs, prototypes, flags) either
+change the access form (breaking the match) or do not move the register order.
+Retain `INCLUDE_ASM`; full-ELF parity preserved.
+
+## Raw-diff offset note
+
+.text file offset = VMA - **0xFF480** (NOT -0xFF400). freeze.o .text data at
+sh_offset 0x1200, DrawDialogText at +0x198. Compare `build/boot_elf.elf` vs
+`assets/boot_elf.elf` from 0x1FBC50 for 0x11D4 bytes, or
+`python3 working/draw_dialog_text/normdiff.py <N>` from the repo root.
