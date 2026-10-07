@@ -768,6 +768,7 @@ SkyBsphereCheck = 0x022c4c8;
 sound_GetFade__FP8SoundDeffff = 0x22c6f8;
 sound_GetFade__FP9SoundDataP4vec4 = 0x22c7e8;
 sound_KillChannel__Fi = 0x22d798;
+func_0022DB10 = 0x0022DB10;
 sound_StopAllSounds__Fv = 0x0022dcd0;
 sound_update = 0x22ca50;
 

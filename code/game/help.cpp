@@ -1,8 +1,17 @@
 #include "common.h"
 #include "levelmem.h"
+#include "camera.h"
+#include "font.h"
 
 // Current VU1 chain buffer base in main memory, set by vuChain_getCurrent.
 extern int currentVuChain;
+
+// Allocates and starts a sound channel (sound.cpp, C linkage).
+extern "C" void func_0022DB10(int a, int b, int c);
+// Per-scene sound-notify flag bytes, cleared together at scene init; the help
+// display reads them to decide whether to play the message sound.
+extern u8 sceneSoundFlag0;
+extern u8 sceneSoundFlag1;
 
 // Largest boot-asset CD stream sector count the memcard code will place in
 // the level-memory stream regions; larger counts are rejected.
@@ -149,7 +158,41 @@ char* msg_string(int idx) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDD50);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDD58);
+// Displays the current help message: sets the state to active, plays the
+// message sound when a scene sound flag is set, looks up the active message
+// text, renders it into a FontWindow, and stores the resulting layout
+// geometry (derived from the rendered text size and the draw height) back
+// into the HelpState.
+// Symbol override: Help_Update (the state machine) references the
+// address-based generated label for this routine.
+void Help_DisplayMessage(void) asm("func_001FDD58");
+void Help_DisplayMessage(void) {
+    g_helpState.state = 1;
+    g_helpState.counter = 0;
+    if (sceneSoundFlag1 != 0 || sceneSoundFlag0 != 0)
+        func_0022DB10(0, 1, 0);
+
+    FontWindow window;
+    u8* text = (u8*)HelpMsgs[g_helpState.field_0x20].text;
+    FontSetWindow(&window, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100, 0x168, 0x10, 7);
+    FontPrintWindowMedium(&window, 0x80FFA888, text, -1);
+
+    int maxTextH = window.maxTextH;
+    int totalH = window.totalH;
+    int base = occlViewParams.paramY;
+    int bottom = base - 0x3C;
+    int offset = (totalH >> 1) + 5;
+    g_helpState.field_0x08 = (maxTextH >> 1) + 10;
+    g_helpState.field_0x10 = 0x100;
+    g_helpState.field_0x0C = offset;
+    g_helpState.field_0x18 = 8;
+    g_helpState.field_0x1C = 8;
+    g_helpState.field_0x14 = bottom;
+    if ((base - 0xC) < bottom + offset) {
+        int cap = (totalH >> 1) + 0x11;
+        g_helpState.field_0x14 = base - cap;
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_Update);
 

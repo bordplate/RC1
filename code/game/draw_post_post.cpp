@@ -5,6 +5,7 @@
 #include "video.h"
 #include "sce_gs.h"
 #include "hud.h"
+#include "font.h"
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", func_001F2260);
 
@@ -1180,20 +1181,7 @@ asm(
     "    .set at\n"
 );
 
-typedef struct FontWindow {
-    short x;
-    short y;
-    short w;
-    short h;
-    short textX;
-    short textY;
-    short maxTextH;
-    short totalH;
-    short lineH;
-    short flags;
-    short offX;
-    short offY;
-} FontWindow;
+// FontWindow is defined in font.h (shared with help.cpp).
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrintWindow);
 
