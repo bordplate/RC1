@@ -29,7 +29,65 @@ int memcard_ComputeStreamDest(unsigned int sectors, int* pDest1, int* pDest2) {
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FD748);
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDC08);
+// The Help message state machine: the current state (0-8), a frame/timeout
+// counter, and per-message fields. HelpMsgCount is its +0x2C member.
+struct HelpState {
+    unsigned int state;      // +0x00
+    int counter;             // +0x04
+    int field_0x08;          // +0x08
+    int field_0x0C;          // +0x0C
+    int field_0x10;          // +0x10
+    int field_0x14;          // +0x14
+    int field_0x18;          // +0x18
+    int field_0x1C;          // +0x1C
+    int field_0x20;          // +0x20
+    int field_0x24;          // +0x24
+};
+
+extern struct HelpState g_helpState __attribute__((section(".data")));
+
+// Transitions the Help state machine based on the current state: from
+// states 1-3 to 7, from 4 (counting down) and 5 to 6; 0 clears the active
+// message field; 6, 7 and >= 8 leave the state unchanged.
+// Symbol override: the level-overlay callers reference the address-based
+// generated label for this routine.
+void Help_AdvanceState(void) asm("func_001FDC08");
+void Help_AdvanceState(void) {
+    unsigned int state = g_helpState.state;
+
+    if (state < 8) {
+        switch (state) {
+        case 0:
+            g_helpState.field_0x24 = -1;
+            return;
+
+        case 1:
+        case 2:
+            g_helpState.state = 7;
+            g_helpState.counter = 0;
+            return;
+
+        case 3:
+            g_helpState.state = 7;
+            g_helpState.counter = 0;
+            return;
+
+        case 4:
+            g_helpState.state = 6;
+            g_helpState.counter = 4 - g_helpState.counter;
+            return;
+
+        case 5:
+            g_helpState.state = 6;
+            g_helpState.counter = 0;
+            return;
+
+        case 6:
+        case 7:
+            break;
+        }
+    }
+}
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDC90);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_FindIndex);
