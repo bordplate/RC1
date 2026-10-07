@@ -724,8 +724,14 @@ Hud = 0x0019a3f4;
 Hud_HeapAlloc__FUiPcT1i = 0x01ff288;
 GetIconFrame__Fii = 0x1ff960;
 GetFrameTex__Fi = 0x01ffa10;
+Hud_InitBanks__Fv = 0x001fee88;
+hudChanSlots = 0x00199b60;
+hudBankMain = 0x0015fa00;
+hudBankEnd = 0x0015fa08;
+hudBankAux = 0x0015fa0c;
+hudFileStr = 0x0015f6d8;
 
-// init 
+// init
 LoadIRXModule = 0x0201520; 
 
 // lights

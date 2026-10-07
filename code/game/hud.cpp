@@ -4,8 +4,6 @@
 
 extern int hudHeapBase __attribute__((section(".data")));
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FEE88);
-
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", LinkHudBank__FiPc);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF120);

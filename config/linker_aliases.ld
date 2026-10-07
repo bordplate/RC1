@@ -108,6 +108,7 @@ func_00208F00 = 0x00208F00;
 spaceLoadPending = 0x0015F5B0;
 hudHeapBase = 0x001940CC;
 hudHeap = 0x0019A3E8;
+hudBankBaseGp = 0x0015FA04;
 hudMessageTimer = 0x0015F8F8;
 tieLightData = 0x001E3200;
 tieLightData2 = 0x001E4400;
