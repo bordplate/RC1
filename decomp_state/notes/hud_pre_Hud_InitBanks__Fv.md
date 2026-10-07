@@ -46,7 +46,17 @@ fun_001fee88.c`), which matches field-for-field.
    GPREL16 store (`sw $2, -0x71FC($28)`) in the `FastMemZero16` delay slot.
    GNU-as cannot produce that mix (it expands every bare pseudo GPREL), so
    the function is isolated into `game/hud_pre` (`[0xffe08, …]` /
-   `[0xfffbc, …]`) which uses the SN default; `game/hud` keeps the GNU flag.
+   `[0xfff40, …]`) which uses the SN default; `game/hud` keeps the GNU flag.
+   The hud/hud_pre boundary must sit at a function start: Splat attributes
+   each function to the segment containing its first word, and a
+   non-INCLUDE_ASM function attributed to the wrong segment has its .s
+   emitted under `matchings/` (not assembled) while its `INCLUDE_ASM` path
+   under `nonmatchings/` is never generated, breaking clean builds. The
+   original 2026-10-07 boundary at 0xfffbc (vram 0x1ff03c, the END of
+   LinkHudBank) mis-attributed LinkHudBank__FiPc (0x1FEFC0..0x1FF03C) to
+   hud_pre; fixed to 0xfff40 (vram 0x1FEFC0, LinkHudBank's start) so the
+   function lands in `game/hud` where its INCLUDE_ASM lives. (text vram =
+   rom + 0xff080.)
 2. **GPREL store.** `hudBankBaseGp` is declared `extern void* hudBankBaseGp;`
    with `asm(".extern hudBankBaseGp, 4");` so ps2eeas expands the bare
    pseudo as a GPREL16 store; the linker alias pins it to 0x15FA04.

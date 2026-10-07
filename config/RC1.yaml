@@ -181,7 +181,7 @@ segments:
     - [0xfe660, cpp, game/help]
     - [0xffdb8, cpp, game/hud_icon]
     - [0xffe08, cpp, game/hud_pre]
-    - [0xfffbc, cpp, game/hud]
+    - [0xfff40, cpp, game/hud]
     - [0x1024a0, cpp, game/init]
     - [0x102558, cpp, game/initonce]
     - [0x1029a8, cpp, game/lights]
