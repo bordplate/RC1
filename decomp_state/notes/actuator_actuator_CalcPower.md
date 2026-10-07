@@ -357,3 +357,28 @@ declaration reordering, the late-transfer, late+pAW pin ($16), late+base pin,
 late+offset pin ($5). last-resort GPT-5.6 Sol used (2026-10-04): prescribed the
 late-transfer; applied and mechanically diffed — it fixes the prologue/normalize but
 regresses the switch via the bounds check, confirming the coupled RA wall.
+
+---
+
+## Re-attempt 2026-10-07 (re-confirmed BLOCKED)
+
+Re-selected as "next queue target" but it was already blocked; re-derived the same two
+walls independently and confirmed no progress:
+
+- Best size-correct candidate (`candidate.cpp`, default flags) = **1044 B / 161 diffs**
+  (instruction multiset essentially identical -> pure RA/scheduling tie-break, not semantics).
+- Root cause re-confirmed as the COUPLED prologue within-pair swap: original puts the POWER
+  family in the lower of each pair (`power`->v0 [copy from s2], `powerCount`->s3; `scale`->v1
+  [direct from sp], `scaleCount`->s4); every form puts the SCALE family lower. Pairing
+  identical, only within-pair assignment swapped; cascades into ~150/161.
+- New levers tried this pass (all failed): expert (GPT-6 Astra) scoped hard-register->local
+  transfer (`register int* r asm("$N")==arr` + tied `asm volatile ""`) for all 4 bases ->
+  broke frame 0xC0->0xB0, 1072 B/268; count-bases-only transfer -> 1052 B/261; init-loop
+  statement-order reversed (power first) -> fixed v0/v1 but re-colored s-regs (power->s3), 163;
+  last-resort (GPT-5.6 Sol) 4-RTL-delta fixes (lifeSpan `u16`/`(s16)` test, `case 0:`,
+  case-1 else `minpower`, case-5 explicit `func_001FA6C0(wave->power)`) applied together ->
+  size regressed 1044->1028 / 240 (forms don't reproduce the exact original instruction count).
+- Switch-table `.data` placement (jtbl_001E7640 vs EGC `.rodata` @ 0x1E9120) re-confirmed as
+  the independent second blocker; no actuator.o jtbl carve-out exists (unlike freeze.o/help.o).
+
+Still BLOCKED. Retain INCLUDE_ASM.
