@@ -42,6 +42,8 @@ struct HelpState {
     int field_0x1C;          // +0x1C
     int field_0x20;          // +0x20
     int field_0x24;          // +0x24
+    int field_0x28;          // +0x28
+    int msgCount;            // +0x2C
 };
 
 extern struct HelpState g_helpState __attribute__((section(".data")));
@@ -111,21 +113,32 @@ asm(
     "    .set at\n"
 );
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_FindIndex);
-
-// C linkage: the matching helper remains supplied by generated assembly at its
-// original unmangled entry point.
-extern "C" int Help_FindIndex(int idx);
-
 struct HelpMsg {
     char* text;
     int id;
-    int f8;
-    int fC;
+    int field_0x08;
+    int field_0x0C;
 };
 
 extern struct HelpMsg* HelpMsgs;
 extern char s_Paradox_this_message_does_not[];
+
+// Searches HelpMsgs for the first entry whose id matches and returns its
+// index, or -1 when no messages are loaded or none match.
+// C linkage: the level-overlay callers reference the original unmangled
+// entry point.
+extern "C" int Help_FindIndex(int idx) {
+    int ret = -1;
+    int i = 0;
+    while (i < g_helpState.msgCount) {
+        if (HelpMsgs[i].id == idx) {
+            ret = i;
+            break;
+        }
+        i++;
+    }
+    return ret;
+}
 
 char* msg_string(int idx) {
     int i = Help_FindIndex(idx);

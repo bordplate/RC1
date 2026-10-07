@@ -2572,5 +2572,13 @@
   "size": 136,
   "matched_date": "2026-10-07",
   "note": "Help state-machine transition (VRAM 0x1FDC08, size 0x88, 34 words). Reads the unsigned state from g_helpState (0x1996D0, renamed from D_001996D0; HelpMsgCount is its +0x2C member). if (state < 8) switch: case 0 -> field_0x24 = -1, return; cases 1,2 and 3 (WRITTEN AS THREE SEPARATE CASES with duplicated state=7/counter=0 bodies -- do NOT combine 3 with 1/2) -> state=7, counter=0, return; case 4 -> state=6, counter = 4 - counter, return; case 5 -> state=6, counter=0, return; cases 6,7 -> break (fall out). Function is void: v0 holds store temporaries and states 6/7 return the jtbl base left in v0, so no defined int return is possible. The original MERGES the four similar cases (1,2,3,5) into one COMMON block (state=v0; counter=0; fall to TAIL); the separate-case-3 form is what makes EGC emit the two distinct 'b COMMON; li v0,7' blocks. Dense 8-way switch; EGC puts the jtbl in help.o .rodata. KEY TOOLING: the original keeps jtbl_001E7A20 (0x20 bytes, the 8 case-target words) INSIDE the data segment at 0x1E7A20. Added a data_help segment (ROM 0xE89A0 / VRAM 0x1E7A20) + data_suffix2 (0xE89C0 / 0x1E7A40) carving the hole out of data_suffix; generalized tools/patch_rodata_ld.py (was patch_freeze_rodata_ld.py) to place help.o(.rodata) in the .data_help output section with a top-level ASSERT it ends at 0x1E7A40, and drop it from the .text rodata region (same pattern as freeze). asm('func_001FDC08') label keeps the unmangled symbol the level-overlay callers reference. decomp_probe: only the two jtbl %hi/%lo words differ (probe links only .text, jtbl lives in .data); every case/store/delay-slot/epilogue word matches. Verified: clean full build + cmp build/boot_elf.elf assets/boot_elf.elf byte-identical. Count 570->569. See notes/help_func_001FDC08.md."
+ },
+ "code/game/help.cpp:130:Help_FindIndex": {
+  "name": "Help_FindIndex",
+  "source": "code/game/help.cpp",
+  "vram": "0x001FDCA0",
+  "size": 108,
+  "matched_date": "2026-10-07",
+  "note": "Help message id -> index search: ret=-1; i=0; while (i < g_helpState.msgCount) if (HelpMsgs[i].id == idx) { ret=i; break; } i++; return ret; C linkage (level-overlay callers use the unmangled entry). Plain default-flags form matches byte-for-byte: EGC peels the i=0 iteration into a precheck (HelpMsgs[0].id via the self-based HelpMsgs load, no index math) with the loop body carrying i++ at the top and the count (g_helpState+0x2C) reloaded per iteration from the t0 hi-page base; all return paths converge on ret (a2) with one final move into v0 at the shared exit. Also extended struct HelpState with field_0x28 and msgCount (+0x2C, same address as the HelpMsgCount symbol). Full boot parity passes."
  }
 }
