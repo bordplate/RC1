@@ -139,8 +139,9 @@ clean:
 	
 $(TARGET): $(OBJS)
 	@mkdir -p $(dir $@)
-	# Place freeze.o's switch jtbls in the data-segment hole (see the tool).
-	python3 tools/patch_freeze_rodata_ld.py
+	# Place decompiled switch jtbls (freeze.o, help.o, ...) in their
+	# data-segment holes (see the tool).
+	python3 tools/patch_rodata_ld.py
 	$(CROSS)-strip $(OBJS) -N dummy-symbol-name
 	# _gp must match the runtime $gp: crt0 loads D_00166C00 into $gp at boot.
 	$(CROSS)-ld -EL -m elf32lr5900 --defsym _gp=0x166c00 -T $(BUILD_DIR)/undefined_funcs_auto.txt -T $(BUILD_DIR)/undefined_syms_auto.txt -T config/linker_aliases.ld -T $(BASENAME).ld -Map build/$(BASENAME).ld $(OBJS) -o $@
