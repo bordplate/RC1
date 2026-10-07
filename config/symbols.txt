@@ -613,6 +613,7 @@ MobyClassRectify = 0x001b6500;
 MobyClasses = 0x1b3200;
 MobyGsLocStash = 0x01b5d80;
 
+memcard_ComputeStreamDest = 0x1fd6e0;
 memcard_TestChecksum = 0x20ad38;
 memcard_PrepData = 0x20ad78;
 memcard_MakeWholeSave = 0x20abb0;

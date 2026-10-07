@@ -2,6 +2,7 @@
 #include "types.h"
 #include "menu.h"
 #include "boot_level.h"
+#include "levelmem.h"
 #include "pad_state.h"
 #include "sound.h"
 #include "video.h"
@@ -30,21 +31,6 @@ extern AudioState audioState __attribute__((section(".data")));
 // stop and restart the music around debug-font playback.
 #define AUDIO_PLAYBACK_FLAG_STARTING 0x8
 #define AUDIO_PLAYBACK_FLAG_FINISHED 0x10
-
-// Level memory map at 0x1940C0, written by the level loader. MemSlots
-// (0x1940C4) and hudHeapBase (0x1940CC) are its 0x04/0x0C fields; 0x1C holds
-// the decode buffer base used to position the movie/audio sub-buffers.
-typedef struct {
-    u32 field_0x00;
-    u32 field_0x04;
-    u32 field_0x08;
-    u32 field_0x0C;
-    u32 field_0x10;
-    u32 field_0x14;
-    u32 field_0x18;
-    u32 decodeBufBase;
-} LevelMem;
-extern LevelMem levelMem __attribute__((section(".data")));
 
 // Offsets within the level decode buffer of the movie video and audio
 // sub-buffers the decode setup is positioned on.

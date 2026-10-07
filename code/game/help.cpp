@@ -1,6 +1,33 @@
 #include "common.h"
+#include "levelmem.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FD6E0);
+// Current VU1 chain buffer base in main memory, set by vuChain_getCurrent.
+extern int currentVuChain;
+
+// Largest boot-asset CD stream sector count the memcard code will place in
+// the level-memory stream regions; larger counts are rejected.
+#define MEMCARD_STREAM_MAX_SECTORS 0x20000
+
+// Computes the destination addresses of a boot-asset CD stream read from its
+// sector count: for each of the two level-memory regions, the region base
+// plus the current VU chain base minus the count. The memcard save/restore
+// state machine passes bootAssets' second record size, reads the stream into
+// pDest1, and uses the result's layout to place the save data.
+// Symbol override: the callers in memcard.cpp still reference the
+// address-based generated label for this routine.
+int memcard_ComputeStreamDest(unsigned int sectors, int* pDest1, int* pDest2)
+    asm("memcard_ComputeStreamDest");
+int memcard_ComputeStreamDest(unsigned int sectors, int* pDest1, int* pDest2) {
+    if (sectors > MEMCARD_STREAM_MAX_SECTORS) {
+        *pDest1 = 0;
+        *pDest2 = 0;
+        return -1;
+    }
+    *pDest1 = levelMem.field_0x04 + currentVuChain - sectors;
+    *pDest2 = levelMem.field_0x08 + currentVuChain - sectors;
+    return 0;
+}
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FD748);
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDC08);
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDC90);
