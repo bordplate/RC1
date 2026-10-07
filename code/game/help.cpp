@@ -88,7 +88,28 @@ void Help_AdvanceState(void) {
         }
     }
 }
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDC90);
+// Unreachable dead tail the original compiler emitted after
+// Help_AdvanceState (func_001FDC08, matched): a stack deallocation
+// (addiu sp,sp,0x10) even though the matched body takes no frame, i.e. dead
+// bytes the original compiler emitted after the function's RTL, plus the
+// alignment nops before Help_FindIndex. Nothing reaches it (no Ghidra
+// function; tools/deadness_scan.py: 0 references), so the bytes are
+// preserved with raw asm per the dead-tail policy.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001FDC90, 0x4\n"
+    "glabel func_001FDC90\n"
+    "    addiu $29, $29, 0x10\n"
+    "endlabel func_001FDC90\n"
+    "    nop\n"
+    "    nop\n"
+    "    nop\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_FindIndex);
 
