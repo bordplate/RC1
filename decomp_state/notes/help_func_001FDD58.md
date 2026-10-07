@@ -87,3 +87,40 @@ established; kept as a `refactor.json` follow-up.
 `decomp_probe.py working/help_func_001FDD58/cand.cpp <ref .s> func_001FDD58`: candidate
 308 bytes, 0 differences. `make split && make -j2` then
 `cmp build/boot_elf.elf assets/boot_elf.elf` => byte identical. Count 566 -> 565.
+
+## Refactor: named window constants + flag rename (2026-10-07)
+Cleared refactor entry `help_func_001FDD58_window_consts`. Two changes, both
+byte-identical (verified: full `make split && make -j2`, `cmp` byte-identical,
+`tu_assembler_diff help.o` 14/14 match, count 565 unchanged):
+
+1. **Magic numbers named** (textual `#define` substitution above the function):
+   - FontSetWindow args -> `HELP_MSG_WIN_TOP/BOT/LEFT/RIGHT`, `HELP_MSG_TEXT_X/Y`,
+     `HELP_MSG_LINE_SPACING`, `HELP_MSG_FONT_FLAGS`. The first four are the window
+     top/bottom/left/right bounds (NOT x/y/w/h): confirmed against Deadlocked's
+     `FontSetWindow(FontWindow*, win_top, win_bot, win_left, win_right, text_x,
+     text_y, line_spacing, flags)` (reference/dl/game_dl/fonts.cpp:1191). The values
+     form a 424x240 box x[0x2C,0x1D4] y[0xF0,0x1E0], centered, lower screen.
+   - Color `0x80FFA888` -> `HELP_MSG_TEXT_COLOR` (ARGB: 50% alpha over 0xFFA888; the
+     renderer func_001FE980 reprints the same RGB each frame with alpha animated from
+     the state counter). Length `-1` -> `HELP_MSG_TEXT_LENGTH` (null-terminated).
+   - Layout geometry -> `HELP_MSG_CENTER_X` (0x100 = screen center X, field_0x10),
+     `HELP_MSG_TEXT_Y_FROM_BOTTOM` (0x3C; text Y = drawH-0x3C, field_0x14 default),
+     `HELP_MSG_BOTTOM_CLEARANCE` (0xC clamp margin), `HELP_MSG_TEXT_PAD_V` (5 = box
+     half-height beyond totalH/2, field_0x0C), `HELP_MSG_TEXT_PAD_H` (10 = box
+     half-width beyond maxTextH/2, field_0x08), `HELP_MSG_BOX_INIT_HALF` (8 =
+     field_0x18/0x1C initial box half-size), `HELP_MSG_CLAMP_Y_FROM_BOTTOM` (0x11 =
+     clearance + v pad, the clamped text-Y offset).
+   - NOTE: `maxTextH` (FontWindow+0x0C) is actually the max line WIDTH and `totalH`
+     (+0x0E) the total text HEIGHT, per DL's `max_width`/`max_height`. The FontWindow
+     field names (x/y/w/h/maxTextH/totalH) in code/include/font.h are left as-is —
+     renaming them is a separate font.h+draw_post_post.cpp concern, not this entry.
+
+2. **sceneSoundFlag0/1 renamed** to `sceneHelpMsgFlag0/1` (help.cpp externs +
+   config/linker_aliases.ld). Verified semantics (supersedes the "unconfirmed" note
+   above): lit4 bytes, init 0x01, cleared together at scene init (0x226B08); they
+   gate the whole help-message display — Help_DisplayMessage plays the message sound
+   func_0022DB10(0,1,0) and the renderer func_001FE980 draws the box only when at
+   least one is set — plus flag1 (0x15EE1D) holds the fade-out 4 ticks in Help_Update
+   case 6, and flag0 (0x15EE1C) selects a sound param in FUN_002156D8. Generated .s
+   files reference D_0015EE1C/D_0015EE1D (a separate data symbol), so the rename only
+   touched the two source files.

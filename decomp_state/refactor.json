@@ -116,7 +116,8 @@
   ],
   "category": "style",
   "description": "Help_DisplayMessage (matched) uses raw magic numbers the STYLEGUIDE requires to be named defines: the 8 FontSetWindow layout args (0xF0, 0x1E0, 0x2C, 0x1D4, 0x100, 0x168, 0x10, 7 = x/y/w/h/textX/textY/lineHeight/flags), the FontPrintWindowMedium color 0x80FFA888 and -1 length, and the layout geometry offsets 0x3C (bottom), 0xC, 5, 10, 8, 0x11, 0x100. Name them as descriptive constants once the help-message window layout is understood. A #define is a textual substitution and must keep the function byte-identical (full boot ELF cmp). Also confirm the tentative sceneSoundFlag0/1 (0x15EE1C/1D) byte semantics before finalizing the name.",
-  "evidence": "notes/help_func_001FDD58.md; code/game/help.cpp:169-194",
-  "status": "open"
- }
- ]
+   "evidence": "notes/help_func_001FDD58.md; code/game/help.cpp:169-194",
+   "status": "done",
+   "resolved": "2026-10-07: RESOLVED - all magic numbers in Help_DisplayMessage named as #defines (HELP_MSG_WIN_TOP/BOT/LEFT/RIGHT, HELP_MSG_TEXT_X/Y, HELP_MSG_LINE_SPACING, HELP_MSG_FONT_FLAGS, HELP_MSG_TEXT_COLOR, HELP_MSG_TEXT_LENGTH, HELP_MSG_CENTER_X, HELP_MSG_TEXT_Y_FROM_BOTTOM, HELP_MSG_BOTTOM_CLEARANCE, HELP_MSG_TEXT_PAD_V/H, HELP_MSG_BOX_INIT_HALF, HELP_MSG_CLAMP_Y_FROM_BOTTOM); FontSetWindow arg names confirmed against Deadlocked fonts.cpp (win_top/bot/left/right/text_x/text_y/line_spacing/flags). sceneSoundFlag0/1 renamed to sceneHelpMsgFlag0/1 after verifying they gate the whole help-message display (DisplayMessage sound + renderer func_001FE980 draw) plus flag1 fade-out hold and flag0 sound-param select. Verified: make split + make -j2, cmp byte-identical, tu_assembler_diff help.o 14/14, count 565 unchanged. See notes/help_func_001FDD58.md."
+  }
+  ]

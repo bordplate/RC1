@@ -8,10 +8,12 @@ extern int currentVuChain;
 
 // Allocates and starts a sound channel (sound.cpp, C linkage).
 extern "C" void func_0022DB10(int a, int b, int c);
-// Per-scene sound-notify flag bytes, cleared together at scene init; the help
-// display reads them to decide whether to play the message sound.
-extern u8 sceneSoundFlag0;
-extern u8 sceneSoundFlag1;
+// Per-scene help-message enable flags, cleared together at scene init (the
+// level sets them to show a message). Help_DisplayMessage plays the message
+// sound, and the help-message renderer draws the box, only when at least one
+// is set; flag1 additionally holds the fade-out for four ticks in Help_Update.
+extern u8 sceneHelpMsgFlag0;
+extern u8 sceneHelpMsgFlag1;
 
 // Largest boot-asset CD stream sector count the memcard code will place in
 // the level-memory stream regions; larger counts are rejected.
@@ -158,8 +160,39 @@ char* msg_string(int idx) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FDD50);
 
+// Font window for the help message: the top/bottom/left/right bounds (a
+// 424x240 box centered in the lower screen), the text origin, the line
+// spacing, and the print flags. Order matches the FontSetWindow parameters.
+#define HELP_MSG_WIN_TOP      0xF0
+#define HELP_MSG_WIN_BOT      0x1E0
+#define HELP_MSG_WIN_LEFT     0x2C
+#define HELP_MSG_WIN_RIGHT    0x1D4
+#define HELP_MSG_TEXT_X       0x100
+#define HELP_MSG_TEXT_Y       0x168
+#define HELP_MSG_LINE_SPACING 0x10
+#define HELP_MSG_FONT_FLAGS   7
+
+// Message text color: 0xFFA888 at 50% alpha; the draw path reprints the same
+// RGB each frame with the alpha animated from the state counter. A length of
+// -1 prints to the string's null terminator.
+#define HELP_MSG_TEXT_COLOR  0x80FFA888
+#define HELP_MSG_TEXT_LENGTH -1
+
+// Layout geometry stored back into g_helpState from the rendered text size
+// and the draw height (occlViewParams.paramY): the box is centered on
+// HELP_MSG_CENTER_X with the text HELP_MSG_TEXT_Y_FROM_BOTTOM above the draw
+// bottom; if the box would come within HELP_MSG_BOTTOM_CLEARANCE of the bottom
+// the text Y is clamped to keep that clearance.
+#define HELP_MSG_CENTER_X            0x100
+#define HELP_MSG_TEXT_Y_FROM_BOTTOM  0x3C
+#define HELP_MSG_BOTTOM_CLEARANCE    0xC
+#define HELP_MSG_TEXT_PAD_V          5
+#define HELP_MSG_TEXT_PAD_H          10
+#define HELP_MSG_BOX_INIT_HALF       8
+#define HELP_MSG_CLAMP_Y_FROM_BOTTOM 0x11  // BOTTOM_CLEARANCE + TEXT_PAD_V
+
 // Displays the current help message: sets the state to active, plays the
-// message sound when a scene sound flag is set, looks up the active message
+// message sound when a scene help flag is set, looks up the active message
 // text, renders it into a FontWindow, and stores the resulting layout
 // geometry (derived from the rendered text size and the draw height) back
 // into the HelpState.
@@ -169,27 +202,29 @@ void Help_DisplayMessage(void) asm("func_001FDD58");
 void Help_DisplayMessage(void) {
     g_helpState.state = 1;
     g_helpState.counter = 0;
-    if (sceneSoundFlag1 != 0 || sceneSoundFlag0 != 0)
+    if (sceneHelpMsgFlag1 != 0 || sceneHelpMsgFlag0 != 0)
         func_0022DB10(0, 1, 0);
 
     FontWindow window;
     u8* text = (u8*)HelpMsgs[g_helpState.field_0x20].text;
-    FontSetWindow(&window, 0xF0, 0x1E0, 0x2C, 0x1D4, 0x100, 0x168, 0x10, 7);
-    FontPrintWindowMedium(&window, 0x80FFA888, text, -1);
+    FontSetWindow(&window, HELP_MSG_WIN_TOP, HELP_MSG_WIN_BOT, HELP_MSG_WIN_LEFT,
+                  HELP_MSG_WIN_RIGHT, HELP_MSG_TEXT_X, HELP_MSG_TEXT_Y,
+                  HELP_MSG_LINE_SPACING, HELP_MSG_FONT_FLAGS);
+    FontPrintWindowMedium(&window, HELP_MSG_TEXT_COLOR, text, HELP_MSG_TEXT_LENGTH);
 
     int maxTextH = window.maxTextH;
     int totalH = window.totalH;
     int base = occlViewParams.paramY;
-    int bottom = base - 0x3C;
-    int offset = (totalH >> 1) + 5;
-    g_helpState.field_0x08 = (maxTextH >> 1) + 10;
-    g_helpState.field_0x10 = 0x100;
+    int bottom = base - HELP_MSG_TEXT_Y_FROM_BOTTOM;
+    int offset = (totalH >> 1) + HELP_MSG_TEXT_PAD_V;
+    g_helpState.field_0x08 = (maxTextH >> 1) + HELP_MSG_TEXT_PAD_H;
+    g_helpState.field_0x10 = HELP_MSG_CENTER_X;
     g_helpState.field_0x0C = offset;
-    g_helpState.field_0x18 = 8;
-    g_helpState.field_0x1C = 8;
+    g_helpState.field_0x18 = HELP_MSG_BOX_INIT_HALF;
+    g_helpState.field_0x1C = HELP_MSG_BOX_INIT_HALF;
     g_helpState.field_0x14 = bottom;
-    if ((base - 0xC) < bottom + offset) {
-        int cap = (totalH >> 1) + 0x11;
+    if ((base - HELP_MSG_BOTTOM_CLEARANCE) < bottom + offset) {
+        int cap = (totalH >> 1) + HELP_MSG_CLAMP_Y_FROM_BOTTOM;
         g_helpState.field_0x14 = base - cap;
     }
 }
