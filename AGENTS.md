@@ -254,6 +254,20 @@ addresses of every later function in that object and breaks full parity even
 though the function's own bytes are correct; the standalone `decomp_probe.py`
 will still match because it pins only that one symbol.
 
+Extension observed 2026-10-08 (shared-TU trailing padding, Hud_HeapAlloc
+0x1FF288): a function's REGION is bigger than its code when the Splat `.s`
+emits trailing alignment nops after `endlabel` (here the 0x74 function + 3
+nops = 0x80 region, next func at 0x1FF308). Intra-TU sizing is cumulative, so
+a C body that is 0x74 shrinks the region to 0x78 (8-byte align) and shifts the
+next function AND every downstream `.data` code-pointer to later functions in
+the TU by the shortfall (~200 KB of data diffs) even though the function's own
+bytes match. The standalone probe still passes. Fix: emit the trailing nops as
+bare file-scope `asm("nop")` statements after the C function (actuator.cpp:44-47
+precedent). This is the SHARED-TU counterpart of the isolated-segment
+inter-function padding note (pause_setLevelSpriteList), where the section
+auto-pads to the fixed segment size; a shared TU has no such size, so the
+padding is explicit. See notes/hud_Hud_HeapAlloc__FUiPcT1i.md.
+
 The compiler is correct, but compiler flags may not necessarily match what Insomniac used yet. Try to identify compiler flags when you encounter a larger function that otherwise won't match. Update this when you're confident compiler flags are correct.
 
 Observed EGC 2.95.2 scheduling habits (with the project flags): in small
