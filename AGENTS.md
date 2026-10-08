@@ -45,6 +45,18 @@ build, diff, and parity oracle.
 - `code/_generated/` is produced by Splat from the original ELF.
 - `make` plus `cmp build/boot_elf.elf assets/boot_elf.elf` is the parity oracle.
 - Generated assembly is the function-level source of truth.
+- Oracle re-extraction (2026-10-08): `assets/boot_elf.elf` was replaced with a
+  re-extracted copy of the same boot ELF (sha1 `61a44859…`, 1379036 B). The new
+  copy has a UNIFORM layout: `vram = file + 0x100000` for every segment, code
+  starts at file 0x80, and the file ends with a real section table (e_shoff
+  0x150154, 61 sections). `config/RC1.yaml` was re-based to its file offsets
+  (every `start:` and subsegment offset is a file offset into this layout).
+  The prior copy (sha1 `72fd1de3…`) had a 0x1000 front and per-section
+  non-uniform file offsets; notes that cite the old layout's file offsets sit
+  +0xF80 ahead of the new ones. Code is identical between the two copies
+  (verified by full parity on every matched C function); the data differs in
+  ~410 scattered words (top byte +0x38), all outside the patched jump-table
+  holes, which are byte-identical.
 
 Splat comment quirk (verified 2026-09-04): in generated `.s` files the third
 comment field `/* <fileoff> <vram> <hex> */` prints the raw on-disk bytes as a

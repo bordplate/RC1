@@ -1,5 +1,5 @@
 name: Ratchet & Clank (USA)
-sha1: 72fd1de379dafd8f243dceeb3be50980f3fd3cd5 
+sha1: 61a44859bad6588e63277dbe00c7c2c9feeb87c2
 
 options:
   basename: SCUS_971.99
@@ -47,62 +47,62 @@ options:
 segments:
   - [0, databin, elf_header]
 
-  - { start: 0x1000, type: data, name: vutext, linker_section: .vutext, vram: 0x100080 }
+  - { start: 0x80, type: data, name: vutext, linker_section: .vutext, vram: 0x100080 }
 
   - name: core.text
     type: code
-    start: 0x13300
+    start: 0x12380
     vram: 0x112380
     subsegments:
-    - [0x13300, asm, glibc]
-    - [0x196d0, asm, sce/lib]
-    - [0x2e6a8, asm, sce/crt0]
-    - [0x2e878, cpp, game/boot]
-    - [0x2e9a8, c, 989snd/ee/989snd_pre]
-    - [0x2EC00, c, 989snd/ee/989snd_flush]
-    - [0x2ED80, c, 989snd/ee/989snd_mid]
-    - [0x2EEA0, c, 989snd/ee/989snd_mid_byloc]
-    - [0x2F008, c, 989snd/ee/989snd_bankload]
-    - [0x2F118, c, 989snd/ee/989snd_post]
-    - [0x30148, cpp, game/permcb]
-    - [0x30188, cpp, game/wad]
+    - [0x12380, asm, glibc]
+    - [0x18750, asm, sce/lib]
+    - [0x2d728, asm, sce/crt0]
+    - [0x2d8f8, cpp, game/boot]
+    - [0x2da28, c, 989snd/ee/989snd_pre]
+    - [0x2dc80, c, 989snd/ee/989snd_flush]
+    - [0x2de00, c, 989snd/ee/989snd_mid]
+    - [0x2df20, c, 989snd/ee/989snd_mid_byloc]
+    - [0x2e088, c, 989snd/ee/989snd_bankload]
+    - [0x2e198, c, 989snd/ee/989snd_post]
+    - [0x2f1c8, cpp, game/permcb]
+    - [0x2f208, cpp, game/wad]
 
   - name: core.data
     type: data
-    start: 0x30400
+    start: 0x2f480
     vram: 0x0012f480
 
   - name: core.rdata
     type: rdata
-    start: 0x53180
+    start: 0x52200
     vram: 0x00152200
 
   - name: core.bss
     type: data
     bss_size: 0xab20
     pair_segment: core.text
-    start: 0x55080
+    start: 0x54100
     vram: 0x00154100
 
   - name: core.lit
     type: lit4
-    start: 0x5fc00
+    start: 0x5ec80
     vram: 0x0015ec80
 
   - name: lit
     type: lit4
-    start: 0x5fe80
+    start: 0x5ef00
     vram: 0x0015ef00
 
   - name: bss
     type: data
     pair_segment: text
-    start: 0x62200
+    start: 0x61280
     vram: 0x00161280
 
   - name: data
     type: data
-    start: 0x66400
+    start: 0x65480
     vram: 0x00165480
 
   # The original build keeps the dense-switch jump tables EGC compiles for
@@ -113,12 +113,12 @@ segments:
   # blob's bytes, while that TU is still all INCLUDE_ASM).
   - name: data_freeze
     type: data
-    start: 0xe8850
+    start: 0xe78d0
     vram: 0x1e78d0
 
   - name: data_suffix
     type: data
-    start: 0xe8870
+    start: 0xe78f0
     vram: 0x1e78f0
 
   # The original build keeps the dense-switch jump table EGC compiles for
@@ -129,119 +129,119 @@ segments:
   # while that TU is still all INCLUDE_ASM).
   - name: data_help
     type: data
-    start: 0xe89a0
+    start: 0xe7a20
     vram: 0x1e7a20
 
   - name: data_suffix2
     type: data
-    start: 0xe89c0
+    start: 0xe7a40
     vram: 0x1e7a40
 
   - name: lvl.vtbl
     type: rodata
-    start: 0xe9b00
+    start: 0xe8b80
     vram: 0x1e8b80
 
   - name: lvl.camvtbl
     type: rodata
-    start: 0xe9b80
+    start: 0xe8c00
     vram: 0x1e8c00
 
   - name: lvl.sndvtbl
     type: rodata
-    start: 0xe9c00
+    start: 0xe8c80
     vram: 0x1e8c80
 
   - name: text
     type: code
-    start: 0xe9c80
+    start: 0xe8d00
     vram: 0x1e8d00
     # bss_size: 0x41b0
 
     subsegments:
     # .text
-    - [0xe9c80, cpp, game/actuator]
-    - [0xea0e8, cpp, game/bloaders]
-    - [0xea330, asm, game/stub]
-    - [0xea408, cpp, game/bmain]
-    - [0xeaa38, cpp, game/transition]
-    - [0xecc10, cpp, game/camera]
-    - [0xeebd0, cpp, game/effects] # Probably the wrong name for this, but it's neither camera or cmecpu 
-    - [0xef5d0, asm, game/cmecpu]
-    - [0xf0948, asm, game/collproc]
-    - [0xf1b08, cpp, game/draw]
-    - [0xf1c60, cpp, game/draw_occl]
-    - [0xf2ff0, cpp, game/draw_post]
-    - [0xf3140, cpp, game/draw_post_reset]
-    - [0xf31e0, cpp, game/draw_post_post]
-    - [0xf8a18, asm, game/drawquad]
-    - [0xfa5c8, asm, game/fastfunc]
-    - [0xfb7e0, cpp, game/framebuf]
-    - [0xfca38, cpp, game/freeze]
-    - [0xfe660, cpp, game/help]
-    - [0xffdb8, cpp, game/hud_icon]
-    - [0xffe08, cpp, game/hud_pre]
-    - [0xfff40, cpp, game/hud]
-    - [0x1024a0, cpp, game/init]
-    - [0x102558, cpp, game/initonce]
-    - [0x1029a8, cpp, game/lights]
-    - [0x1031f0, cpp, game/loaders]
-    - [0x105c70, cpp, game/map]     # Lots of things that are referenced in draw_map_screen which is part of pause.cpp
-    - [0x1078f8, cpp, game/menu]    # Just a guess, could be slightly later
-    - [0x109798, cpp, game/menu_callbacks]
-    - [0x109850, cpp, game/menu_post]
-    - [0x109928, cpp, game/menu_post_mid]
-    - [0x109de8, cpp, game/menu_post_pages]
-    - [0x109e38, cpp, game/menu_post_gadgets]
-    - [0x109e58, cpp, game/menu_post_pages_end]
-    - [0x109fb0, cpp, game/memcard]
-    - [0x10c340, asm, game/miscproc]
-    - [0x10c8d0, asm, game/missionfunc] # Referenced in some map func stuff
-    - [0x10d478, cpp, game/mobyfunc]
-    - [0x10e7e8, asm, game/mobyproc]  # Insomniac handwrote this
-    - [0x113ba8, cpp, game/mobyutil]  # Not sure about this split, could be something towards the end of this file that isnt related to mobyutil
-    - [0x116310, cpp, game/music]
-    - [0x117668, cpp, game/stream]
-    - [0x118048, cpp, game/pad]
-    - [0x1189b0, asm, game/partproc]  # Insomniac handwrote this
-    - [0x119808, cpp, game/partupd]
-    - [0x119c90, cpp, game/pause]
-    - [0x119ee8, cpp, game/pause_sched]
-    - [0x119f18, cpp, game/pause_post]
-    - [0x11da80, cpp, game/pause_post_soundvol]
-    - [0x11dab0, cpp, game/pause_post2]
-    - [0x122ca8, cpp, game/pause_post2_levelsprite]
-    - [0x122ce8, cpp, game/pause_post3]
-    - [0x1286c0, asm, game/shadowproc]
-    - [0x129870, cpp, game/shrubfunc]
-    - [0x129b68, asm, game/shrubproc]
-    - [0x12bbb0, cpp, game/skyfunc]
-    - [0x12cb20, asm, game/skyproc]
-    - [0x12d528, cpp, game/sound]
-    - [0x12ed90, cpp, game/space]
-    - [0x133c60, cpp, game/stash]
-    - [0x133fe8, cpp, game/tfragfunc]
-    - [0x134458, cpp, game/vuchain]
-    - [0x134f30, asm, game/tfragproc] # Insomniac handwrote this
-    - [0x1365c0, cpp, game/tiefunc]
-    - [0x136b68, asm, game/tieproc]
-    - [0x1389f0, cpp, game/update]   # 00237a70
-    - [0x139290, cpp, game/vendor]
-    - [0x13b338, cpp, game/movie/movie]
-    - [0x13b710, cpp, game/movie/movie_mid]
-    - [0x13b740, cpp, game/movie/movie_post]
-    - [0x13bb20, cpp, game/movie/movie_post_audio]
-    - [0x13bb50, cpp, game/movie/audiodec]
-    - [0x13c190, cpp, game/movie/disp]
-    - [0x13c570, cpp, game/movie/read]
-    - [0x13c8c0, cpp, game/movie/readbuf]
-    - [0x13c9c8, cpp, game/movie/strfile]
-    - [0x13ca78, cpp, game/movie/vibuf]
-    - [0x13da48, cpp, game/movie/videodec]
-    - [0x13e028, cpp, game/movie/videodec_nodata]
-    - [0x13e060, cpp, game/movie/videodec_post]
-    - [0x13e110, cpp, game/movie/vobuf]
+    - [0xe8d00, cpp, game/actuator]
+    - [0xe9168, cpp, game/bloaders]
+    - [0xe93b0, asm, game/stub]
+    - [0xe9488, cpp, game/bmain]
+    - [0xe9ab8, cpp, game/transition]
+    - [0xebc90, cpp, game/camera]
+    - [0xedc50, cpp, game/effects] # Probably the wrong name for this, but it's neither camera or cmecpu 
+    - [0xee650, asm, game/cmecpu]
+    - [0xef9c8, asm, game/collproc]
+    - [0xf0b88, cpp, game/draw]
+    - [0xf0ce0, cpp, game/draw_occl]
+    - [0xf2070, cpp, game/draw_post]
+    - [0xf21c0, cpp, game/draw_post_reset]
+    - [0xf2260, cpp, game/draw_post_post]
+    - [0xf7a98, asm, game/drawquad]
+    - [0xf9648, asm, game/fastfunc]
+    - [0xfa860, cpp, game/framebuf]
+    - [0xfbab8, cpp, game/freeze]
+    - [0xfd6e0, cpp, game/help]
+    - [0xfee38, cpp, game/hud_icon]
+    - [0xfee88, cpp, game/hud_pre]
+    - [0xfefc0, cpp, game/hud]
+    - [0x101520, cpp, game/init]
+    - [0x1015d8, cpp, game/initonce]
+    - [0x101a28, cpp, game/lights]
+    - [0x102270, cpp, game/loaders]
+    - [0x104cf0, cpp, game/map]     # Lots of things that are referenced in draw_map_screen which is part of pause.cpp
+    - [0x106978, cpp, game/menu]    # Just a guess, could be slightly later
+    - [0x108818, cpp, game/menu_callbacks]
+    - [0x1088d0, cpp, game/menu_post]
+    - [0x1089a8, cpp, game/menu_post_mid]
+    - [0x108e68, cpp, game/menu_post_pages]
+    - [0x108eb8, cpp, game/menu_post_gadgets]
+    - [0x108ed8, cpp, game/menu_post_pages_end]
+    - [0x109030, cpp, game/memcard]
+    - [0x10b3c0, asm, game/miscproc]
+    - [0x10b950, asm, game/missionfunc] # Referenced in some map func stuff
+    - [0x10c4f8, cpp, game/mobyfunc]
+    - [0x10d868, asm, game/mobyproc]  # Insomniac handwrote this
+    - [0x112c28, cpp, game/mobyutil]  # Not sure about this split, could be something towards the end of this file that isnt related to mobyutil
+    - [0x115390, cpp, game/music]
+    - [0x1166e8, cpp, game/stream]
+    - [0x1170c8, cpp, game/pad]
+    - [0x117a30, asm, game/partproc]  # Insomniac handwrote this
+    - [0x118888, cpp, game/partupd]
+    - [0x118d10, cpp, game/pause]
+    - [0x118f68, cpp, game/pause_sched]
+    - [0x118f98, cpp, game/pause_post]
+    - [0x11cb00, cpp, game/pause_post_soundvol]
+    - [0x11cb30, cpp, game/pause_post2]
+    - [0x121d28, cpp, game/pause_post2_levelsprite]
+    - [0x121d68, cpp, game/pause_post3]
+    - [0x127740, asm, game/shadowproc]
+    - [0x1288f0, cpp, game/shrubfunc]
+    - [0x128be8, asm, game/shrubproc]
+    - [0x12ac30, cpp, game/skyfunc]
+    - [0x12bba0, asm, game/skyproc]
+    - [0x12c5a8, cpp, game/sound]
+    - [0x12de10, cpp, game/space]
+    - [0x132ce0, cpp, game/stash]
+    - [0x133068, cpp, game/tfragfunc]
+    - [0x1334d8, cpp, game/vuchain]
+    - [0x133fb0, asm, game/tfragproc] # Insomniac handwrote this
+    - [0x135640, cpp, game/tiefunc]
+    - [0x135be8, asm, game/tieproc]
+    - [0x137a70, cpp, game/update]   # 00237a70
+    - [0x138310, cpp, game/vendor]
+    - [0x13a3b8, cpp, game/movie/movie]
+    - [0x13a790, cpp, game/movie/movie_mid]
+    - [0x13a7c0, cpp, game/movie/movie_post]
+    - [0x13aba0, cpp, game/movie/movie_post_audio]
+    - [0x13abd0, cpp, game/movie/audiodec]
+    - [0x13b210, cpp, game/movie/disp]
+    - [0x13b5f0, cpp, game/movie/read]
+    - [0x13b940, cpp, game/movie/readbuf]
+    - [0x13ba48, cpp, game/movie/strfile]
+    - [0x13baf8, cpp, game/movie/vibuf]
+    - [0x13cac8, cpp, game/movie/videodec]
+    - [0x13d0a8, cpp, game/movie/videodec_nodata]
+    - [0x13d0e0, cpp, game/movie/videodec_post]
+    - [0x13d190, cpp, game/movie/vobuf]
 
-  - [0x13e2e0, databin, overlays]
-  - [0x1510EA, databin, section_headers]  # section headers
-  - [0x151a74]
+  - [0x13d360, databin, overlays]
+  - [0x150154, databin, section_headers]  # section headers
+  - [0x150adc]
