@@ -105,7 +105,7 @@ struct MobyClass { /* MobyClass from Deadlocked Types, probably very wrong */
 struct MobyInstance {
     struct BSphere bSphere;
     vec4 pos;
-    s8 state;
+    u8 state;
     s8 group;
     u8 mClass;
     s8 alpha;

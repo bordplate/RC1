@@ -2,17 +2,20 @@
 
 #include "mobyfunc.h"
 
+// Plain externs (no section attribute): in-window .bss globals that the
+// original loads as self-based lui/lw pairs, which the -G8 bare small-data
+// pseudo produces. A section attribute would force a two-register split load.
+extern MobyInstance* MobyInstanceEnd;
+extern MobyInstance* MobyInstancePermEnd;
+extern s32 MobyVars;
+extern s32 numSpawnableMobys;
+extern s32 worldUpdateTime;
+
 #if !defined(SKIP_ASM) && !defined(ALLOW_NONMATCHING)
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", CreateMoby__Fi);
 #endif
 
 #if defined(SKIP_ASM) || defined(ALLOW_NONMATCHING)
-extern MobyInstance* MobyInstanceEnd __attribute__((section(".bss")));
-extern MobyInstance* MobyInstancePermEnd __attribute__((section(".bss")));
-extern s32 MobyVars __attribute__((section(".bss")));
-extern s32 numSpawnableMobys __attribute__((section(".bss")));
-extern s32 worldUpdateTime __attribute__((section(".bss")));
-
 void InitMobyInstance(MobyInstance* mobyInstance, int oClass);
 
 MobyInstance* CreateMoby(s32 oClass) {
@@ -66,7 +69,41 @@ MobyInstance* CreateMoby(s32 oClass) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", InitMobyInstance__FP12MobyInstancei);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", DeleteMoby);
+// MobyInstance->state stamps written by DeleteMoby: 0xFD for a pool instance
+// (moby < MobyInstanceEnd), 0xFE for a permanent instance at or past it. The
+// CreateMoby scan skips slots with state < 0xFE, so only 0xFE/0xFF slots are
+// spawnable.
+#define MOBY_STATE_POOL_DELETED 0xFD
+#define MOBY_STATE_PERM_DELETED 0xFE
+
+// Stamp DeleteMoby hands to UpdateMobyGrids to retire the moby's grid cells:
+// the handwritten grid walk stores it at MobyInstance+0xA0 and stops matching
+// cells whose 0xAC stamp equals it.
+#define MOBY_GRID_DELETE_STAMP 0x80807F7F
+
+// Deleted slots stamp unk1 (last-update time) with worldUpdateTime + 2.
+// CreateMoby's spawn scan skips slots whose unk1 is ahead of worldUpdateTime,
+// so the offset keeps a freshly deleted slot out of the scan.
+#define MOBY_DELETE_TIMESTAMP_OFFSET 2
+
+// C linkage: this is a handwritten assembly entry point in game/mobyproc;
+// the boot-ELF symbol is unmangled and the grid walk calls itself through it.
+extern "C" void UpdateMobyGrids(MobyInstance* moby, u32 stamp);
+
+// The moby-deletion entry point at 0x20C828 is the unmangled symbol DeleteMoby
+// in the boot ELF; a C++ free function here would mangle differently, so pin
+// it with a symbol override instead of assuming C linkage.
+void DeleteMoby(MobyInstance* moby) asm("DeleteMoby");
+void DeleteMoby(MobyInstance* moby) {
+    if ((u32)moby < (u32)MobyInstanceEnd) {
+        moby->state = MOBY_STATE_POOL_DELETED;
+    } else {
+        moby->state = MOBY_STATE_PERM_DELETED;
+    }
+
+    moby->unk1 = worldUpdateTime + MOBY_DELETE_TIMESTAMP_OFFSET;
+    UpdateMobyGrids(moby, MOBY_GRID_DELETE_STAMP);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020C880);
 
