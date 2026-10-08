@@ -2,9 +2,53 @@
 #include "types.h"
 #include "hud.h"
 
+#define HUD_RAM_ALIGN 0x10
+#define HUD_RAM_ENTRY_MASK 0x7FFFFFFF
+// Word offset of bankLoad (0x74) within HudHeader.
+#define HUD_BANKLOAD_WORD_OFFSET 0x1D
+
 extern int hudHeapBase __attribute__((section(".data")));
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", LinkHudBank__FiPc);
+// Re-bases the HUD palette/texture ram entries of `bank` onto `ram` and marks
+// the bank as loaded. A ram entry is an offset within the bank's ram with bit
+// 31 used as a flag; the re-base clears the flag and adds the new base.
+void LinkHudBank(int bank, char* ram) {
+    // The original computes (header + 0x74) + bank * 4; indexing
+    // hudHeap.header->bankLoad[bank] directly instead emits
+    // header + (bank * 4 + 0x74), which does not match.
+    u32* bankLoads = (u32*)hudHeap.header + HUD_BANKLOAD_WORD_OFFSET;
+    u32* pLoad = bankLoads + bank;
+    // The seed assignment must sit before the guard: EGC keeps it as the
+    // bnez delay-slot move, but folds it into the alignment expression
+    // when both assignments are in the same basic block.
+    char* value = ram;
+    if (*pLoad == 0) {
+        value = (char*)(((u32)value + HUD_RAM_ALIGN - 1) & ~(u32)(HUD_RAM_ALIGN - 1));
+        *pLoad = (u32)value;
+        int prev;
+        int count;
+        if (bank != 0) {
+            prev = hudHeap.header->palCount[bank - 1];
+        } else {
+            prev = 0;
+        }
+        count = hudHeap.header->palCount[bank];
+        for (int i = prev; i < count; i++) {
+            hudHeap.pals[i].ram &= HUD_RAM_ENTRY_MASK;
+            hudHeap.pals[i].ram += (u32)value;
+        }
+        if (bank != 0) {
+            prev = hudHeap.header->texCount[bank - 1];
+        } else {
+            prev = 0;
+        }
+        count = hudHeap.header->texCount[bank];
+        for (int i = prev; i < count; i++) {
+            hudHeap.texs[i].ram &= HUD_RAM_ENTRY_MASK;
+            hudHeap.texs[i].ram += (u32)value;
+        }
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF120);
 
