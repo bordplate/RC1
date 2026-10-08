@@ -119,5 +119,29 @@
    "evidence": "notes/help_func_001FDD58.md; code/game/help.cpp:169-194",
    "status": "done",
    "resolved": "2026-10-07: RESOLVED - all magic numbers in Help_DisplayMessage named as #defines (HELP_MSG_WIN_TOP/BOT/LEFT/RIGHT, HELP_MSG_TEXT_X/Y, HELP_MSG_LINE_SPACING, HELP_MSG_FONT_FLAGS, HELP_MSG_TEXT_COLOR, HELP_MSG_TEXT_LENGTH, HELP_MSG_CENTER_X, HELP_MSG_TEXT_Y_FROM_BOTTOM, HELP_MSG_BOTTOM_CLEARANCE, HELP_MSG_TEXT_PAD_V/H, HELP_MSG_BOX_INIT_HALF, HELP_MSG_CLAMP_Y_FROM_BOTTOM); FontSetWindow arg names confirmed against Deadlocked fonts.cpp (win_top/bot/left/right/text_x/text_y/line_spacing/flags). sceneSoundFlag0/1 renamed to sceneHelpMsgFlag0/1 after verifying they gate the whole help-message display (DisplayMessage sound + renderer func_001FE980 draw) plus flag1 fade-out hold and flag0 sound-param select. Verified: make split + make -j2, cmp byte-identical, tu_assembler_diff help.o 14/14, count 565 unchanged. See notes/help_func_001FDD58.md."
-  }
+  },
+ {
+  "id": "vibuf_viBufCount__FP5ViBuf",
+  "file": "code/game/movie/vibuf.cpp",
+  "function": "viBufCount__FP5ViBuf",
+  "addresses": [
+   "0x0023C610"
+  ],
+  "category": "style",
+  "description": "viBufCount uses a raw `<< 11` to turn the block count (field_0x10) into bytes. VIBUF_BLOCK_SHIFT (11) / VIBUF_BLOCK_SIZE (0x800) are now defined in code/include/vibuf.h (added for viBufFlush). Replace the literal 11 with VIBUF_BLOCK_SHIFT (e.g. `self->field_0x10 << VIBUF_BLOCK_SHIFT`) and re-verify viBufCount stays byte-identical (object diff + full boot ELF cmp).",
+  "evidence": "code/game/movie/vibuf.cpp:51; code/include/vibuf.h (VIBUF_BLOCK_SHIFT); notes/vibuf_viBufFlush__FP5ViBuf.md",
+  "status": "open"
+ },
+ {
+  "id": "vibuf_getFIFOindex__FP5ViBufPv",
+  "file": "code/game/movie/vibuf.cpp",
+  "function": "getFIFOindex__FP5ViBufPv",
+  "addresses": [
+   "0x0023BAF8"
+  ],
+  "category": "style",
+  "description": "getFIFOindex uses a raw `>> 11` to compute the block index from a byte offset. VIBUF_BLOCK_SHIFT (11) is now defined in code/include/vibuf.h. Replace the literal 11 with VIBUF_BLOCK_SHIFT (`((u32)v - self->base) >> VIBUF_BLOCK_SHIFT`) and re-verify getFIFOindex stays byte-identical (object diff + full boot ELF cmp).",
+  "evidence": "code/game/movie/vibuf.cpp:14; code/include/vibuf.h (VIBUF_BLOCK_SHIFT); notes/vibuf_viBufFlush__FP5ViBuf.md",
+  "status": "open"
+ }
   ]

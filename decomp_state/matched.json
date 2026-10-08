@@ -2615,5 +2615,15 @@
   "size": 88,
   "matched_date": "2026-10-08",
   "note": "Moby retirement entry point; already an unmangled C-linkage symbol in the boot ELF (asm override on the declaration). state = 0xFD for pool instances (moby < MobyInstanceEnd), 0xFE for permanent ones; CreateMoby's spawn scan skips state < 0xFE. unk1 (u64 at +0x38) = worldUpdateTime + 2 so the scan's `worldUpdateTime < unk1` skip keeps the slot out for a couple of updates. Calls handwritten UpdateMobyGrids (game/mobyproc, C linkage) with stamp 0x80807F7F to retire the grid cells. Codegen: plain externs (no .bss section attribute) give the original self-based lui/lw loads of the in-window MobyInstanceEnd/worldUpdateTime; struct state field corrected s8 -> u8 (original emits positive addiu 0xFD/0xFE immediates); stamp arg u32 for the unsigned ori low half. No pins, default flags. See notes/mobyfunc_DeleteMoby.md."
+ },
+ "code/game/movie/vibuf.cpp:56:viBufFlush__FP5ViBuf": {
+  "name": "viBufFlush__FP5ViBuf",
+  "source": "code/game/movie/vibuf.cpp",
+  "asm": "code/_generated/nonmatchings/game/movie/vibuf/viBufFlush__FP5ViBuf.s",
+  "vram": "0x0023C660",
+  "file_offset": "0x13C660",
+  "size": 84,
+  "note": "Rounds field_0x14 up to the next 0x800 VU block under the sema. WaitSema(0x1189B0); rounded=field+(VIBUF_BLOCK_SIZE-1); alt=field+(2*VIBUF_BLOCK_SIZE-2); if(rounded>=0) field=round_down_0x800(rounded) else field=round_down_0x800(alt); SignalSema(0x118990). No new symbols/prototypes (fields named in vibuf.h, sema/SignalSema already extern C). Block size/shift named VIBUF_BLOCK_SIZE/VIBUF_BLOCK_SHIFT in code/include/vibuf.h. Single EGC tie-break: a bare `rounded > -1` comparison normalizes to `slt rounded,0`+`movz` (80 bytes); the original keeps -1 as a live register with `slt(-1,rounded)`+`movn`, reproduced by writing the -1 as a plain (non-const) local `int limit=-1; if(limit<rounded) alt=rounded;` (const folds back). Full make + cmp byte-for-byte.",
+  "matched_date": "2026-10-08"
  }
 }

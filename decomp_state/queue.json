@@ -2552,14 +2552,6 @@
   "status": "todo"
  },
  {
-  "id": "code/game/movie/vibuf.cpp:56:viBufFlush__FP5ViBuf",
-  "source": "code/game/movie/vibuf.cpp",
-  "line": 56,
-  "asm": "code/_generated/nonmatchings/game/movie/vibuf/viBufFlush__FP5ViBuf.s",
-  "name": "viBufFlush__FP5ViBuf",
-  "status": "todo"
- },
- {
   "id": "code/game/movie/vibuf.cpp:58:viBufModifyPts__FP5ViBufP9TimeStamp",
   "source": "code/game/movie/vibuf.cpp",
   "line": 58,

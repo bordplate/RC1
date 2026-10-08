@@ -53,7 +53,20 @@ int viBufCount(ViBuf* self) {
     return x;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufFlush__FP5ViBuf);
+// Rounds field_0x14 (bytes put) up to the next 0x800 VU block. The signed
+// low/wrap case takes the 0xffe path; EGC only emits the original's
+// `slt(-1, rounded)` + `movn` select when the -1 is a live local, so it stays
+// a variable (a const folds back into an `a < 0` + `movz`).
+void viBufFlush(ViBuf* self) {
+    WaitSema(self->sema);
+    int rounded = self->field_0x14 + (VIBUF_BLOCK_SIZE - 1);
+    int alt = self->field_0x14 + (2 * VIBUF_BLOCK_SIZE - 2);
+    int limit = -1;
+    if (limit < rounded)
+        alt = rounded;
+    self->field_0x14 = (alt >> VIBUF_BLOCK_SHIFT) << VIBUF_BLOCK_SHIFT;
+    SignalSema(self->sema);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufModifyPts__FP5ViBufP9TimeStamp);
 

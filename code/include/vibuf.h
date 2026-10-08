@@ -29,4 +29,9 @@ typedef struct ViBuf {
     u32 tagIdx;
 } ViBuf;
 
+// A ViBuf FIFO block is 0x800 (2048) bytes; field_0x10 counts blocks and
+// field_0x14 holds the byte offset within the current block.
+#define VIBUF_BLOCK_SHIFT 11
+#define VIBUF_BLOCK_SIZE (1 << VIBUF_BLOCK_SHIFT)
+
 #endif
