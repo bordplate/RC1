@@ -48,7 +48,7 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufDelete__FP5ViB
 
 int viBufCount(ViBuf* self) {
     WaitSema(self->sema);
-    int x = (self->field_0x10 << 11) + self->field_0x14;
+    int x = (self->field_0x10 << VIBUF_BLOCK_SHIFT) + self->field_0x14;
     SignalSema(self->sema);
     return x;
 }
