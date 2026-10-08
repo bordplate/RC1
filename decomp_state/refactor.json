@@ -143,6 +143,7 @@
   "category": "style",
   "description": "getFIFOindex uses a raw `>> 11` to compute the block index from a byte offset. VIBUF_BLOCK_SHIFT (11) is now defined in code/include/vibuf.h. Replace the literal 11 with VIBUF_BLOCK_SHIFT (`((u32)v - self->base) >> VIBUF_BLOCK_SHIFT`) and re-verify getFIFOindex stays byte-identical (object diff + full boot ELF cmp).",
   "evidence": "code/game/movie/vibuf.cpp:14; code/include/vibuf.h (VIBUF_BLOCK_SHIFT); notes/vibuf_viBufFlush__FP5ViBuf.md",
-  "status": "open"
+  "status": "done",
+  "resolved": "2026-10-08: RESOLVED - getFIFOindex now shifts by VIBUF_BLOCK_SHIFT (vibuf.cpp:14). Verified: full build, getFIFOindex objdump-identical to original at 0x23BAF8, cmp build/boot_elf.elf assets/boot_elf.elf byte-identical."
  }
   ]

@@ -11,7 +11,7 @@ u32 getFIFOindex(ViBuf* self, void* v) {
     if (v == (void*)i) {
         return 0;
     }
-    return ((u32)v - self->base) >> 11;
+    return ((u32)v - self->base) >> VIBUF_BLOCK_SHIFT;
 }
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", setD3_CHCR__FUi);
