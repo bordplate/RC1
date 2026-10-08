@@ -50,12 +50,25 @@ def main():
     rows = re.findall(r"/\*\s*([0-9A-Fa-f]+)\s+([0-9A-Fa-f]+)\s+([0-9A-Fa-f]{8})\s*\*/", reference.split("endlabel", 1)[0])
     if not rows:
         parser.error("reference contains no Splat instruction rows")
-    offset, address = (int(value, 16) for value in rows[0][:2])
+    # The Splat comment's first field is not a reliable file offset (stale
+    # segment views); the vram address (second field) maps through the boot
+    # ELF section table instead.
+    address = int(rows[0][1], 16)
     expected = bytes.fromhex("".join(row[2] for row in rows))
     for index, row in enumerate(rows):
-        if int(row[0], 16) != offset + index * 4 or int(row[1], 16) != address + index * 4:
-            parser.error("reference instruction rows are not contiguous")
+        if int(row[1], 16) != address + index * 4:
+            parser.error("reference vram addresses are not contiguous")
     original = (ROOT / "assets/boot_elf.elf").read_bytes()
+    with (ROOT / "assets/boot_elf.elf").open("rb") as stream:
+        containing = [
+            section for section in ELFFile(stream).iter_sections()
+            if section["sh_type"] == "SHT_PROGBITS" and section["sh_size"]
+            and section["sh_addr"] <= address < section["sh_addr"] + section["sh_size"]
+        ]
+    if len(containing) != 1:
+        parser.error(f"vram {hex(address)} is not in exactly one boot section")
+    section = containing[0]
+    offset = section["sh_offset"] + (address - section["sh_addr"])
     if original[offset:offset + len(expected)] != expected:
         parser.error("reference bytes disagree with original boot image")
     with base.with_suffix(".log").open("w") as log:
