@@ -50,7 +50,25 @@ void LinkHudBank(int bank, char* ram) {
     }
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF120);
+// Unreachable dead tail the original compiler emitted after LinkHudBank
+// (0x1FEFC0, matched): a zero store to the bankLoad word
+// (sw $zero,0x74($v0)) plus the alignment nop before
+// Hud_SendResidentBank. Nothing reaches it (no Ghidra function;
+// tools/deadness_scan.py: 0 references), so the bytes are preserved with
+// raw asm per the dead-tail policy.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001FF120, 0x4\n"
+    "glabel func_001FF120\n"
+    "    sw $0, 0x74($2)\n"
+    "endlabel func_001FF120\n"
+    "    nop\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", Hud_SendResidentBank__FiPcb);
 
