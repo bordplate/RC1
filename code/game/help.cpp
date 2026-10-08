@@ -231,7 +231,69 @@ void Help_DisplayMessage(void) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_Update);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", Help_DrawPrompt);
+// The prompt box/icon geometry and fade: the prompt is a 64x64 effect-texture
+// icon centered in the help box (field_0x10/field_0x14), drawn with a gray
+// alpha tint, plus a beveled UI frame around the box. Its alpha fades in by
+// HELP_PROMPT_FADE_STEP per counter tick while the state machine is in a fade
+// state, clamped to full opacity; otherwise it sits just below full.
+#define HELP_PROMPT_BOX_HALF   0x20  // prompt box/icon half-extent (64x64 box)
+#define HELP_PROMPT_TEX_SIZE   0x40  // prompt icon size and texture region
+#define HELP_PROMPT_FRAME_ALPHA 0x60 // UI frame opacity behind the prompt
+#define HELP_PROMPT_EFFECT_TEX 4     // effectTexs[] slot bound for the icon
+#define HELP_PROMPT_TINT_RGB   0x808080 // gray RGB tint of the prompt icon
+#define HELP_PROMPT_FADE_STEP  21    // alpha gained per counter tick fading
+#define HELP_PROMPT_ALPHA_IDLE 0x7E  // prompt alpha outside a fade state
+#define HELP_PROMPT_ALPHA_FULL 0x80  // full opacity; the fade clamps to this
+
+// GetEffectTex returns the 64-bit tex0 word of effectTexs[texId] (a 64-bit ld
+// in its epilogue), so the return must be 64-bit for the icon argument below.
+// The real entry takes a second int this call site leaves stale (only a0 is
+// set before the jal); this EGC rejects a one-argument call to a two-parameter
+// prototype, so the one-parameter form is pinned to the original label.
+unsigned long GetEffectTex(int texId) asm("GetEffectTex__Fii");
+// C linkage: the stripped-ELF symbol is unmangled DrawTexturedQuad, in the
+// same C-linkage UI/draw API family as DrawUIFrame (whose definition in
+// draw_post_post.cpp carries the full evidence).
+// Draws a textured quad at (x, y) of size (w, h) sampling the texture region
+// (u, v) of size (uw, vh), with a 64-bit color and a 64-bit texture reference.
+extern "C" void DrawTexturedQuad(int x, int y, int w, int h, int u, int v,
+                                 int uw, int vh, unsigned long color,
+                                 unsigned long tex);
+// C linkage: confirmed unmangled in the stripped ELF; the definition with the
+// full evidence comment lives in draw_post_post.cpp (same UI/draw family).
+extern "C" void DrawUIFrame(int top, int bot, int left, int right, int alpha);
+
+// Draws the prompt: a 64x64 effect-texture icon centered in the help box with
+// a gray alpha tint, over a beveled UI frame around the box. The box half is
+// stored in the HelpState (field_0x18/field_0x1C) for the rest of the prompt
+// rendering. The icon's alpha fades in with the counter while the state
+// machine is in a fade state (1 or 7), clamped to full opacity, and otherwise
+// sits just below full.
+// C linkage: the stripped-ELF symbol is unmangled Help_DrawPrompt; the
+// level-overlay callers reference the original unmangled entry point (same
+// as the sibling Help_FindIndex in this file).
+extern "C" void Help_DrawPrompt(void) {
+    g_helpState.field_0x18 = HELP_PROMPT_BOX_HALF;
+    g_helpState.field_0x1C = HELP_PROMPT_BOX_HALF;
+    DrawUIFrame(g_helpState.field_0x14 - HELP_PROMPT_BOX_HALF,
+                g_helpState.field_0x14 + HELP_PROMPT_BOX_HALF,
+                g_helpState.field_0x10 - HELP_PROMPT_BOX_HALF,
+                g_helpState.field_0x10 + HELP_PROMPT_BOX_HALF,
+                HELP_PROMPT_FRAME_ALPHA);
+    int alpha;
+    if (g_helpState.state == 1 || g_helpState.state == 7)
+        alpha = g_helpState.counter * HELP_PROMPT_FADE_STEP;
+    else
+        alpha = HELP_PROMPT_ALPHA_IDLE;
+    if (alpha > HELP_PROMPT_ALPHA_FULL)
+        alpha = HELP_PROMPT_ALPHA_FULL;
+    unsigned long tex = GetEffectTex(HELP_PROMPT_EFFECT_TEX);
+    unsigned long color = (alpha << 24) | HELP_PROMPT_TINT_RGB;
+    DrawTexturedQuad(g_helpState.field_0x10 - HELP_PROMPT_BOX_HALF,
+                     g_helpState.field_0x14 - HELP_PROMPT_BOX_HALF,
+                     HELP_PROMPT_TEX_SIZE, HELP_PROMPT_TEX_SIZE, 0, 0,
+                     HELP_PROMPT_TEX_SIZE, HELP_PROMPT_TEX_SIZE, color, tex);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FE980);
 

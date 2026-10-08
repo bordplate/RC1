@@ -973,8 +973,11 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/draw_post_post", FontPrint);
 // The real GetEffectTex__Fii entry point takes two int parameters, but the
 // callee never reads the second and this call site leaves it stale (only a0
 // is set before the jal). This EGC rejects a one-argument call to a
-// two-parameter prototype, so the one-parameter declaration is pinned to
-// the original label.
+// two-parameter prototype, so the one-parameter declaration is pinned to the
+// original label. NOTE: the entry actually returns a 64-bit tex0 word (a 64-bit
+// ld in its epilogue); this 32-bit return is what the font call sites (which
+// pass the result to an int tex parameter) match with. help.cpp declares it
+// 64-bit because Help_DrawPrompt uses the full word; see the note there.
 int GetEffectTex(int texId) asm("GetEffectTex__Fii");
 
 // The per-level effectTexs[] slots bound by the font family: each glyph
