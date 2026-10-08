@@ -77,7 +77,40 @@ void Hud_HeapReset(void) {
     hudHeap.heapCursor = hudHeapBase;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", Hud_HeapAlloc__FUiPcT1i);
+// Bump-allocates a 16-byte-aligned block from the HUD heap. Returns the block
+// start (the previous cursor) or 0 when the heap is full; resets the heap
+// first if the cursor is still 0.
+// EGC collapses the (size + align-1) & ~mask -> new-cursor chain into one
+// register, but the original keeps size+align-1 in a1, the aligned size in s0,
+// and the new cursor in a0 (updating the old cursor in place). Pin the size,
+// the two chain temps, and the cursor to force that allocation.
+char* Hud_HeapAlloc(unsigned int size, char* comment, char* file, int line) {
+    register unsigned int sz asm("$16");
+    sz = size;
+    if (hudHeap.heapCursor == 0) {
+        Hud_HeapReset();
+    }
+    if ((int)sz <= (int)(hudHeap.heapEnd - hudHeap.heapCursor)) {
+        register u32 s15 asm("$5");
+        s15 = sz + (HUD_RAM_ALIGN - 1);
+        register u32 aligned asm("$16");
+        aligned = s15 & ~(u32)(HUD_RAM_ALIGN - 1);
+        register u32 cursor asm("$4");
+        cursor = hudHeap.heapCursor;
+        char* result = (char*)cursor;
+        cursor += aligned;
+        hudHeap.heapCursor = cursor;
+        return result;
+    }
+    return 0;
+}
+
+// Trailing alignment padding EGC emitted after Hud_HeapAlloc (0x1FF2FC-0x1FF307,
+// three nops) before func_001FF308. The C body is 0x74 bytes but the original
+// region is 0x80, so emit the padding to keep func_001FF308 at 0x1FF308.
+asm("nop");
+asm("nop");
+asm("nop");
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF308);
 
