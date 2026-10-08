@@ -2588,5 +2588,14 @@
   "size": 100,
   "matched_date": "2026-10-08",
   "note": "messageIdCodeTable (150x{s16 id; u16 code} @0x199710) record lookup: find the record whose id (col 0) or code (col 1) == (s16)value, return its index else -1; a col-1 search with non-null idOut also stores the record id (code->id). Byte-for-byte via: the movn ternary condition is column (a1) not idOut (raw 0x0065380b = movn a3,v1,a1), a named base local, a pre-loop barrier forcing base->t2/p->t0/q->a3 (q assigned AFTER the barrier), register int r asm(\"$3\")==i*4 to land the shift temp in v1, the store as integer add *(u16*)(q+(u32)base) for the addu operand order, and an empty asm keeping i++ out of the exit-branch delay slot. See notes/help_func_001FECC8.md."
+ },
+ "code/game/help.cpp:375:Help_TouchMessage": {
+  "name": "Help_TouchMessage",
+  "original_name": "func_001FED30",
+  "source": "code/game/help.cpp",
+  "vram": "0x001FED30",
+  "size": 256,
+  "matched_date": "2026-10-08",
+  "note": "Touch/move-to-end on the active-message list. rec = messageIdCodeTableFind((s16)msgId,0,0) (0x1FECC8); return if rec==-1. Search the byte list activeMessageRecords (0x141E08, one u8 per record index, count in activeMessageRecordCount 0x15EE30) for rec; if found at i, shift [i,count) left, zero the hole, decrement count; then (both paths) append rec at [count] and increment count. Net effect = make rec the most recent active message (LRU touch); the pause/help screen builds its sprite list from these indices most-recent-last. Caller: freeze.cpp case 5 (autosave warning). CRITICAL codegen (EGC 2.95.2, -G8 -O2 -ffast-math, SN): (1) the SEARCH must be a `for` loop whose iterator increment sits in the clause (`for (; recs[i]!=rec && i<count; i++) ;`) - a `while` with i++ in the body drops the dead count load (lw v1,count GPREL) that the original parks in the `blez` delay slot at 0x1FED74, leaving an 8-byte gap; (2) the SHIFT must be a `while (i<count-1){recs[i]=recs[i+1]; i++;}` with DIRECT ARRAY INDEXING on the global - a pointer local (u8* recs) triggers EGC's countdown transform (subu) and a `for` shift re-pipelines it (v3-v11 all failed). Both loops index activeMessageRecords[] directly. A 4-byte dead tail (addiu sp,sp,0x10 + alignment nop) the original compiler emitted after the epilogue at 0x1FEE30 (ghost, no Ghidra function, deadness_scan 0 refs) is preserved via file-scope raw asm (func_001FEE30) per the dead-tail policy. Verified: region 0x1FED30-0x1FEE37 byte-identical (objdump + raw compare), full clean rebuild parity OK, count 563->561."
  }
 }

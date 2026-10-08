@@ -548,6 +548,14 @@ messageIdCodeTable = 0x199710;
 s_Paradox_this_message_does_not = 0x199968;
 Help_Update = 0x01fde90;
 Help_DrawPrompt = 0x1fe898;
+// Table-record indices of the messages currently shown, in recency order.
+// Help_TouchMessage moves a record to the end (or appends it) so the
+// pause/help screen can list them most-recent-last. One byte per index.
+activeMessageRecords = 0x141e08;
+// Number of entries in activeMessageRecords.
+activeMessageRecordCount = 0x15ee30;
+// Marks a message id's table record as the most recent active message.
+Help_TouchMessage = 0x1fed30;
 
 FlushCache = 0x118a80;
 FastMemSet = 0x1f97e8;

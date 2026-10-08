@@ -351,5 +351,62 @@ int messageIdCodeTableFind(int value, int column, u16* idOut) {
     return -1;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FED30);
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FEE30);
+// Records in messageIdCodeTable, and the indices of those that are currently
+// shown, in recency order (most recent last); the pause/help screen builds its
+// sprite list from the indices. One byte per index, max
+// MSG_ID_CODE_TABLE_RECORDS entries.
+extern u8 activeMessageRecords[];
+extern int activeMessageRecordCount;
+
+// Marks the message id's table record as the most recently active: if the
+// record index is already in activeMessageRecords it is shifted to the end,
+// otherwise it is appended. Shown messages are touched when they are raised
+// (e.g. the autosave warning), so the list tracks recency. A message id that
+// is not in the table is ignored.
+// C linkage: the entry point is referenced by callers with an unmangled C
+// label, as in the sibling Help_FindIndex (the independent Lombyte analysis
+// of this same build declares it C-style too).
+// Codegen notes (required to match this EGC's tie-breaks): the search must be
+// a for loop whose iterator increment sits in the clause (a while with i++ in
+// the body drops the dead count load in the blez delay slot); the shift must
+// be a while with i++ in the body and direct array indexing on the global (a
+// pointer local triggers EGC's countdown transform and a for loop re-pipelines
+// it).
+extern "C" void Help_TouchMessage(int msgId) {
+    int rec = messageIdCodeTableFind((s16)msgId, 0, (u16*)0);
+    if (rec == -1)
+        return;
+    int i = 0;
+    for (; activeMessageRecords[i] != rec && i < activeMessageRecordCount; i++)
+        ;
+    if (i < activeMessageRecordCount) {
+        while (i < activeMessageRecordCount - 1) {
+            activeMessageRecords[i] = activeMessageRecords[i + 1];
+            i++;
+        }
+        activeMessageRecords[i] = 0;
+        activeMessageRecordCount = activeMessageRecordCount - 1;
+    }
+    int c = activeMessageRecordCount;
+    activeMessageRecords[c] = (u8)rec;
+    activeMessageRecordCount = c + 1;
+}
+
+// Unreachable dead tail the original compiler emitted after Help_TouchMessage:
+// a stack deallocation (addiu sp,sp,0x10) plus the alignment nop before the
+// next function. Nothing reaches it (no Ghidra function;
+// tools/deadness_scan.py: 0 references), so the bytes are preserved with raw
+// asm per the dead-tail policy.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001FEE30, 0x4\n"
+    "glabel func_001FEE30\n"
+    "    addiu $29, $29, 0x10\n"
+    "endlabel func_001FEE30\n"
+    "    nop\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);

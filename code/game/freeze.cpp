@@ -29,10 +29,10 @@ void music_Pause(int arg);
 // C linkage: handwritten fast function in game/fastfunc; scales a frame count
 // by the frame-rate factor (see bmain.cpp).
 extern "C" int func_001F96F8(int frames);
-// C linkage: implemented in the generated nonmatching help assembly
-// (func_001FED30.s), whose entry point is the unmangled label. Shows a freeze
-// dialog prompt for the given message id; purpose otherwise unconfirmed.
-extern "C" void func_001FED30(int msgId);
+// C linkage: the level-overlay callers reference the original unmangled
+// entry point. Marks the message id as the most recently active (see
+// help.cpp) so the pause/help screen lists shown messages in recency order.
+extern "C" void Help_TouchMessage(int msgId);
 
 // Freeze countdown duration in frames (scaled by func_001F96F8).
 #define FREEZE_COUNTDOWN_FRAMES 0x1E
@@ -42,7 +42,7 @@ extern "C" void func_001FED30(int msgId);
 // takes a group bitmask; the per-bit meanings are not established.
 #define FREEZE_SOUND_GROUPS 0x1D
 
-// Message-table ids for msg_string / func_001FED30. The table is loaded at
+// Message-table ids for msg_string / Help_TouchMessage. The table is loaded at
 // runtime per level (Help_LoadMsgs over help_messages_<lang>.bin; the global
 // set in assets/globals/all_text.bin); the id space is shared across levels
 // and languages, and the glyph bytes below (0x10/0x11/0x12) select button
@@ -101,7 +101,7 @@ void mode_freezeInit(int dialog, int restorePage)
         Freeze.countdown = 0;
         break;
     case 5:
-        func_001FED30(MSG_AUTOSAVE_WARNING);
+        Help_TouchMessage(MSG_AUTOSAVE_WARNING);
         Freeze.countdown = func_001F96F8(FREEZE_COUNTDOWN_FRAMES);
         Freeze.field_0x20 = 0;
         Freeze.field_0x24 = func_001F96F8(FREEZE_COUNTDOWN_FRAMES);
