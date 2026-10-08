@@ -6,10 +6,6 @@
 #define HUD_AUX_BANK_SIZE 0x1400
 #define HUD_SLOT_COUNT 13
 
-// Symbol override: func_001FF308 is still an INCLUDE_ASM placeholder in
-// hud.cpp whose ELF symbol is the unmangled address label (the cfront-mangled
-// name is unknown until it is decompiled); the asm label targets that label.
-int func_001FF308(int, int, int, int, int, int, int) asm("func_001FF308");
 void* Hud_HeapAlloc(unsigned int, char*, char*, int);
 void FastMemZero16(void*, int);
 
@@ -45,7 +41,7 @@ void Hud_InitBanks(void) {
     do {
         anchor[0x10] = -1;
         anchor[-1] = 0x10000;
-        func_001FF308(i, 0xFFFF, 0, 0, 0, 0, 1);
+        Hud_SetChannelPending(i, 0xFFFF, 0, 0, 0, 0, 1);
         i++;
         anchor[0x16] = 0;
         anchor[0x12] = -6;

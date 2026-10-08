@@ -106,72 +106,9 @@ char* Hud_HeapAlloc(unsigned int size, char* comment, char* file, int line) {
 }
 
 // Trailing alignment padding EGC emitted after Hud_HeapAlloc (0x1FF2FC-0x1FF307,
-// three nops) before func_001FF308. The C body is 0x74 bytes but the original
-// region is 0x80, so emit the padding to keep func_001FF308 at 0x1FF308.
+// three nops) before the hud_chan segment (Hud_SetChannelPending, in
+// hud_chan.cpp). The C body is 0x74 bytes but the original region is 0x80, so
+// emit the padding to keep the segment boundary at 0x1FF308.
 asm("nop");
 asm("nop");
 asm("nop");
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF308);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF418);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF480);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF500);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF568);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF570);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF5E8);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF6D8);
-
-extern int hudMessageTimer;
-
-void hud_updateMessageTimer(void) {
-    if (hudMessageTimer != 0) {
-        hudMessageTimer--;
-    }
-}
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF780);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FF958);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", GetIconFrame__Fii);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", GetFrameTex__Fi);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FFC30);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_001FFE18);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200078);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200258);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200468);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200600);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200958);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", Hud_sendTexture__FPciiiii);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200C80);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200E08);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00200F90);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00201110);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00201128);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_00201200);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", func_002012A8);
-
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud", draw_bootImage__Fi);

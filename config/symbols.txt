@@ -731,6 +731,7 @@ Hud_sendTexture__FPciiiii = 0x0200b10;
 Hud_HeapReset__Fv = 0x1ff260;
 Hud = 0x0019a3f4;
 Hud_HeapAlloc__FUiPcT1i = 0x01ff288;
+Hud_SetChannelPending__Fiiiiiii = 0x01ff308;
 GetIconFrame__Fii = 0x1ff960;
 GetFrameTex__Fi = 0x01ffa10;
 Hud_InitBanks__Fv = 0x001fee88;

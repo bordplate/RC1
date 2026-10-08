@@ -37,22 +37,30 @@ typedef struct {
 } HudFramePal;
 
 // 0x90-byte HUD channel-slot record; 13 of these sit at hudChanSlots
-// (0x199B60). Hud_InitBanks zeroes/resets them and the slot allocator
-// (func_001FF308) fills the rest. Most field meanings are not established yet.
+// (0x199B60). Hud_InitBanks zeroes/resets them and Hud_SetChannelPending fills
+// the pending block (0x20-0x38) with a channel request. When the request's
+// mode & slot->mode & 0x20 holds, func_001FF418 commits the pending block into
+// the active block (0x04-0x18) and invokes the callback fn. b..e are opaque
+// callback parameters (named for the Hud_SetChannelPending argument they hold).
 typedef struct {
     u32 field_00;    // +0x00
-    u32 modeBits;    // +0x04: mode flags ANDed against the slot mode
-    u8 pad_08[0x18]; // +0x08
-    u32 field_20;    // +0x20
-    u32 mode;        // +0x24: slot mode (arg & 0xFFF0)
-    u32 field_28;    // +0x28
-    u32 field_2C;    // +0x2C
-    u32 field_30;    // +0x30
-    u32 field_34;    // +0x34
-    u32 field_38;    // +0x38
+    u32 mode;        // +0x04: committed channel mode (arg & 0xFFF0)
+    u32 b;           // +0x08
+    u32 c;           // +0x0C
+    u32 fn;          // +0x10: channel callback, invoked on commit
+    u32 d;           // +0x14
+    u32 e;           // +0x18
+    u8 pad_1C[4];    // +0x1C
+    u32 pendId;      // +0x20
+    u32 pendMode;    // +0x24
+    u32 pendB;       // +0x28
+    u32 pendC;       // +0x2C
+    u32 pendFn;      // +0x30
+    u32 pendD;       // +0x34
+    u32 pendE;       // +0x38
     u8 pad_3C[0x28]; // +0x3C
     u32 serial;      // +0x64: assigned slot serial
-    u32 field_68;    // +0x68
+    u32 pending;     // +0x68: pending flag, cleared on commit
     u32 field_6C;    // +0x6C
     u32 field_70;    // +0x70
     u8 pad_74[0x8];  // +0x74
@@ -84,5 +92,8 @@ typedef struct {
 
 extern HudHeap hudHeap __attribute__((section(".data")));
 extern HudChanSlot hudChanSlots[13];
+
+// Records a pending channel request (see hud_chan.cpp); returns the slot serial.
+int Hud_SetChannelPending(int chan, int id, int fn, int d, int e, int c, int b);
 
 #endif
