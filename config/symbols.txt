@@ -544,6 +544,7 @@ HelpMsgCount = 0x01996fc;
 HelpMsgs = 0x015f6a0;
 helpMsgData = 0x015ef60;
 helpOffsetTable = 0x015ef64;
+messageIdCodeTable = 0x199710;
 s_Paradox_this_message_does_not = 0x199968;
 Help_Update = 0x01fde90;
 Help_DrawPrompt = 0x1fe898;

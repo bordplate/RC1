@@ -297,6 +297,59 @@ extern "C" void Help_DrawPrompt(void) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FE980);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FECC8);
+// A message-id / text-code pair from the message table. The code is the
+// sequential text handle (0x526F+) the renderer uses to fetch the string for
+// a message id; the table lets the game map between the two spaces.
+struct MessageIdCode {
+    s16 id;
+    u16 code;
+};
+// 150 message-id / text-code pairs (the final two are zero); the id space is
+// shared across levels and languages. Sits in .data right before the
+// "Paradox: This message does not exist" fallback string.
+extern struct MessageIdCode messageIdCodeTable[150];
+// Records in messageIdCodeTable; each record is 2 s16 (id, code) = 4 bytes.
+#define MSG_ID_CODE_TABLE_RECORDS 150
+#define MSG_ID_CODE_RECORD_S16 2
+#define MSG_ID_CODE_RECORD_BYTES 4
+
+// Finds the record in messageIdCodeTable whose id (column 0) or code
+// (column 1) equals value and returns its index, or -1 when nothing matches.
+// A code search (column 1) with a non-null idOut also stores the record's id
+// there, mapping a text-code back to its message id. func_001FED30 searches
+// by message id to track which messages are shown; the pause screen searches
+// by code to recover the id.
+// Codegen notes (required to match this EGC's tie-breaks): the pre-loop
+// barrier pins the table base / search pointer / offset into t2 / t0 / a3;
+// the loop iterator's shift lands in v1 via the pinned r; the store address
+// is an integer add (q + base) so the base stays the right operand; and the
+// empty asm keeps i++ out of the exit-branch delay slot.
+// Symbol override: the callers still reference the address-based label.
+int messageIdCodeTableFind(int value, int column, u16* idOut)
+    asm("func_001FECC8");
+int messageIdCodeTableFind(int value, int column, u16* idOut) {
+    value = (s16)value;
+    s16* base = (s16*)messageIdCodeTable;
+    s16* p = base + column;
+    int i = 0;
+    int q;
+    asm volatile("" : : "r"(p), "r"(base) : "$3", "$7");
+    q = sizeof(s16);
+    do {
+        if (*p == value) {
+            register int r asm("$3") = i * MSG_ID_CODE_RECORD_BYTES;
+            q = column ? r : q;
+            if (idOut)
+                *idOut = *(u16*)(q + (u32)base);
+            return i;
+        }
+        asm volatile("");
+        i++;
+        q += MSG_ID_CODE_RECORD_BYTES;
+        p += MSG_ID_CODE_RECORD_S16;
+    } while (i < MSG_ID_CODE_TABLE_RECORDS);
+    return -1;
+}
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FED30);
 INCLUDE_ASM("code/_generated/nonmatchings/game/help", func_001FEE30);

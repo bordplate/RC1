@@ -2580,5 +2580,13 @@
   "size": 108,
   "matched_date": "2026-10-07",
   "note": "Help message id -> index search: ret=-1; i=0; while (i < g_helpState.msgCount) if (HelpMsgs[i].id == idx) { ret=i; break; } i++; return ret; C linkage (level-overlay callers use the unmangled entry). Plain default-flags form matches byte-for-byte: EGC peels the i=0 iteration into a precheck (HelpMsgs[0].id via the self-based HelpMsgs load, no index math) with the loop body carrying i++ at the top and the count (g_helpState+0x2C) reloaded per iteration from the t0 hi-page base; all return paths converge on ret (a2) with one final move into v0 at the shared exit. Also extended struct HelpState with field_0x28 and msgCount (+0x2C, same address as the HelpMsgCount symbol). Full boot parity passes."
+ },
+ "code/game/help.cpp:326:messageIdCodeTableFind": {
+  "name": "messageIdCodeTableFind",
+  "source": "code/game/help.cpp",
+  "vram": "0x001FECC8",
+  "size": 100,
+  "matched_date": "2026-10-08",
+  "note": "messageIdCodeTable (150x{s16 id; u16 code} @0x199710) record lookup: find the record whose id (col 0) or code (col 1) == (s16)value, return its index else -1; a col-1 search with non-null idOut also stores the record id (code->id). Byte-for-byte via: the movn ternary condition is column (a1) not idOut (raw 0x0065380b = movn a3,v1,a1), a named base local, a pre-loop barrier forcing base->t2/p->t0/q->a3 (q assigned AFTER the barrier), register int r asm(\"$3\")==i*4 to land the shift temp in v1, the store as integer add *(u16*)(q+(u32)base) for the addu operand order, and an empty asm keeping i++ out of the exit-branch delay slot. See notes/help_func_001FECC8.md."
  }
 }
