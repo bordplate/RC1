@@ -91,13 +91,25 @@ Production C/C++ defaults and default probes use EEGCC 2.95.2 SN 2.73a with SN
 `-G8 -O2 -ffast-math -fno-exceptions -snas`. `make setup-snas` installs or
 verifies the assembler using pinned archive/binary SHA-256 hashes; make also
 installs it if missing. Do not pass GNU's `-Wa,-EL -Wa,-Icode/include` to SN.
-Standalone `.s` files still use the GNU cross-assembler. A clean split/build
-and full boot ELF comparison pass with five explicit GNU compatibility TUs:
-989snd.c, draw.cpp, hud.cpp, mobyutil.cpp, and movie/vobuf.cpp.
-An all-SN build of the unmigrated source grows resident code into
-.core_data and changes existing game matches; retain the per-TU assembler
-overrides until source migrations pass full parity. Existing INCLUDE_ASM
-blocks are supported by SN.
+ Standalone `.s` files still use the GNU cross-assembler. A clean split/build
+ and full boot ELF comparison pass with five explicit GNU compatibility TUs:
+ 989snd.c, draw.cpp, hud.cpp, mobyutil.cpp, and movie/vobuf.cpp.
+ An all-SN build of the unmigrated source grows resident code into
+ .core_data and changes existing game matches; retain the per-TU assembler
+ overrides until source migrations pass full parity. Existing INCLUDE_ASM
+ blocks are supported by SN.
+ `#nop` scheduler holes are assembler-sensitive (verified 2026-10-09,
+ Hud_SetChannelModeBySerial 0x1FF570): EGC's `.s` marks certain scheduler gaps
+ with a `#nop` line. ps2eeas (`-snas`) fills it with a real `nop`
+ (0x00000000); GNU as (`-Wa,-EL`) treats it as a comment and emits nothing,
+ shifting every later branch target (the 0x74 function becomes 0x70 with 19
+ word diffs). The compiler `.s` is byte-identical in both cases, so when a
+ function's match depends on a `#nop` hole it MUST be assembled by ps2eeas.
+ If it sits in a GNU-compatibility TU (which cannot be flipped), isolate it
+ with a Splat boundary split into its own default-SN TU — exactly what was
+ done for hud_post_post (split into hud_post_post [GNU], hud_post_mode [SN],
+ hud_post_post2 [GNU]). See
+ decomp_state/notes/hud_post_mode_Hud_SetChannelModeBySerial.md.
 `tools/run_ee_compiler.py` serializes compiler-driver invocations: concurrent
 Wine/SN compiles intermittently fail to open the shared labels.inc. Native
 cross-assembly remains parallel; the wrapper preserves compiler exit status.
