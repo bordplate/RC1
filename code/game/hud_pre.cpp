@@ -4,7 +4,6 @@
 
 #define HUD_MAIN_BANK_SIZE 0x2800
 #define HUD_AUX_BANK_SIZE 0x1400
-#define HUD_SLOT_COUNT 13
 
 void* Hud_HeapAlloc(unsigned int, char*, char*, int);
 void FastMemZero16(void*, int);

@@ -2664,5 +2664,13 @@
   "size": 104,
   "note": "HUD channel commit (0x1FF418, 104B; ELF label func_001FF418 via asm override, declared in hud.h). func_001FF500(slot,slot->pendId) sets up icon fields; copies pending block into active block (mode=pendMode,d=pendD,e=pendE,c=pendC,b=pendB); slot->fn=slot->pendFn is UNCONDITIONAL (lands in the beqz delay slot), then if pendFn!=0 invoke slot->fn(slot); slot->pending=0. The unconditional fn store is what makes EGC load pendFn first and keeps sw b out of the delay slot; putting the store inside the if fails (pendFn loads last + sw b into delay slot). Caller: Hud_SetChannelPending when mode & slot->mode & 0x20. No pins/flags/volatile, default SN. See notes/hud_post_Hud_CommitChannel.md.",
   "matched_date": "2026-10-09"
+ },
+ "code/game/hud_post_resetchan.cpp:20:Hud_ResetChannelBySerial": {
+  "name": "Hud_ResetChannelBySerial",
+  "source": "code/game/hud_post_resetchan.cpp",
+  "vram": "0x001FF480",
+  "size": 128,
+  "matched_date": "2026-10-09",
+  "note": "Resets the channel slot whose serial field matches the argument: scans hudChanSlots[13], on a match calls Hud_SetChannelPending(i, HUD_SLOT_RESET_ICON_ID,0,0,0,0,0) and returns 1, else 0. Sourced from the for-loop form (break on match, call in common tail). Required a Splat boundary split (config/RC1.yaml) into its own TU game/hud_post_resetchan because the compiler emits a scheduler #nop before the back-branch bnel that ps2eeas (SN) expands to the original nop but gas (GNU) drops as a comment; sibling hud_post TUs keep the GNU override. Shared constants HUD_SLOT_COUNT/HUD_SLOT_RESET_ICON_ID live in code/include/hud.h. See notes/hud_post_func_001FF480.md."
  }
 }

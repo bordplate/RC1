@@ -184,6 +184,8 @@ segments:
     - [0xfefc0, cpp, game/hud]
     - [0xff308, cpp, game/hud_chan]
     - [0xff418, cpp, game/hud_post]
+    - [0xff480, cpp, game/hud_post_resetchan]
+    - [0xff500, cpp, game/hud_post_post]
     - [0x101520, cpp, game/init]
     - [0x1015d8, cpp, game/initonce]
     - [0x101a28, cpp, game/lights]

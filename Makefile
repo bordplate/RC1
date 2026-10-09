@@ -107,7 +107,8 @@ $(OBJ_DIR)/game/draw_post_reset.o: PRIVATE_COMPILE_FLAGS = -mno-split-addresses
 $(OBJ_DIR)/989snd/ee/989snd_pre.o $(OBJ_DIR)/989snd/ee/989snd_mid.o \
     $(OBJ_DIR)/989snd/ee/989snd_post.o \
     $(OBJ_DIR)/game/draw.o \
-    $(OBJ_DIR)/game/hud.o $(OBJ_DIR)/game/hud_post.o $(OBJ_DIR)/game/mobyutil.o \
+    $(OBJ_DIR)/game/hud.o $(OBJ_DIR)/game/hud_post.o $(OBJ_DIR)/game/hud_post_post.o \
+    $(OBJ_DIR)/game/mobyutil.o \
     $(OBJ_DIR)/game/movie/vobuf.o: \
     ASSEMBLER_FLAGS = -Wa,-EL -Wa,-Icode/include
 

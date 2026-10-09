@@ -3,6 +3,13 @@
 
 #include "types.h"
 
+// Number of HUD channel slots in hudChanSlots.
+#define HUD_SLOT_COUNT 13
+
+// Icon id that leaves a channel slot empty/reset: Hud_InitBanks assigns it to
+// every slot at startup, and a reset request restores it.
+#define HUD_SLOT_RESET_ICON_ID 0xFFFF
+
 // Loaded HUD bank header. Offsets pal_count[4] (0x24) and tex_count[4] (0x44)
 // are confirmed by SetupGifPaging's per-iteration count reloads, and
 // bank_load[0] (0x74) by LoadCompressedHudBank's clear store; the remaining
