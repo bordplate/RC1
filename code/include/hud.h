@@ -10,6 +10,16 @@
 // every slot at startup, and a reset request restores it.
 #define HUD_SLOT_RESET_ICON_ID 0xFFFF
 
+// HUD message (hudMsgText1/hudMsgText2) drawing constants used by
+// Hud_DrawChannels (func_001FF780).
+#define HUD_MSG_DRAW_X 0x100         // x coordinate of the printed message
+#define HUD_MSG_IDLE_Y 100           // y coordinate written when no message is fading
+#define HUD_MSG_COLOR_RGB 0xF0F0F0   // base RGB (light gray); fade supplies the alpha
+#define HUD_MSG_FADE_MAX 0x80        // max fade value; also the per-frame step numerator
+#define HUD_MSG_FADE_STEP_FRAMES 8   // frame count scaled by func_001F96F8 for the fade step
+#define HUD_MSG_COUNT_RESET 1000     // message-count value at which it is reset to 0
+#define HUD_VU_FIELD_INIT 0x00FFFFF0 // value Hud_DrawChannels writes to hudHeap.vuField_0C
+
 // Loaded HUD bank header. Offsets pal_count[4] (0x24) and tex_count[4] (0x44)
 // are confirmed by SetupGifPaging's per-iteration count reloads, and
 // bank_load[0] (0x74) by LoadCompressedHudBank's clear store; the remaining
@@ -105,9 +115,9 @@ typedef struct {
                               //   incremented and assigned by the slot allocator.
     u32 field_04;            // +0x04: cleared by Hud_InitBanks (meaning not established).
     u8 pad_08[4];            // +0x08
-    u32 vuField_0C;          // +0x0C: set to 0xFFFFFFF0 by Hud_DrawChannels; the upper
-                              //   word of a 64-bit VU1 packet field consumed by the
-                              //   per-channel draw callbacks.
+    u32 vuField_0C;          // +0x0C: set to HUD_VU_FIELD_INIT by Hud_DrawChannels; the
+                               //   upper word of a 64-bit VU1 packet field consumed by
+                               //   the per-channel draw callbacks.
     u32 heapCursor;          // +0x10
     u32 heapEnd;             // +0x14
     HudHeader* volatile header; // +0x18
