@@ -160,3 +160,26 @@ Scheduler flags -fno-schedule-insns[2] make it worse (125/135).
   AND the bnezl+delay-c-load back-edge, all with the single-assignment
   occlusion form (for the prologue). No source form, pin, barrier, or flag
   found that does this; it is the hard EGC 2.95.2 tie-break cluster.
+
+## 2026-10-09 re-confirmation (no new outcome)
+Re-probed the no-barrier volatile form (`volatile u8* p`, plain `int d = 3;
+int i = 0;`, class tests on a fresh `int c2 = *p;`): 142 word-diffs, 644
+bytes (+4). It confirms the trade-off from a new angle:
+- Without a barrier, EGC CSEs the tail `while(*p)` test load into the NEXT
+  iteration's head load (across the loop back-edge): the head reuses the
+  tail's v0, so there is NO independent head load left for the scheduler to
+  place in the back-edge delay slot -> `bnez` + nop, not `bnezl` + delay
+  c-load. The head load only becomes independent WITH a barrier, and the
+  barrier is exactly what blocks its scheduling into the delay slot. The
+  two requirements (independent head load AND delay-slot placement) are
+  mutually exclusive with or without the barrier.
+- The volatile pointer pushes the class-test value into saved reg s0 (the
+  original keeps it in temps and reloads per use), re-materializes d=3
+  instead of `li s7,3` in the prologue, and shifts the whole s0-s8 arg map
+  (candidate: c->s0, p->s1, color->s2, length->s3, x->s4, tex->s5, y->s6,
+  glyphs->s7, i->s8).
+- Branch-direction fact: `if (D_0015F4A0)` and `if (D_0015F4A0 != 0)` both
+  invert to `beqz v0, after-store` under EGC, but the original is
+  `bnez v0, after-store` (store executes when the flag is ZERO). The source
+  must test `D_0015F4A0 == 0` (i.e. `if (!D_0015F4A0) store;`).
+Still blocked; no state change.
