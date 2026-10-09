@@ -20,6 +20,11 @@
 #define HUD_MSG_COUNT_RESET 1000     // message-count value at which it is reset to 0
 #define HUD_VU_FIELD_INIT 0x00FFFFF0 // value Hud_DrawChannels writes to hudHeap.vuField_0C
 
+// Bit 31 of a pal/tex `ram` entry: set while the entry is not yet re-based by
+// LinkHudBank (which clears it and adds the bank base). GetIconFrame rejects a
+// frame whose palette or texture ram still carries this bit.
+#define HUD_RAM_ENTRY_FLAG 0x80000000
+
 // Loaded HUD bank header. Offsets pal_count[4] (0x24) and tex_count[4] (0x44)
 // are confirmed by SetupGifPaging's per-iteration count reloads, and
 // bank_load[0] (0x74) by LoadCompressedHudBank's clear store; the remaining
@@ -48,6 +53,13 @@ typedef struct {
     u8 animType;
     u8 speed;
 } HudIconDef;
+
+// One HUD frame-table entry (DL frame_t): the palette and texture slot indices
+// of a single icon frame, pointed to by hudHeap.frames.
+typedef struct {
+    s16 hPal;
+    s16 hTex;
+} HudFrame;
 
 // One HUD texture slot. DL frameTex_t; the gsram halfword holds the
 // texture's GS RAM address in 1/256 units.
@@ -122,7 +134,8 @@ typedef struct {
     u32 heapEnd;             // +0x14
     HudHeader* volatile header; // +0x18
     u32 iconTable;           // +0x1C
-    u32 pad_20;              // +0x20
+    HudFrame* frames;        // +0x20: frame table (hPal/hTex per frame); GetIconFrame
+                             //   indexes it at icon start + frame.
     HudFrameTex* texs;       // +0x24
     HudFramePal* pals;       // +0x28
     u32 pad_2C;              // +0x2C
@@ -136,6 +149,12 @@ extern HudChanSlot hudChanSlots[13];
 // Finds the icon-table index of `iconId` (see hud_icon.cpp); the table is
 // terminated by an entry with id 0xFFFF.
 int Hud_GetIconIndex(int iconId);
+
+// Returns the frame-table index (icon start + `frame`) of the `frame`-th frame
+// of `icon`, or 0 when the icon is not in the table, the frame is out of
+// range, or the frame's palette/texture ram entry is not yet loaded (see
+// hud_post_post2_post.cpp).
+int GetIconFrame(int icon, int frame);
 
 // Fills the slot's committed-icon fields (iconId/iconIndex/iconAnimType/
 // iconStart) from the icon-table entry for `iconId` (see hud_post_post.cpp).
