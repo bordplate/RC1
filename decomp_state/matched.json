@@ -2672,5 +2672,15 @@
   "size": 128,
   "matched_date": "2026-10-09",
   "note": "Resets the channel slot whose serial field matches the argument: scans hudChanSlots[13], on a match calls Hud_SetChannelPending(i, HUD_SLOT_RESET_ICON_ID,0,0,0,0,0) and returns 1, else 0. Sourced from the for-loop form (break on match, call in common tail). Required a Splat boundary split (config/RC1.yaml) into its own TU game/hud_post_resetchan because the compiler emits a scheduler #nop before the back-branch bnel that ps2eeas (SN) expands to the original nop but gas (GNU) drops as a comment; sibling hud_post TUs keep the GNU override. Shared constants HUD_SLOT_COUNT/HUD_SLOT_RESET_ICON_ID live in code/include/hud.h. See notes/hud_post_func_001FF480.md."
+ },
+ "code/game/hud_post_post.cpp:7:Hud_SetupChannelIcon": {
+  "name": "Hud_SetupChannelIcon",
+  "source": "code/game/hud_post_post.cpp",
+  "asm": "code/_generated/matchings/game/hud_post_post/Hud_SetupChannelIcon.s",
+  "vram": "0x001FF500",
+  "file_offset": "0x0FF500",
+  "size": 104,
+  "note": "Sets up a slot's committed-icon fields from the icon-table entry for iconId (0x1FF500, 104B; ELF label func_001FF500 via asm override, declared in hud.h). index=Hud_GetIconIndex(iconId); slot->iconId=iconTable[index].id (sw u16), slot->iconIndex=index (sh @0x40), slot->iconAnimType=iconTable[index].animType (sb @0x42), slot->iconStart=iconTable[index].start (sw u16 @0x44). iconTable=hudHeap.iconTable (+0x1C). Match-sensitive: the table base is reloaded fresh before each field access (3x lw r,0x1C(a2)) while only &hudHeap (a2) is hoisted once - a local pointer CSEs the loads to one and fails; re-derive ((HudIconDef*)hudHeap.iconTable)[index] per statement. Statement order MUST be iconId,iconIndex,animType,start: with iconIndex first EGC hoists the sh after the jal, overwrites the raw index (sll v0,v0,3), puts &hudHeap in a1, and uses a0 for the field loads (~18 diffs). Caller: Hud_CommitChannel (slot,slot->pendId). HudIconDef moved from hud_icon.cpp to hud.h; HudChanSlot field_00->iconId, pad_3C split into iconIndex/iconAnimType/pad_43/iconStart. No pins/flags/volatile, default SN. See notes/hud_post_post_Hud_SetupChannelIcon.md.",
+  "matched_date": "2026-10-09"
  }
 }

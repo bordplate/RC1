@@ -4,7 +4,13 @@
 
 extern int hudMessageTimer;
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud_post_post", func_001FF500);
+void Hud_SetupChannelIcon(HudChanSlot* slot, int iconId) {
+    int index = Hud_GetIconIndex(iconId);
+    slot->iconId = ((HudIconDef*)hudHeap.iconTable)[index].id;
+    slot->iconIndex = index;
+    slot->iconAnimType = ((HudIconDef*)hudHeap.iconTable)[index].animType;
+    slot->iconStart = ((HudIconDef*)hudHeap.iconTable)[index].start;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud_post_post", func_001FF568);
 

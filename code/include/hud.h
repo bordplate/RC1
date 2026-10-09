@@ -28,6 +28,17 @@ typedef struct {
     int bankHandle[8];
 } HudHeader;
 
+// One HUD icon-table entry (DL icon_t); the table is terminated by an id of
+// 0xFFFF. `len` is the icon's frame count, `start` the index of its first
+// frame in the frame table.
+typedef struct {
+    u16 id;
+    u16 len;
+    u16 start;
+    u8 animType;
+    u8 speed;
+} HudIconDef;
+
 // One HUD texture slot. DL frameTex_t; the gsram halfword holds the
 // texture's GS RAM address in 1/256 units.
 typedef struct {
@@ -47,11 +58,12 @@ typedef struct {
 // (0x199B60). Hud_InitBanks zeroes/resets them and Hud_SetChannelPending fills
 // the pending block (0x20-0x38) with a channel request. When the request's
 // mode & slot->mode & 0x20 holds, Hud_CommitChannel commits the pending block
-// into the active block (0x04-0x18) and invokes the callback fn. b..e are
-// opaque callback parameters (named for the Hud_SetChannelPending argument
-// they hold).
+// into the active block (0x04-0x18), sets up the committed-icon fields
+// (0x00/0x40-0x44) via Hud_SetupChannelIcon, and invokes the callback fn.
+// b..e are opaque callback parameters (named for the Hud_SetChannelPending
+// argument they hold).
 typedef struct {
-    u32 field_00;    // +0x00
+    u32 iconId;      // +0x00: committed icon id (icon-table entry id)
     u32 mode;        // +0x04: committed channel mode (arg & 0xFFF0)
     u32 b;           // +0x08
     u32 c;           // +0x0C
@@ -66,7 +78,12 @@ typedef struct {
     u32 pendFn;      // +0x30
     u32 pendD;       // +0x34
     u32 pendE;       // +0x38
-    u8 pad_3C[0x28]; // +0x3C
+    u8 pad_3C[4];    // +0x3C
+    s16 iconIndex;   // +0x40: icon-table index of iconId (Hud_SetupChannelIcon)
+    u8 iconAnimType; // +0x42: icon entry's animType
+    u8 pad_43;       // +0x43
+    u32 iconStart;   // +0x44: icon entry's start (first frame index)
+    u8 pad_48[0x1C]; // +0x48
     u32 serial;      // +0x64: assigned slot serial
     u32 pending;     // +0x68: pending flag, cleared on commit
     u32 field_6C;    // +0x6C
@@ -100,6 +117,18 @@ typedef struct {
 
 extern HudHeap hudHeap __attribute__((section(".data")));
 extern HudChanSlot hudChanSlots[13];
+
+// Finds the icon-table index of `iconId` (see hud_icon.cpp); the table is
+// terminated by an entry with id 0xFFFF.
+int Hud_GetIconIndex(int iconId);
+
+// Fills the slot's committed-icon fields (iconId/iconIndex/iconAnimType/
+// iconStart) from the icon-table entry for `iconId` (see hud_post_post.cpp).
+// Symbol override: the boot ELF is stripped and the Splat linker script pins
+// this entry to the address-based placeholder label func_001FF500, which the
+// natural cfront mangle (Hud_SetupChannelIcon__FP11HudChanSloti) cannot
+// produce.
+void Hud_SetupChannelIcon(HudChanSlot* slot, int iconId) asm("func_001FF500");
 
 // Records a pending channel request (see hud_chan.cpp); returns the slot serial.
 int Hud_SetChannelPending(int chan, int id, int fn, int d, int e, int c, int b);

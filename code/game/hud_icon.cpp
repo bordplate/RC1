@@ -2,14 +2,6 @@
 #include "types.h"
 #include "hud.h"
 
-typedef struct {
-    u16 id;
-    u16 len;
-    u16 start;
-    u8 animType;
-    u8 speed;
-} HudIconDef;
-
 int Hud_GetIconIndex(int iconId) {
     // The peeled element-0 checks must compile to beq (return-as-jump), which
     // EGC only emits for the inverted "value != end && value != iconId" body;
