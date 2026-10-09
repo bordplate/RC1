@@ -340,6 +340,7 @@ DrawMobysSetup__Fv = 0x20d278;
 DrawMobyList = 0x20d330;
 DrawMobysCleanUp = 0x020d3b0;
 DrawMobys = 0x020d460;
+SetMobyLights__FP12MobyInstanceUlUlUlUl = 0x0020D4F0;
 CreateMoby__Fi = 0x20c4f8;
 InitMobyInstance__FP12MobyInstancei = 0x20c5f0;
 

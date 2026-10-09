@@ -246,7 +246,54 @@ extern "C" void DrawMobys() {
     DrawMobysCleanUp();
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D4E0);
+// Unreachable dead tail after DrawMobys (0x20D4E0): one `addiu sp,sp,0x70`
+// followed by three nops. No nearby function uses a 0x70 frame, so the unit
+// does not belong to any live function; nothing reaches 0x20D4E0 (0 jal/j/
+// branch/data references). The original compiler emitted these bytes after the
+// preceding function's RTL, so they are preserved as exact words. (See the
+// 989snd dead addiu-sp tail family.)
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_0020D4E0, 0x10\n"
+    "glabel func_0020D4E0\n"
+    "    .word 0x27bd0070\n"
+    "    .word 0x00000000\n"
+    "    .word 0x00000000\n"
+    "    .word 0x00000000\n"
+    "endlabel func_0020D4E0\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+
+// Bit positions of each field within the packed moby lights word (m->unk1):
+//   (high << MOBY_LIGHTS_HI_SHIFT) | lo0 | (lo1 << MOBY_LIGHTS_LO1_SHIFT)
+//   | (lo2 << MOBY_LIGHTS_LO2_SHIFT)
+#define MOBY_LIGHTS_HI_SHIFT  0x20
+#define MOBY_LIGHTS_LO1_SHIFT 8
+#define MOBY_LIGHTS_LO2_SHIFT 0x10
+
+// Packs the four fields into the moby's 64-bit lights word (m->unk1) and
+// returns the packed value.
+//
+// The register pin and per-shift barriers reproduce the original's
+// register allocation and schedule: the high field's shift stays in-place in
+// a1 (rather than being folded into the v0 accumulator), all three shifts
+// precede the first or, and the or-chain accumulates into v0.
+u64 SetMobyLights(MobyInstance* m, u64 high, u64 lo0, u64 lo1, u64 lo2) {
+    register u64 highS asm("$5") = high;
+    highS <<= MOBY_LIGHTS_HI_SHIFT;
+    asm volatile("" : "+r"(highS));
+    lo1 <<= MOBY_LIGHTS_LO1_SHIFT;
+    asm volatile("" : "+r"(lo1));
+    lo2 <<= MOBY_LIGHTS_LO2_SHIFT;
+    asm volatile("" : "+r"(lo2));
+    u64 lights = highS | lo0 | lo1 | lo2;
+    m->unk1 = lights;
+    return lights;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/mobyfunc", func_0020D510);
 
