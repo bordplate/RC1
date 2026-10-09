@@ -102,9 +102,12 @@ typedef struct {
 // plain back-branch, which does not match.
 typedef struct {
     u32 nextSlotSerial;      // +0x00: next slot serial; cleared by Hud_InitBanks,
-                             //   incremented and assigned by the slot allocator.
+                              //   incremented and assigned by the slot allocator.
     u32 field_04;            // +0x04: cleared by Hud_InitBanks (meaning not established).
-    u8 pad_08[0x08];         // +0x08
+    u8 pad_08[4];            // +0x08
+    u32 vuField_0C;          // +0x0C: set to 0xFFFFFFF0 by Hud_DrawChannels; the upper
+                              //   word of a 64-bit VU1 packet field consumed by the
+                              //   per-channel draw callbacks.
     u32 heapCursor;          // +0x10
     u32 heapEnd;             // +0x14
     HudHeader* volatile header; // +0x18
@@ -113,6 +116,8 @@ typedef struct {
     HudFrameTex* texs;       // +0x24
     HudFramePal* pals;       // +0x28
     u32 pad_2C;              // +0x2C
+    u32 field_30;            // +0x30: HUD skip flag; non-zero makes Hud_DrawChannels
+                              //   clear it and return early this frame.
 } HudHeap;
 
 extern HudHeap hudHeap __attribute__((section(".data")));

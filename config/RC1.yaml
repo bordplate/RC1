@@ -188,6 +188,8 @@ segments:
     - [0xff500, cpp, game/hud_post_post]
     - [0xff570, cpp, game/hud_post_mode]
     - [0xff5e8, cpp, game/hud_post_post2]
+    - [0xff780, cpp, game/hud_post_post2_drawchannels]
+    - [0xff958, cpp, game/hud_post_post2_post]
     - [0x101520, cpp, game/init]
     - [0x1015d8, cpp, game/initonce]
     - [0x101a28, cpp, game/lights]

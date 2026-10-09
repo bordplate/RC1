@@ -221,3 +221,6 @@ pauseSpriteListFlag = 0x0013D4C2;
 pauseSpriteTagByte = 0x001413F4;
 pauseSpriteListA = 0x001D06D0;
 pauseSpriteListB = 0x001D0708;
+GameModeGp = 0x0015F604;
+hudMsgCountGp = 0x0015F680;
+hudMsgFadeGp = 0x0015F684;
