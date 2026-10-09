@@ -960,14 +960,6 @@
   "status": "todo"
  },
  {
-  "id": "code/game/init.cpp:3:LoadIRXModule",
-  "source": "code/game/init.cpp",
-  "line": 3,
-  "asm": "code/_generated/nonmatchings/game/init/LoadIRXModule.s",
-  "name": "LoadIRXModule",
-  "status": "todo"
- },
- {
   "id": "code/game/initonce.cpp:3:InitMemSlots__Fv",
   "source": "code/game/initonce.cpp",
   "line": 3,

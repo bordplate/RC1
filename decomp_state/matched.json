@@ -2708,5 +2708,13 @@
   "size": 468,
   "matched_date": "2026-10-09",
   "note": "Per-frame HUD draw-stage dispatcher. Clears/returns on hudHeap.field_30 or occlChainActive; sets hudHeap.vuField_0C=0x00FFFFF0 (HUD_VU_FIELD_INIT); loops the 13 hudChanSlots invoking slot->e(slot). Fade block: (count==0&&fade==0)||GameModeGp -> hudMsgY=100 (HUD_MSG_IDLE_Y) and return; else ramp fade by HUD_MSG_FADE_MAX/func_001F96F8(8) (clamp hi 0x80 / lo 0). color=(fade<<24)+0xF0F0F0 (ADD, not OR); func_00201200(0x100, hudMsgY, color, hudMsgText1), second call with hudMsgText2 when hudMsgText2[0]&&count>1000. Tail: count-- if count; count=0 (via GPREL alias) if count==1000. Matched after 4 fixes: (1) constant 0x00FFFFF0 not 0xFFFFFFF0 (also resolves the prologue delay-slot lui swap); (2) color addu not or; (3) second-msg condition count>1000 not <=1000; (4) plain hudMsgY (not a .data alias) at the force100 store and msg2 y-arg so the -G8 bare pseudo expands self-based ABS via $at OUTSIDE noreorder (a .data alias forces an explicit split whose hi load EGC hoists into the GameMode bnel delay slot, flipping bne->bnel and $at->$v1). GPREL sites use seeded .extern aliases GameModeGp/hudMsgCountGp/hudMsgFadeGp. Constants named HUD_MSG_*/HUD_VU_FIELD_INIT in hud.h (parity-neutral #defines). Full 0x1D8 region byte-identical; full cmp EXACT MATCH. See notes/hud_post_post2_drawchannels_Hud_DrawChannels.md."
+ },
+ "code/game/init.cpp:3:LoadIRXModule": {
+  "name": "LoadIRXModule",
+  "source": "code/game/init.cpp",
+  "vram": "0x00201520",
+  "size": 180,
+  "matched_date": "2026-10-09",
+  "note": "IRX module loader used by InitOnce: allocates an IOP heap buffer (sceSifAllocIopHeap), DMAs the EE-side image into it with a SifDmaData descriptor (sceSifSetDma mode 0, count 1), polls sceSifDmaStat(id) while >= 0, loads the module via sceSifLoadModuleBuffer(dst,0,0), then frees the IOP buffer (sceSifFreeIopHeap(dst), one-arg call). Returns 1, or 0 when the load result is negative. SDK veneers named per Lombyte/DL references and added to symbols.txt (sceSifDmaStat 0x118B10, sceSifSetDma 0x118B20, sceSifInitIopHeap 0x11C840, sceSifAllocIopHeap 0x11C8C8, sceSifFreeSysMemory 0x11C938, sceSifFreeIopHeap 0x11C9B0, sceSifLoadModuleBuffer 0x11CD78). Match-sensitive: the tail tests (r >= 0) once (slt into v1) and reuses the result for the movz scheduled in the sceSifFreeIopHeap delay slot; the test must precede the free call in the source so r is consumed in v0 without a callee-saved spill (a 3-arg free call or `r < 0` test both miss: extra nor/srl or movn plus an r spill, 196 vs 180 bytes). Symbol override asm(\"LoadIRXModule\") pins the unmangled entry."
  }
 }
