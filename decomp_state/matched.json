@@ -2682,5 +2682,15 @@
   "size": 104,
   "note": "Sets up a slot's committed-icon fields from the icon-table entry for iconId (0x1FF500, 104B; ELF label func_001FF500 via asm override, declared in hud.h). index=Hud_GetIconIndex(iconId); slot->iconId=iconTable[index].id (sw u16), slot->iconIndex=index (sh @0x40), slot->iconAnimType=iconTable[index].animType (sb @0x42), slot->iconStart=iconTable[index].start (sw u16 @0x44). iconTable=hudHeap.iconTable (+0x1C). Match-sensitive: the table base is reloaded fresh before each field access (3x lw r,0x1C(a2)) while only &hudHeap (a2) is hoisted once - a local pointer CSEs the loads to one and fails; re-derive ((HudIconDef*)hudHeap.iconTable)[index] per statement. Statement order MUST be iconId,iconIndex,animType,start: with iconIndex first EGC hoists the sh after the jal, overwrites the raw index (sll v0,v0,3), puts &hudHeap in a1, and uses a0 for the field loads (~18 diffs). Caller: Hud_CommitChannel (slot,slot->pendId). HudIconDef moved from hud_icon.cpp to hud.h; HudChanSlot field_00->iconId, pad_3C split into iconIndex/iconAnimType/pad_43/iconStart. No pins/flags/volatile, default SN. See notes/hud_post_post_Hud_SetupChannelIcon.md.",
   "matched_date": "2026-10-09"
+ },
+ "code/game/hud_post_mode.cpp:5:Hud_SetChannelModeBySerial": {
+  "name": "Hud_SetChannelModeBySerial",
+  "original_name": "func_001FF570",
+  "source": "code/game/hud_post_mode.cpp",
+  "vram": "0x001FF570",
+  "file_offset": "0x0FF570",
+  "size": 116,
+  "matched_date": "2026-10-09",
+  "note": "Finds the hudChanSlots entry whose serial (offset 0x64) matches the arg, sets its pendMode (0x24); if not pending (0x68 is 0) also sets mode (0x04). mode=0 clears the channel. EGC peels only the first scan iteration (pre-check lui/move/addiu/lw+beq, then .p2align loop head); a plain while from i=0 reproduces it, a manual 2-iter unroll does not. REQUIRES the SN assembler: the loop body has a #nop scheduler hole (between the serial lw and the bnel) that ps2eeas fills with a nop (0x74, matches) but GNU as drops as a comment (0x70, 19 branch-target diffs). hud_post_post.o is a GNU-compat TU that cannot be flipped, so a Splat boundary split isolated this function into its own SN TU (hud_post_mode, [0xff570,0xff5e8) + 1 trailing asm nop pad); hud_post_post kept [0xff500,0xff570) and the rest moved to hud_post_post2 [0xff5e8,0x101520) (GNU). probe snas 0 diffs / gnu 19 diffs; clean split+build+cmp green. See notes/hud_post_mode_Hud_SetChannelModeBySerial.md."
  }
 }

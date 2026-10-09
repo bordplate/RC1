@@ -138,4 +138,11 @@ int Hud_SetChannelPending(int chan, int id, int fn, int d, int e, int c, int b);
 // committed callback fn when it is non-zero, and clears the pending flag.
 void Hud_CommitChannel(HudChanSlot*) asm("func_001FF418");
 
+// Finds the slot whose serial matches `serial` and sets its pending mode to
+// `mode`; if the slot is not pending, its active mode is set too (see
+// hud_post_post.cpp). Passing 0 clears the channel's mode. Symbol override:
+// the stripped boot ELF pins this entry to the address-based placeholder
+// func_001FF570.
+void Hud_SetChannelModeBySerial(int serial, int mode) asm("func_001FF570");
+
 #endif
