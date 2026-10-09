@@ -2644,5 +2644,15 @@
   "size": 60,
   "matched_date": "2026-10-09",
   "note": "Pause-menu callback referenced from the original function-pointer tables (0x1CEF8C/0x1D0E34/0x1D0EF4). Releases the entry's moby: calls pause_refreshMobyTimestamp (0x225530, DeleteMoby + worldUpdateTime stamp) on field_0x44, stores the (always-0) result back to field_0x44, calls it again on that result (a no-op), and stores the result to field_0x48 - net effect: frees the field_0x44 moby and clears both moby slots. The two-call form with each result store lands where EGC puts them: first arg load in the first jal delay slot, field_0x44 store in the second jal delay slot. Reused the existing PauseMenuEntry struct and the pause_refreshMobyTimestamp decl (moved above the definition). decomp_probe 60/60; tu_assembler_diff pause_post2.o 58/58; full boot ELF cmp byte-identical."
+ },
+ "code/game/transition.cpp:3:Transition_DrawSky__Fv": {
+  "name": "Transition_DrawSky__Fv",
+  "source": "code/game/transition.cpp",
+  "asm": "code/_generated/nonmatchings/game/transition/Transition_DrawSky__Fv.s",
+  "vram": "0x001E9AB8",
+  "file_offset": "0x000E9AB8",
+  "size": 88,
+  "note": "Sky-draw wrapper: SetupSkyGifPaging; SkyLevelGeneric (asm 'SkyLevelGeneric___maybe'); DoSkyGifPaging; VU1_addGSregister(0x47,0x5360b); VU1_addGSregister(0x4e,(int)frameBufferBase>>13|0x1000000). The 0x4e write reprograms the same frame-buffer-base GS register/value the occlusion overlay uses (OCCL_DEBUG_* in draw_post_post.cpp). frameBufferBase declared with section(.data)+unsigned int so -mno-split-addresses yields the self-based lui/lw the original uses; the (int) cast keeps the sra (a u32 shift would lower to srl). GS register constants named SKY_SETUP_GS_REG/VALUE and SKY_OVERLAY_GS_REG/FB_SHIFT/VRAM_BASE (local #defines, hardware register offsets unnamed in references). 22-instruction wrapper matches word-for-word (jal/lw fields are link relocations). Verified: make + cmp build/boot_elf.elf assets/boot_elf.elf byte-identical; count 554->553. See notes/transition_Transition_DrawSky__Fv.md.",
+  "matched_date": "2026-10-09"
  }
 }

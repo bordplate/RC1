@@ -1,6 +1,49 @@
 #include "common.h"
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/transition", Transition_DrawSky__Fv);
+// Sky-draw setup callees (defined in skyfunc.cpp) and the VU1 GS-register
+// appender (defined in draw_post_post.cpp).
+void SetupSkyGifPaging();
+// Symbol override: the ELF is stripped, so the callee's real cfront name is
+// unknown; the symbols.txt label for this skyfunc.cpp function is the
+// un-mangled placeholder SkyLevelGeneric___maybe, which a natural
+// `void SkyLevelGeneric()` (mangling to ...__Fv) would not reference.
+void SkyLevelGeneric() asm("SkyLevelGeneric___maybe");
+void DoSkyGifPaging();
+// Symbol override: the original calls it with only the register and value; the
+// third bool parameter of the exported symbol is never materialized at any
+// call site, so the 2-param signature mangles to ...__FUiUl, not the
+// required ...__FUiUlb.
+void VU1_addGSregister(unsigned int reg, unsigned long value)
+    asm("VU1_addGSregister__FUiUlb");
+
+// frameBufferBase must be a .data symbol here: with this TU's
+// -mno-split-addresses a plain in-window extern would lower to a GP-relative
+// load, but the original reads it with a self-based absolute (lui/lw).
+extern unsigned int frameBufferBase __attribute__((section(".data")));
+
+// GS register numbers and values programmed during sky-draw setup. The
+// register offsets are hardware-defined and unnamed in the available references
+// (same treatment as the VU1_*_GS_REG / OCCL_DEBUG_* constants in
+// draw_post_post.cpp). The 0x4e write reprograms the same frame-buffer-base
+// register (and value form) the occlusion overlay uses there.
+#define SKY_SETUP_GS_REG 0x47
+#define SKY_SETUP_GS_VALUE 0x5360b
+#define SKY_OVERLAY_GS_REG 0x4e
+#define SKY_OVERLAY_FB_SHIFT 13
+#define SKY_OVERLAY_VRAM_BASE 0x1000000
+
+// Draws the sky level: set up the sky GIF pages, draw the generic sky, run the
+// GIF paging, then program the two GS registers that select the sky texture and
+// its frame-buffer-derived base.
+void Transition_DrawSky() {
+    SetupSkyGifPaging();
+    SkyLevelGeneric();
+    DoSkyGifPaging();
+    VU1_addGSregister(SKY_SETUP_GS_REG, SKY_SETUP_GS_VALUE);
+    VU1_addGSregister(SKY_OVERLAY_GS_REG,
+                      (int)frameBufferBase >> SKY_OVERLAY_FB_SHIFT
+                          | SKY_OVERLAY_VRAM_BASE);
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/transition", func_001E9B10);
 
