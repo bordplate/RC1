@@ -39,9 +39,10 @@ typedef struct {
 // 0x90-byte HUD channel-slot record; 13 of these sit at hudChanSlots
 // (0x199B60). Hud_InitBanks zeroes/resets them and Hud_SetChannelPending fills
 // the pending block (0x20-0x38) with a channel request. When the request's
-// mode & slot->mode & 0x20 holds, func_001FF418 commits the pending block into
-// the active block (0x04-0x18) and invokes the callback fn. b..e are opaque
-// callback parameters (named for the Hud_SetChannelPending argument they hold).
+// mode & slot->mode & 0x20 holds, Hud_CommitChannel commits the pending block
+// into the active block (0x04-0x18) and invokes the callback fn. b..e are
+// opaque callback parameters (named for the Hud_SetChannelPending argument
+// they hold).
 typedef struct {
     u32 field_00;    // +0x00
     u32 mode;        // +0x04: committed channel mode (arg & 0xFFF0)
@@ -95,5 +96,10 @@ extern HudChanSlot hudChanSlots[13];
 
 // Records a pending channel request (see hud_chan.cpp); returns the slot serial.
 int Hud_SetChannelPending(int chan, int id, int fn, int d, int e, int c, int b);
+
+// Commits a pending channel request (see hud_post.cpp): sets up the slot icon
+// from pendId, copies the pending block into the active block, invokes the
+// committed callback fn when it is non-zero, and clears the pending flag.
+void Hud_CommitChannel(HudChanSlot*) asm("func_001FF418");
 
 #endif

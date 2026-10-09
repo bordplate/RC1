@@ -84,8 +84,8 @@ fun_001fee88.c`), which matches field-for-field.
 
 ## Follow-ups
 
-- `func_001FF308` (slot allocator, 0x10C bytes) and `func_001FF418` are the
-  natural next HUD targets; they will confirm the `HudChanSlot` field names
-  (modeBits/mode/serial are the only established ones so far).
+- `func_001FF308` (slot allocator, 0x10C bytes) and `func_001FF418` were the
+  natural next HUD targets; both are now decompiled (Hud_SetChannelPending and
+  Hud_CommitChannel), confirming the `HudChanSlot` field names.
 - `hudHeap.field_04` (the +0x04 word) is still unnamed; a future function
   that reads it (not just clears it) should establish the real name.

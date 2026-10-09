@@ -18,8 +18,8 @@ address form plus moving the function to its own SN TU.
 3. Else store the request into the pending block, `slot->serial =
    hudHeap.nextSlotSerial++`, `slot->pending = 1`, `slot->field_7C = 0`,
    `slot->field_70 = 0`, and when `mode & slot->mode & 0x20` call
-   `func_001FF418(slot)` (commits pending→active and invokes the callback).
-   `return slot->serial`.
+   `Hud_CommitChannel(slot)` (commits pending→active and invokes the callback;
+   now decompiled, was func_001FF418). `return slot->serial`.
 
 Param→register map (all seven arrive in registers; fn/d are never spilled):
 a0=chan, a1=id→t5, a2=fn, a3=d, a4=e→t0, a5=c→t1, t2=b. The 5th/6th/7th args
@@ -81,8 +81,9 @@ names in code/include/hud.h were renamed (no other TU uses the field names —
 only the base address — so this is codegen-neutral): the 0x20-0x38 block is the
 pending request (pendId/pendMode/pendB/pendC/pendFn/pendD/pendE); the 0x04-0x18
 block is the committed/active values (mode/b/c/fn/d/e, named for the argument
-each holds). `func_001FF418` (the committer, still INCLUDE_ASM) copies
-pending→active and calls `slot->fn`.
+each holds). `Hud_CommitChannel` (the committer, ELF label func_001FF418; now
+decompiled, see notes/hud_post_Hud_CommitChannel.md) copies pending→active and
+calls `slot->fn`.
 
 ## Verification (mechanical)
 
