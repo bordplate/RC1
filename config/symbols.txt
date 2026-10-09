@@ -1061,3 +1061,5 @@ bitSwapLut = 0x0018E740;
 buildBitSwapLut__Fv = 0x001F7A30;
 findMapSlot__Fi = 0x2050A0;
 mobyRenderSlots = 0x001B2BC0;
+messageTextBuffer = 0x0019A440;
+messageTooLongLabel = 0x001E7AA8;

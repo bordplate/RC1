@@ -2692,5 +2692,13 @@
   "size": 116,
   "matched_date": "2026-10-09",
   "note": "Finds the hudChanSlots entry whose serial (offset 0x64) matches the arg, sets its pendMode (0x24); if not pending (0x68 is 0) also sets mode (0x04). mode=0 clears the channel. EGC peels only the first scan iteration (pre-check lui/move/addiu/lw+beq, then .p2align loop head); a plain while from i=0 reproduces it, a manual 2-iter unroll does not. REQUIRES the SN assembler: the loop body has a #nop scheduler hole (between the serial lw and the bnel) that ps2eeas fills with a nop (0x74, matches) but GNU as drops as a comment (0x70, 19 branch-target diffs). hud_post_post.o is a GNU-compat TU that cannot be flipped, so a Splat boundary split isolated this function into its own SN TU (hud_post_mode, [0xff570,0xff5e8) + 1 trailing asm nop pad); hud_post_post kept [0xff500,0xff570) and the rest moved to hud_post_post2 [0xff5e8,0x101520) (GNU). probe snas 0 diffs / gnu 19 diffs; clean split+build+cmp green. See notes/hud_post_mode_Hud_SetChannelModeBySerial.md."
+ },
+ "code/game/hud_post_post2.cpp:7:setMessageText": {
+  "name": "setMessageText",
+  "source": "code/game/hud_post_post2.cpp",
+  "vram": "0x001FF658",
+  "size": 128,
+  "matched_date": "2026-10-09",
+  "note": "Decompiled the real function inside the func_001FF5E8 INCLUDE_ASM (which also held a 0x70-byte dead addiu-sp tail at 0x1FF5E8, now a file-scope asm block). setMessageText: if strlen(str)<0x50 memcpy 19 bytes of messageTooLongLabel into messageTextBuffer, then func_001165B8(messageTextBuffer, str) (SIMD strcpy). EGC inlines the 19-byte memcpy as unaligned ldl/ldr + lb/sb (u8* pointers required; a u64* cast gives aligned ld/sd and misses by 4 words). Uses the natural C++ symbol (no asm override) because func_001FF658 is an auxiliary symbol kept in the linker-script absolute block; the absolute symbol still points at 0x1ff658 so the jal callers resolve. Full boot parity passes. See notes/hud_post_post2_setMessageText.md."
  }
 }
