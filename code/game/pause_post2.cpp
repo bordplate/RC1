@@ -78,7 +78,22 @@ int pause_resetMenuEntry(PauseMenuEntry* entry) {
     return 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021DF58);
+// Symbol override: this still-assembly helper at 0x00225530 refreshes the
+// timestamp field of a pause callback's moby sub-object.
+extern int pause_refreshMobyTimestamp(int timestamp) asm("func_00225530");
+
+// Symbol override: pause-menu callback at the address-based generated entry
+// point; releases the entry's moby (field_0x44) and clears both moby
+// reference slots (field_0x44/0x48).
+int pause_releaseEntryMobys(PauseMenuEntry* entry) asm("func_0021DF58");
+
+int pause_releaseEntryMobys(PauseMenuEntry* entry) {
+    int primaryMoby = pause_refreshMobyTimestamp(entry->field_44);
+    entry->field_44 = primaryMoby;
+    int secondaryMoby = pause_refreshMobyTimestamp(primaryMoby);
+    entry->field_48 = secondaryMoby;
+    return 0;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021DF98);
 
@@ -118,10 +133,6 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021E7C8);
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", DrawQuitGameMenu);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/pause_post2", func_0021EA48);
-
-// Symbol override: this still-assembly helper at 0x00225530 refreshes the
-// timestamp field of a pause callback's moby sub-object.
-extern int pause_refreshMobyTimestamp(int timestamp) asm("func_00225530");
 
 int pause_updateSelection(int* p) {
     p[0x11] = pause_refreshMobyTimestamp(p[0x11]);

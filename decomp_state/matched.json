@@ -2635,5 +2635,14 @@
   "size": 268,
   "note": "HUD channel pending-request slot allocator (0x1FF308, 268B). chan low nibble=slot idx, high bits=mode; slot byte-indexed (hudChanSlots + idx*0x90) so EGC keeps the 0x90*idx product in v1 (li v1,0x90; mult v1,idx,v1) instead of a t-reg that displaces idx/mode/id (t3/t4/t5). Early return 0 when GameMode==5 && idx not in {0,2} (delay-slot move v0,zero). If all 7 pending fields (pendC/pendB/pendId/pendMode/pendFn/pendD/pendE) match, return slot->serial. Else store them, slot->serial=hudHeap.nextSlotSerial++, pending=1, field_7C=0, field_70=0, and func_001FF418 commits when mode & slot->mode & 0x20. Returns slot->serial. The 5th/6th/7th args (e,c,b) are the params in a4/a5/t2 (NOT uninitialized locals); fn/d stay in a2/a3 un-spilled. Required an SN TU: split out of the GNU hud.cpp via Splat boundaries 0xFF308/0xFF418 into hud_chan.cpp (default SN) + hud_post.cpp (GNU); GameMode self-based load and the v1 product both need SN. Trailing 4-byte nop (region 0x110 vs body 0x10C). Callers: Hud_InitBanks (i,0xFFFF,0,0,0,0,1) and func_001FF480 (find-by-serial, b=0). See notes/hud_Hud_SetChannelPending__Fiiiiiii.md.",
   "matched_date": "2026-10-09"
+ },
+ "code/game/pause_post2.cpp:90:pause_releaseEntryMobys": {
+  "name": "pause_releaseEntryMobys",
+  "original_name": "func_0021DF58",
+  "source": "code/game/pause_post2.cpp",
+  "vram": "0x0021DF58",
+  "size": 60,
+  "matched_date": "2026-10-09",
+  "note": "Pause-menu callback referenced from the original function-pointer tables (0x1CEF8C/0x1D0E34/0x1D0EF4). Releases the entry's moby: calls pause_refreshMobyTimestamp (0x225530, DeleteMoby + worldUpdateTime stamp) on field_0x44, stores the (always-0) result back to field_0x44, calls it again on that result (a no-op), and stores the result to field_0x48 - net effect: frees the field_0x44 moby and clears both moby slots. The two-call form with each result store lands where EGC puts them: first arg load in the first jal delay slot, field_0x44 store in the second jal delay slot. Reused the existing PauseMenuEntry struct and the pause_refreshMobyTimestamp decl (moved above the definition). decomp_probe 60/60; tu_assembler_diff pause_post2.o 58/58; full boot ELF cmp byte-identical."
  }
 }
