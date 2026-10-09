@@ -94,6 +94,10 @@ gifPageMarkerA = 0x0015F450;
 gifPageMarkerB = 0x0015F454;
 gifLoadCnt = 0x0015F458;
 effectTexCnt = 0x0015F45C;
+// Base of the 64 x 16-byte VU1 data-reference slots that GetFrameTex /
+// GetEffectTex fill for palette/texture loads; slot n sits at base + n*16,
+// indexed by gifLoadCnt, and the array ends exactly at effectTexs.
+gifLoadSlots = 0x0018D040;
 effectTexs = 0x0018D440;
 drawNormalFrame__Fv = 0x001F4248;
 AddDrawCallback__FUiUi = 0x001F4600;

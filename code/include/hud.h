@@ -62,11 +62,13 @@ typedef struct {
 } HudFrame;
 
 // One HUD texture slot. DL frameTex_t; the gsram halfword holds the
-// texture's GS RAM address in 1/256 units.
+// texture's GS RAM address in 1/256 units. uLog/vLog are the log2 texture
+// width/height used to build the GS TEX0 descriptor and the load size.
 typedef struct {
     u32 ram;
     u16 gsram;
-    u8 pad_06[2];
+    u8 uLog;
+    u8 vLog;
 } HudFrameTex;
 
 // One HUD palette slot. DL framePal_t; gsram like HudFrameTex.gsram.
