@@ -76,7 +76,60 @@ void setMessageText(char* str) {
     func_001165B8((u8*)messageTextBuffer, (u8*)str);
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud_post_post2", func_001FF6D8);
+// Unreachable dead tail after setMessageText (0x1FF6D8-0x1FF760): eighteen
+// `addiu sp,sp,N` units (0x10,0x20,0xB0,0x120,0x70,0xD0,0x20,0x20,0x50,0xC0,
+// 0x30,0x40,0x20,0xB0,0xA0,0xD0,0x70,0x30) with interleaved nops. Nothing
+// reaches 0x1FF6D8 (0 jal/j/branch/data references; no Ghidra function), so
+// it is not a function; the original compiler emitted these bytes after the
+// preceding RTL, so they are preserved here as exact words. The trailing nop
+// pads to the 8-aligned hud_updateMessageTimer entry at 0x1FF768.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_001FF6D8, 0x8C\n"
+    "glabel func_001FF6D8\n"
+    "    .word 0x27bd0010\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0020\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd00b0\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0120\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0070\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd00d0\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0020\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0020\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0050\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd00c0\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0030\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0040\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0020\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd00b0\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd00a0\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd00d0\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0070\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0030\n"
+    "endlabel func_001FF6D8\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 void hud_updateMessageTimer(void) {
     if (hudMessageTimer != 0) {
