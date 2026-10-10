@@ -129,9 +129,9 @@ typedef struct {
                               //   incremented and assigned by the slot allocator.
     u32 field_04;            // +0x04: cleared by Hud_InitBanks (meaning not established).
     u8 pad_08[4];            // +0x08
-    u32 vuField_0C;          // +0x0C: set to HUD_VU_FIELD_INIT by Hud_DrawChannels; the
-                               //   upper word of a 64-bit VU1 packet field consumed by
-                               //   the per-channel draw callbacks.
+    int vuField_0C;          // +0x0C: set to HUD_VU_FIELD_INIT by Hud_DrawChannels; the
+                                //   upper word of a 64-bit VU1 packet field consumed by
+                                //   the per-channel draw callbacks.
     u32 heapCursor;          // +0x10
     u32 heapEnd;             // +0x14
     HudHeader* volatile header; // +0x18
