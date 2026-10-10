@@ -437,11 +437,21 @@ $v0 for base and value (`lui v0,0x16; lw v0,-4428(v0)`). Casting the load
   original. So `MENU_POST_CALLBACK_INDEX_ADDRESS` stays for the remaining
   stores. Do not re-attempt the named-store refactor for these (see
   decomp_state/notes/menu_func_002088A8.md, 2026-09-16 table). Per the
-  2026-09-16 owner policy, static data addresses are forbidden in source:
-  menu_restoreSelection (0x2088A8) was reverted to `INCLUDE_ASM` and blocked
-  that day; the sibling 0x2089A8 (menu_post_selectNextPage) and 0x208EB8
-  (menu_post_openGadgets) still carry the cast and need the same
-  revert-and-block treatment.
+ 2026-09-16 owner policy, static data addresses are forbidden in source:
+   menu_restoreSelection (0x2088A8) was reverted to `INCLUDE_ASM` and blocked
+   that day. 2026-10-10 correction: the cast is NOT required for the
+   in-window 0x15EEB0 stores — a PLAIN in-window alias (no section
+   attribute, e.g. `menuPostCallbackIndexGp` in config/linker_aliases.ld)
+   is `-G8` small-data, so EGC emits the bare pseudo `sw r,sym` and
+   ps2eeas expands it in place to the original `lui at; sw r,%lo(at)` (the
+   `.data`-section named form is what mis-schedules to `$a1`). This
+   supersedes the revert-and-block recommendation for the siblings:
+   menu_post_selectNextPage (0x2089A8) and menu_post_openGadgets (0x208EB8)
+   were converted to the plain-alias store and the
+   `MENU_POST_CALLBACK_INDEX_ADDRESS` #define removed, all byte-verified.
+   Same plain-alias mechanism matches the three gate callbacks 0x208A38/
+   B88/C70 (GPREL `sw` in the `jr` delay slot, absolute `lui at; sw` in the
+   body) — see decomp_state/notes/menu_post_mid_gate_callbacks.md.
 
 Observation observed 2026-09-05 (EGC dead-code tails — ~46 "phantom functions"):
 the original binary contains ~46 unreachable 4-byte fragments that spimdis splits
