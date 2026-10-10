@@ -28,6 +28,7 @@ menuItemEnabled_115 = 0x0013D407;
 menuState = 0x001413DC;
 menuStateData = 0x0013D290;
 menuPostCallbackIndexGp = 0x0015EEB0;
+menuPostFlagsGp = 0x0015EEB4;
 snd_cdCallbackArgGp = 0x0015ED00;
 snd_cdCallbackArgGpRet = 0x0015ED00;
 camCollModeGp = 0x0015EF98;

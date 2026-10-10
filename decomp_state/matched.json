@@ -725,14 +725,15 @@
   "matched_date": "2026-09-04"
  },
  "code/game/menu_post_gadgets.cpp:4:func_00208EB8": {
-  "name": "func_00208EB8",
+  "name": "menu_post_openGadgets__Fv",
   "source": "code/game/menu_post_gadgets.cpp",
   "asm": "code/_generated/nonmatchings/game/menu_post_gadgets/func_00208EB8.s",
   "vram": "0x00208EB8",
   "file_offset": "0x109E38",
   "size": 32,
-  "note": "Menu callback: if (D_0013D2AC) *(int*)0x15EEB0 = 3. Single DATA xref (fp-table entry 0x1A0484). Key codegen finding: a plain 'extern int D_0015EEB0' ref would go GP-relative (address inside gp window), and even with section(\".data\") EGC schedules the store-address lui into the beqz delay slot (wrong order); the constant-cast store *(int*)0x15EEB0 = 3 puts li v0,3 in the beqz delay slot and lui at,0x16 after (byte-identical, matches the sibling family 0x208E68/E90/ED8/F00). D_0013D2AC needs the section(\".data\") attribute or the link fails with R_MIPS_GPREL16 truncation (out-of-window undefined sym). See decomp_state/notes/menu_func_00208EB8.md. Verified: built slice 0x109E38..0x109E58 words 1400023C ACD2438C 03006010 03000224 1600013C B0EE22AC 0800E003 00000000 byte-identical; full make + cmp passes; count 827 -> 826.",
-  "matched_date": "2026-09-04"
+  "note": "Menu callback: if (menu_postHasPendingSelection) menuPostCallbackIndex = 3. Single DATA xref (fp-table entry 0x1A0484). The store goes through the plain in-window alias menuPostCallbackIndexGp: EGC emits the bare small-data pseudo and ps2eeas expands it in place to li v0,3; lui at; sw v0 - the GNU-era conclusion that a constant-address cast was required is obsolete under the SN pipeline (removed 2026-10-10). See decomp_state/notes/menu_post_mid_gate_callbacks.md. Verified: probe match, TU diff 1/1, full clean make + cmp passes.",
+  "matched_date": "2026-10-10",
+  "original_name": "func_00208EB8"
  },
  "code/game/menu_post_pages.cpp:4:func_00208E68": {
   "name": "func_00208E68",
@@ -785,14 +786,15 @@
   "matched_date": "2026-09-04"
  },
  "code/game/menu_post_mid.cpp:4:func_002089A8": {
-  "name": "func_002089A8",
+  "name": "menu_post_selectNextPage__Fv",
   "source": "code/game/menu_post_mid.cpp",
   "asm": "code/_generated/nonmatchings/game/menu_post_mid/func_002089A8.s",
   "vram": "0x002089A8",
   "file_offset": "0x109928",
   "size": 36,
-  "note": "Menu callback over global struct D_0013D290 (undefined sym, needs section(\".data\")): *(int*)0x15EEB0 = 4; S+0xDC = -1; S+0xE0 = -1. Single -1 value CSE'd into one addiu a0; 4 in v1; base v0 via lui/addiu; 0x15EEB0 store via constant cast (at base). The three stores follow the documented fixed permutation (stmt3; stmt1; jr; <ds stmt2>): source order (0x15EEB0, 0xDC, 0xE0) emits sw 0xE0; sw 0x15EEB0; jr; <ds sw 0xDC>. Verified: built slice 0x109928..0x10994C words 1400023C FFFF0424 90D24224 04000324 E00044AC 1600013C B0EE23AC 0800E003 DC0044AC byte-identical; full make + cmp passes; count 821 -> 820.",
-  "matched_date": "2026-09-04"
+  "note": "Menu callback slot 3 (fp table 0x1A0438): menuStateData.field_0xE0 = -1; menuPostCallbackIndex = 4; menuStateData.field_0xDC = -1. Single -1 value CSE'd into one addiu a0; 4 in v1; struct base v0 via lui/addiu; the 0x15EEB0 store via the plain in-window alias menuPostCallbackIndexGp expands to the original lui at; sw pair (constant cast no longer required under the SN pipeline; removed 2026-10-10). Statement order E0, callback, DC matches byte-for-byte. See decomp_state/notes/menu_post_mid_gate_callbacks.md. Verified: probe match, TU diff 14/14, full clean make + cmp passes.",
+  "matched_date": "2026-10-10",
+  "original_name": "func_002089A8"
  },
  "code/game/music.cpp:6:func_00215420": {
   "name": "func_00215420",
@@ -2732,5 +2734,32 @@
   "size": 172,
   "matched_date": "2026-10-09",
   "note": "Returns the absolute frame-table index (icon start + frame) for drawing a HUD icon frame, or 0 when the icon is absent, the frame is out of range, or the frame's palette/texture ram entry is not yet re-based by LinkHudBank (bit 31 of the ram word set). Named/typed from the Deadlocked reference (reference/dl/game_dl/hud.cpp:192) and the DrawGalacticMap caller (0x1FD748 calls GetIconFrame(0xE,0xF)). Introduced the HudFrame type ({s16 hPal; s16 hTex;}, DL frame_t), renamed HudHeap.pad_20 (u32, unreferenced elsewhere) to HudHeap.frames (HudFrame*), added HUD_RAM_ENTRY_FLAG 0x80000000, and the GetIconFrame prototype in hud.h. Match-sensitive (see notes/hud_post_post2_post_GetIconFrame__Fii.md): (1) the entry pointer must be an integer add (index * sizeof(HudIconDef) + hudHeap.iconTable) - a pointer subscript swaps the addu operands; (2) the 0x80000000 mask must be pinned to $8 (register asm) so its lui hoists above the base loads and the tail test is and v1,v1,t0; (3) the validity checks must stay in the nested-ternary grouping palOk ? (texOk ? fi : 0) : 0 - a flat if/return form flips the two exit-branch -l bits (beqz->beqzl for the len test, bltzl->bltz for the pal test), a 2-word RTL/control-flow-provenance residual. The nested-ternary form (expert recommendation) matches all 43 words byte-for-byte."
+ },
+ "code/game/menu_post_mid.cpp:15:func_00208A38": {
+  "name": "menu_post_gatePendingSelection__Fv",
+  "original_name": "func_00208A38",
+  "source": "code/game/menu_post_mid.cpp",
+  "vram": "0x00208A38",
+  "size": 60,
+  "matched_date": "2026-10-10",
+  "note": "Menu-post callback slot 5 (fp table 0x1A0438): if (menu_postHasPendingSelection != -2) menuPostCallbackIndex = 3; else if (menuPostFlags & 0x2) menuPostCallbackIndex = 6. Both stores go through the plain in-window alias menuPostCallbackIndexGp (GPREL sw in the jr delay slot; the plain declaration expands exactly like the original - no constant cast needed under the SN pipeline). The -2 sentinel must stay pinned to $4 (register int sentinel asm(\"$4\")) to keep the original a0-constant/v1-value register split. See decomp_state/notes/menu_post_mid_gate_callbacks.md. Verified: probe match, TU diff 14/14, full clean make + cmp passes; count 540 -> 537."
+ },
+ "code/game/menu_post_mid.cpp:44:func_00208B88": {
+  "name": "menu_post_gatePageOpen__Fv",
+  "original_name": "func_00208B88",
+  "source": "code/game/menu_post_mid.cpp",
+  "vram": "0x00208B88",
+  "size": 56,
+  "matched_date": "2026-10-10",
+  "note": "Menu-post callback slot 9 (fp table 0x1A0438): if (menu_postHasPendingSelection) menuPostCallbackIndex = 3; else if (menuPostFlags & (0x2|0x4)) menuPostCallbackIndex = 10. Same plain-alias store mechanism as func_00208A38 (GPREL sw v0,-0x7d50(gp) in the jr delay slot); the flag load in the branch delay slot is GPREL via the menuPostFlagsGp alias. No register pins needed (beqz form). See decomp_state/notes/menu_post_mid_gate_callbacks.md. Verified: probe match, TU diff 14/14, full clean make + cmp passes."
+ },
+ "code/game/menu_post_mid.cpp:53:func_00208C70": {
+  "name": "menu_post_gateBootSelection__Fv",
+  "original_name": "func_00208C70",
+  "source": "code/game/menu_post_mid.cpp",
+  "vram": "0x00208C70",
+  "size": 56,
+  "matched_date": "2026-10-10",
+  "note": "Menu-post callback slot 12 (fp table 0x1A0438): if (menu_postHasPendingSelection) menuPostCallbackIndex = 3; else if (menuPostFlags & 0x2) menuPostCallbackIndex = 13. Same plain-alias mechanism as the sibling gate callbacks (GPREL store in the jr delay slot, GPREL flag load in the branch delay slot). See decomp_state/notes/menu_post_mid_gate_callbacks.md. Verified: probe match, TU diff 14/14, full clean make + cmp passes."
  }
 }

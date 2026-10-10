@@ -1,10 +1,19 @@
 # func_00208EB8 (vram 0x208EB8, file 0x109E38, 32 bytes) — MATCHED 2026-09-04
 
-2026-09-11 correction: this callback now lives in `menu_post_gadgets.cpp` and
-uses `MENU_POST_CALLBACK_INDEX_ADDRESS` for its required constant-address
-cast. A symbolic store remains nonmatching under this slice's normal address
-splitting, so the named constant keeps the verified scheduling without an
-unexplained address literal.
+2026-10-10 correction: the constant-address cast is no longer required. The
+store now goes through the plain in-window alias `menuPostCallbackIndexGp`
+(config/linker_aliases.ld), declared locally in menu_post_gadgets.cpp. EGC
+emits the bare small-data pseudo, and ps2eeas expands it in place to the
+original `li v0,3; lui at; sw v0` schedule — the cast is obsolete under the
+SN pipeline (the GP-relative result the GNU-era analysis feared comes from
+gas's end-of-file `.extern` expansion, which ps2eeas does not do for an
+unseeded bare pseudo). Verified byte-identical; the
+`MENU_POST_CALLBACK_INDEX_ADDRESS` #define was removed from menu.h. See
+decomp_state/notes/menu_post_mid_gate_callbacks.md.
+
+2026-09-11 correction (superseded on the cast point above): this callback now
+lives in `menu_post_gadgets.cpp` and used
+`MENU_POST_CALLBACK_INDEX_ADDRESS` for a constant-address cast.
 
 Menu callback: `if (D_0013D2AC) *(int*)0x15EEB0 = 3;`.
 

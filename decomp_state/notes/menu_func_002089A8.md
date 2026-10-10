@@ -1,12 +1,20 @@
 # func_002089A8 (vram 0x2089A8, file 0x109928, 36 bytes) — MATCHED 2026-09-04
 
-2026-09-11 correction: this function now lives in `menu_post_mid.cpp`, which
-retains `-fno-schedule-insns` and normal address splitting. Its required
-constant-address cast uses `MENU_POST_CALLBACK_INDEX_ADDRESS`; a symbolic
-store changes the address register and store schedule. The equivalent source
-order is E0, state, DC under that flag. Full boot cmp passes; the bytes below
-are unchanged. The older permutation explanation applies only to the previous
-default flags.
+2026-10-10 correction: the constant-address cast is no longer required. The
+0x15EEB0 store now goes through the plain in-window alias
+`menuPostCallbackIndexGp` (config/linker_aliases.ld): EGC emits the bare
+small-data pseudo `sw $v1, menuPostCallbackIndexGp`, and ps2eeas expands it
+in place to the original `lui at; sw` pair (the same bytes the cast used to
+force). The three-store statement order is now simply E0, callback, DC
+(natural order) and matches byte-for-byte; the `MENU_POST_CALLBACK_INDEX_ADDRESS`
+#define was removed from menu.h. See
+decomp_state/notes/menu_post_mid_gate_callbacks.md for the mechanism.
+
+2026-09-11 correction (superseded on the cast point above): this function now
+lives in `menu_post_mid.cpp`, which retains `-fno-schedule-insns` and normal
+address splitting. The equivalent source order is E0, state, DC under that
+flag. Full boot cmp passes; the bytes below are unchanged. The older
+permutation explanation applies only to the previous default flags.
 
 Menu callback over global struct at D_0013D290:
 
