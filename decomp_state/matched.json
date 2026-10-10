@@ -2770,5 +2770,13 @@
   "size": 120,
   "matched_date": "2026-10-10",
   "note": "Lays out the level memory map levelMem (0x1940C0): base = (text_VRAM_END + 0x3FFF) & 0xFFFFC000, then chains the VU-chain, HUD-heap (0x64000), and level-descriptor regions off it, and writes the 0x7000000/0x7100000/0x7200000 reserved occlusion triple (occl_points/occl_grids/debug; DL same-function evidence). Match-sensitive: straight-line 10-store body written directly through the struct with no locals, no pins (locals/pins/reorders give 19-26 word diffs); f18 = f14 via CSEd reload; occlusion stores must use levelMem field offsets from the single base register. Extended LevelMem with base/level_base/level_end + 3 occl fields and named constants. See decomp_state/notes/initonce_InitMemSlots__Fv.md. Verified: probe 0 diffs, full clean make + cmp passes."
+ },
+ "code/game/loaders.cpp:16:LoadCompressedHudBank__FiPc": {
+  "name": "LoadCompressedHudBank__FiPc",
+  "source": "code/game/loaders.cpp",
+  "vram": "0x00202D10",
+  "size": 100,
+  "matched_date": "2026-10-10",
+  "note": "Decompresses HUD bank i into dest (16-rounded; skipped when it rounds to 0) via FastDecompress(levelRoot+offset, dest), then clears bankLoad[0x1D word past header+i*4]. levelRoot declared WITHOUT .data in loaders.cpp so the in-gp-window 4-byte pointer is a -G8 small-data bare pseudo ps2eeas expands self-based (with .data it splits). New symbol hudHeader=0x19A400 (&hudHeap.header) reads the header as a direct symbol. The base+i*8+0x28 address is split into idx=base+i*8 then a field load to flip the addu operand order to the original. See notes/loaders_LoadCompressedHudBank__FiPc.md."
  }
 }

@@ -1061,7 +1061,7 @@
   "line": 16,
   "asm": "code/_generated/nonmatchings/game/loaders/LoadCompressedHudBank__FiPc.s",
   "name": "LoadCompressedHudBank__FiPc",
-  "status": "todo"
+  "status": "matched"
  },
  {
   "id": "code/game/loaders.cpp:18:func_00202D78",
