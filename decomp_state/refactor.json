@@ -180,6 +180,7 @@
   "category": "magic-number-naming",
   "description": "hudHeap.heapEnd = hudHeapBase + 0x64000 uses the raw HUD-heap size; the same constant is now named LEVELMEM_HUD_HEAP_SIZE in code/game/initonce.cpp (levelMem.field_0x0C spans it). Move the size to a shared header (e.g. levelmem.h/hud.h) and use it in both places; the value must fold to the same 0x64000 literal so the matched bytes are unchanged.",
   "evidence": "decomp_state/notes/initonce_InitMemSlots__Fv.md; initonce InitMemSlots step f10 = f0c + 0x64000; hud.cpp:76-77",
-  "status": "open"
+  "status": "done",
+  "resolved": "2026-10-10: RESOLVED - LEVELMEM_HUD_HEAP_SIZE moved from initonce.cpp to code/include/levelmem.h (the shared level-memory layout header); initonce.cpp (already included it) and hud.cpp (new include) both use it. Value folds to the same 0x64000 literal: clean make clean + split + make, objdump of hud.o/initonce.o shows the identical lui 0x6 / ori 0x4000 split, and cmp build/boot_elf.elf assets/boot_elf.elf passes."
  }
 ]

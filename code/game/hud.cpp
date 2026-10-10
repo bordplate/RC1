@@ -1,6 +1,7 @@
 #include "common.h"
 #include "types.h"
 #include "hud.h"
+#include "levelmem.h"
 
 #define HUD_RAM_ALIGN 0x10
 #define HUD_RAM_ENTRY_MASK 0x7FFFFFFF
@@ -73,7 +74,7 @@ asm(
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud", Hud_SendResidentBank__FiPcb);
 
 void Hud_HeapReset(void) {
-    hudHeap.heapEnd = hudHeapBase + 0x64000;
+    hudHeap.heapEnd = hudHeapBase + LEVELMEM_HUD_HEAP_SIZE;
     hudHeap.heapCursor = hudHeapBase;
 }
 

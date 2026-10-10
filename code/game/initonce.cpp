@@ -9,9 +9,6 @@ extern int currentVuChain;
 // base, then places the VU chain, HUD heap, and level descriptor regions in
 // sequence after it.
 #define LEVEL_ARCHIVE_ALIGNMENT 0x4000U
-// The HUD heap (field_0x0C, hudHeapBase) spans this size; the hud code
-// derives hudHeap.heapEnd from the same value.
-#define LEVELMEM_HUD_HEAP_SIZE 0x64000
 // The level descriptor base sits this far past field_0x10.
 #define LEVELMEM_LEVEL_BASE_OFFSET 0x30000
 // Reserved occlusion data regions whose contents level code relocates;
