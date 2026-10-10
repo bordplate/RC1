@@ -722,5 +722,27 @@
     "size": "0x220",
     "note": "HUD frame palette/texture load-slot allocator + GS TEX0 descriptor builder. u64 GetFrameTex(int fi); full semantics decoded (see notes/hud_post_post2_gftex_GetFrameTex.md). TWO walls. Wall1 ACCESS MODE (SOLVED via infrastructure): the original mixes in-window modes for gifLoadCnt/textureCursor/textureMemoryBase (self-based absolute 2-instr loads for gifLoadCnt+block-2 textureCursor+textureMemoryBase; GPREL16 1-instr for block-3 textureCursor load + both textureCursor stores in branch delay slots). A GNU TU (gas) cannot emit the self-based absolute for a named in-window extern without a forbidden constant-address cast, so the function was split into its own SN-assembler Splat segment/TU (game/hud_post_post2_gftex; trailing fns -> game/hud_post_post2_post2, still GNU); under SN plain unseeded in-window externs expand self-based absolute for ordinary refs and GPREL16 in noreorder branch regions = the original pattern. Split verified clean (full-ELF parity passes; the only diff while the C candidate was active was confined to 0x1FFA20-0x1FFC2C). Also named gifLoadSlots=0x18D040 (symbols.txt) and renamed HudFrameTex.pad_06 to uLog/vLog (hud.h). Wall2 RA (BLOCKER): with SN + all best-form source (integer-add frame lookup, unconditional cursor updates, explicit max, direct slot subscripts, staged TEX0, scoped $3 heap pin + $10 wrote pin) the candidate is 68/136 words off, ALL from the prologue register-allocation cascade: original frames->v0, fr->a0, pals->a1, texs->a2; candidate frames/fr->a1, pals->a2, texs->a0 (the $3/$10 pins match the heap base + wrote register but not the struct-pointer allocation). Same EGC 2.95.2 'RA shifted from the first move, not fixed by pinning' wall as the blocked siblings SetupGifPaging__Fi / DoGifPaging__Fv / GetEffectTex__Fii. Retain INCLUDE_ASM (SN TU); full-ELF parity preserved. See notes/hud_post_post2_gftex_GetFrameTex.md.",
     "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-10-09 with the full 128/136 GNU-TU dossier. Corrected the diagnosis: the access-mode wall is solvable only via an SN-only TU split (plain unseeded in-window externs), and prescribed the source forms (integer-add frame lookup, unconditional cursor updates, explicit max, direct slot subscripts, staged TEX0) plus a scoped $3 heap pin. All applied and mechanically diffed: SN+plain=92/136; integer forms=92; +$3 heap pin=72; +$10 wrote pin=68/136. Confirmed the residual is the EGC prologue RA cascade (original $3/$2/$4/$5/$6 heap/frames/fr/pals/texs vs candidate $3/$5/$5/$6/$4) and that with the initial allocation cascade persisting after the prescribed forms+pins, blocking is defensible. No match claimed; no match is achievable with named symbols in this build."
+  },
+  {
+    "id": "code/game/hud_post_post2_post2.cpp:func_001FFE18",
+    "source": "code/game/hud_post_post2_post2.cpp",
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_001FFE18.s",
+    "name": "func_001FFE18",
+    "status": "blocked",
+    "date": "2026-10-10",
+    "vram": "0x1FFE18",
+    "size": "0x25C",
+    "note": "VU1 4-corner sprite-quad packet builder. Semantics solved (call is 1-arg GetFrameTex, q2=its return); best candidate 604B/85 diffs (15 prologue + 70 body). Blocked on EGC 2.95.2 default-scheduler/RA tie-break: a 5-register prologue cycle (texU s4->s3, y s5->s4, x s1->s5, qbase s2->s1, h s3->s2) plus body scheduling. Every constraint (hoisted head read, texU s4 pin + scoped transfer, source reordering) perturbs the 9-interleaved sq prologue and regresses. Same class as Hud_DrawSprite__Fiiiiii (0x1FFC30). last-resort GPT-5.6 Sol used: both probes worse (105/104 diffs). See notes/hud_func_001FFE18.md."
+  },
+  {
+    "id": "code/game/hud_post_post2_post2.cpp:func_001FFC30",
+    "source": "code/game/hud_post_post2_post2.cpp",
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_001FFC30.s",
+    "name": "Hud_DrawSprite__Fiiiiii",
+    "status": "blocked",
+    "date": "2026-10-10",
+    "vram": "0x1FFC30",
+    "size": "0x1E8",
+    "note": "VU1 data-ref sprite packet builder (2 corners). Prologue + header + qwords q0-q5 matched byte-for-byte and the pos semantics were solved (z in the HIGH word via (u64)z<<32). Best candidate (cand_v12.cpp, production default flags) = 488 bytes (exact size) / 40 word-diffs, ALL in 0x1FFD48-0x1FFDE4 = coupled EGC 2.95.2 default-scheduler/RA tie-breaks (texflags computed first vs interleaved with the pos shifts, q7 stored early vs late, pos2 (y+h) hoisted into the pos1 block, x-ops before y-ops, epilogue lq-ra/head-reload interleaved with pos2). Required forms locked in: plain double-volatile vu1ChainHead, q0 16-hex, texflags as int + (s4=texV/s5=texU), q[4] before q[3] source order, (u64)vuField_0C<<32, and register OcclViewParams* vp asm('$5') base pin to a1. Every scheduler/RA constraint (tied asm barriers, phase fences, param/scalar pins, both scheduler flags, source reordering) perturbs the allocation-sensitive 9-interleaved sq prologue and regresses. expert GPT-6 Astra used (tied barriers shattered the prologue, 104-112 diffs); last-resort GPT-5.6 Sol used (phase fences worse, 43-60 diffs). Retain INCLUDE_ASM; full-ELF parity preserved. See notes/hud_Hud_DrawSprite__Fiiiiii.md."
   }
 ]
