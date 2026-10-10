@@ -2761,5 +2761,14 @@
   "size": 56,
   "matched_date": "2026-10-10",
   "note": "Menu-post callback slot 12 (fp table 0x1A0438): if (menu_postHasPendingSelection) menuPostCallbackIndex = 3; else if (menuPostFlags & 0x2) menuPostCallbackIndex = 13. Same plain-alias mechanism as the sibling gate callbacks (GPREL store in the jr delay slot, GPREL flag load in the branch delay slot). See decomp_state/notes/menu_post_mid_gate_callbacks.md. Verified: probe match, TU diff 14/14, full clean make + cmp passes."
+ },
+ "code/game/initonce.cpp:3:InitMemSlots__Fv": {
+  "name": "InitMemSlots",
+  "original_name": "InitMemSlots__Fv",
+  "source": "code/game/initonce.cpp",
+  "vram": "0x002015D8",
+  "size": 120,
+  "matched_date": "2026-10-10",
+  "note": "Lays out the level memory map levelMem (0x1940C0): base = (text_VRAM_END + 0x3FFF) & 0xFFFFC000, then chains the VU-chain, HUD-heap (0x64000), and level-descriptor regions off it, and writes the 0x7000000/0x7100000/0x7200000 reserved occlusion triple (occl_points/occl_grids/debug; DL same-function evidence). Match-sensitive: straight-line 10-store body written directly through the struct with no locals, no pins (locals/pins/reorders give 19-26 word diffs); f18 = f14 via CSEd reload; occlusion stores must use levelMem field offsets from the single base register. Extended LevelMem with base/level_base/level_end + 3 occl fields and named constants. See decomp_state/notes/initonce_InitMemSlots__Fv.md. Verified: probe 0 diffs, full clean make + cmp passes."
  }
 }

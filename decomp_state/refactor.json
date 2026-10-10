@@ -169,5 +169,17 @@
   "description": "0x15EEB0 store used the constant-address cast *(int*)MENU_POST_CALLBACK_INDEX_ADDRESS. Fixed 2026-10-10: same plain-alias mechanism (menuPostCallbackIndexGp) reproduces the original li v0,3; lui at; sw schedule, cast removed. Supersedes the 2026-09-16 revert-and-block recommendation for this address.",
   "evidence": "notes/menu_post_mid_gate_callbacks.md; probe out_eb8 match; TU diff 1/1; full clean make + cmp passes",
   "status": "done"
+ },
+ {
+  "id": "hud_Hud_HeapReset__Fv_magic_heap_size",
+  "file": "code/game/hud.cpp",
+  "function": "Hud_HeapReset__Fv",
+  "addresses": [
+   "0x1FF260"
+  ],
+  "category": "magic-number-naming",
+  "description": "hudHeap.heapEnd = hudHeapBase + 0x64000 uses the raw HUD-heap size; the same constant is now named LEVELMEM_HUD_HEAP_SIZE in code/game/initonce.cpp (levelMem.field_0x0C spans it). Move the size to a shared header (e.g. levelmem.h/hud.h) and use it in both places; the value must fold to the same 0x64000 literal so the matched bytes are unchanged.",
+  "evidence": "decomp_state/notes/initonce_InitMemSlots__Fv.md; initonce InitMemSlots step f10 = f0c + 0x64000; hud.cpp:76-77",
+  "status": "open"
  }
 ]
