@@ -165,7 +165,7 @@ void showDebugFont(int index) {
 
     // Spin the memcard machine until no operation is running (stage 3+ is an
     // active operation) and none is pending (nextstage < 0).
-    while (menuStateData.stage >= 3 || menuStateData.nextstage >= 0)
+    while (g_memcard.stage >= 3 || g_memcard.nextstage >= 0)
         memcard_Update();
 
     u32 decBase = levelMem.decodeBufBase;

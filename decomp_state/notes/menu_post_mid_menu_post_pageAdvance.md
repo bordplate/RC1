@@ -120,11 +120,41 @@ and positional constants were renamed to the memcard-machine names
 build + full `cmp`). See refactor.json entry
 `menu_post_mid_menu_post_pageAdvance_state_naming` (done).
 
-Remaining follow-ups (tracked in refactor.json):
-- `menuStateData`/`MenuState` global+struct rename to the memcard name
-  (`g_memcard` / `memcard_globals`), plus the still-placeholder fields
-  (`selected`=memcards[0].changed, `saved`, `pending`, and the +0xBC..+0xF0
-  control block / `memcards[]` array).
+Remaining follow-ups:
 - The slot-11 handler `func_00208C00` is still INCLUDE_ASM (a queue target,
   not a refactor). Full decode of the 24-stage `memcard_Update` machine is
   part of that target.
+
+Resolved 2026-10-11 (refactor `menu_menuStateData_g_memcard_global_rename`):
+`MenuState`/`menuStateData` renamed to `memcard_globals`/`g_memcard` and the
+struct modeled against the machine. Key layout findings from objdump of
+`memcard_Update` (0x2093D8, BFD is ground truth — Splat misdecodes several
+instructions in this function, e.g. the entry `move s2,v1` as `daddu` and the
+`mult`/`li` pairs in the probe):
+
+- The struct holds ONE 0xB8-byte card record at +0x00 (port/slot passed as
+  scalars to probe 0x123D68; type/free as its two result pointers; format at
+  +0x14 with the -3 unformatted sentinel; changed at +0x1C; five 28-byte
+  save-slot info records at +0x20..+0xAB; oldsave at +0xAC). There is no
+  second embedded record: the control block starts at +0xB8. The probe's
+  `slot * 0xB8` stride from the struct base is therefore only valid for
+  slot 0; the initial data confirms it (only one -3 format sentinel, at
+  +0x14).
+- The control block +0xB8..+0x103 matches the reference `memcard_globals`
+  positionally: cmd/res are the embedded sceMcSync buffer words (DL polls
+  `sceMcSync(1, 0x171c70, 0x171c74)` with separate statics; RC1 embeds them,
+  and res=+0xBC is exactly the word the stage-1 update copies into
+  changed), useslot, slot (card index), field_0xC8 (reference `level`),
+  sync (nonzero -> memcard_Update polls and returns without running a
+  stage), file, then stage..savesize — all 12 tail words match the
+  reference in order AND initial value (0,0,-1,-1,0,-1,0,0,1,0,0,0).
+- `pending` (+0xF4) was actually `autosave` (the pause save callback
+  func_002269C0 sets it to 1 together with addr=save buffer and
+  card.format=save size; DL: one-shot autosave flag, initial 1).
+- `selected` was `card.changed` (the machine writes res to it when the card
+  changes; the boot menu reads record 0's word as the pending-selection
+  flag, alias menu_postHasPendingSelection). The reference's `changed` sits
+  at +0x10, not +0x1C — RC1's layout predates that shift.
+
+Verified byte-identical: menu_post_mid.o 14/14, bmain.o 2/2, clean
+`make clean && make split && make -j2`, full boot ELF `cmp` pass, count 531.

@@ -14,9 +14,9 @@ extern int menuPostCallbackIndexGp;
 extern int menuPostFlagsGp;
 
 void menu_post_selectNextPage(void) {
-    menuStateData.nextslot = MENU_POST_UNSET_PAGE_INDEX;
+    g_memcard.nextslot = MENU_POST_UNSET_PAGE_INDEX;
     menuPostCallbackIndexGp = MENU_POST_PROCESS_PAGE_SELECTION_CALLBACK;
-    menuStateData.nextstage = MENU_POST_UNSET_PAGE_INDEX;
+    g_memcard.nextstage = MENU_POST_UNSET_PAGE_INDEX;
 }
 
 // Only placement in the menu-post callback range is established; behavior remains uninvestigated.
@@ -45,11 +45,11 @@ void menu_post_preparePageOpen(void) {
     // The condition must be read through a local: direct field access makes
     // EEGCC allocate the struct base to v1 and the value to v0 instead of
     // the original base=a0/value=v1.
-    int pendingStage = menuStateData.nextstage;
-    menuStateData.selected = 0;
+    int pendingStage = g_memcard.nextstage;
+    g_memcard.card.changed = 0;
     if (pendingStage < 0) {
-        menuStateData.nextslot = 0;
-        menuStateData.nextstage = MEMCARD_REQUEST_FORMAT;
+        g_memcard.nextslot = 0;
+        g_memcard.nextstage = MEMCARD_REQUEST_FORMAT;
     }
     menuPostCallbackIndexGp = MENU_POST_OPEN_PAGE_CALLBACK;
 }
@@ -80,10 +80,10 @@ void menu_post_gatePageOpen(void) {
 // constant to materialize (into v1) before the two struct stores are emitted.
 void menu_post_pageAdvance(void) {
     register int state asm("$4") = MEMCARD_STAGE_IDLE;
-    if (menuStateData.stage == state && menuStateData.nextstage < 0) {
+    if (g_memcard.stage == state && g_memcard.nextstage < 0) {
         int idx = MENU_POST_PAGE_OPEN_DECISION_CALLBACK;
-        menuStateData.nextstage = MEMCARD_REQUEST_SCAN;
-        menuStateData.nextslot = 0;
+        g_memcard.nextstage = MEMCARD_REQUEST_SCAN;
+        g_memcard.nextslot = 0;
         menuPostCallbackIndexGp = idx;
     }
 }
