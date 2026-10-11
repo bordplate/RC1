@@ -93,10 +93,21 @@ extern int menu_postHasPendingSelection __attribute__((section(".data")));
 // nextstage request: scan/getdir the card (memcard stage 7). Written by the
 // page-advance callback (slot 10).
 #define MEMCARD_REQUEST_SCAN 7
+// nextstage request: create a new save on the card (memcard stage 9). Stage 9
+// is a one-shot that arms the stage-10 create-save operation (mkdir the save
+// dir, open the save files for write, stream the game data to them). Written
+// by the create-save-pending callback (slot 14).
+#define MEMCARD_REQUEST_CREATE_SAVE 9
 // Slot 11 of the post-callback table, queued by the page-advance callback
 // (slot 10) and the page-open callback (slot 8). After a page opens or
 // advances it routes the chain to the next step based on the just-read
 // memcard slot. The handler (0x208C00) is still INCLUDE_ASM.
 #define MENU_POST_PAGE_OPEN_DECISION_CALLBACK 11
+// Slot 15 of the post-callback table, queued by the create-save-pending
+// callback (slot 14). It polls the create-save result: on success it arms the
+// follow-up write (stage 16) and clears the per-card scratch, otherwise it
+// routes the chain to the error callback (slot 18). Handler 0x208D60 is still
+// INCLUDE_ASM.
+#define MENU_POST_CREATING_SAVE_CALLBACK 15
 
 #endif

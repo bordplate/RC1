@@ -107,8 +107,25 @@ void menu_post_gateBootSelection(void) {
 // Only placement in the menu-post callback range is established; behavior remains uninvestigated.
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post_mid", func_00208CA8);
 
-// Only placement in the menu-post callback range is established; behavior remains uninvestigated.
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post_mid", func_00208D20);
+// Create-save-pending callback (post-callback table slot 14). Reached from the
+// boot flag-resolve callback (slot 13) and the page-open callback (slot 8).
+// When the memcard machine is idle (stage == MEMCARD_STAGE_IDLE) and no
+// operation is pending (nextstage < 0), it requests a create-save
+// (nextstage = MEMCARD_REQUEST_CREATE_SAVE, nextslot = 0) and continues the
+// chain at the creating-save callback (slot 15). Mirrors the reference
+// csf_create_save_pending. The original keeps the state constant in a0; the
+// pin preserves the constant/value register split, and the idx local forces
+// the slot-15 constant to materialize (into v1) before the two struct stores
+// are emitted.
+void menu_post_createSavePending(void) {
+    register int state asm("$4") = MEMCARD_STAGE_IDLE;
+    if (g_memcard.stage == state && g_memcard.nextstage < 0) {
+        int idx = MENU_POST_CREATING_SAVE_CALLBACK;
+        g_memcard.nextstage = MEMCARD_REQUEST_CREATE_SAVE;
+        g_memcard.nextslot = 0;
+        menuPostCallbackIndexGp = idx;
+    }
+}
 
 // Only placement in the menu-post callback range is established; behavior remains uninvestigated.
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post_mid", func_00208D60);

@@ -1248,14 +1248,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/menu_post_mid.cpp:96:func_00208D20",
-    "source": "code/game/menu_post_mid.cpp",
-    "line": 96,
-    "asm": "code/_generated/nonmatchings/game/menu_post_mid/func_00208D20.s",
-    "name": "func_00208D20",
-    "status": "todo"
-  },
-  {
     "id": "code/game/menu_post_mid.cpp:99:func_00208D60",
     "source": "code/game/menu_post_mid.cpp",
     "line": 99,

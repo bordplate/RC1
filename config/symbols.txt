@@ -7,6 +7,7 @@ menu_post_gatePageOpen__Fv = 0x00208B88;
 menu_post_gateBootSelection__Fv = 0x00208C70;
 menu_post_preparePageOpen__Fv = 0x00208AF8;
 menu_post_pageAdvance__Fv = 0x00208BC0;
+menu_post_createSavePending__Fv = 0x00208D20;
 vu1ChainHead = 0x00160F00;
 vifChainFlags = 0x00160EE0;
 drawTextureDmaState = 0x0018A2B0;
