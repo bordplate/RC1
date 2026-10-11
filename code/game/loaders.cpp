@@ -1,5 +1,6 @@
 #include "common.h"
 #include "types.h"
+#include "boot_level.h"
 #include "hud.h"
 
 // Level data root (see boot.cpp): levelRoot points at the level's decompressed
@@ -10,6 +11,11 @@ struct LevelRoot {
 };
 
 extern LevelRoot* levelRoot;
+// Runtime base for level placement, defined in config/linker_aliases.ld (not an
+// ELF symbol). Declared as a byte array so its address uses a %hi/%lo
+// relocation (lui + signed addiu) and the trailing & -0x10 is not folded away.
+extern u8 levelLoadPlacementTop[];
+extern void func_00216728_ref(void*, s32, s32) asm("func_00216728");
 // Current HUD bank header (&hudHeap.header, 0x19A400). LoadCompressedHudBank
 // reads it as a direct symbol; indexing hudHeap.header instead emits a
 // base+offset load that does not match.
@@ -96,7 +102,22 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/loaders", func_00203B08);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/loaders", func_002040E0);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/loaders", func_002043B0);
+// Places the decompressed level archive: levelRoot points just below
+// levelLoadPlacementTop, offset by the sector count (sectors * 0x800 + 0x1057,
+// page-aligned), then rounds down to a 0x10 boundary. The first word of the
+// level is set to 0x60 and the stream is set up for (levelRoot + that word).
+int func_002043B0(void) asm("func_002043B0");
+int func_002043B0(void) {
+    levelRoot = (LevelRoot*)((s32)(
+        (u32)levelLoadPlacementTop -
+        (((bootAssets.sectors << 11) + 0x1057) & 0xFFFFF000)
+    ) & -0x10);
+    *(u32*)levelRoot = 0x60;
+    func_00216728_ref((u8*)levelRoot + *(u32*)levelRoot,
+                      bootAssets.dest,
+                      bootAssets.sectors);
+    return 1;
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/loaders", func_00204428);
 

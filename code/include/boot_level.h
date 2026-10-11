@@ -16,7 +16,13 @@ struct BootAssetTable {
     u8 pad_0x00[8];
     u32 src;
     u32 size;
-    u8 pad_0x10[0x12B0];
+    u8 pad_0x10[0x4E8];
+    // Level-archive record: func_002043B0 derives the level-root placement from
+    // sectors (each sector 0x800 bytes) and passes both fields to the stream
+    // setup (func_00216728); dest is the archive destination word.
+    s32 dest;
+    s32 sectors;
+    u8 pad_0x500[0xDC0];
     u32 irxSector;
     u32 irxCount;
     u8 pad_0x12C8[0x218];

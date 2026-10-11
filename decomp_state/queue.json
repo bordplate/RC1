@@ -672,14 +672,6 @@
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:99:func_002043B0",
-    "source": "code/game/loaders.cpp",
-    "line": 99,
-    "asm": "code/_generated/nonmatchings/game/loaders/func_002043B0.s",
-    "name": "func_002043B0",
-    "status": "todo"
-  },
-  {
     "id": "code/game/loaders.cpp:101:func_00204428",
     "source": "code/game/loaders.cpp",
     "line": 101,

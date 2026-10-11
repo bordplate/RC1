@@ -215,6 +215,7 @@ frameBufferColor = 0x00152078;
 snd_cdStreamInfo = 0x00137B00;
 snd_cdCallbackArgGp = 0x0015ED00;
 bootAssets = 0x00137B80;
+levelLoadPlacementTop = 0x01FF7FF0;
 debugFontBuffer = 0x001AABC0;
 pauseActionListA = 0x001D4810;
 pauseActionListB = 0x001D4840;
