@@ -152,6 +152,30 @@ mobyOcclClusterCount = 0x0016119C;
 movieDisplayActive = 0x001611E0;
 movieErrorMessage = 0x001611F8;
 vuChainOverflowMessage = 0x001E8400;
+// IOP reboot image passed to sceSifRebootIop during InitOnce.
+iopRebootImagePath = 0x001E7AE0;
+// Boot-time status strings printed by InitOnce.
+rebootedIopMessage = 0x0015FA88;
+loadedIrxModulesMessage = 0x001E7AF8;
+unsupportedLangMessage = 0x001E7B10;
+// VU0 microprogram image loaded via VU0_loadMicroProgram in InitOnce.
+vu0MicroProgram = 0x0010E4C0;
+// InitOnce stores 0x160000 (the .data segment base) here; no boot-ELF reader
+// found, so it is presumably consumed by level-overlay code.
+levelDataBase = 0x00160E0C;
+// SDK / game entry points called only by InitOnce (previously func_XXXXXX).
+sceCdInit = 0x00120EB0;
+sceCdDiskReady = 0x00121190;
+sceSifRebootIop = 0x0011CF48;
+sceSifSyncIop = 0x0011CF10;
+// SDK syscall 97 wrapper (li v1,97; syscall); InitOnce enables the cache.
+EnableCache = 0x00118A60;
+DIntr = 0x0011D660;
+EIntr = 0x0011D6A8;
+sceCdMmode = 0x00121388;
+sceFsReset = 0x0011BC48;
+sceGsSyncVCallback = 0x00122E68;
+sceScfGetLanguage = 0x0012D240;
 movieDecodeBuf = 0x0016120C;
 frameBufferColor = 0x00152078;
 bootAssets = 0x00137B80;

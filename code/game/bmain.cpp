@@ -102,7 +102,7 @@ extern "C" int func_00120558(int arg0, int arg1);
 // (sce/lib.s), whose entry point is an unmangled C label. Sets or clears the
 // vblank interrupt handler (interrupt channel 2) via AddIntcHandler2 /
 // RemoveIntcHandler and returns the previous handler; 0 removes it.
-extern "C" int func_00122E68(int (*callback)(int));
+extern "C" int sceGsSyncVCallback(int (*callback)(int));
 // Sends the debug-font texture to the frame buffer: GS texture format, log2
 // width and height, and transfer mode (1 transfers now, 0 appends to the
 // current VU chain).
@@ -172,7 +172,7 @@ void showDebugFont(int index) {
     func_00120C30(0);
     func_00122298(0);
     func_00120558(0, 0);
-    func_00122E68(vsync_callback);
+    sceGsSyncVCallback(vsync_callback);
 
     // 0x1000000 is the EE VRAM/GS base (hardware region), not a data symbol.
     Hud_sendTexture((char*)0x1000000, frameBufferBase, DEBUG_FONT_TEX_FORMAT,
