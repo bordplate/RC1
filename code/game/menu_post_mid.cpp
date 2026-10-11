@@ -70,8 +70,23 @@ void menu_post_gatePageOpen(void) {
         menuPostCallbackIndexGp = MENU_POST_PAGE_ADVANCE_CALLBACK;
 }
 
-// Only placement in the menu-post callback range is established; behavior remains uninvestigated.
-INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post_mid", func_00208BC0);
+// Page-advance callback (post-callback table slot 10), queued by
+// menu_post_gatePageOpen when MENU_POST_FLAG_02|0x4 are set. When the page
+// state is MENU_POST_PAGE_STATE_2 and the pending-page word is unset, it
+// marks the page advanced (field_0xDC = MENU_POST_PENDING_PAGE_7,
+// field_0xE0 = 0) and continues the chain at slot 11. The original keeps the
+// state constant in a0; the pin preserves the constant/value register split,
+// and the idx local forces the slot-11 constant to materialize (into v1)
+// before the two struct stores are emitted.
+void menu_post_pageAdvance(void) {
+    register int state asm("$4") = MENU_POST_PAGE_STATE_2;
+    if (menuStateData.field_0xD4 == state && menuStateData.field_0xDC < 0) {
+        int idx = MENU_POST_CALLBACK_SLOT_11;
+        menuStateData.field_0xDC = MENU_POST_PENDING_PAGE_7;
+        menuStateData.field_0xE0 = 0;
+        menuPostCallbackIndexGp = idx;
+    }
+}
 
 // Only placement in the menu-post callback range is established; behavior remains uninvestigated.
 INCLUDE_ASM("code/_generated/nonmatchings/game/menu_post_mid", func_00208C00);

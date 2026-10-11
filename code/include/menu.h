@@ -40,5 +40,19 @@ extern int menu_postHasPendingSelection __attribute__((section(".data")));
 #define MENU_POST_PAGE_ADVANCE_CALLBACK 10
 #define MENU_POST_BOOT_FLAG_RESOLVE_CALLBACK 13
 #define MENU_POST_UNSET_PAGE_INDEX -1
+// menuStateData.field_0xD4 is the menu page state. 2 is the state tested by
+// the page-open callback (slot 8) and the page-advance callback (slot 10)
+// before they act; bmain polls while the state is >= 3. The full enum
+// (0/1/2/>=3) is not yet decoded, so the name records the value, not a
+// confirmed meaning.
+#define MENU_POST_PAGE_STATE_2 2
+// Values stored in the pending-page word (menuStateData.field_0xDC): -1 =
+// unset (MENU_POST_UNSET_PAGE_INDEX), 3 = resolved, 7 = written by the
+// page-advance callback (slot 10). The meaning of 7 is not yet established.
+#define MENU_POST_PENDING_PAGE_7 7
+// Slot 11 of the post-callback table, queued by the page-advance callback
+// (slot 10) and the page-open callback (slot 8). The handler (0x208C00) is
+// still INCLUDE_ASM, so the name records the slot, not a confirmed role.
+#define MENU_POST_CALLBACK_SLOT_11 11
 
 #endif

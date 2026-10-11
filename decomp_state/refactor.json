@@ -1,6 +1,18 @@
 [
- {
-  "id": "camera_viewCtx_drawCamera_overlap",
+  {
+   "id": "menu_post_mid_menu_post_pageAdvance_state_naming",
+   "file": "code/game/menu_post_mid.cpp",
+   "function": "menu_post_pageAdvance",
+   "addresses": [
+    "0x208BC0"
+   ],
+   "category": "style",
+   "description": "menu_post_pageAdvance (matched 2026-10-11) uses positional constant names for the menu page-state machine: MENU_POST_PAGE_STATE_2 (field_0xD4 value tested here and by slot 8 0x208B28; bmain.cpp:166 polls while >=3), MENU_POST_PENDING_PAGE_7 (field_0xDC value written here; -1=unset and 3=resolved are already named), and MENU_POST_CALLBACK_SLOT_11 (slot queued here and by slot 8; its handler 0x208C00 is still INCLUDE_ASM). The MenuState fields field_0xD4/field_0xDC/field_0xE0 remain placeholders. Decode the page-state enum and the slot-11 role (decompile 0x208C00 and find every field_0xD4 writer), then rename the constants and struct fields to semantic names. Any change must keep menu_post_pageAdvance and the other menu_post_mid functions byte-identical (full boot ELF cmp).",
+   "evidence": "notes/menu_post_mid_menu_post_pageAdvance.md; notes/menu_post_mid_gate_callbacks.md; notes/menu_post_mid_func_00208AF8.md (callback chain); code/include/menu.h",
+   "status": "open"
+  },
+  {
+   "id": "camera_viewCtx_drawCamera_overlap",
   "file": "code/include/camera.h",
   "function": "projectWorldPoint__FPfT0",
   "addresses": [

@@ -15,8 +15,9 @@ if (menuPostFlagsGp & M)                   // M = 0x2 (A38, C70), 0x6 (B88)
 
 They sit in the post-callback state machine at table 0x1A0438 (dispatcher
 func_00208840, still INCLUDE_ASM): slots [5], [9], [12] respectively,
-falling through to the still-unmatched slots 6/10/13 handlers
-(func_00208A78/00208BC0/00208CA8).
+falling through to the slots 6/10/13 handlers
+(func_00208A78 / menu_post_pageAdvance / func_00208CA8). The slot-10
+handler was matched 2026-10-11 (see notes/menu_post_mid_menu_post_pageAdvance.md).
 
 ## Key codegen finding: plain in-window alias replaces the constant cast
 
@@ -93,8 +94,8 @@ two siblings (compare `beqz v1`) need no pin.
 
 ## Naming
 
-The three fall-back table slots (6/10/13) are still INCLUDE_ASM, so the
-"resolve/advance/boot" suffixes describe the dispatch target rather than a
-fully established behavior; the gating on the pending selection is
-byte-evidenced. Flag bits 0x2/0x4 remain unestablished
+The fall-back table slots 6 and 13 are still INCLUDE_ASM (slot 10 is now
+menu_post_pageAdvance), so the "resolve/advance/boot" suffixes describe the
+dispatch target rather than a fully established behavior; the gating on the
+pending selection is byte-evidenced. Flag bits 0x2/0x4 remain unestablished
 (MENU_POST_FLAG_02/04 placeholders).
