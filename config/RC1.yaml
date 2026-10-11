@@ -194,6 +194,8 @@ segments:
     - [0xffc30, cpp, game/hud_post_post2_post2]
     - [0x100b10, cpp, game/hud_post_post2_sendtex]
     - [0x100c80, cpp, game/hud_post_post2_post3]
+    - [0x100e08, cpp, game/hud_post_post2_post3_occl]
+    - [0x100f90, cpp, game/hud_post_post2_post3_tail]
     - [0x101520, cpp, game/init]
     - [0x1015d8, cpp, game/initonce]
     - [0x101a28, cpp, game/lights]

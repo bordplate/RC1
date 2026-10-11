@@ -110,7 +110,7 @@ $(OBJ_DIR)/989snd/ee/989snd_pre.o $(OBJ_DIR)/989snd/ee/989snd_mid.o \
     $(OBJ_DIR)/game/hud.o $(OBJ_DIR)/game/hud_post.o $(OBJ_DIR)/game/hud_post_post.o \
     $(OBJ_DIR)/game/hud_post_post2.o $(OBJ_DIR)/game/hud_post_post2_post.o \
     $(OBJ_DIR)/game/hud_post_post2_post2.o \
-    $(OBJ_DIR)/game/hud_post_post2_post3.o \
+    $(OBJ_DIR)/game/hud_post_post2_post3.o $(OBJ_DIR)/game/hud_post_post2_post3_tail.o \
     $(OBJ_DIR)/game/mobyutil.o \
     $(OBJ_DIR)/game/movie/vobuf.o: \
     ASSEMBLER_FLAGS = -Wa,-EL -Wa,-Icode/include

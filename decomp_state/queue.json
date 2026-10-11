@@ -472,66 +472,58 @@
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post3.cpp:5:func_00200C80",
+    "id": "code/game/hud_post_post2_post3.cpp:6:func_00200C80",
     "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 5,
+    "line": 6,
     "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00200C80.s",
     "name": "func_00200C80",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post3.cpp:7:func_00200E08",
-    "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 7,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00200E08.s",
-    "name": "func_00200E08",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/hud_post_post2_post3.cpp:9:func_00200F90",
-    "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 9,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00200F90.s",
+    "id": "code/game/hud_post_post2_post3_tail.cpp:5:func_00200F90",
+    "source": "code/game/hud_post_post2_post3_tail.cpp",
+    "line": 5,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3_tail/func_00200F90.s",
     "name": "func_00200F90",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post3.cpp:11:func_00201110",
-    "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 11,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00201110.s",
+    "id": "code/game/hud_post_post2_post3_tail.cpp:7:func_00201110",
+    "source": "code/game/hud_post_post2_post3_tail.cpp",
+    "line": 7,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3_tail/func_00201110.s",
     "name": "func_00201110",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post3.cpp:13:func_00201128",
-    "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 13,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00201128.s",
+    "id": "code/game/hud_post_post2_post3_tail.cpp:9:func_00201128",
+    "source": "code/game/hud_post_post2_post3_tail.cpp",
+    "line": 9,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3_tail/func_00201128.s",
     "name": "func_00201128",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post3.cpp:15:func_00201200",
-    "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 15,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00201200.s",
+    "id": "code/game/hud_post_post2_post3_tail.cpp:11:func_00201200",
+    "source": "code/game/hud_post_post2_post3_tail.cpp",
+    "line": 11,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3_tail/func_00201200.s",
     "name": "func_00201200",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post3.cpp:17:func_002012A8",
-    "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 17,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_002012A8.s",
+    "id": "code/game/hud_post_post2_post3_tail.cpp:13:func_002012A8",
+    "source": "code/game/hud_post_post2_post3_tail.cpp",
+    "line": 13,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3_tail/func_002012A8.s",
     "name": "func_002012A8",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post3.cpp:19:draw_bootImage__Fi",
-    "source": "code/game/hud_post_post2_post3.cpp",
-    "line": 19,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/draw_bootImage__Fi.s",
+    "id": "code/game/hud_post_post2_post3_tail.cpp:15:draw_bootImage__Fi",
+    "source": "code/game/hud_post_post2_post3_tail.cpp",
+    "line": 15,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3_tail/draw_bootImage__Fi.s",
     "name": "draw_bootImage__Fi",
     "status": "todo"
   },
@@ -560,161 +552,161 @@
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:19:func_00202270",
+    "id": "code/game/loaders.cpp:25:func_00202270",
     "source": "code/game/loaders.cpp",
-    "line": 19,
+    "line": 25,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00202270.s",
     "name": "func_00202270",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:21:func_002026C0",
+    "id": "code/game/loaders.cpp:27:func_002026C0",
     "source": "code/game/loaders.cpp",
-    "line": 21,
+    "line": 27,
     "asm": "code/_generated/nonmatchings/game/loaders/func_002026C0.s",
     "name": "func_002026C0",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:23:ParseParticleTexs",
+    "id": "code/game/loaders.cpp:29:ParseParticleTexs",
     "source": "code/game/loaders.cpp",
-    "line": 23,
+    "line": 29,
     "asm": "code/_generated/nonmatchings/game/loaders/ParseParticleTexs.s",
     "name": "ParseParticleTexs",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:25:func_00202800",
+    "id": "code/game/loaders.cpp:31:func_00202800",
     "source": "code/game/loaders.cpp",
-    "line": 25,
+    "line": 31,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00202800.s",
     "name": "func_00202800",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:27:func_002028E0",
+    "id": "code/game/loaders.cpp:33:func_002028E0",
     "source": "code/game/loaders.cpp",
-    "line": 27,
+    "line": 33,
     "asm": "code/_generated/nonmatchings/game/loaders/func_002028E0.s",
     "name": "func_002028E0",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:29:LoadHudBanks__Fv",
+    "id": "code/game/loaders.cpp:35:LoadHudBanks__Fv",
     "source": "code/game/loaders.cpp",
-    "line": 29,
+    "line": 35,
     "asm": "code/_generated/nonmatchings/game/loaders/LoadHudBanks__Fv.s",
     "name": "LoadHudBanks__Fv",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:51:func_00202D78",
+    "id": "code/game/loaders.cpp:57:func_00202D78",
     "source": "code/game/loaders.cpp",
-    "line": 51,
+    "line": 57,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00202D78.s",
     "name": "func_00202D78",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:53:SetUpVisGifViewer__FPiiiiii",
+    "id": "code/game/loaders.cpp:59:SetUpVisGifViewer__FPiiiiii",
     "source": "code/game/loaders.cpp",
-    "line": 53,
+    "line": 59,
     "asm": "code/_generated/nonmatchings/game/loaders/SetUpVisGifViewer__FPiiiiii.s",
     "name": "SetUpVisGifViewer__FPiiiiii",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:55:func_00203120",
+    "id": "code/game/loaders.cpp:61:func_00203120",
     "source": "code/game/loaders.cpp",
-    "line": 55,
+    "line": 61,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00203120.s",
     "name": "func_00203120",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:89:func_00203338",
+    "id": "code/game/loaders.cpp:95:func_00203338",
     "source": "code/game/loaders.cpp",
-    "line": 89,
+    "line": 95,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00203338.s",
     "name": "func_00203338",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:91:func_00203640",
+    "id": "code/game/loaders.cpp:97:func_00203640",
     "source": "code/game/loaders.cpp",
-    "line": 91,
+    "line": 97,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00203640.s",
     "name": "func_00203640",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:93:func_00203730",
+    "id": "code/game/loaders.cpp:99:func_00203730",
     "source": "code/game/loaders.cpp",
-    "line": 93,
+    "line": 99,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00203730.s",
     "name": "func_00203730",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:95:func_00203B08",
+    "id": "code/game/loaders.cpp:101:func_00203B08",
     "source": "code/game/loaders.cpp",
-    "line": 95,
+    "line": 101,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00203B08.s",
     "name": "func_00203B08",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:97:func_002040E0",
+    "id": "code/game/loaders.cpp:103:func_002040E0",
     "source": "code/game/loaders.cpp",
-    "line": 97,
+    "line": 103,
     "asm": "code/_generated/nonmatchings/game/loaders/func_002040E0.s",
     "name": "func_002040E0",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:101:func_00204428",
+    "id": "code/game/loaders.cpp:122:func_00204428",
     "source": "code/game/loaders.cpp",
-    "line": 101,
+    "line": 122,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00204428.s",
     "name": "func_00204428",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:103:func_00204788",
+    "id": "code/game/loaders.cpp:124:func_00204788",
     "source": "code/game/loaders.cpp",
-    "line": 103,
+    "line": 124,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00204788.s",
     "name": "func_00204788",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:105:func_00204790",
+    "id": "code/game/loaders.cpp:126:func_00204790",
     "source": "code/game/loaders.cpp",
-    "line": 105,
+    "line": 126,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00204790.s",
     "name": "func_00204790",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:107:func_002049E8",
+    "id": "code/game/loaders.cpp:128:func_002049E8",
     "source": "code/game/loaders.cpp",
-    "line": 107,
+    "line": 128,
     "asm": "code/_generated/nonmatchings/game/loaders/func_002049E8.s",
     "name": "func_002049E8",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:109:ParseSpaceSceneChunk__Fi",
+    "id": "code/game/loaders.cpp:130:ParseSpaceSceneChunk__Fi",
     "source": "code/game/loaders.cpp",
-    "line": 109,
+    "line": 130,
     "asm": "code/_generated/nonmatchings/game/loaders/ParseSpaceSceneChunk__Fi.s",
     "name": "ParseSpaceSceneChunk__Fi",
     "status": "todo"
   },
   {
-    "id": "code/game/loaders.cpp:111:func_00204A40",
+    "id": "code/game/loaders.cpp:132:func_00204A40",
     "source": "code/game/loaders.cpp",
-    "line": 111,
+    "line": 132,
     "asm": "code/_generated/nonmatchings/game/loaders/func_00204A40.s",
     "name": "func_00204A40",
     "status": "todo"

@@ -208,5 +208,17 @@
   "evidence": "decomp_state/notes/initonce_InitMemSlots__Fv.md; initonce InitMemSlots step f10 = f0c + 0x64000; hud.cpp:76-77",
   "status": "done",
   "resolved": "2026-10-10: RESOLVED - LEVELMEM_HUD_HEAP_SIZE moved from initonce.cpp to code/include/levelmem.h (the shared level-memory layout header); initonce.cpp (already included it) and hud.cpp (new include) both use it. Value folds to the same 0x64000 literal: clean make clean + split + make, objdump of hud.o/initonce.o shows the identical lui 0x6 / ori 0x4000 split, and cmp build/boot_elf.elf assets/boot_elf.elf passes."
- }
+ },
+{
+  "id": "hud_post_post2_post3_occl_OcclAppendRects",
+  "file": "code/game/hud_post_post2_post3_occl.cpp",
+  "function": "OcclAppendRects__FiiiiUli",
+  "addresses": [
+    "0x200E08"
+  ],
+  "category": "style",
+  "description": "OcclAppendRects (matched 2026-10-11) still spells out the inline VU1 packet with raw magic: the three GSGX/ADDA/LQ payload words 0x4400000000000001 / 0x4410 / 0x46 stored at head[4..10], the occl-rect pack mask 0xFFFFF00000000000, and the raw-vs-x16 coordinate scaling (-8 / -16 / x*0x10). Name these (e.g. a VU1 GSGX opcode + a pack/rect helper + named scale offsets) once their VU1/game meaning is confirmed. The packet TAGs are already named (VU1_INLINE_PKT_TAG / VU1_DATA_REF_END_TAG). Any change must preserve the byte-for-byte match: this TU is SN-assembled (Splat split hud_post_post2_post3_occl), the payload stores go through a NON-volatile `head` (delay-slot scheduling), and the trailing file-scope asm(\"nop\") fills the 1-word inter-function gap.",
+  "evidence": "notes/hud_post_post2_post3_occl_OcclAppendRects.md; notes/hud_post_post2_post3_func_00200C80.md (sibling); code/game/hud_post_post2_sendtex.cpp (VU1 tag #define precedent)",
+  "status": "open"
+}
 ]
