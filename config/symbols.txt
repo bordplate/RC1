@@ -785,6 +785,9 @@ RefreshPointLight = 0x201f58;
 CreatePointLight = 0x201ba8;
 DetachPointLight__Fi = 0x00201f88;
 UpdateAllPointLights = 0x00201a28;
+DirLights = 0x0019BDC0;
+PointLights = 0x0019C1C0;
+PointLightData = 0x0019C3C0;
 
 // loaders.cpp
 LoadHudBanks__Fv = 0x0202a98;
