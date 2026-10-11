@@ -86,3 +86,27 @@ extern "C" void func_00217020(void) {
   user) and the stream.cpp neighbours are decompiled; fields around +0x18E..
   +0x19C form the state header. Renaming func_00217020 then requires updating
   the jal reference in the caller's generated .s (touch its source first).
+
+## Orphan dead tail func_00217038 (0x217038, 0xC) — preserved 2026-10-11
+
+After this function's epilogue (and the 4-byte alignment nop at 0x217034),
+the original carries a 12-byte unreachable fragment:
+
+```
+C4C002D0  lwc1  $f0, 0x2D0($6)   # dead COP1 store
+00000000  nop
+27BD0040  addiu $sp, $sp, 0x40   # dead dealloc, matches no live frame
+```
+
+confirmed a ghost: no Ghidra function at 0x217038, no xrefs, and
+`tools/deadness_scan.py 0x217038` reports 0 references. The trailing nop at
+0x217044 pads to the live 0x217048 (called from 0x2018A8), which stays
+INCLUDE_ASM. Per the dead-tail policy the orphan INCLUDE_ASM was replaced by
+a byte-preserving raw-asm block in stream.cpp right after pad_resetState
+(same pattern as initonce.cpp func_00201A20 and actuator.cpp
+func_001E9148); the `.align 3` in the block emits the 0x217034 alignment nop
+and a final `.word 0` emits the 0x217044 padding. Verified: clean
+`make clean && make split && make -j2`, object slice 0x217038-0x217044
+`c4c002d0 00000000 27bd0040 00000000` identical, `cmp build/boot_elf.elf
+assets/boot_elf.elf` byte-identical, count 529 -> 528, Splat now classifies
+the region as matching.

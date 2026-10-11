@@ -162,5 +162,27 @@ void pad_resetState(void) {
     padState.field_190 = 0;
 }
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217038);
+// Unreachable dead tail after pad_resetState__Fv (0x217020, matched): a
+// dead COP1 store lwc1 $f0,0x2D0(a0) plus a dead addiu sp,sp,0x40 dealloc,
+// neither matching any live frame or store. Nothing reaches 0x217038
+// (no Ghidra function; tools/deadness_scan.py: 0 references), so the bytes
+// are preserved with raw asm per the dead-tail policy; the preceding
+// alignment nop comes from the .align 3 below and the trailing nop pads to
+// the 8-aligned func_00217048 at 0x217048.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_00217038, 0xC\n"
+    "glabel func_00217038\n"
+    "    .word 0xC4C002D0\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27BD0040\n"
+    "endlabel func_00217038\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+
 INCLUDE_ASM("code/_generated/nonmatchings/game/stream", func_00217048);

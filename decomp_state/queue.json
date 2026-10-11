@@ -472,74 +472,66 @@
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_sendtex.cpp:20:Hud_sendTexture__FPciiiii",
-    "source": "code/game/hud_post_post2_sendtex.cpp",
-    "line": 20,
-    "asm": "code/_generated/matchings/game/hud_post_post2_sendtex/Hud_sendTexture__FPciiiii.s",
-    "name": "Hud_sendTexture__FPciiiii",
-    "status": "matched"
-  },
-  {
-    "id": "code/game/hud_post_post2_post2.cpp:21:func_00200C80",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 21,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_00200C80.s",
+    "id": "code/game/hud_post_post2_post3.cpp:5:func_00200C80",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 5,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00200C80.s",
     "name": "func_00200C80",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post2.cpp:23:func_00200E08",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 23,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_00200E08.s",
+    "id": "code/game/hud_post_post2_post3.cpp:7:func_00200E08",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 7,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00200E08.s",
     "name": "func_00200E08",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post2.cpp:25:func_00200F90",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 25,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_00200F90.s",
+    "id": "code/game/hud_post_post2_post3.cpp:9:func_00200F90",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 9,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00200F90.s",
     "name": "func_00200F90",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post2.cpp:27:func_00201110",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 27,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_00201110.s",
+    "id": "code/game/hud_post_post2_post3.cpp:11:func_00201110",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 11,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00201110.s",
     "name": "func_00201110",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post2.cpp:29:func_00201128",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 29,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_00201128.s",
+    "id": "code/game/hud_post_post2_post3.cpp:13:func_00201128",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 13,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00201128.s",
     "name": "func_00201128",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post2.cpp:31:func_00201200",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 31,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_00201200.s",
+    "id": "code/game/hud_post_post2_post3.cpp:15:func_00201200",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 15,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00201200.s",
     "name": "func_00201200",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post2.cpp:33:func_002012A8",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 33,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/func_002012A8.s",
+    "id": "code/game/hud_post_post2_post3.cpp:17:func_002012A8",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 17,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_002012A8.s",
     "name": "func_002012A8",
     "status": "todo"
   },
   {
-    "id": "code/game/hud_post_post2_post2.cpp:35:draw_bootImage__Fi",
-    "source": "code/game/hud_post_post2_post2.cpp",
-    "line": 35,
-    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post2/draw_bootImage__Fi.s",
+    "id": "code/game/hud_post_post2_post3.cpp:19:draw_bootImage__Fi",
+    "source": "code/game/hud_post_post2_post3.cpp",
+    "line": 19,
+    "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/draw_bootImage__Fi.s",
     "name": "draw_bootImage__Fi",
     "status": "todo"
   },
@@ -552,25 +544,17 @@
     "status": "todo"
   },
   {
-    "id": "code/game/lights.cpp:3:UpdateAllPointLights",
+    "id": "code/game/lights.cpp:82:CreatePointLight",
     "source": "code/game/lights.cpp",
-    "line": 3,
-    "asm": "code/_generated/nonmatchings/game/lights/UpdateAllPointLights.s",
-    "name": "UpdateAllPointLights",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/lights.cpp:5:CreatePointLight",
-    "source": "code/game/lights.cpp",
-    "line": 5,
+    "line": 82,
     "asm": "code/_generated/nonmatchings/game/lights/CreatePointLight.s",
     "name": "CreatePointLight",
     "status": "todo"
   },
   {
-    "id": "code/game/lights.cpp:20:DetachPointLight__Fi",
+    "id": "code/game/lights.cpp:89:DetachPointLight__Fi",
     "source": "code/game/lights.cpp",
-    "line": 20,
+    "line": 89,
     "asm": "code/_generated/nonmatchings/game/lights/DetachPointLight__Fi.s",
     "name": "DetachPointLight__Fi",
     "status": "todo"
@@ -1224,41 +1208,33 @@
     "status": "todo"
   },
   {
-    "id": "code/game/menu_post_mid.cpp:74:func_00208BC0",
+    "id": "code/game/menu_post_mid.cpp:92:func_00208C00",
     "source": "code/game/menu_post_mid.cpp",
-    "line": 74,
-    "asm": "code/_generated/nonmatchings/game/menu_post_mid/func_00208BC0.s",
-    "name": "func_00208BC0",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/menu_post_mid.cpp:77:func_00208C00",
-    "source": "code/game/menu_post_mid.cpp",
-    "line": 77,
+    "line": 92,
     "asm": "code/_generated/nonmatchings/game/menu_post_mid/func_00208C00.s",
     "name": "func_00208C00",
     "status": "todo"
   },
   {
-    "id": "code/game/menu_post_mid.cpp:93:func_00208CA8",
+    "id": "code/game/menu_post_mid.cpp:108:func_00208CA8",
     "source": "code/game/menu_post_mid.cpp",
-    "line": 93,
+    "line": 108,
     "asm": "code/_generated/nonmatchings/game/menu_post_mid/func_00208CA8.s",
     "name": "func_00208CA8",
     "status": "todo"
   },
   {
-    "id": "code/game/menu_post_mid.cpp:99:func_00208D60",
+    "id": "code/game/menu_post_mid.cpp:131:func_00208D60",
     "source": "code/game/menu_post_mid.cpp",
-    "line": 99,
+    "line": 131,
     "asm": "code/_generated/nonmatchings/game/menu_post_mid/func_00208D60.s",
     "name": "func_00208D60",
     "status": "todo"
   },
   {
-    "id": "code/game/menu_post_mid.cpp:102:func_00208DD8",
+    "id": "code/game/menu_post_mid.cpp:134:func_00208DD8",
     "source": "code/game/menu_post_mid.cpp",
-    "line": 102,
+    "line": 134,
     "asm": "code/_generated/nonmatchings/game/menu_post_mid/func_00208DD8.s",
     "name": "func_00208DD8",
     "status": "todo"
@@ -3328,73 +3304,65 @@
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:7:SkyFunc_UNK_FUN_0022AC30",
+    "id": "code/game/skyfunc.cpp:8:SkyFunc_UNK_FUN_0022AC30",
     "source": "code/game/skyfunc.cpp",
-    "line": 7,
+    "line": 8,
     "asm": "code/_generated/nonmatchings/game/skyfunc/SkyFunc_UNK_FUN_0022AC30.s",
     "name": "SkyFunc_UNK_FUN_0022AC30",
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:9:SkyLevelGeneric___maybe",
+    "id": "code/game/skyfunc.cpp:10:SkyLevelGeneric___maybe",
     "source": "code/game/skyfunc.cpp",
-    "line": 9,
+    "line": 10,
     "asm": "code/_generated/nonmatchings/game/skyfunc/SkyLevelGeneric___maybe.s",
     "name": "SkyLevelGeneric___maybe",
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:11:func_0022B288",
+    "id": "code/game/skyfunc.cpp:12:func_0022B288",
     "source": "code/game/skyfunc.cpp",
-    "line": 11,
+    "line": 12,
     "asm": "code/_generated/nonmatchings/game/skyfunc/func_0022B288.s",
     "name": "func_0022B288",
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:13:SetupSkyGifPaging__Fv",
+    "id": "code/game/skyfunc.cpp:14:SetupSkyGifPaging__Fv",
     "source": "code/game/skyfunc.cpp",
-    "line": 13,
+    "line": 14,
     "asm": "code/_generated/nonmatchings/game/skyfunc/SetupSkyGifPaging__Fv.s",
     "name": "SetupSkyGifPaging__Fv",
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:15:DoSkyGifPaging__Fv",
+    "id": "code/game/skyfunc.cpp:16:DoSkyGifPaging__Fv",
     "source": "code/game/skyfunc.cpp",
-    "line": 15,
+    "line": 16,
     "asm": "code/_generated/nonmatchings/game/skyfunc/DoSkyGifPaging__Fv.s",
     "name": "DoSkyGifPaging__Fv",
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:17:func_0022B688",
+    "id": "code/game/skyfunc.cpp:18:func_0022B688",
     "source": "code/game/skyfunc.cpp",
-    "line": 17,
+    "line": 18,
     "asm": "code/_generated/nonmatchings/game/skyfunc/func_0022B688.s",
     "name": "func_0022B688",
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:19:SkyDrawShell__Fi",
+    "id": "code/game/skyfunc.cpp:38:SkyDrawShellTextured",
     "source": "code/game/skyfunc.cpp",
-    "line": 19,
-    "asm": "code/_generated/nonmatchings/game/skyfunc/SkyDrawShell__Fi.s",
-    "name": "SkyDrawShell__Fi",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/skyfunc.cpp:21:SkyDrawShellTextured",
-    "source": "code/game/skyfunc.cpp",
-    "line": 21,
+    "line": 38,
     "asm": "code/_generated/nonmatchings/game/skyfunc/SkyDrawShellTextured.s",
     "name": "SkyDrawShellTextured",
     "status": "todo"
   },
   {
-    "id": "code/game/skyfunc.cpp:23:SkyDrawShellGouraud",
+    "id": "code/game/skyfunc.cpp:40:SkyDrawShellGouraud",
     "source": "code/game/skyfunc.cpp",
-    "line": 23,
+    "line": 40,
     "asm": "code/_generated/nonmatchings/game/skyfunc/SkyDrawShellGouraud.s",
     "name": "SkyDrawShellGouraud",
     "status": "todo"
@@ -3760,17 +3728,9 @@
     "status": "todo"
   },
   {
-    "id": "code/game/stream.cpp:165:func_00217038",
+    "id": "code/game/stream.cpp:188:func_00217048",
     "source": "code/game/stream.cpp",
-    "line": 165,
-    "asm": "code/_generated/nonmatchings/game/stream/func_00217038.s",
-    "name": "func_00217038",
-    "status": "todo"
-  },
-  {
-    "id": "code/game/stream.cpp:166:func_00217048",
-    "source": "code/game/stream.cpp",
-    "line": 166,
+    "line": 188,
     "asm": "code/_generated/nonmatchings/game/stream/func_00217048.s",
     "name": "func_00217048",
     "status": "todo"
