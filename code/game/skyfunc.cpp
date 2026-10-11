@@ -1,4 +1,5 @@
 #include "common.h"
+#include "sky.h"
 
 // Assembly visibility is required for the adjacent generated sky-function
 // fragment, which references this legacy label.
@@ -16,7 +17,23 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/skyfunc", DoSkyGifPaging__Fv);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/skyfunc", func_0022B688);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/skyfunc", SkyDrawShell__Fi);
+// Draws one sky shell layer: Gouraud when the layer's draw-mode flag is set,
+// textured otherwise. Layers 0-3 are drawn by the level sky update.
+void SkyDrawShell(int ishell) {
+    sky_shell* shell;
+    if (ishell < Sky->shellCnt) {
+        shell = Sky->shells[ishell];
+        // Match-sensitive: the truthiness test with Gouraud first is what
+        // makes EGC emit beqz to the Textured else-branch with the Gouraud
+        // jal as fallthrough; `if (flags == 0) Textured else Gouraud`
+        // flips the branch to bnez with the Textured jal as fallthrough.
+        if (shell->flags) {
+            SkyDrawShellGouraud(shell);
+        } else {
+            SkyDrawShellTextured(shell);
+        }
+    }
+}
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/skyfunc", SkyDrawShellTextured);
 

@@ -990,6 +990,7 @@ UpdatePad__Fv = 0x00217a10;
 scePad2Read = 0x124bd8;
 
 // skyfunc
+Sky = 0x0016045C;
 SkyFunc_UNK_FUN_0022AC30 = 0x22ac30;
 Label_0022AE54 = 0x0022ae54;
 SetupSkyGifPaging__Fv = 0x022b4c8;
