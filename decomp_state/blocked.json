@@ -815,5 +815,17 @@
   "vram": "0x201650",
   "size": "0x3CC",
   "note": "Boot init routine (IOP reboot, IRX load, video/graph init, language select). Full C body written; probe matched prologue+IOP loops+boot/IRX call layout with default scheduler (the earlier ~89-word \"scheduling\" gap was a seeded-alias phase-shift artifact, not a real wall). Single remaining blocker: the isPal pair at 0x20174C-0x20175C \u2014 original stores pauseActionListMode(0x15EE90) AT-based (lui at,0x16; sw v0,0xEE90(at)) before jal memcard_GetName and videoModePal(0x15ED80) GP-based (sw v0,-0x7E80(gp)) in the jal delay slot. EGC 2.95.2 SN cannot reproduce the mixed mode: plain externs swap the pair (videoModePal at-based, pauseActionListMode gp-based); unseeded volatile same-address store aliases (last-resort GPT-5.6 Sol rec) keep the order but block the 2nd store from the delay slot, emitting BOTH at-based (+2 instr -> InitOnce 0x3CC->0x3D4, which shifts the whole .text TU and corrupts the ELF). Tried: source-order swap, .data section attr, memory barrier, .extern-seeded GP alias, -fno-schedule-insns[2] (all worse). EGC allocator/scheduler tie-break. Verified-correct for a future retry: currentVuChain=0x160000 goes BEFORE InitMemSlots() (store is in the call delay slot); language switch source case order is 2,4,3,5 (physical blocks gl=2,3,4,5; jtbl maps lang3->gl4, lang4->gl3). last-resort GPT-5.6 Sol used."
+ },
+ {
+  "id": "code/game/hud_post_post2_post3.cpp:func_00200C80",
+  "source": "code/game/hud_post_post2_post3.cpp",
+  "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3/func_00200C80.s",
+  "name": "func_00200C80",
+  "status": "blocked",
+  "date": "2026-10-11",
+  "vram": "0x200C80",
+  "size": "0x184",
+  "note": "VU1-chain packet appender (6-int args, leaf, no frame). Appends a 0x40-byte VU1 packet through in-window vu1ChainHead: 4 header words, data qwords (0x4400000000000001/0x4410/0x41/p5), two 64-bit view words pack(x,y)=0xFFFFF00000000000|(u16)x|((u64)(u16)y<<16) using occlViewParams.minX/minY, branch on p6 (x16-16 vs -8). Mixed-address vu1ChainHead (7 self-based-abs + 1 GPREL final store) RESOLVED via double-volatile + seeded same-address GPREL alias (needs SN TU; owning TU is GNU). p3/p4 swap and branch layout (beqz via if(p6)) RESOLVED. BLOCKER: EGC 2.95.2 post-RA tail-merge CSE merges BOTH branches' second-pack final or/or/sd into one shared tail (orig keeps separate or/or/sd per branch), so the beqz target is 2 instr off (0x200D78 vs 0x200D70) and cascades through the data section; plus 32-bit-ori mask materialization (EGC emits 64-bit dli/or) and scheduling. 60 word-diffs (best cand3.cpp), 96 before recipe. See notes/hud_post_post2_post3_func_00200C80.md.",
+  "last_resort": "GPT-5.6 Sol used 2026-10-11: verdict MATCHABLE, gave the double-volatile vu1ChainHead + seeded GPREL alias (vu1ChainHeadGp) + signed unmasked packing + staged-mask-barrier recipe. Recipe applied: resolved the mixed-address wall, cut diffs 96->60. Residue is the anticipated irreducible instruction-order/register-allocation residue (post-RA second-pack tail-merge CSE + mask/scheduling) which the recipe did not address and is not controllable from C."
  }
 ]
