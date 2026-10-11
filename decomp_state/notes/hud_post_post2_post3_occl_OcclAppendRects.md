@@ -66,3 +66,51 @@ fall-through. `sd t0,40(t2)` stores the whole (t1:t0) u64 pair. 5-arg forms
   Makefile change). Object size confirmed 0x184 via nm; 0x206xxx pointers realigned.
 - Mangled name `OcclAppendRects__FiiiiUli` verified via nm (cfront spells
   `i i i i U l i`, no Tn refs). Named in config/symbols.txt = 0x00200E08.
+
+## Refactor (2026-10-12) — payload magic named
+The 48-byte payload after the 4-word tag block is NOT VU1 code (the earlier
+"GSGX/ADDA/LQ" read was a misread). It is the engine's GS solid-color sprite
+(rectangle fill) record, streamed to the GS by the VU1 chain:
+
+```
++0x10  16-byte GIFTAG:  [0x00000001, 0x44000000, 0x00004410, 0x00000000]
+                        qwc byte 1, 0, 0, type byte 0x44 (solid sprite),
+                        param word 0x4410
++0x18  16-byte attribute block: [0x46, 0x00000000, attr, 0x00000000]
+                        lead word 0x46 (meaning not established), then the
+                        caller's attr word (an ARGB color/attribute value:
+                        0x80000000, 0x80f0f0f0, 0x20959544... at call sites)
++0x20  16-byte corner block: [pack(c0), pack(c1)]
+                        pack(x,y) = x | (y<<16) | 0xFFFFF000000000
+                        = the rect's two packed corners (top-left -> bottom-
+                        right), NOT two rects: all 38 callers pass one
+                        rectangle per call (e.g. fullscreen 0,0,0x200,0x1C0;
+                        text-box 0x75-w,0x6d,0x7b,0x70)
+```
+
+Meaning confirmation: the boot ELF keeps the engine's static GIFTAG table at
+0x160820-0x160858 — [0x8001, 0x24000000, 0x10, 0], [0x8002, 0x14000000, 0x4,
+0], [0x8001, 0xb4000000, 0x35353106, 0x535], [0x8001, 0xb4000000, 0x25252106,
+0x525] — the same [qwc|0x80, type-page, param, pad] layout with sibling types
+0x24/0x14/0xB4 (the 0x44 tag itself is only built at runtime by this family).
+The Deadlocked reference (reference/dl/game_dl/tables.cpp GIFtag_PrimPixel =
+[0x4400000000008001, 0x4410]) is exactly this tag with its 0x80 flag byte
+set, and Deadlocked DrawSprite (reference/dl/game_dl/draw.cpp) packs corners
+identically (`x | (y<<16) | 0xfffff000000000`) with x16-scaled coordinates.
+
+The tag qcnt (3) counts the three payload blocks. `attr` is the color/
+attribute word; `scale` selects integer-pixel input (scaled x16, corner
+offset -0x10) vs 16.0 fixed-point input (raw, corner offset -8);
+occlViewParams.minX/minY are pre-scaled x16 by InitViewContext (<< 4), so
+both paths land in the same 16.0 fixed-point corner space. The 0xFFFFF000
+high word of each packed corner is taken from the caller instead in the
+7-arg sibling func_00200F90 (param_6).
+
+Named via #defines + codegen-neutral text macros (OCCL_RECT_GIFTAG,
+OCCL_RECT_GIFTAG_PARAM, OCCL_RECT_ATTR_LEAD, OCCL_RECT_CORNER_HIGH,
+OCCL_RECT_X16_SCALE, OCCL_RECT_SCALED_CORNER_OFFSET, OCCL_RECT_RAW_CORNER_
+OFFSET, OCCL_RECT_PACK_RAW, OCCL_RECT_PACK_X16) — macro expansion folds to
+the same literal values and token layout, so codegen is unchanged.
+Verification: incremental rebuild + region dump 0x200E08..0x200F8F
+byte-identical, then clean `make clean + make split + make -j2` and
+`cmp build/boot_elf.elf assets/boot_elf.elf` → EXACT MATCH.
