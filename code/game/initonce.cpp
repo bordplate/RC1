@@ -32,4 +32,23 @@ void InitMemSlots(void) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/initonce", InitOnce__Fv);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/initonce", func_00201A20);
+// Unreachable dead tail the original compiler emitted after InitOnce__Fv
+// (blocked: EGC mixed-mode store wall, see
+// decomp_state/notes/initonce_InitOnce__Fv.md): a dead addiu sp,sp,0x30
+// dealloc matching no live frame allocation, plus the alignment nop before
+// the next object's code. Nothing reaches it (no Ghidra function;
+// tools/deadness_scan.py: 0 references), so the bytes are preserved with
+// raw asm per the dead-tail policy; the parent keeps its INCLUDE_ASM.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_00201A20, 0x4\n"
+    "glabel func_00201A20\n"
+    "    .word 0x27bd0030\n"
+    "endlabel func_00201A20\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);

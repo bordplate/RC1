@@ -176,3 +176,16 @@ aliases + irxScratchTop from linker_aliases.ld. Kept the symbols.txt data
 symbols + SDK renames and the bmain.cpp/boot_level.h changes (they are
 overlay-safe, same-address, and useful). Full build must re-verify to a clean
 match before this is considered durable.
+
+DEAD TAIL (2026-10-11): the 4-byte fragment at 0x201A20 (addiu sp,sp,0x30;
+nop), previously its own INCLUDE_ASM target func_00201A20, is a ghost per the
+dead-tail policy: it sits after the `jr ra`/`addiu sp,sp,2112` epilogue +
+alignment nop, matches no live frame allocation (the only frame is 0x840),
+and tools/deadness_scan.py reports 0 references (no Ghidra function there).
+It is now emitted as byte-preserving inline asm in initonce.cpp (raw words
+0x27bd0030 / 0x00000000 — note R5900 major-opcode reassignment: 0x27 is
+ADDIU here, so Splat's comment field prints the reversed LE word as 3000BD27)
+at the same source position, with the glabel retained. The parent keeps its
+INCLUDE_ASM. Verified: objdump of the built ELF shows the identical words,
+full build + cmp build/boot_elf.elf assets/boot_elf.elf byte-identical;
+nonmatching count 535 -> 534.
