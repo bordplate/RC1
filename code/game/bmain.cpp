@@ -163,7 +163,9 @@ void showDebugFont(int index) {
     music_Stop();
     snd_StreamSafeCdSync(0);
 
-    while (menuStateData.field_0xD4 >= 3 || menuStateData.field_0xDC >= 0)
+    // Spin the memcard machine until no operation is running (stage 3+ is an
+    // active operation) and none is pending (nextstage < 0).
+    while (menuStateData.stage >= 3 || menuStateData.nextstage >= 0)
         memcard_Update();
 
     u32 decBase = levelMem.decodeBufBase;

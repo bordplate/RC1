@@ -14,9 +14,9 @@ extern int menuPostCallbackIndexGp;
 extern int menuPostFlagsGp;
 
 void menu_post_selectNextPage(void) {
-    menuStateData.field_0xE0 = MENU_POST_UNSET_PAGE_INDEX;
+    menuStateData.nextslot = MENU_POST_UNSET_PAGE_INDEX;
     menuPostCallbackIndexGp = MENU_POST_PROCESS_PAGE_SELECTION_CALLBACK;
-    menuStateData.field_0xDC = MENU_POST_UNSET_PAGE_INDEX;
+    menuStateData.nextstage = MENU_POST_UNSET_PAGE_INDEX;
 }
 
 // Only placement in the menu-post callback range is established; behavior remains uninvestigated.
@@ -45,11 +45,11 @@ void menu_post_preparePageOpen(void) {
     // The condition must be read through a local: direct field access makes
     // EEGCC allocate the struct base to v1 and the value to v0 instead of
     // the original base=a0/value=v1.
-    int pendingPage = menuStateData.field_0xDC;
+    int pendingStage = menuStateData.nextstage;
     menuStateData.selected = 0;
-    if (pendingPage < 0) {
-        menuStateData.field_0xE0 = 0;
-        menuStateData.field_0xDC = MENU_POST_PENDING_PAGE_RESOLVED;
+    if (pendingStage < 0) {
+        menuStateData.nextslot = 0;
+        menuStateData.nextstage = MEMCARD_REQUEST_FORMAT;
     }
     menuPostCallbackIndexGp = MENU_POST_OPEN_PAGE_CALLBACK;
 }
@@ -71,19 +71,19 @@ void menu_post_gatePageOpen(void) {
 }
 
 // Page-advance callback (post-callback table slot 10), queued by
-// menu_post_gatePageOpen when MENU_POST_FLAG_02|0x4 are set. When the page
-// state is MENU_POST_PAGE_STATE_2 and the pending-page word is unset, it
-// marks the page advanced (field_0xDC = MENU_POST_PENDING_PAGE_7,
-// field_0xE0 = 0) and continues the chain at slot 11. The original keeps the
-// state constant in a0; the pin preserves the constant/value register split,
-// and the idx local forces the slot-11 constant to materialize (into v1)
-// before the two struct stores are emitted.
+// menu_post_gatePageOpen when MENU_POST_FLAG_02|0x4 are set. When the memcard
+// machine is idle (stage == MEMCARD_STAGE_IDLE) and no operation is pending
+// (nextstage < 0), it requests a card scan (nextstage = MEMCARD_REQUEST_SCAN,
+// nextslot = 0) and continues the chain at the post-open decision callback.
+// The original keeps the state constant in a0; the pin preserves the
+// constant/value register split, and the idx local forces the slot-11
+// constant to materialize (into v1) before the two struct stores are emitted.
 void menu_post_pageAdvance(void) {
-    register int state asm("$4") = MENU_POST_PAGE_STATE_2;
-    if (menuStateData.field_0xD4 == state && menuStateData.field_0xDC < 0) {
-        int idx = MENU_POST_CALLBACK_SLOT_11;
-        menuStateData.field_0xDC = MENU_POST_PENDING_PAGE_7;
-        menuStateData.field_0xE0 = 0;
+    register int state asm("$4") = MEMCARD_STAGE_IDLE;
+    if (menuStateData.stage == state && menuStateData.nextstage < 0) {
+        int idx = MENU_POST_PAGE_OPEN_DECISION_CALLBACK;
+        menuStateData.nextstage = MEMCARD_REQUEST_SCAN;
+        menuStateData.nextslot = 0;
         menuPostCallbackIndexGp = idx;
     }
 }

@@ -13,27 +13,39 @@ Queued by `menu_post_gatePageOpen` (slot 9, 0x208B88) when
 pending selection. Body:
 
 ```cpp
-register int state asm("$4") = MENU_POST_PAGE_STATE_2;      // 2
-if (menuStateData.field_0xD4 == state && menuStateData.field_0xDC < 0) {
-    int idx = MENU_POST_CALLBACK_SLOT_11;                   // 11
-    menuStateData.field_0xDC = MENU_POST_PENDING_PAGE_7;    // 7
-    menuStateData.field_0xE0 = 0;
+register int state asm("$4") = MEMCARD_STAGE_IDLE;          // 2
+if (menuStateData.stage == state && menuStateData.nextstage < 0) {
+    int idx = MENU_POST_PAGE_OPEN_DECISION_CALLBACK;        // 11
+    menuStateData.nextstage = MEMCARD_REQUEST_SCAN;         // 7
+    menuStateData.nextslot = 0;
     menuPostCallbackIndexGp = idx;                          // continue at slot 11
 }
 ```
 
-- `field_0xD4` (0x13D364) is the menu page state. The value 2 is the state
-  tested by BOTH this function (slot 10) and the page-open callback
-  `func_00208B28` (slot 8) before either acts; bmain.cpp:166 polls while the
-  state is `>= 3`. The full enum (0/1/2/>=3) is not yet decoded.
-- `field_0xDC` (0x13D36C) is the pending-page word: -1 = unset
-  (MENU_POST_UNSET_PAGE_INDEX, selectNextPage), 3 = resolved
-  (MENU_POST_PENDING_PAGE_RESOLVED, preparePageOpen), 7 = written here.
-- `field_0xE0` (0x13D370) is zeroed here and by preparePageOpen; -1 by
-  selectNextPage.
-- When the condition holds the callback index is advanced to slot 11
-  (0x208C00, still INCLUDE_ASM); otherwise the index is left unchanged, which
-  halts the chain (the dispatcher only continues when the state word changes).
+- `menuStateData` (0x13D290) is the **async memory-card I/O state machine**
+  (`g_memcard` in the Deadlocked reference, `struct memcard_globals`). What
+  was called the "menu page state machine" is really the memcard machine; the
+  boot save/load menu is a front end that requests operations and waits for
+  idle. Field names now match the memcard machine (see
+  reference/dl/game_dl/gameglobals.cpp `struct memcard_globals`).
+- `stage` (0x13D364, was field_0xD4): the machine's current operation, a
+  0..23 index dispatched by the `jtbl_001E8200` switch in `memcard_Update`
+  (its SOLE writer). Stages 0/1 are the probe/record cycle, 2 = idle (picks
+  up a pending `nextstage`/`nextslot` request on the next tick), 3..23 are
+  the active operations (3 = format, 7 = getdir/scan, ...). The value
+  MEMCARD_STAGE_IDLE (2) is tested by BOTH this function (slot 10) and the
+  page-open callback `func_00208B28` (slot 8); bmain.cpp polls while
+  `stage >= 3` (an operation is running).
+- `nextstage` (0x13D36C, was field_0xDC): the pending operation request.
+  -1 = unset (MENU_POST_UNSET_PAGE_INDEX, selectNextPage), 3 =
+  MEMCARD_REQUEST_FORMAT (preparePageOpen), 7 = MEMCARD_REQUEST_SCAN (written
+  here). Resolved by the idle stage: `stage = nextstage`.
+- `nextslot` (0x13D370, was field_0xE0): the pending memcard slot. Zeroed
+  here and by preparePageOpen; -1 by selectNextPage.
+- When the condition holds the callback index is advanced to the post-open
+  decision callback (slot 11, 0x208C00, still INCLUDE_ASM); otherwise the
+  index is left unchanged, which halts the chain (the dispatcher only
+  continues when the state word changes).
 
 ## Codegen findings
 
@@ -99,7 +111,20 @@ B0EE23AC  sw    v1, -0x1170(at)     # menuPostCallbackIndex = 11
 
 ## Naming / follow-up
 
-Positional constant names (MENU_POST_PAGE_STATE_2, MENU_POST_PENDING_PAGE_7,
-MENU_POST_CALLBACK_SLOT_11) and the MenuState field placeholders
-(field_0xD4/0xDC/0xE0) are tracked in refactor.json for a semantic decode of
-the page-state machine and the slot-11 handler (0x208C00).
+Resolved 2026-10-11: the decode established that `menuStateData` is the async
+memcard I/O state machine (`g_memcard` in Deadlocked). The field placeholders
+and positional constants were renamed to the memcard-machine names
+(`stage`/`substage`/`nextstage`/`nextslot`; `MEMCARD_STAGE_IDLE` /
+`MEMCARD_REQUEST_FORMAT` / `MEMCARD_REQUEST_SCAN` /
+`MENU_POST_PAGE_OPEN_DECISION_CALLBACK`) and verified byte-identical (clean
+build + full `cmp`). See refactor.json entry
+`menu_post_mid_menu_post_pageAdvance_state_naming` (done).
+
+Remaining follow-ups (tracked in refactor.json):
+- `menuStateData`/`MenuState` global+struct rename to the memcard name
+  (`g_memcard` / `memcard_globals`), plus the still-placeholder fields
+  (`selected`=memcards[0].changed, `saved`, `pending`, and the +0xBC..+0xF0
+  control block / `memcards[]` array).
+- The slot-11 handler `func_00208C00` is still INCLUDE_ASM (a queue target,
+  not a refactor). Full decode of the 24-stage `memcard_Update` machine is
+  part of that target.

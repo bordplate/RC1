@@ -8,9 +8,22 @@
    ],
    "category": "style",
    "description": "menu_post_pageAdvance (matched 2026-10-11) uses positional constant names for the menu page-state machine: MENU_POST_PAGE_STATE_2 (field_0xD4 value tested here and by slot 8 0x208B28; bmain.cpp:166 polls while >=3), MENU_POST_PENDING_PAGE_7 (field_0xDC value written here; -1=unset and 3=resolved are already named), and MENU_POST_CALLBACK_SLOT_11 (slot queued here and by slot 8; its handler 0x208C00 is still INCLUDE_ASM). The MenuState fields field_0xD4/field_0xDC/field_0xE0 remain placeholders. Decode the page-state enum and the slot-11 role (decompile 0x208C00 and find every field_0xD4 writer), then rename the constants and struct fields to semantic names. Any change must keep menu_post_pageAdvance and the other menu_post_mid functions byte-identical (full boot ELF cmp).",
-   "evidence": "notes/menu_post_mid_menu_post_pageAdvance.md; notes/menu_post_mid_gate_callbacks.md; notes/menu_post_mid_func_00208AF8.md (callback chain); code/include/menu.h",
-   "status": "open"
-  },
+    "evidence": "notes/menu_post_mid_menu_post_pageAdvance.md; notes/menu_post_mid_gate_callbacks.md; notes/menu_post_mid_func_00208AF8.md (callback chain); code/include/menu.h",
+    "status": "done",
+    "resolved": "2026-10-11: DECODED + RENAMED. menuStateData (0x13D290) is the async memory-card I/O state machine (g_memcard / struct memcard_globals in the Deadlocked reference, reference/dl/game_dl/gameglobals.cpp). memcard_Update (0x2093D8) is the SOLE writer of stage: a 0..23 switch dispatched via jtbl_001E8200 (stages 0/1 = probe/record, 2 = idle, 3..23 = active ops: 3=format, 7=getdir/scan, ...). The menu page callbacks only set nextstage/nextslot and wait for idle; they never write stage. Renamed fields field_0xD4->stage, pad2b(+0xD8)->substage, field_0xDC->nextstage, field_0xE0->nextslot; constants MENU_POST_PAGE_STATE_2->MEMCARD_STAGE_IDLE(2), MENU_POST_PENDING_PAGE_RESOLVED->MEMCARD_REQUEST_FORMAT(3), MENU_POST_PENDING_PAGE_7->MEMCARD_REQUEST_SCAN(7), MENU_POST_CALLBACK_SLOT_11->MENU_POST_PAGE_OPEN_DECISION_CALLBACK(11) (slot 11 = 0x208C00, the post-open routing callback, still INCLUDE_ASM). Updated consumers menu_post_mid.cpp (selectNextPage/preparePageOpen/pageAdvance) + bmain.cpp:166. Verified: menu_post_mid.o 14/14, bmain.o 2/2, clean make clean+split+make, cmp build/boot_elf.elf assets/boot_elf.elf byte-identical, count 531 unchanged. See notes/menu_post_mid_menu_post_pageAdvance.md."
+   },
+   {
+    "id": "menu_menuStateData_g_memcard_global_rename",
+    "file": "code/include/menu.h",
+    "function": "menuStateData",
+    "addresses": [
+     "0x13D290"
+    ],
+    "category": "style",
+    "description": "menuStateData / struct MenuState is the async memcard I/O state machine (g_memcard / struct memcard_globals in Deadlocked) but still carries the misnomer 'MenuState'/'menuStateData', and its fields selected(+0x1C = memcards[0].changed, aliased by menu_postHasPendingSelection), saved(+0xC0), and pending(+0xF4) are still placeholders (the +0xBC..+0xF0 control block and the memcards[] array, stride 0xB8, are not modeled). Rename the global+struct to the memcard name and model the remaining fields/control block so the struct matches the machine. Cross-file (menu.h, bmain.cpp, menu_post_mid.cpp, and any memcard/space/pause users); any change must keep all affected functions byte-identical (full boot ELF cmp).",
+    "evidence": "notes/menu_post_mid_menu_post_pageAdvance.md (2026-10-11 decode); reference/dl/game_dl/gameglobals.cpp struct memcard_globals; config/symbols.txt:40",
+    "status": "open"
+   },
   {
    "id": "camera_viewCtx_drawCamera_overlap",
   "file": "code/include/camera.h",
