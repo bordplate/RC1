@@ -103,11 +103,11 @@ extern "C" int func_00120558(int arg0, int arg1);
 // vblank interrupt handler (interrupt channel 2) via AddIntcHandler2 /
 // RemoveIntcHandler and returns the previous handler; 0 removes it.
 extern "C" int sceGsSyncVCallback(int (*callback)(int));
-// Sends the debug-font texture to the frame buffer: GS texture format, log2
-// width and height, and transfer mode (1 transfers now, 0 appends to the
-// current VU chain).
-void Hud_sendTexture(char* dest, int base, int format, int uLog, int vLog,
-                     int mode);
+// Sends the debug-font texture (src) to the frame buffer (dest): GS texture
+// format, log2 width and height, and transfer mode (immediate: 1 transfers
+// now via sceGsExecLoadImage, 0 appends the packet to the current VU chain).
+void Hud_sendTexture(char* src, int dest, int format, int uLog, int vLog,
+                     int immediate);
 // Texture transfer parameters for the 64x64 debug-font image: 16-bit color
 // with 4-bit shared alpha (PSMCT16SH4 = 0x1B).
 #define DEBUG_FONT_TEX_FORMAT 0x1B

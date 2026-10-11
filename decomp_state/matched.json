@@ -2787,5 +2787,13 @@
   "size": 88,
   "matched_date": "2026-10-11",
   "note": "Dispatches one sky shell layer from the Sky global (new symbol 0x16045C, SKY*): if (ishell < Sky->shellCnt) shell = Sky->shells[ishell]; if (shell->flags) SkyDrawShellGouraud(shell) else SkyDrawShellTextured(shell). New code/include/sky.h defines sky_shell (flags at 0x04), SKY (shellCnt s16 at 0x06, shells pointer table at 0x20; type names from the Deadlocked mdebug pseudo-code). The two callees are C-linkage in the original (Lombyte recovered names unmangled while the sibling __F names are mangled), declared extern \"C\". Match-sensitive: the inner if must be the truthiness form `if (shell->flags)` with Gouraud first - EGC emits beqz->else (Textured) with the Gouraud jal as fallthrough, exactly the original; `if (flags == 0) Textured else Gouraud` flips to bnez+jal-Textured fallthrough (3 word diffs at 0x22B6BC/C4/D4). Verified: probe 88/88, tu_assembler_diff skyfunc.o 9/9, clean make + cmp byte-identical."
+ },
+ "code/game/hud_post_post2_sendtex.cpp:20:Hud_sendTexture__FPciiiii": {
+  "name": "Hud_sendTexture__FPciiiii",
+  "source": "code/game/hud_post_post2_sendtex.cpp",
+  "vram": "0x00200B10",
+  "size": 368,
+  "matched_date": "2026-10-11",
+  "note": "VU1 texture transfer: appends a 96-byte load-image def record (sceGsSetDefLoadImage) plus a data reference to the VU1 chain, or, when immediate is set, transfers the texture directly via FlushCache + sceGsExecLoadImage. Isolated into its own SN (ps2eeas) TU by a Splat boundary split (config 0x100b10/0x100c80) so hud_post_post2_post2 (leading) and hud_post_post2_post3 (tail) stay GNU: neither a GNU-assembled TU nor a .data declaration can reproduce the original mixed pattern of nine fresh self-based lui/lw head loads (normal positions) plus GPREL head updates through the plain vu1ChainHeadStore alias (branch/bnez delay slots). Matching form is a double-volatile plain head declaration plus a plain same-address alias. The tbw clamp matches EGC slt/movz only as \"tbw = tbw > 0 ? tbw : 1\" (clamp up to at least 1): the reversed arm \"(tbw>0)?1:tbw\" is folded to slti/max and the separate-form reversed arm emits movn. Note R5900 movz=funct 0x0a, movn=0x0b (opposite of standard MIPS). 368-byte object matches and full boot parity passes. See notes/hud_post_post2_sendtex_Hud_sendTexture__FPciiiii.md."
  }
 }
