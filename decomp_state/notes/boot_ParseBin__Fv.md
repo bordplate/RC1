@@ -123,3 +123,49 @@ VA 0x100080).
 
 INCLUDE_ASM retained; the generated asm is overlay-safe. See
 `decomp_state/blocked.json` entry `code/game/boot.cpp:23:ParseBin__Fv`.
+
+## 2026-10-12 re-check — best candidate improved to 3/55 (still blocked)
+Re-ran the target with a fresh last-resort dossier. The scoped hard-register
+pins it returned (root->v1/$3, firstOffset->v0/$2, running->t0/$8,
+entrypoint->t1/$9, dst->a1/$5, rawLen->v0/$2, len->v1/$3, 8-byte
+src->a0/$4, dst8->v1/$3, end->a2/$6, all with input-only empty-asm barriers)
+cut the residual from the recorded p21's 43/55 to 8/55 (probe10). Three
+targeted edits closed 5 more words, landing at **3/55 (probe14)**:
+
+1. **Advance base register.** `running = (u8*)chunk + 0x10;` (not
+   `running += 0x10;`) reproduces the original's `addiu t0, a3, 16`
+   (chunk-as-base) instead of `addiu t0, t0, 16`. (1 word)
+2. **8-byte path as a do-while.** `if (dst != end) { u64* dst64=(u64*)dst;
+   do *dst64++ = *src64++; while ((u8*)dst64 != end); }` matches the original's
+   skip-on-byte-dst / back-edge-on-dst8 split and drops the extra
+   `daddu v1,a1,zero` word. (1 word)
+3. **Self-based levelRoot load.** Declaring `extern LevelRoot* levelRoot;` as a
+   PLAIN scalar (NO `.data` section attribute) makes EGC emit the bare small-data
+   pseudo that ps2eeas expands to the original's self-based absolute
+   `lui v1, 0x16; lw v1, -4532(v1)`. The `.data` form instead split it
+   (`lui v0; lw v1`), which was the prior 2-word prologue residual. (2 words)
+4. **addu operand order.** `running = (u8*)((u32)firstOffset + (u32)root);`
+   (u32 sum, firstOffset first) reproduces the original's `addu t0, v0, v1`
+   (firstOffset+root); the natural pointer form `(u8*)root + firstOffset`
+   gives `addu t0, v1, v0` (swapped). (1 word)
+
+The irreducible **3-word** residual (probe14, 220 B, all fine-grained EGC
+2.95.2 default-scheduler/RA/insn-selection tie-breaks, no flag or source form
+closes them):
+- `0x12d918`: `bnel v0, zero` (orig) vs `bnezl v0` (cand) — instruction
+  SELECTION on the first alignment check; the 2nd/3rd checks already emit
+  `bnezl` in both, so this is an isolated insn-pick, not a pattern.
+- `0x12d940`: `daddu a0, t0, zero` (orig: a0=src at the 8-byte path start) vs
+  `beql a1, a2` (cand: the skip moved here). EGC placed the cand's `a0=src`
+  at `0x12d9b4` (the entrypoint-branch delay slot) instead — an RA/scheduling
+  choice for where the 8-byte source pointer is materialized.
+- `0x12d944`: `beq a1, a2` (orig: plain `beq` skip) vs `lw v0, 4(a3)` (cand:
+  a reloaded len hoisted into the skip's delay slot) + the cand's skip is
+  `beql` (likely) not plain `beq`.
+
+Flags re-tested on probe14: `-fno-schedule-insns` (31 rows),
+`-fno-schedule-insns2` (19), `-fno-delayed-branch` (52, size 240) — none match.
+Second last-resort invocation (GPT-5.6 Sol, 2026-10-12) produced the scoped-pin
+form above; it did not predict the plain-extern self-based load or the
+u32-sum addu flip, which the primary agent found by iterating on the residual.
+Block stands.
