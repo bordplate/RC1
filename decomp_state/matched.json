@@ -2804,5 +2804,14 @@
   "size": 384,
   "matched_date": "2026-10-12",
   "note": "7-arg sibling of matched OcclAppendRects (0x200E08): appends the same 16-word inline VU1 GS solid-sprite (rectangle fill) record through in-window vu1ChainHead (0x160F00), except the HIGH 32 bits of each packed corner come from runtime arg `cornerHi` (u32, dsll32 zext per branch) instead of the constant 0xFFFFF000. ABI (byte-verified): x0,y0,x1,y1 in a0-a3; u64 attr in ONE 64-bit reg a4/t0 ($8, sd $8,0x28(head)); cornerHi in a5/t1 ($9); scale in t2 ($10) with beqz $10 -> x16 path (target), raw path fall-through. 0x10 frame (s0 spill for x1); advance stores self-based absolute. Match-critical: double-volatile vu1ChainHead, PLAIN non-volatile u32* head for the payload (attr store in beqz delay slot, 2nd-corner store in unconditional b delay slot), `u64 high=(u64)cornerHi<<32` declared inside each branch, u32 (not int) cornerHi. Isolated into SN TU hud_post_post2_post3_tail_occl.o via Splat boundary split at 0x101110 in config/RC1.yaml; dead tail func_00201110 (0x14, 3 dead addiu-sp units) emitted as inline byte-preserving asm in the tail cpp. Symbol OcclAppendRectsHi__FiiiiUlUii=0x00200F90 added to config/symbols.txt. Verified: probe 384/384 (0 diffs), clean make + cmp byte-identical. See notes/hud_post_post2_post3_tail_occl_OcclAppendRectsHi.md."
+ },
+ "Hud_DrawMsgBar": {
+  "name": "Hud_DrawMsgBar",
+  "original_name": "func_00201128",
+  "source": "code/game/hud_post_post2_post3_tail.cpp",
+  "vram": "0x00201128",
+  "size": 216,
+  "matched_date": "2026-10-12",
+  "note": "Three-segment HUD message bar (icon 0x7580: frame0 middle, frame1 caps) drawn behind the HUD message text by func_00201200. Straight C matched on first probe (216/216, 0 diffs), default flags, no pins. Callee prototypes void; extern \"C\" for the two unmangled sprite builders (0x1FFC30/0x1FFE18); asm(\"func_00201128\") symbol override (stripped ELF). See notes/hud_post_post2_post3_tail_Hud_DrawMsgBar.md."
  }
 }
