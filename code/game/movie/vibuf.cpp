@@ -6,6 +6,8 @@ extern "C" int CreateSema(int a);
 extern "C" int DeleteSema(int a);
 extern "C" int SignalSema(int a);
 extern "C" int WaitSema(int a);
+extern "C" void DIntr(void);
+extern "C" void EIntr(void);
 
 // VU1 DMAC channel control setter (see setD3_CHCR__FUi / setD4_CHCR__FUi below).
 void setD4_CHCR(u32 val);
@@ -20,7 +22,20 @@ u32 getFIFOindex(ViBuf* self, void* v) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", setD3_CHCR__FUi);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", setD4_CHCR__FUi);
+// Sets the DMAC4 (VU1) channel-control register with interrupts disabled:
+// pulse the channel-4 enable bit (0x10000) high, write CHCR, pulse it low.
+// The ENABLER value is pinned to v0: without it EGC holds it in a3/a0 and
+// emits the or/and results there, swapping every value/mask register.
+void setD4_CHCR(u32 val) {
+    DIntr();
+    register u32 v asm("$2");
+    v = *(volatile u32*)REG_DMAC_ENABLER;
+    *(volatile u32*)REG_DMAC_ENABLEW = v | 0x10000;
+    *(volatile u32*)REG_DMAC_4_IPU_TO_CHCR = val;
+    v = *(volatile u32*)REG_DMAC_ENABLER;
+    *(volatile u32*)REG_DMAC_ENABLEW = v & 0xFFFEFFFF;
+    EIntr();
+}
 
 // C linkage: this DMA helper is called by generated movie code through its
 // original unmangled entry point.

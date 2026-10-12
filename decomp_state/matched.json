@@ -2814,6 +2814,15 @@
   "source": "code/game/pause_post2.cpp",
   "vram": "0x0021F120"
  },
+ "setD4_CHCR__FUi": {
+  "matched_date": "2026-10-12",
+  "name": "setD4_CHCR__FUi",
+  "note": "Sets the DMAC4 (VU1) channel-control register with interrupts disabled: DIntr(); pulse the channel-4 enable bit (0x10000) high in REG_DMAC_ENABLEW (0x1000F590) read from REG_DMAC_ENABLER (0x1000F520); write val to REG_DMAC_4_IPU_TO_CHCR (0x1000B400); pulse the bit low; EIntr(). All hardware accesses are volatile constant-address casts (out-of-window hardware, required form). The ENABLER value must be pinned to v0 (`register u32 v asm(\"$2\")`) \u2014 without the pin EGC holds it in a3 and the or/and results in a0, swapping every value/mask register (9/27 -> 0/27). DIntr (0x11D660) / EIntr (0x11D6A8) are named in the generated sce/lib.s and declared extern \"C\" here.",
+  "original_name": null,
+  "size": 108,
+  "source": "code/game/movie/vibuf.cpp",
+  "vram": "0x0023BBB0"
+ },
  "viBufDelete__FP5ViBuf": {
   "matched_date": "2026-10-12",
   "name": "viBufDelete__FP5ViBuf",

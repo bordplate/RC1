@@ -1949,7 +1949,7 @@
     "line": 19,
     "asm": "code/_generated/nonmatchings/game/movie/vibuf/setD4_CHCR__FUi.s",
     "name": "setD4_CHCR__FUi",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/movie/vibuf.cpp:28:viBufCreate",
