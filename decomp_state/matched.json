@@ -2795,5 +2795,14 @@
   "size": 368,
   "matched_date": "2026-10-11",
   "note": "VU1 texture transfer: appends a 96-byte load-image def record (sceGsSetDefLoadImage) plus a data reference to the VU1 chain, or, when immediate is set, transfers the texture directly via FlushCache + sceGsExecLoadImage. Isolated into its own SN (ps2eeas) TU by a Splat boundary split (config 0x100b10/0x100c80) so hud_post_post2_post2 (leading) and hud_post_post2_post3 (tail) stay GNU: neither a GNU-assembled TU nor a .data declaration can reproduce the original mixed pattern of nine fresh self-based lui/lw head loads (normal positions) plus GPREL head updates through the plain vu1ChainHeadStore alias (branch/bnez delay slots). Matching form is a double-volatile plain head declaration plus a plain same-address alias. The tbw clamp matches EGC slt/movz only as \"tbw = tbw > 0 ? tbw : 1\" (clamp up to at least 1): the reversed arm \"(tbw>0)?1:tbw\" is folded to slti/max and the separate-form reversed arm emits movn. Note R5900 movz=funct 0x0a, movn=0x0b (opposite of standard MIPS). 368-byte object matches and full boot parity passes. See notes/hud_post_post2_sendtex_Hud_sendTexture__FPciiiii.md."
+ },
+ "code/game/hud_post_post2_post3_tail_occl.cpp:45:OcclAppendRectsHi": {
+  "name": "OcclAppendRectsHi",
+  "original_name": "OcclAppendRectsHi__FiiiiUlUii",
+  "source": "code/game/hud_post_post2_post3_tail_occl.cpp",
+  "vram": "0x00200F90",
+  "size": 384,
+  "matched_date": "2026-10-12",
+  "note": "7-arg sibling of matched OcclAppendRects (0x200E08): appends the same 16-word inline VU1 GS solid-sprite (rectangle fill) record through in-window vu1ChainHead (0x160F00), except the HIGH 32 bits of each packed corner come from runtime arg `cornerHi` (u32, dsll32 zext per branch) instead of the constant 0xFFFFF000. ABI (byte-verified): x0,y0,x1,y1 in a0-a3; u64 attr in ONE 64-bit reg a4/t0 ($8, sd $8,0x28(head)); cornerHi in a5/t1 ($9); scale in t2 ($10) with beqz $10 -> x16 path (target), raw path fall-through. 0x10 frame (s0 spill for x1); advance stores self-based absolute. Match-critical: double-volatile vu1ChainHead, PLAIN non-volatile u32* head for the payload (attr store in beqz delay slot, 2nd-corner store in unconditional b delay slot), `u64 high=(u64)cornerHi<<32` declared inside each branch, u32 (not int) cornerHi. Isolated into SN TU hud_post_post2_post3_tail_occl.o via Splat boundary split at 0x101110 in config/RC1.yaml; dead tail func_00201110 (0x14, 3 dead addiu-sp units) emitted as inline byte-preserving asm in the tail cpp. Symbol OcclAppendRectsHi__FiiiiUlUii=0x00200F90 added to config/symbols.txt. Verified: probe 384/384 (0 diffs), clean make + cmp byte-identical. See notes/hud_post_post2_post3_tail_occl_OcclAppendRectsHi.md."
  }
 }

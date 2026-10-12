@@ -457,6 +457,7 @@ fontCharWidths = 0x00189DC0;
 appendClearBlackDataRef__Fv = 0x001FB368;
 framebuf_appendSmallSetup__Fv = 0x001FB6E0;
 OcclAppendRects__FiiiiUli = 0x00200E08;
+OcclAppendRectsHi__FiiiiUlUii = 0x00200F90;
 draw_bootImage__Fi = 0x002012B8;
 menu_checkBootMemoryCard__Fv = 0x00209168;
 sound_loadBankByLocation__Fi = 0x0022D708;
