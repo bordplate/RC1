@@ -1,5 +1,17 @@
 [
  {
+  "id": "code/game/hud_post_post2_post3_tail.cpp:draw_bootImage__Fi",
+  "source": "code/game/hud_post_post2_post3_tail.cpp",
+  "asm": "code/_generated/nonmatchings/game/hud_post_post2_post3_tail/draw_bootImage__Fi.s",
+  "name": "draw_bootImage__Fi",
+  "status": "blocked",
+  "date": "2026-10-12",
+  "vram": "0x2012B8",
+  "size": "0x264",
+  "note": "Boot-splash per-row VU1 blit-packet chain builder. do-while, s64 width/rem/stride, int zbuf/image. Verified field table (objdump ground truth): per-row 0x80-byte packet at H=*vu1ChainHead \u2014 header [0x10000006,0,0,0x50000006], then 12 sd's in order H+0x10=0x4000000000000001(W4), H+0x20=((u64)(u32)zbuf<<32)|0x0008000000000000, H+0x40=((u64)stride<<32)|0x200, H+0x60=((u64)stride<<7)|0x0800000000008000(W14), H+0x68=0, H+0x18=0x0EEEEEEE(7 E's), H+0x28=0x50, H+0x30=0, H+0x38=0x51, H+0x48=0x52, H+0x50=0, H+0x58=0x53; zbuf+=(int)(stride<<3); *head=H+0x70, H+0x70=(u32)((stride<<7)|0x30000000), H+0x74=image, image+=(int)(stride<<11), H+0x78=0, H+0x7C=(u32)(stride<<7)|0x50000000, *head=H+0x80 (GPREL in bgtz delay slot); stride=(rem>=0)?width:0x80 (NOT rem<0); width=rem. End packet: [0x10000002,0,0,0x50000002], *head=H'+0x10, H'+0x10=0x1000000000008001, H'+0x18=0xE, H'+0x20=0, H'+0x28=0x3F, *head=H'+0x30. Uses double-volatile vu1ChainHead idiom (sibling OcclAppendRectsHi matches with it). Best candidate v4 (do-while+s64+corrected fields)=616B/139 diffs, all values byte-correct. Residual 139 are EGC 2.95.2 default-scheduler/RA tie-breaks: (1) prologue sq-save vs li/dli constant interleaving order, (2) EGC hoists 9/13 consts and re-materializes W4,ROW_HI,W14,0x200 as in-loop dli (register-pressure cost), (3) sd order H+0x58(pos5)/H+0x68(pos6) vs original H+0x68(pos5)/H+0x58(last). Tried: v1 496/150, v2 588/141, v3 588/141, v4 616/139 (best), v5 (pin W4/ROW_HI/W14/0x200 to $24/$22/$16/$19 + tied +r barrier) 624/149 (worse), -fno-schedule-insns 564/150, -fno-schedule-insns2 588/147, isolated-Splat-segment (default SN flags, reverted - not the lever). Retain INCLUDE_ASM; full-ELF parity preserved. See notes/hud_post_post2_post3_tail_draw_bootImage__Fi.md.",
+  "last_resort": "last-resort-decompiler (GPT-5.6 Sol) invoked 2026-10-12 with the full 154-word dossier (prologue + loop). Decisive correction: the loop is a DO-WHILE (no entry test, bgtz back-edge), not the while I had used \u2014 plus four field corrections read off the original objdump: repeating-E is 0x0EEEEEEE (7 E's), the z/stride packet words are high-32-bit ((zbuf<<32)|HI, (stride<<32)|0x200) not low-bit ORs, the image advances by (stride<<11) not stride, and width/rem/stride are s64. Applied all (v4) -> 588->616 bytes, 141->139 diffs (frame-first prologue now reproduced, 9/13 constants hoisted). Secondary recommendation (register-pin the not-hoisted constants + tied +r barrier) applied (v5) -> 624B/149, WORSE (pins disrupt allocation and add saves). Concluded the residual 139 are three coupled EGC 2.95.2 default-scheduler/RA tie-breaks (prologue interleaving, 4-constant loop-invariant hoisting, one sd store-order position) with no strictly-C source form, pin, barrier, or tested TU flag that closes them without regressing a matching cluster."
+ },
+ {
   "id": "code/game/framebuf.cpp:func_001FB8F0",
   "source": "code/game/framebuf.cpp",
   "asm": "code/_generated/nonmatchings/game/framebuf/func_001FB8F0.s",
