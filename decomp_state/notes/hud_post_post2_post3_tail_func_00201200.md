@@ -102,3 +102,17 @@ unreproducible EGC 2.95.2 default-scheduler tie-break.
 - `tools/decomp_probe.py` (v13): 0xA8 / 6 diffs (best form).
 - Source unchanged (still `INCLUDE_ASM`); `make` + `cmp
   build/boot_elf.elf assets/boot_elf.elf` passes (parity preserved).
+
+## Dead tail at 0x2012A8 (preserved, 2026-10-12)
+
+The Splat region following func_00201200 (`func_002012A8`, 0xC bytes) is an
+unreachable dead tail, not a function: `addiu sp,+0x10; nop; addiu sp,+0x80`
+(two stack deallocations matching no live frame; func_00201200's own frame is
+0x60). `tools/deadness_scan.py 0x2012A8` -> 0 references; Ghidra has no
+function at or containing 0x2012A8. It sits right after func_00201200's
+`jr $ra; addiu sp,+0x60` epilogue. The `INCLUDE_ASM` was replaced with a
+raw-asm byte-preservation block in the source (the `.align 3` +
+nonmatching/glabel pair plus the trailing alignment nop before draw_bootImage
+reproduce the generated layout). Per the dead-tail policy this is not a
+decompilation target and not a blocker. Clean build + `cmp
+build/boot_elf.elf assets/boot_elf.elf` byte-identical.

@@ -68,6 +68,29 @@ void Hud_DrawMsgBar(int x, int y, int width, int height, int alpha) {
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud_post_post2_post3_tail", func_00201200);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/hud_post_post2_post3_tail", func_002012A8);
+// Unreachable dead tail the original compiler emitted after
+// func_00201200 (blocked): two stack deallocations
+// (addiu sp,+0x10; addiu sp,+0x80) matching no live frame, plus the
+// alignment nop before draw_bootImage. The deadness scan
+// (tools/deadness_scan.py) finds no references and Ghidra has no function
+// at or containing 0x2012A8. EGC 2.95.2 never regenerates a dead frame
+// deallocation after the epilogue, so the bytes are preserved with raw asm.
+// The .align 3 and the nonmatching/glabel pair reproduce the generated
+// assembly's layout.
+asm(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .align 3\n"
+    "    nonmatching func_002012A8, 0xC\n"
+    "glabel func_002012A8\n"
+    "    .word 0x27bd0010\n"
+    "    .word 0x00000000\n"
+    "    .word 0x27bd0080\n"
+    "endlabel func_002012A8\n"
+    "    .word 0x00000000\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/hud_post_post2_post3_tail", draw_bootImage__Fi);
