@@ -3,8 +3,12 @@
 
 // C linkage: these kernel exports are unmangled SDK entry points.
 extern "C" int CreateSema(int a);
+extern "C" int DeleteSema(int a);
 extern "C" int SignalSema(int a);
 extern "C" int WaitSema(int a);
+
+// VU1 DMAC channel control setter (see setD3_CHCR__FUi / setD4_CHCR__FUi below).
+void setD4_CHCR(u32 val);
 
 u32 getFIFOindex(ViBuf* self, void* v) {
     u32 i = ((self->blocks << 4) + self->tagBase + 0x10) & 0xFFFFFFF;
@@ -44,7 +48,14 @@ INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufStopDMA__FP5Vi
 
 INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufRestartDMA__FP5ViBuf);
 
-INCLUDE_ASM("code/_generated/nonmatchings/game/movie/vibuf", viBufDelete__FP5ViBuf);
+int viBufDelete(ViBuf* self) {
+    setD4_CHCR(5);
+    *(volatile u32*)REG_DMAC_4_IPU_TO_TADR = 0;
+    *(volatile u32*)REG_DMAC_4_IPU_TO_MADR = 0;
+    *(volatile u32*)REG_DMAC_4_IPU_TO_QWC = 0;
+    DeleteSema(self->sema);
+    return 1;
+}
 
 int viBufCount(ViBuf* self) {
     WaitSema(self->sema);

@@ -27,7 +27,7 @@ typedef int (*videoDecCallback)(struct sceMpeg*, struct sceMpegCbData*, void*);
 extern "C" int videoDecRegisterCallback(VideoDec* self, int a, int b,
     videoDecCallback cb, void* userdata);
 
-void viBufDelete(ViBuf* self);
+int viBufDelete(ViBuf* self);
 // C linkage: generated sce/lib.s supplies this deletion helper at 0x0012B9E0;
 // it ignores its argument and returns success.
 // C linkage: generated sce/lib.s supplies this unmangled deletion helper.

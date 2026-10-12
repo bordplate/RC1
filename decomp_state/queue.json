@@ -2005,7 +2005,7 @@
     "line": 47,
     "asm": "code/_generated/nonmatchings/game/movie/vibuf/viBufDelete__FP5ViBuf.s",
     "name": "viBufDelete__FP5ViBuf",
-    "status": "todo"
+    "status": "matched"
   },
   {
     "id": "code/game/movie/vibuf.cpp:71:viBufModifyPts__FP5ViBufP9TimeStamp",

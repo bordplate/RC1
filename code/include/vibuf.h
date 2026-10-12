@@ -34,4 +34,10 @@ typedef struct ViBuf {
 #define VIBUF_BLOCK_SHIFT 11
 #define VIBUF_BLOCK_SIZE (1 << VIBUF_BLOCK_SHIFT)
 
+// DMAC channel 4 (VU1) IPU-to hardware registers. viBufDelete clears the
+// memory/tag/queue registers when tearing the buffer down.
+#define REG_DMAC_4_IPU_TO_MADR 0x1000B410
+#define REG_DMAC_4_IPU_TO_TADR 0x1000B420
+#define REG_DMAC_4_IPU_TO_QWC 0x1000B430
+
 #endif
